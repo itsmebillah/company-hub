@@ -3,12 +3,14 @@
 import type { FormEvent } from "react";
 import { useState } from "react";
 import { AlertCircle, CheckCircle2, Building2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { EmployeeIdField } from "@/features/home-login/components/employee-id-field";
 import { LoginButton } from "@/features/home-login/components/login-button";
 import { PasswordField } from "@/features/home-login/components/password-field";
 import { RememberMeCheckbox } from "@/features/home-login/components/remember-me-checkbox";
+import type { LoginActionState } from "@/features/auth/actions/login.action";
 import { appConfig } from "@/lib/config";
 
 type FormErrors = {
@@ -16,7 +18,16 @@ type FormErrors = {
   password?: string;
 };
 
-export function LoginCard() {
+type LoginCardProps = {
+  onLogin: (input: {
+    employeeId: string;
+    password: string;
+    rememberMe: boolean;
+  }) => Promise<LoginActionState>;
+};
+
+export function LoginCard({ onLogin }: LoginCardProps) {
+  const router = useRouter();
   const [employeeId, setEmployeeId] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -24,8 +35,9 @@ export function LoginCard() {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [status, setStatus] = useState<"idle" | "error" | "success">("idle");
+  const [message, setMessage] = useState("");
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (isLoading) {
@@ -46,16 +58,30 @@ export function LoginCard() {
 
     if (Object.keys(nextErrors).length > 0) {
       setStatus("error");
+      setMessage("Please complete the required fields.");
       return;
     }
 
     setIsLoading(true);
     setStatus("idle");
+    setMessage("");
 
-    window.setTimeout(() => {
+    const result = await onLogin({
+      employeeId,
+      password,
+      rememberMe,
+    });
+
+    if (!result.ok) {
       setIsLoading(false);
-      setStatus("success");
-    }, 600);
+      setStatus("error");
+      setMessage(result.message);
+      return;
+    }
+
+    setStatus("success");
+    setMessage(result.message);
+    router.replace(result.redirectTo);
   }
 
   return (
@@ -120,14 +146,14 @@ export function LoginCard() {
         {status === "error" ? (
           <div className="flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
             <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-            <p>Error placeholder</p>
+            <p>{message || "Unable to sign in."}</p>
           </div>
         ) : null}
 
         {status === "success" ? (
           <div className="flex items-start gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-700 dark:text-emerald-300">
             <CheckCircle2 className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-            <p>Success placeholder</p>
+            <p>{message || "Login successful."}</p>
           </div>
         ) : null}
       </form>
