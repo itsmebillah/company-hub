@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title>Company Hub</title>
+  <rect width="512" height="512" rx="96" fill="#0a0a0a"/>
+  <path fill="#fafafa" d="M144 384h224v-32h-24V128H168v224h-24v32Zm72-32v-48h80v48h-80Zm-8-176h32v32h-32v-32Zm64 0h32v32h-32v-32Zm-64 64h32v32h-32v-32Zm64 0h32v32h-32v-32Z"/>
+</svg>
