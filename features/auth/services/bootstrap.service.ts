@@ -1,0 +1,116 @@
+import "server-only";
+
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { ROLE_NAMES } from "@/lib/auth/permissions";
+import { loginWithEmployeeId } from "@/features/auth/services/login.service";
+
+const BOOTSTRAP_COMPANY_NAME = "Company Hub";
+const INTERNAL_AUTH_EMAIL_DOMAIN = "companyhub.local";
+
+type BootstrapAdminInput = {
+  employeeId: string;
+  name: string;
+  password: string;
+};
+
+function createInternalAuthEmail(employeeId: string) {
+  const normalizedEmployeeId = employeeId.trim().toUpperCase();
+
+  return `${normalizedEmployeeId}@${INTERNAL_AUTH_EMAIL_DOMAIN}`;
+}
+
+async function getBootstrapCompanyAndAdminRole() {
+  const supabase = createSupabaseAdminClient();
+
+  const { data: company, error: companyError } = await supabase
+    .from("companies")
+    .select("id")
+    .eq("name", BOOTSTRAP_COMPANY_NAME)
+    .single();
+
+  if (companyError || !company) {
+    throw new Error("Bootstrap company was not found.");
+  }
+
+  const { data: role, error: roleError } = await supabase
+    .from("roles")
+    .select("id")
+    .eq("company_id", company.id)
+    .eq("name", ROLE_NAMES.admin)
+    .single();
+
+  if (roleError || !role) {
+    throw new Error("Admin role was not found.");
+  }
+
+  return {
+    companyId: company.id,
+    adminRoleId: role.id,
+  };
+}
+
+export async function hasBootstrapAdmin() {
+  const supabase = createSupabaseAdminClient();
+  const { companyId, adminRoleId } = await getBootstrapCompanyAndAdminRole();
+
+  const { data, error } = await supabase
+    .from("employees")
+    .select("id")
+    .eq("company_id", companyId)
+    .eq("role_id", adminRoleId)
+    .limit(1);
+
+  if (error) {
+    throw new Error("Unable to check bootstrap status.");
+  }
+
+  return data.length > 0;
+}
+
+export async function bootstrapFirstAdmin(input: BootstrapAdminInput) {
+  if (await hasBootstrapAdmin()) {
+    throw new Error("Bootstrap is already complete.");
+  }
+
+  const supabase = createSupabaseAdminClient();
+  const { companyId, adminRoleId } = await getBootstrapCompanyAndAdminRole();
+  const employeeId = input.employeeId.trim().toUpperCase();
+  const internalAuthEmail = createInternalAuthEmail(employeeId);
+
+  const { data: authUser, error: authError } =
+    await supabase.auth.admin.createUser({
+      email: internalAuthEmail,
+      password: input.password,
+      email_confirm: true,
+      user_metadata: {
+        employee_id: employeeId,
+        company_id: companyId,
+        bootstrap_admin: true,
+      },
+    });
+
+  if (authError || !authUser.user) {
+    throw new Error("Unable to create administrator account.");
+  }
+
+  const { error: employeeError } = await supabase.from("employees").insert({
+    employee_id: employeeId,
+    name: input.name.trim(),
+    company_id: companyId,
+    role_id: adminRoleId,
+    auth_user_id: authUser.user.id,
+    internal_auth_email: internalAuthEmail,
+    status: "active",
+  });
+
+  if (employeeError) {
+    await supabase.auth.admin.deleteUser(authUser.user.id);
+    throw new Error("Unable to create administrator employee.");
+  }
+
+  await loginWithEmployeeId({
+    employeeId,
+    password: input.password,
+    rememberMe: true,
+  });
+}

@@ -24,6 +24,16 @@
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
   --radius: 0.5rem;
+  --app-spacing-page-x: 1rem;
+  --app-spacing-section-y: 2rem;
+  --app-spacing-stack: 1rem;
+  --app-shadow-soft: 0 8px 24px -16px rgb(0 0 0 / 0.35);
+  --app-container-sm: 40rem;
+  --app-container-md: 64rem;
+  --app-container-lg: 80rem;
+  --app-duration-fast: 150ms;
+  --app-duration-normal: 200ms;
+  --app-duration-slow: 300ms;
 }
 
 .dark {
@@ -72,6 +82,27 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --spacing-page-x: var(--app-spacing-page-x);
+  --spacing-section-y: var(--app-spacing-section-y);
+  --spacing-stack: var(--app-spacing-stack);
+  --shadow-soft: var(--app-shadow-soft);
+  --container-sm: var(--app-container-sm);
+  --container-md: var(--app-container-md);
+  --container-lg: var(--app-container-lg);
+  --animate-duration-fast: var(--app-duration-fast);
+  --animate-duration-normal: var(--app-duration-normal);
+  --animate-duration-slow: var(--app-duration-slow);
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --breakpoint-sm: 40rem;
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
+  --breakpoint-xl: 80rem;
   --font-sans:
     ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
     "Segoe UI Symbol", "Noto Color Emoji";
@@ -85,4 +116,15 @@
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+  }
 }
