@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 type SystemStatusItem = {
   label: string;
   description: string;
-  status: "configured" | "ready" | "pending";
+  status: "healthy" | "error";
   icon: LucideIcon;
 };
 
@@ -15,18 +15,15 @@ type SystemStatusProps = {
 };
 
 const badgeClasses = {
-  configured:
+  healthy:
     "bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:ring-emerald-900",
-  ready:
-    "bg-blue-50 text-blue-700 ring-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:ring-blue-900",
-  pending:
-    "bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:ring-amber-900",
+  error:
+    "bg-destructive/10 text-destructive ring-destructive/30",
 };
 
 const statusLabels = {
-  configured: "Configured",
-  ready: "Ready",
-  pending: "Pending",
+  healthy: "Healthy",
+  error: "Error",
 };
 
 export function SystemStatus({ items }: SystemStatusProps) {
@@ -36,7 +33,7 @@ export function SystemStatus({ items }: SystemStatusProps) {
         <div>
           <h2 className="text-base font-semibold">System Status</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Platform services prepared for production workflows.
+            Live platform health checks for core services.
           </p>
         </div>
         <CheckCircle2 className="size-5 text-emerald-600" aria-hidden="true" />

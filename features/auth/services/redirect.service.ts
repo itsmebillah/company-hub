@@ -2,7 +2,7 @@ import "server-only";
 
 import { ROLE_NAMES } from "@/lib/auth/permissions";
 
-const APP_DASHBOARD_PATH = "/app/dashboard";
+const APP_DASHBOARD_PATH = "/dashboard";
 const ADMIN_DASHBOARD_PATH = "/admin/dashboard";
 
 export function getPostLoginRedirectPath(roleName: string) {

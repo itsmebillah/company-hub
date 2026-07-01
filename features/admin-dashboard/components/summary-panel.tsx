@@ -3,9 +3,20 @@ import { CalendarDays, Megaphone, PackageCheck } from "lucide-react";
 type SummaryPanelProps = {
   currentDate: string;
   version: string;
+  activeEmployees: number;
+  inactiveEmployees: number;
+  archivedEmployees: number;
+  announcements: number;
 };
 
-export function SummaryPanel({ currentDate, version }: SummaryPanelProps) {
+export function SummaryPanel({
+  currentDate,
+  version,
+  activeEmployees,
+  inactiveEmployees,
+  archivedEmployees,
+  announcements,
+}: SummaryPanelProps) {
   return (
     <aside className="space-y-4">
       <section className="rounded-xl border bg-card p-5 shadow-sm">
@@ -20,12 +31,20 @@ export function SummaryPanel({ currentDate, version }: SummaryPanelProps) {
         </div>
         <div className="mt-5 grid grid-cols-2 gap-3">
           <div className="rounded-lg border bg-background p-3">
-            <p className="text-xs text-muted-foreground">Open tasks</p>
-            <p className="mt-1 text-xl font-semibold">0</p>
+            <p className="text-xs text-muted-foreground">Active employees</p>
+            <p className="mt-1 text-xl font-semibold">{activeEmployees}</p>
           </div>
           <div className="rounded-lg border bg-background p-3">
-            <p className="text-xs text-muted-foreground">Alerts</p>
-            <p className="mt-1 text-xl font-semibold">0</p>
+            <p className="text-xs text-muted-foreground">Inactive</p>
+            <p className="mt-1 text-xl font-semibold">{inactiveEmployees}</p>
+          </div>
+          <div className="rounded-lg border bg-background p-3">
+            <p className="text-xs text-muted-foreground">Archived</p>
+            <p className="mt-1 text-xl font-semibold">{archivedEmployees}</p>
+          </div>
+          <div className="rounded-lg border bg-background p-3">
+            <p className="text-xs text-muted-foreground">Announcements</p>
+            <p className="mt-1 text-xl font-semibold">{announcements}</p>
           </div>
         </div>
       </section>
@@ -38,7 +57,9 @@ export function SummaryPanel({ currentDate, version }: SummaryPanelProps) {
           <div>
             <h2 className="text-base font-semibold">Latest Announcement</h2>
             <p className="text-sm text-muted-foreground">
-              No announcement published yet.
+              {announcements > 0
+                ? `${announcements} announcement${announcements === 1 ? "" : "s"} available`
+                : "No announcement published yet."}
             </p>
           </div>
         </div>

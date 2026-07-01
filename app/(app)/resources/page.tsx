@@ -1,8 +1,25 @@
-export default function ResourcesPage() {
+import {
+  EmployeePortalHeader,
+  EmployeeResourcePortal,
+} from "@/features/employee-resources/components";
+import { EmployeeResourceService } from "@/features/employee-resources/services/employee-resource.service";
+
+export const dynamic = "force-dynamic";
+
+const currentDate = new Intl.DateTimeFormat("en", {
+  dateStyle: "full",
+}).format(new Date());
+
+export default async function ResourcesPage() {
+  const data = await EmployeeResourceService.getPortalData();
+
   return (
-    <section>
-      <h1 className="text-2xl font-semibold">Resources</h1>
-      <p className="mt-2 text-muted-foreground">Placeholder</p>
+    <section className="space-y-6">
+      <EmployeePortalHeader
+        profile={data.profile}
+        currentDate={currentDate}
+      />
+      <EmployeeResourcePortal data={data} />
     </section>
   );
 }

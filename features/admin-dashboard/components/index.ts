@@ -3,6 +3,7 @@ export { DashboardHeader } from "./dashboard-header";
 export { KPICard } from "./kpi-card";
 export { QuickActionCard } from "./quick-action-card";
 export { RecentActivity } from "./recent-activity";
+export { RecentEmployees } from "./recent-employees";
 export { StatCard } from "./stat-card";
 export { SummaryPanel } from "./summary-panel";
 export { SystemStatus } from "./system-status";

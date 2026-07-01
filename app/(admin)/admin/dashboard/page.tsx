@@ -1,5 +1,4 @@
 import {
-  Activity,
   Bell,
   Database,
   FolderKanban,
@@ -15,10 +14,11 @@ import {
   DashboardHeader,
   KPICard,
   QuickActionCard,
-  RecentActivity,
+  RecentEmployees,
   SummaryPanel,
   SystemStatus,
 } from "@/features/admin-dashboard/components";
+import { getAdminDashboardData } from "@/features/admin-dashboard/services/dashboard.service";
 import { appConfig } from "@/lib/config/app";
 
 export const dynamic = "force-dynamic";
@@ -54,70 +54,70 @@ const quickActions = [
   },
 ];
 
-const kpis = [
-  {
-    title: "Employees",
-    value: "0",
-    trend: "Ready for employee data",
-    icon: Users,
-    tone: "blue" as const,
-  },
-  {
-    title: "Resources",
-    value: "0",
-    trend: "Catalog prepared",
-    icon: FolderKanban,
-    tone: "green" as const,
-  },
-  {
-    title: "Announcements",
-    value: "0",
-    trend: "Publishing queue clear",
-    icon: Bell,
-    tone: "amber" as const,
-  },
-  {
-    title: "Active Users",
-    value: "0",
-    trend: "Session metrics pending",
-    icon: Activity,
-    tone: "violet" as const,
-  },
-];
+export default async function AdminDashboardPage() {
+  const dashboard = await getAdminDashboardData();
+  const kpis = [
+    {
+      title: "Employees",
+      value: String(dashboard.counts.employees),
+      trend: `${dashboard.counts.activeEmployees} active employees`,
+      icon: Users,
+      tone: "blue" as const,
+    },
+    {
+      title: "Resources",
+      value: String(dashboard.counts.resources),
+      trend: "Available resource links",
+      icon: FolderKanban,
+      tone: "green" as const,
+    },
+    {
+      title: "Announcements",
+      value: String(dashboard.counts.announcements),
+      trend: "Published and archived records",
+      icon: Bell,
+      tone: "amber" as const,
+    },
+    {
+      title: "Inactive Employees",
+      value: String(dashboard.counts.inactiveEmployees),
+      trend: `${dashboard.counts.archivedEmployees} archived employees`,
+      icon: Users,
+      tone: "violet" as const,
+    },
+  ];
+  const systemStatus = [
+    {
+      label: "Authentication",
+      description: "Supabase Auth service",
+      status: dashboard.health.authentication,
+      icon: ShieldCheck,
+    },
+    {
+      label: "Database",
+      description: "Supabase PostgreSQL",
+      status: dashboard.health.database,
+      icon: Database,
+    },
+    {
+      label: "Storage",
+      description: "Asset storage readiness",
+      status: dashboard.health.storage,
+      icon: UploadCloud,
+    },
+    {
+      label: "Environment",
+      description: appConfig.environment,
+      status: dashboard.health.environment,
+      icon: Server,
+    },
+  ];
 
-const systemStatus = [
-  {
-    label: "Database",
-    description: "Supabase schema foundation",
-    status: "configured" as const,
-    icon: Database,
-  },
-  {
-    label: "Authentication",
-    description: "Employee ID sign-in flow",
-    status: "configured" as const,
-    icon: ShieldCheck,
-  },
-  {
-    label: "Storage",
-    description: "Ready for media assets",
-    status: "ready" as const,
-    icon: UploadCloud,
-  },
-  {
-    label: "API",
-    description: "Application routes available",
-    status: "ready" as const,
-    icon: Server,
-  },
-];
-
-export default function AdminDashboardPage() {
   return (
     <section className="mx-auto max-w-screen-2xl space-y-6">
       <DashboardHeader
-        companyName="Company Hub"
-        userName="Admin"
+        companyName={dashboard.companyName}
+        userName={dashboard.loggedInUserName}
         currentDate={currentDate}
       />
 
@@ -142,12 +142,19 @@ export default function AdminDashboardPage() {
           </section>
 
           <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_420px]">
-            <RecentActivity />
+            <RecentEmployees employees={dashboard.recentEmployees} />
             <SystemStatus items={systemStatus} />
           </div>
         </div>
 
-        <SummaryPanel currentDate={currentDate} version={appConfig.version} />
+        <SummaryPanel
+          currentDate={currentDate}
+          version={appConfig.version}
+          activeEmployees={dashboard.counts.activeEmployees}
+          inactiveEmployees={dashboard.counts.inactiveEmployees}
+          archivedEmployees={dashboard.counts.archivedEmployees}
+          announcements={dashboard.counts.announcements}
+        />
       </div>
     </section>
   );
