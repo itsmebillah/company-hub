@@ -4,6 +4,7 @@ import {
   Building2,
   FolderKanban,
   LayoutDashboard,
+  ShieldCheck,
   Settings,
   Users,
   type LucideIcon,
@@ -25,6 +26,11 @@ export const adminNavigationItems: AdminNavigationItem[] = [
     title: "Employees",
     href: "/admin/users",
     icon: Users,
+  },
+  {
+    title: "Roles",
+    href: "/admin/roles",
+    icon: ShieldCheck,
   },
   {
     title: "Resources",

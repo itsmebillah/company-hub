@@ -14,21 +14,31 @@ function normalizeOptional(value: string) {
   return nextValue.length > 0 ? nextValue : null;
 }
 
-async function getCompanyId() {
+async function getActiveCompanyId() {
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
     .from("companies")
     .select("id")
     .eq("status", "active")
     .order("created_at", { ascending: true })
-    .limit(1)
-    .single();
+    .limit(1);
 
-  if (error || !data) {
+  if (error) {
+    console.error("[ResourceCategoryService] Unable to load active company.", error);
+    throw new Error("Unable to load company information.");
+  }
+
+  return data[0]?.id ?? null;
+}
+
+async function requireActiveCompanyId() {
+  const companyId = await getActiveCompanyId();
+
+  if (!companyId) {
     throw new Error("Company was not found.");
   }
 
-  return data.id;
+  return companyId;
 }
 
 async function assertCategoryUnique(
@@ -37,7 +47,7 @@ async function assertCategoryUnique(
   currentId?: string,
 ) {
   const supabase = createSupabaseAdminClient();
-  const companyId = await getCompanyId();
+  const companyId = await requireActiveCompanyId();
   let nameQuery = supabase
     .from("resource_categories")
     .select("id")
@@ -62,6 +72,10 @@ async function assertCategoryUnique(
   ]);
 
   if (nameResult.error || orderResult.error) {
+    console.error("[ResourceCategoryService] Unable to validate category.", {
+      nameError: nameResult.error,
+      orderError: orderResult.error,
+    });
     throw new Error("Unable to validate category.");
   }
 
@@ -77,7 +91,12 @@ async function assertCategoryUnique(
 export const ResourceCategoryService = {
   async list(): Promise<ResourceCategoryListItem[]> {
     const supabase = createSupabaseAdminClient();
-    const companyId = await getCompanyId();
+    const companyId = await getActiveCompanyId();
+
+    if (!companyId) {
+      return [];
+    }
+
     const { data, error } = await supabase
       .from("resource_categories")
       .select("id, name, icon, color, display_order, status")
@@ -85,6 +104,7 @@ export const ResourceCategoryService = {
       .order("display_order", { ascending: true });
 
     if (error) {
+      console.error("[ResourceCategoryService] Unable to load categories.", error);
       throw new Error("Unable to load resource categories.");
     }
 
@@ -101,7 +121,7 @@ export const ResourceCategoryService = {
   async create(values: ResourceCategoryFormValues) {
     const validated = ResourceCategoryValidationService.validate(values);
     const supabase = createSupabaseAdminClient();
-    const companyId = await getCompanyId();
+    const companyId = await requireActiveCompanyId();
 
     await assertCategoryUnique(validated.name, validated.displayOrder);
 
@@ -115,6 +135,7 @@ export const ResourceCategoryService = {
     });
 
     if (error) {
+      console.error("[ResourceCategoryService] Unable to create category.", error);
       throw new Error("Unable to create resource category.");
     }
   },
@@ -137,6 +158,7 @@ export const ResourceCategoryService = {
       .eq("id", id);
 
     if (error) {
+      console.error("[ResourceCategoryService] Unable to update category.", error);
       throw new Error("Unable to update resource category.");
     }
   },
@@ -152,6 +174,7 @@ export const ResourceCategoryService = {
       .eq("id", id);
 
     if (error) {
+      console.error("[ResourceCategoryService] Unable to update category status.", error);
       throw new Error("Unable to update category status.");
     }
   },

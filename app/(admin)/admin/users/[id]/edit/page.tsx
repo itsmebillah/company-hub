@@ -40,6 +40,7 @@ export default async function EditEmployeePage({ params }: EditEmployeePageProps
         <EmployeeForm
           roles={roles}
           managers={managers}
+          currentEmployeeId={employee.id}
           initialValues={{
             employeeId: employee.employeeId,
             name: employee.name,

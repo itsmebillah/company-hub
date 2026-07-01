@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import Link from "next/link";
 import { AlertCircle, Loader2, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -296,7 +297,7 @@ export function ResourceForm({
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting || categories.length === 0}>
               {isSubmitting ? (
                 <Loader2 className="size-4 animate-spin" aria-hidden="true" />
               ) : null}
@@ -306,9 +307,12 @@ export function ResourceForm({
         </form>
 
         {categories.length === 0 ? (
-          <p className="border-t px-5 py-3 text-sm text-muted-foreground">
-            Create at least one active resource category before adding resources.
-          </p>
+          <div className="flex flex-col gap-3 border-t px-5 py-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+            <p>No categories found. Create a category before adding resources.</p>
+            <Button asChild size="sm" variant="outline">
+              <Link href="/admin/resources/categories">Create Category</Link>
+            </Button>
+          </div>
         ) : null}
       </div>
     </div>

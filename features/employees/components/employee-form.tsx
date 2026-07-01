@@ -19,6 +19,7 @@ type EmployeeFormProps = {
   roles: EmployeeRoleOption[];
   managers: EmployeeManagerOption[];
   initialValues?: EmployeeFormValues;
+  currentEmployeeId?: string;
   submitLabel: string;
   onSubmit: (values: EmployeeFormValues) => Promise<EmployeeActionState>;
 };
@@ -47,6 +48,7 @@ export function EmployeeForm({
   roles,
   managers,
   initialValues,
+  currentEmployeeId,
   submitLabel,
   onSubmit,
 }: EmployeeFormProps) {
@@ -65,12 +67,22 @@ export function EmployeeForm({
     : null;
 
   const managerOptions = useMemo(() => {
-    if (!allowedManagerRole) {
+    if (!selectedRole || allowedManagerRole === null) {
       return [];
     }
 
-    return managers.filter((manager) => manager.roleName === allowedManagerRole);
-  }, [allowedManagerRole, managers]);
+    const availableManagers = managers.filter(
+      (manager) => manager.id !== currentEmployeeId,
+    );
+
+    if (allowedManagerRole === undefined) {
+      return availableManagers;
+    }
+
+    return availableManagers.filter(
+      (manager) => manager.roleName === allowedManagerRole,
+    );
+  }, [allowedManagerRole, currentEmployeeId, managers, selectedRole]);
 
   function updateValue<Key extends keyof EmployeeFormValues>(
     key: Key,
@@ -239,10 +251,14 @@ export function EmployeeForm({
             value={values.managerId}
             onChange={(event) => updateValue("managerId", event.target.value)}
             className={cn("h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring", errors.managerId && "border-destructive")}
-            disabled={isSubmitting || !allowedManagerRole}
+            disabled={isSubmitting || !selectedRole || allowedManagerRole === null}
           >
             <option value="">
-              {allowedManagerRole ? `Select ${allowedManagerRole}` : "No reporting manager"}
+              {allowedManagerRole === null
+                ? "No reporting manager"
+                : allowedManagerRole
+                  ? `Select ${allowedManagerRole}`
+                  : "Select manager"}
             </option>
             {managerOptions.map((manager) => (
               <option key={manager.id} value={manager.id}>

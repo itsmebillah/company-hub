@@ -29,28 +29,43 @@ function parseSort(value: string | undefined): ResourceSort {
   return "display_order";
 }
 
-async function getCompanyId() {
+async function getActiveCompanyId() {
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
     .from("companies")
     .select("id")
     .eq("status", "active")
     .order("created_at", { ascending: true })
-    .limit(1)
-    .single();
+    .limit(1);
 
-  if (error || !data) {
+  if (error) {
+    console.error("[ResourceService] Unable to load active company.", error);
+    throw new Error("Unable to load company information.");
+  }
+
+  return data[0]?.id ?? null;
+}
+
+async function requireActiveCompanyId() {
+  const companyId = await getActiveCompanyId();
+
+  if (!companyId) {
     throw new Error("Company was not found.");
   }
 
-  return data.id;
+  return companyId;
 }
 
 export async function getResourceCategories(): Promise<
   ResourceCategoryOption[]
 > {
   const supabase = createSupabaseAdminClient();
-  const companyId = await getCompanyId();
+  const companyId = await getActiveCompanyId();
+
+  if (!companyId) {
+    return [];
+  }
+
   const { data, error } = await supabase
     .from("resource_categories")
     .select("id, name, icon, color")
@@ -59,6 +74,7 @@ export async function getResourceCategories(): Promise<
     .order("display_order", { ascending: true });
 
   if (error) {
+    console.error("[ResourceService] Unable to load resource categories.", error);
     throw new Error("Unable to load resource categories.");
   }
 
@@ -69,7 +85,12 @@ export async function listResources(
   filters: ResourceFilters,
 ): Promise<ResourceListResult> {
   const supabase = createSupabaseAdminClient();
-  const companyId = await getCompanyId();
+  const companyId = await getActiveCompanyId();
+
+  if (!companyId) {
+    return { resources: [] };
+  }
+
   const search = filters.search?.trim();
   const sort = parseSort(filters.sort);
 
@@ -109,6 +130,7 @@ export async function listResources(
   });
 
   if (error) {
+    console.error("[ResourceService] Unable to load resources.", error);
     throw new Error("Unable to load resources.");
   }
 
@@ -145,7 +167,7 @@ async function assertDisplayOrderAvailable(
   currentId?: string,
 ) {
   const supabase = createSupabaseAdminClient();
-  const companyId = await getCompanyId();
+  const companyId = await requireActiveCompanyId();
   let query = supabase
     .from("resources")
     .select("id")
@@ -161,6 +183,7 @@ async function assertDisplayOrderAvailable(
   const { data, error } = await query;
 
   if (error) {
+    console.error("[ResourceService] Unable to validate display order.", error);
     throw new Error("Unable to validate display order.");
   }
 
@@ -171,7 +194,7 @@ async function assertDisplayOrderAvailable(
 
 async function getNextDisplayOrder(categoryId: string) {
   const supabase = createSupabaseAdminClient();
-  const companyId = await getCompanyId();
+  const companyId = await requireActiveCompanyId();
   const { data, error } = await supabase
     .from("resources")
     .select("display_order")
@@ -181,6 +204,7 @@ async function getNextDisplayOrder(categoryId: string) {
     .limit(1);
 
   if (error) {
+    console.error("[ResourceService] Unable to calculate display order.", error);
     throw new Error("Unable to calculate display order.");
   }
 
@@ -190,7 +214,7 @@ async function getNextDisplayOrder(categoryId: string) {
 export async function createResource(values: ResourceFormValues) {
   const validated = ResourceValidationService.validate(values);
   const supabase = createSupabaseAdminClient();
-  const companyId = await getCompanyId();
+  const companyId = await requireActiveCompanyId();
 
   await assertDisplayOrderAvailable(values.categoryId, validated.displayOrder);
 
@@ -210,6 +234,7 @@ export async function createResource(values: ResourceFormValues) {
   });
 
   if (error) {
+    console.error("[ResourceService] Unable to create resource.", error);
     throw new Error("Unable to create resource.");
   }
 }
@@ -244,7 +269,7 @@ export async function updateResource(id: string, values: ResourceFormValues) {
 
 export async function duplicateResource(id: string) {
   const supabase = createSupabaseAdminClient();
-  const companyId = await getCompanyId();
+  const companyId = await requireActiveCompanyId();
   const { data: resource, error: loadError } = await supabase
     .from("resources")
     .select(
@@ -275,6 +300,7 @@ export async function duplicateResource(id: string) {
   });
 
   if (error) {
+    console.error("[ResourceService] Unable to duplicate resource.", error);
     throw new Error("Unable to duplicate resource.");
   }
 }
@@ -290,6 +316,7 @@ export async function setResourceStatus(
     .eq("id", id);
 
   if (error) {
+    console.error("[ResourceService] Unable to update resource status.", error);
     throw new Error("Unable to update resource status.");
   }
 }

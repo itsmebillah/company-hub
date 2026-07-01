@@ -2,7 +2,7 @@ import type { Database } from "@/lib/supabase/types";
 
 export type EmployeeStatus = Database["public"]["Enums"]["record_status"];
 
-export type EmployeeRoleName = "Admin" | "Sales Head" | "RSM" | "TSO" | "SR";
+export type EmployeeRoleName = string;
 
 export type EmployeeRoleOption = {
   id: string;

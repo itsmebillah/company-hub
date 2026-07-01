@@ -55,12 +55,22 @@ export function EmployeeForm({
     ? getAllowedManagerRole(selectedRole.name)
     : null;
   const managerOptions = useMemo(() => {
-    if (!allowedManagerRole) {
+    if (!selectedRole || allowedManagerRole === null) {
       return [];
     }
 
-    return managers.filter((manager) => manager.roleName === allowedManagerRole);
-  }, [allowedManagerRole, managers]);
+    const availableManagers = managers.filter(
+      (manager) => manager.id !== employee?.id,
+    );
+
+    if (allowedManagerRole === undefined) {
+      return availableManagers;
+    }
+
+    return availableManagers.filter(
+      (manager) => manager.roleName === allowedManagerRole,
+    );
+  }, [allowedManagerRole, employee?.id, managers, selectedRole]);
 
   function updateValue<Key extends keyof EmployeeFormValues>(
     key: Key,
@@ -165,8 +175,8 @@ export function EmployeeForm({
           </label>
           <label className="space-y-2">
             <span className="text-sm font-medium">Reports To</span>
-            <select value={values.managerId} onChange={(event) => updateValue("managerId", event.target.value)} disabled={!allowedManagerRole} className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60">
-              <option value="">{allowedManagerRole ? `Select ${allowedManagerRole}` : "No reporting manager"}</option>
+            <select value={values.managerId} onChange={(event) => updateValue("managerId", event.target.value)} disabled={!selectedRole || allowedManagerRole === null} className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60">
+              <option value="">{allowedManagerRole === null ? "No reporting manager" : allowedManagerRole ? `Select ${allowedManagerRole}` : "Select manager"}</option>
               {managerOptions.map((manager) => <option key={manager.id} value={manager.id}>{manager.name}</option>)}
             </select>
           </label>

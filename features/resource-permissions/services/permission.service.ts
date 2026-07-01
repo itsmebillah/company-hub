@@ -13,21 +13,31 @@ import type {
 type ResourcePermissionInsert =
   Database["public"]["Tables"]["resource_permissions"]["Insert"];
 
-async function getCompanyId() {
+async function getActiveCompanyId() {
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
     .from("companies")
     .select("id")
     .eq("status", "active")
     .order("created_at", { ascending: true })
-    .limit(1)
-    .single();
+    .limit(1);
 
-  if (error || !data) {
+  if (error) {
+    console.error("[PermissionService] Unable to load active company.", error);
+    throw new Error("Unable to load company information.");
+  }
+
+  return data[0]?.id ?? null;
+}
+
+async function requireActiveCompanyId() {
+  const companyId = await getActiveCompanyId();
+
+  if (!companyId) {
     throw new Error("Company was not found.");
   }
 
-  return data.id;
+  return companyId;
 }
 
 function buildPermissionStates(
@@ -77,7 +87,17 @@ function buildPermissionStates(
 export const PermissionService = {
   async getManagementData(): Promise<ResourcePermissionManagementData> {
     const supabase = createSupabaseAdminClient();
-    const companyId = await getCompanyId();
+    const companyId = await getActiveCompanyId();
+
+    if (!companyId) {
+      return {
+        resources: [],
+        roles: [],
+        employees: [],
+        permissions: [],
+      };
+    }
+
     const [categoriesResult, resourcesResult, rolesResult, employeesResult, permissionsResult] =
       await Promise.all([
         supabase
@@ -112,22 +132,30 @@ export const PermissionService = {
       ]);
 
     if (categoriesResult.error) {
+      console.error("[PermissionService] Unable to load categories.", categoriesResult.error);
       throw new Error("Unable to load resource categories.");
     }
 
     if (resourcesResult.error) {
+      console.error("[PermissionService] Unable to load resources.", resourcesResult.error);
       throw new Error("Unable to load resources.");
     }
 
     if (rolesResult.error) {
+      console.error("[PermissionService] Unable to load roles.", rolesResult.error);
       throw new Error("Unable to load roles.");
     }
 
     if (employeesResult.error) {
+      console.error("[PermissionService] Unable to load employees.", employeesResult.error);
       throw new Error("Unable to load employees.");
     }
 
     if (permissionsResult.error) {
+      console.error(
+        "[PermissionService] Unable to load resource permissions.",
+        permissionsResult.error,
+      );
       throw new Error("Unable to load resource permissions.");
     }
 
@@ -174,7 +202,7 @@ export const PermissionService = {
     PermissionValidationService.validateDraft(draft);
 
     const supabase = createSupabaseAdminClient();
-    const companyId = await getCompanyId();
+    const companyId = await requireActiveCompanyId();
     const { data: resource, error: resourceError } = await supabase
       .from("resources")
       .select("id")

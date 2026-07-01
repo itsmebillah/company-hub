@@ -369,8 +369,13 @@ async function validateEmployeeInput(values: EmployeeFormValues, currentId?: str
   assertStatus(values.status);
 
   const allowedManagerRole = getAllowedManagerRole(role.name);
+  const managerOptions = await getEmployeeManagerOptions();
 
-  if (!allowedManagerRole && values.managerId) {
+  if (currentId && values.managerId === currentId) {
+    throw new Error("Employee cannot report to themselves.");
+  }
+
+  if (allowedManagerRole === null && values.managerId) {
     throw new Error(`${role.name} cannot report to another employee.`);
   }
 
@@ -379,12 +384,18 @@ async function validateEmployeeInput(values: EmployeeFormValues, currentId?: str
   }
 
   if (allowedManagerRole && values.managerId) {
-    const manager = (await getEmployeeManagerOptions()).find(
-      (item) => item.id === values.managerId,
-    );
+    const manager = managerOptions.find((item) => item.id === values.managerId);
 
     if (!manager || manager.roleName !== allowedManagerRole) {
       throw new Error(`${role.name} must report to ${allowedManagerRole}.`);
+    }
+  }
+
+  if (allowedManagerRole === undefined && values.managerId) {
+    const manager = managerOptions.find((item) => item.id === values.managerId);
+
+    if (!manager) {
+      throw new Error("Reporting manager is invalid.");
     }
   }
 

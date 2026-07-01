@@ -120,6 +120,7 @@ export function ResourceManagementPage({
             type="button"
             className="h-10"
             onClick={() => setIsCreating(true)}
+            disabled={categories.length === 0}
           >
             <Plus className="size-4" aria-hidden="true" />
             New Resource
@@ -144,7 +145,21 @@ export function ResourceManagementPage({
         <p className="text-sm text-muted-foreground">Updating resource...</p>
       ) : null}
 
-      {result.resources.length > 0 ? (
+      {categories.length === 0 ? (
+        <EmptyState
+          title="No categories found"
+          description="Create an active category before adding resources."
+          className="bg-card shadow-sm"
+          action={
+            <Button asChild>
+              <Link href="/admin/resources/categories">
+                <Tags className="size-4" aria-hidden="true" />
+                Create Category
+              </Link>
+            </Button>
+          }
+        />
+      ) : result.resources.length > 0 ? (
         <>
           <ResourceTable
             resources={result.resources}
