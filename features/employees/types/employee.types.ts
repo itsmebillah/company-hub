@@ -24,11 +24,13 @@ export type EmployeeListItem = {
   name: string;
   phone: string | null;
   email: string | null;
+  photoUrl: string | null;
   dateOfBirth: string | null;
   roleId: string;
   roleName: string;
   managerId: string | null;
   managerName: string | null;
+  directReportsCount: number;
   status: EmployeeStatus;
   joiningDate: string | null;
 };

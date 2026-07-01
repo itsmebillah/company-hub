@@ -44,9 +44,17 @@ export function EmployeeTable({
               {employees.map((employee) => (
                 <tr key={employee.id} className="border-b last:border-0">
                   <td className="px-4 py-3">
-                    <div className="flex size-9 items-center justify-center rounded-full bg-muted">
-                      <UserRound className="size-4 text-muted-foreground" aria-hidden="true" />
-                    </div>
+                    {employee.photoUrl ? (
+                      <img
+                        src={employee.photoUrl}
+                        alt=""
+                        className="size-9 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex size-9 items-center justify-center rounded-full bg-muted">
+                        <UserRound className="size-4 text-muted-foreground" aria-hidden="true" />
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-3 font-medium">{employee.employeeId}</td>
                   <td className="px-4 py-3">{employee.name}</td>

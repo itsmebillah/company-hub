@@ -1,5 +1,9 @@
 export { ActivityCard } from "./activity-card";
 export { DashboardHeader } from "./dashboard-header";
+export { KPICard } from "./kpi-card";
 export { QuickActionCard } from "./quick-action-card";
+export { RecentActivity } from "./recent-activity";
 export { StatCard } from "./stat-card";
+export { SummaryPanel } from "./summary-panel";
+export { SystemStatus } from "./system-status";
 export { SystemStatusCard } from "./system-status-card";

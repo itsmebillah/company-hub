@@ -39,6 +39,51 @@ export type Database = {
         };
         Relationships: [];
       };
+      company_settings: {
+        Row: {
+          company_id: string;
+          company_name: string;
+          company_logo: string | null;
+          primary_color: string | null;
+          secondary_color: string | null;
+          support_phone: string | null;
+          support_email: string | null;
+          website: string | null;
+          default_theme: string | null;
+          status: Database["public"]["Enums"]["record_status"];
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          company_id: string;
+          company_name: string;
+          company_logo?: string | null;
+          primary_color?: string | null;
+          secondary_color?: string | null;
+          support_phone?: string | null;
+          support_email?: string | null;
+          website?: string | null;
+          default_theme?: string | null;
+          status?: Database["public"]["Enums"]["record_status"];
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          company_id?: string;
+          company_name?: string;
+          company_logo?: string | null;
+          primary_color?: string | null;
+          secondary_color?: string | null;
+          support_phone?: string | null;
+          support_email?: string | null;
+          website?: string | null;
+          default_theme?: string | null;
+          status?: Database["public"]["Enums"]["record_status"];
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       employees: {
         Row: {
           id: string;

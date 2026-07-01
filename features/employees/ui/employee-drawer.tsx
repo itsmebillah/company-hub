@@ -33,9 +33,17 @@ export function EmployeeDrawer({ employee, onClose }: EmployeeDrawerProps) {
 
         <div className="p-5">
           <div className="flex flex-col items-center rounded-xl border bg-card p-6 text-center">
-            <div className="flex size-20 items-center justify-center rounded-full bg-muted">
-              <UserRound className="size-9 text-muted-foreground" aria-hidden="true" />
-            </div>
+            {employee.photoUrl ? (
+              <img
+                src={employee.photoUrl}
+                alt=""
+                className="size-20 rounded-full object-cover"
+              />
+            ) : (
+              <div className="flex size-20 items-center justify-center rounded-full bg-muted">
+                <UserRound className="size-9 text-muted-foreground" aria-hidden="true" />
+              </div>
+            )}
             <h3 className="mt-4 text-xl font-semibold">{employee.name}</h3>
             <p className="text-sm text-muted-foreground">{employee.employeeId}</p>
             <div className="mt-4 flex flex-wrap justify-center gap-2">
@@ -48,6 +56,10 @@ export function EmployeeDrawer({ employee, onClose }: EmployeeDrawerProps) {
             <div className="flex items-center justify-between gap-4">
               <dt className="text-muted-foreground">Manager</dt>
               <dd className="font-medium">{employee.reportsTo || "None"}</dd>
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <dt className="text-muted-foreground">Direct Reports</dt>
+              <dd className="font-medium">{employee.directReportsCount}</dd>
             </div>
             <div className="flex items-center justify-between gap-4">
               <dt className="flex items-center gap-2 text-muted-foreground">

@@ -50,6 +50,7 @@ export function EmployeeForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const selectedRole = roles.find((role) => role.id === values.roleId);
+  const isEditMode = mode === "edit";
   const allowedManagerRole = selectedRole
     ? getAllowedManagerRole(selectedRole.name)
     : null;
@@ -120,7 +121,17 @@ export function EmployeeForm({
         <form className="grid gap-4 p-5 md:grid-cols-2" onSubmit={handleSubmit}>
           <label className="space-y-2">
             <span className="text-sm font-medium">Employee ID</span>
-            <input value={values.employeeId} onChange={(event) => updateValue("employeeId", event.target.value)} className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+            <input
+              value={values.employeeId}
+              onChange={(event) => updateValue("employeeId", event.target.value)}
+              disabled={isSubmitting || isEditMode}
+              className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
+            />
+            {isEditMode ? (
+              <p className="text-xs text-muted-foreground">
+                Employee ID is the login ID and cannot be changed.
+              </p>
+            ) : null}
           </label>
           <label className="space-y-2">
             <span className="text-sm font-medium">Full Name</span>

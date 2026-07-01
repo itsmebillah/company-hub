@@ -4,12 +4,16 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { ROLE_NAMES } from "@/lib/auth/permissions";
 import { loginWithEmployeeId } from "@/features/auth/services/login.service";
 
-const BOOTSTRAP_COMPANY_NAME = "Company Hub";
 const INTERNAL_AUTH_EMAIL_DOMAIN = "companyhub.local";
 
 type BootstrapAdminInput = {
+  companyName: string;
+  companyLogo: string;
+  supportEmail: string;
+  supportPhone: string;
   employeeId: string;
   name: string;
+  phone: string;
   password: string;
 };
 
@@ -25,7 +29,9 @@ async function getBootstrapCompanyAndAdminRole() {
   const { data: company, error: companyError } = await supabase
     .from("companies")
     .select("id")
-    .eq("name", BOOTSTRAP_COMPANY_NAME)
+    .eq("status", "active")
+    .order("created_at", { ascending: true })
+    .limit(1)
     .single();
 
   if (companyError || !company) {
@@ -58,6 +64,7 @@ export async function hasBootstrapAdmin() {
     .select("id")
     .eq("company_id", companyId)
     .eq("role_id", adminRoleId)
+    .eq("status", "active")
     .limit(1);
 
   if (error) {
@@ -65,6 +72,29 @@ export async function hasBootstrapAdmin() {
   }
 
   return data.length > 0;
+}
+
+function normalizeOptional(value: string) {
+  const nextValue = value.trim();
+
+  return nextValue.length > 0 ? nextValue : null;
+}
+
+async function assertEmployeeIdAvailable(employeeId: string) {
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from("employees")
+    .select("id")
+    .eq("employee_id", employeeId)
+    .limit(1);
+
+  if (error) {
+    throw new Error("Unable to validate Employee ID.");
+  }
+
+  if (data.length > 0) {
+    throw new Error("Employee ID already exists.");
+  }
 }
 
 export async function bootstrapFirstAdmin(input: BootstrapAdminInput) {
@@ -76,6 +106,9 @@ export async function bootstrapFirstAdmin(input: BootstrapAdminInput) {
   const { companyId, adminRoleId } = await getBootstrapCompanyAndAdminRole();
   const employeeId = input.employeeId.trim().toUpperCase();
   const internalAuthEmail = createInternalAuthEmail(employeeId);
+  const companyName = input.companyName.trim();
+
+  await assertEmployeeIdAvailable(employeeId);
 
   const { data: authUser, error: authError } =
     await supabase.auth.admin.createUser({
@@ -93,9 +126,30 @@ export async function bootstrapFirstAdmin(input: BootstrapAdminInput) {
     throw new Error("Unable to create administrator account.");
   }
 
+  const { error: settingsError } = await supabase
+    .from("company_settings")
+    .upsert(
+      {
+        company_id: companyId,
+        company_name: companyName,
+        company_logo: normalizeOptional(input.companyLogo),
+        support_email: normalizeOptional(input.supportEmail),
+        support_phone: normalizeOptional(input.supportPhone),
+        default_theme: "auto",
+        status: "active",
+      },
+      { onConflict: "company_id" },
+    );
+
+  if (settingsError) {
+    await supabase.auth.admin.deleteUser(authUser.user.id);
+    throw new Error("Unable to save company information.");
+  }
+
   const { error: employeeError } = await supabase.from("employees").insert({
     employee_id: employeeId,
     name: input.name.trim(),
+    phone: input.phone.trim(),
     company_id: companyId,
     role_id: adminRoleId,
     auth_user_id: authUser.user.id,

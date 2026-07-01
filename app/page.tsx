@@ -1,6 +1,13 @@
-import { HomeLoginPage } from "@/features/home-login/components";
-import { loginAction } from "@/features/auth/actions/login.action";
+import { redirect } from "next/navigation";
 
-export default function HomePage() {
-  return <HomeLoginPage onLogin={loginAction} />;
+import { hasBootstrapAdmin } from "@/features/auth/services/bootstrap.service";
+
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  if (await hasBootstrapAdmin()) {
+    redirect("/login");
+  }
+
+  redirect("/setup");
 }

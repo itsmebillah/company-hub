@@ -48,8 +48,10 @@ function toUiRecord(employee: EmployeeListResult["employees"][number]): Employee
     role: employee.roleName,
     reportsToId: employee.managerId ?? "",
     reportsTo: employee.managerName ?? "",
+    directReportsCount: employee.directReportsCount,
     phone: employee.phone ?? "",
     email: employee.email ?? "",
+    photoUrl: employee.photoUrl ?? undefined,
     dateOfBirth: employee.dateOfBirth ?? "",
     joiningDate: employee.joiningDate ?? "",
     status: employee.status,
@@ -71,6 +73,7 @@ export function EmployeeManagementPage({
   const [selectedEmployee, setSelectedEmployee] = useState<EmployeeUiRecord | null>(null);
   const [formMode, setFormMode] = useState<EmployeeFormMode | null>(null);
   const [editingEmployee, setEditingEmployee] = useState<EmployeeUiRecord | null>(null);
+  const [actionMessage, setActionMessage] = useState("");
   const employees = result.employees.map(toUiRecord);
 
   function updateFilters(nextFilters: Partial<EmployeeManagementPageProps["filters"]> & { page?: number; pageSize?: number }) {
@@ -98,9 +101,14 @@ export function EmployeeManagementPage({
   }
 
   async function runStatusAction(action: (id: string) => Promise<EmployeeActionState>, id: string) {
+    setActionMessage("");
     startTransition(async () => {
-      await action(id);
-      router.refresh();
+      const result = await action(id);
+      setActionMessage(result.message);
+
+      if (result.ok) {
+        router.refresh();
+      }
     });
   }
 
@@ -178,6 +186,9 @@ export function EmployeeManagementPage({
 
       {isPending ? (
         <p className="text-sm text-muted-foreground">Updating employee status...</p>
+      ) : null}
+      {actionMessage ? (
+        <p className="text-sm text-muted-foreground">{actionMessage}</p>
       ) : null}
 
       {formMode ? (

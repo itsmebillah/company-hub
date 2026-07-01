@@ -38,6 +38,13 @@ function assertStatus(status: string): asserts status is EmployeeStatus {
   }
 }
 
+function isAuthEmailConflict(message: string | undefined) {
+  return Boolean(
+    message?.toLowerCase().includes("already") ||
+      message?.toLowerCase().includes("registered"),
+  );
+}
+
 async function getCompanyId() {
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
@@ -124,7 +131,7 @@ export async function listEmployees(
   let query = supabase
     .from("employees")
     .select(
-      "id, employee_id, name, phone, email, date_of_birth, role_id, manager_id, status, joining_date",
+      "id, employee_id, name, phone, email, photo_url, date_of_birth, role_id, manager_id, status, joining_date",
       { count: "exact" },
     )
     .eq("company_id", companyId);
@@ -159,6 +166,32 @@ export async function listEmployees(
     getEmployeeRoles(),
     getEmployeeManagerOptions(),
   ]);
+  const employeeIds = data.map((employee) => employee.id);
+  const directReportCountById = new Map(employeeIds.map((id) => [id, 0]));
+
+  if (employeeIds.length > 0) {
+    const { data: directReports, error: directReportsError } = await supabase
+      .from("employees")
+      .select("manager_id")
+      .eq("company_id", companyId)
+      .in("manager_id", employeeIds);
+
+    if (directReportsError) {
+      throw new Error("Unable to load employee reporting summary.");
+    }
+
+    directReports.forEach((directReport) => {
+      if (!directReport.manager_id) {
+        return;
+      }
+
+      directReportCountById.set(
+        directReport.manager_id,
+        (directReportCountById.get(directReport.manager_id) ?? 0) + 1,
+      );
+    });
+  }
+
   const roleById = new Map(roles.map((role) => [role.id, role.name]));
   const managerById = new Map(managers.map((manager) => [manager.id, manager]));
   const total = count ?? 0;
@@ -170,6 +203,7 @@ export async function listEmployees(
       name: employee.name,
       phone: employee.phone,
       email: employee.email,
+      photoUrl: employee.photo_url,
       dateOfBirth: employee.date_of_birth,
       roleId: employee.role_id,
       roleName: roleById.get(employee.role_id) ?? "Unknown",
@@ -177,6 +211,7 @@ export async function listEmployees(
       managerName: employee.manager_id
         ? managerById.get(employee.manager_id)?.name ?? null
         : null,
+      directReportsCount: directReportCountById.get(employee.id) ?? 0,
       status: employee.status,
       joiningDate: employee.joining_date,
     })),
@@ -192,7 +227,7 @@ export async function getEmployeeDetails(id: string): Promise<EmployeeDetails | 
   const { data, error } = await supabase
     .from("employees")
     .select(
-      "id, employee_id, name, phone, email, date_of_birth, joining_date, company_id, role_id, manager_id, status, created_at, updated_at",
+      "id, employee_id, name, phone, email, photo_url, date_of_birth, joining_date, company_id, role_id, manager_id, status, created_at, updated_at",
     )
     .eq("id", id)
     .single();
@@ -205,6 +240,15 @@ export async function getEmployeeDetails(id: string): Promise<EmployeeDetails | 
     getEmployeeRoles(),
     getEmployeeManagerOptions(),
   ]);
+  const { count: directReportsCount, error: directReportsError } = await supabase
+    .from("employees")
+    .select("id", { count: "exact", head: true })
+    .eq("manager_id", id);
+
+  if (directReportsError) {
+    throw new Error("Unable to load employee reporting summary.");
+  }
+
   const roleById = new Map(roles.map((role) => [role.id, role.name]));
   const managerById = new Map(managers.map((manager) => [manager.id, manager]));
 
@@ -214,10 +258,12 @@ export async function getEmployeeDetails(id: string): Promise<EmployeeDetails | 
     name: data.name,
     phone: data.phone,
     email: data.email,
+    photoUrl: data.photo_url,
     roleName: roleById.get(data.role_id) ?? "Unknown",
     managerName: data.manager_id
       ? managerById.get(data.manager_id)?.name ?? null
       : null,
+    directReportsCount: directReportsCount ?? 0,
     status: data.status,
     joiningDate: data.joining_date,
     dateOfBirth: data.date_of_birth,
@@ -310,6 +356,26 @@ export async function createEmployee(values: EmployeeFormValues) {
   const supabase = createSupabaseAdminClient();
   const companyId = await getCompanyId();
   const employeeId = values.employeeId.trim().toUpperCase();
+  const internalAuthEmail = generateInternalAuthEmail(employeeId);
+  const { data: authUser, error: authError } =
+    await supabase.auth.admin.createUser({
+      email: internalAuthEmail,
+      password: employeeId,
+      email_confirm: true,
+      user_metadata: {
+        employee_id: employeeId,
+        company_id: companyId,
+      },
+    });
+
+  if (authError || !authUser.user) {
+    if (isAuthEmailConflict(authError?.message)) {
+      throw new Error("Employee ID already exists.");
+    }
+
+    throw new Error("Unable to create employee login.");
+  }
+
   const { data, error } = await supabase
     .from("employees")
     .insert({
@@ -322,13 +388,15 @@ export async function createEmployee(values: EmployeeFormValues) {
       company_id: companyId,
       role_id: values.roleId,
       manager_id: normalizeOptional(values.managerId),
-      internal_auth_email: generateInternalAuthEmail(employeeId),
+      auth_user_id: authUser.user.id,
+      internal_auth_email: internalAuthEmail,
       status: values.status,
     })
     .select("id")
     .single();
 
   if (error || !data) {
+    await supabase.auth.admin.deleteUser(authUser.user.id);
     throw new Error("Unable to create employee.");
   }
 
@@ -336,14 +404,28 @@ export async function createEmployee(values: EmployeeFormValues) {
 }
 
 export async function updateEmployee(id: string, values: EmployeeFormValues) {
-  await validateEmployeeInput(values, id);
-
   const supabase = createSupabaseAdminClient();
-  const employeeId = values.employeeId.trim().toUpperCase();
+  const { data: existingEmployee, error: existingEmployeeError } = await supabase
+    .from("employees")
+    .select("employee_id")
+    .eq("id", id)
+    .single();
+
+  if (existingEmployeeError || !existingEmployee) {
+    throw new Error("Employee was not found.");
+  }
+
+  await validateEmployeeInput(
+    {
+      ...values,
+      employeeId: existingEmployee.employee_id,
+    },
+    id,
+  );
+
   const { error } = await supabase
     .from("employees")
     .update({
-      employee_id: employeeId,
       name: values.name.trim(),
       phone: values.phone.trim(),
       email: normalizeOptional(values.email),
@@ -351,7 +433,6 @@ export async function updateEmployee(id: string, values: EmployeeFormValues) {
       joining_date: values.joiningDate,
       role_id: values.roleId,
       manager_id: normalizeOptional(values.managerId),
-      internal_auth_email: generateInternalAuthEmail(employeeId),
       status: values.status,
     })
     .eq("id", id);

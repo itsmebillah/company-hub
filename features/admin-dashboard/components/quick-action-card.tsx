@@ -18,10 +18,10 @@ export function QuickActionCard({
   return (
     <Link
       href={href}
-      className="group flex min-h-36 flex-col justify-between rounded-xl border bg-card p-5 shadow-sm transition-colors hover:border-ring hover:bg-accent/40"
+      className="group flex min-h-36 flex-col justify-between rounded-xl border bg-card p-5 shadow-sm transition-colors hover:border-ring/60 hover:bg-accent/40"
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+        <div className="flex size-10 items-center justify-center rounded-lg bg-secondary text-secondary-foreground">
           <Icon className="size-5" aria-hidden="true" />
         </div>
         <ArrowRight

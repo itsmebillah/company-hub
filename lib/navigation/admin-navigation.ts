@@ -4,6 +4,7 @@ import {
   Building2,
   FolderKanban,
   LayoutDashboard,
+  LogOut,
   Settings,
   Users,
   type LucideIcon,
@@ -45,6 +46,11 @@ export const adminNavigationItems: AdminNavigationItem[] = [
     title: "Settings",
     href: "/admin/settings",
     icon: Settings,
+  },
+  {
+    title: "Logout",
+    href: "/login",
+    icon: LogOut,
   },
 ];
 

@@ -57,6 +57,7 @@ export function EmployeeForm({
   const [errors, setErrors] = useState<Partial<Record<keyof EmployeeFormValues, string>>>({});
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isEditMode = Boolean(initialValues);
 
   const selectedRole = roles.find((role) => role.id === values.roleId);
   const allowedManagerRole = selectedRole
@@ -141,8 +142,13 @@ export function EmployeeForm({
             onChange={(event) => updateValue("employeeId", event.target.value)}
             className={cn("h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring", errors.employeeId && "border-destructive")}
             placeholder="EMP001"
-            disabled={isSubmitting}
+            disabled={isSubmitting || isEditMode}
           />
+          {isEditMode ? (
+            <p className="text-xs text-muted-foreground">
+              Employee ID is the login ID and cannot be changed.
+            </p>
+          ) : null}
           <FieldError message={errors.employeeId} />
         </label>
 

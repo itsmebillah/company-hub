@@ -24,9 +24,17 @@ export function EmployeeCard({
   return (
     <article className="rounded-xl border bg-card p-4 shadow-sm">
       <div className="flex items-start gap-3">
-        <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-muted">
-          <UserRound className="size-5 text-muted-foreground" aria-hidden="true" />
-        </div>
+        {employee.photoUrl ? (
+          <img
+            src={employee.photoUrl}
+            alt=""
+            className="size-11 shrink-0 rounded-full object-cover"
+          />
+        ) : (
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-muted">
+            <UserRound className="size-5 text-muted-foreground" aria-hidden="true" />
+          </div>
+        )}
         <div className="min-w-0 flex-1">
           <h3 className="truncate font-semibold">{employee.name}</h3>
           <p className="text-sm text-muted-foreground">{employee.employeeId}</p>
@@ -46,6 +54,10 @@ export function EmployeeCard({
         <div className="flex items-center justify-between gap-3">
           <span className="text-muted-foreground">Phone</span>
           <span>{employee.phone}</span>
+        </div>
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-muted-foreground">Direct Reports</span>
+          <span>{employee.directReportsCount}</span>
         </div>
       </div>
 
