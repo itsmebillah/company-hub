@@ -33,6 +33,7 @@ type EmployeeManagementPageProps = {
     status: string;
     managerId: string;
   };
+  loadError?: string;
   onCreate: (values: EmployeeFormValues) => Promise<EmployeeActionState>;
   onUpdate: (id: string, values: EmployeeFormValues) => Promise<EmployeeActionState>;
   onActivate: (id: string) => Promise<EmployeeActionState>;
@@ -63,6 +64,7 @@ export function EmployeeManagementPage({
   roles,
   managers,
   filters,
+  loadError,
   onCreate,
   onUpdate,
   onActivate,
@@ -146,6 +148,12 @@ export function EmployeeManagementPage({
         onReportsToChange={(value) => updateFilters({ managerId: value })}
         onReset={() => router.replace("/admin/users")}
       />
+
+      {loadError ? (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+          {loadError}
+        </div>
+      ) : null}
 
       {employees.length > 0 ? (
         <div className="overflow-hidden rounded-xl border bg-card">

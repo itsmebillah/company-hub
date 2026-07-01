@@ -14,9 +14,23 @@ import type {
   EmployeeStatus,
 } from "@/features/employees/types/employee.types";
 
-const COMPANY_NAME = "Company Hub";
 const INTERNAL_AUTH_EMAIL_DOMAIN = "companyhub.local";
 const DEFAULT_PAGE_SIZE = 10;
+
+const emptyEmployeeListResult = (
+  filters: EmployeeListFilters,
+): EmployeeListResult => {
+  const page = Math.max(filters.page ?? 1, 1);
+  const pageSize = Math.max(filters.pageSize ?? DEFAULT_PAGE_SIZE, 1);
+
+  return {
+    employees: [],
+    total: 0,
+    page,
+    pageSize,
+    totalPages: 1,
+  };
+};
 
 function generateInternalAuthEmail(employeeId: string) {
   return `${employeeId.trim().toUpperCase()}@${INTERNAL_AUTH_EMAIL_DOMAIN}`;
@@ -45,24 +59,45 @@ function isAuthEmailConflict(message: string | undefined) {
   );
 }
 
-async function getCompanyId() {
+function logEmployeeServiceError(context: string, error: unknown) {
+  console.error(`[EmployeeService] ${context}`, error);
+}
+
+async function getActiveCompanyId() {
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
     .from("companies")
     .select("id")
-    .eq("name", COMPANY_NAME)
-    .single();
+    .eq("status", "active")
+    .order("created_at", { ascending: true })
+    .limit(1);
 
-  if (error || !data) {
+  if (error) {
+    logEmployeeServiceError("Unable to load active company.", error);
+    throw new Error("Unable to load company information.");
+  }
+
+  return data[0]?.id ?? null;
+}
+
+async function requireActiveCompanyId() {
+  const companyId = await getActiveCompanyId();
+
+  if (!companyId) {
     throw new Error("Company was not found.");
   }
 
-  return data.id;
+  return companyId;
 }
 
 export async function getEmployeeRoles(): Promise<EmployeeRoleOption[]> {
   const supabase = createSupabaseAdminClient();
-  const companyId = await getCompanyId();
+  const companyId = await getActiveCompanyId();
+
+  if (!companyId) {
+    return [];
+  }
+
   const { data, error } = await supabase
     .from("roles")
     .select("id, name, display_order")
@@ -71,6 +106,7 @@ export async function getEmployeeRoles(): Promise<EmployeeRoleOption[]> {
     .order("display_order", { ascending: true });
 
   if (error) {
+    logEmployeeServiceError("Unable to load roles.", error);
     throw new Error("Unable to load roles.");
   }
 
@@ -83,7 +119,12 @@ export async function getEmployeeRoles(): Promise<EmployeeRoleOption[]> {
 
 export async function getEmployeeManagerOptions(): Promise<EmployeeManagerOption[]> {
   const supabase = createSupabaseAdminClient();
-  const companyId = await getCompanyId();
+  const companyId = await getActiveCompanyId();
+
+  if (!companyId) {
+    return [];
+  }
+
   const [roles, employeesResult] = await Promise.all([
     getEmployeeRoles(),
     supabase
@@ -95,6 +136,10 @@ export async function getEmployeeManagerOptions(): Promise<EmployeeManagerOption
   ]);
 
   if (employeesResult.error) {
+    logEmployeeServiceError(
+      "Unable to load reporting managers.",
+      employeesResult.error,
+    );
     throw new Error("Unable to load reporting managers.");
   }
 
@@ -121,7 +166,12 @@ export async function listEmployees(
   filters: EmployeeListFilters,
 ): Promise<EmployeeListResult> {
   const supabase = createSupabaseAdminClient();
-  const companyId = await getCompanyId();
+  const companyId = await getActiveCompanyId();
+
+  if (!companyId) {
+    return emptyEmployeeListResult(filters);
+  }
+
   const page = Math.max(filters.page ?? 1, 1);
   const pageSize = Math.max(filters.pageSize ?? DEFAULT_PAGE_SIZE, 1);
   const from = (page - 1) * pageSize;
@@ -159,6 +209,7 @@ export async function listEmployees(
     .range(from, to);
 
   if (error) {
+    logEmployeeServiceError("Unable to load employees.", error);
     throw new Error("Unable to load employees.");
   }
 
@@ -177,6 +228,10 @@ export async function listEmployees(
       .in("manager_id", employeeIds);
 
     if (directReportsError) {
+      logEmployeeServiceError(
+        "Unable to load employee reporting summary.",
+        directReportsError,
+      );
       throw new Error("Unable to load employee reporting summary.");
     }
 
@@ -246,6 +301,10 @@ export async function getEmployeeDetails(id: string): Promise<EmployeeDetails | 
     .eq("manager_id", id);
 
   if (directReportsError) {
+    logEmployeeServiceError(
+      "Unable to load employee reporting summary.",
+      directReportsError,
+    );
     throw new Error("Unable to load employee reporting summary.");
   }
 
@@ -342,6 +401,7 @@ async function validateEmployeeInput(values: EmployeeFormValues, currentId?: str
     : await duplicateQuery;
 
   if (error) {
+    logEmployeeServiceError("Unable to validate Employee ID.", error);
     throw new Error("Unable to validate Employee ID.");
   }
 
@@ -354,7 +414,7 @@ export async function createEmployee(values: EmployeeFormValues) {
   await validateEmployeeInput(values);
 
   const supabase = createSupabaseAdminClient();
-  const companyId = await getCompanyId();
+  const companyId = await requireActiveCompanyId();
   const employeeId = values.employeeId.trim().toUpperCase();
   const internalAuthEmail = generateInternalAuthEmail(employeeId);
   const { data: authUser, error: authError } =

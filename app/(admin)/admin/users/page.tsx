@@ -10,7 +10,12 @@ import {
   getEmployeeRoles,
   listEmployees,
 } from "@/features/employees/services/employee.service";
-import type { EmployeeStatus } from "@/features/employees/types/employee.types";
+import type {
+  EmployeeListResult,
+  EmployeeManagerOption,
+  EmployeeRoleOption,
+  EmployeeStatus,
+} from "@/features/employees/types/employee.types";
 
 export const dynamic = "force-dynamic";
 
@@ -33,30 +38,56 @@ function parseStatus(status: string | undefined): EmployeeStatus | "all" {
   return "all";
 }
 
+function emptyEmployeeResult(
+  page: number,
+  pageSize: number,
+): EmployeeListResult {
+  return {
+    employees: [],
+    total: 0,
+    page,
+    pageSize,
+    totalPages: 1,
+  };
+}
+
 export default async function AdminUsersPage({
   searchParams,
 }: AdminUsersPageProps) {
   const params = await searchParams;
   const page = Number(params.page ?? "1");
   const pageSize = Number(params.pageSize ?? "10");
-  const [roles, managers, result] = await Promise.all([
-    getEmployeeRoles(),
-    getEmployeeManagerOptions(),
-    listEmployees({
-      search: params.search,
-      status: parseStatus(params.status),
-      roleId: params.roleId,
-      managerId: params.managerId,
-      page: Number.isFinite(page) ? page : 1,
-      pageSize: Number.isFinite(pageSize) ? pageSize : 10,
-    }),
-  ]);
+  const normalizedPage = Number.isFinite(page) ? page : 1;
+  const normalizedPageSize = Number.isFinite(pageSize) ? pageSize : 10;
+  let loadError = "";
+  let roles: EmployeeRoleOption[] = [];
+  let managers: EmployeeManagerOption[] = [];
+  let result = emptyEmployeeResult(normalizedPage, normalizedPageSize);
+
+  try {
+    [roles, managers, result] = await Promise.all([
+      getEmployeeRoles(),
+      getEmployeeManagerOptions(),
+      listEmployees({
+        search: params.search,
+        status: parseStatus(params.status),
+        roleId: params.roleId,
+        managerId: params.managerId,
+        page: normalizedPage,
+        pageSize: normalizedPageSize,
+      }),
+    ]);
+  } catch (error) {
+    console.error("[AdminUsersPage] Unable to load employee data.", error);
+    loadError = "Unable to load employees right now. Please try again.";
+  }
 
   return (
     <EmployeeManagementPage
       result={result}
       roles={roles}
       managers={managers}
+      loadError={loadError}
       filters={{
         search: params.search ?? "",
         roleId: params.roleId ?? "",
