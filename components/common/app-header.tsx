@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Logo } from "@/components/common/logo";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { PageContainer } from "@/components/common/page-container";
+import { LogoutButton } from "@/features/auth/components";
 
 type AppHeaderProps = {
   actions?: ReactNode;
@@ -16,6 +17,7 @@ export function AppHeader({ actions }: AppHeaderProps) {
         <div className="flex items-center gap-2">
           {actions}
           <ThemeToggle />
+          <LogoutButton compact />
         </div>
       </PageContainer>
     </header>

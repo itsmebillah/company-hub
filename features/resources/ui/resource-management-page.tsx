@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FolderKanban, Plus, ShieldCheck } from "lucide-react";
+import { FolderKanban, Plus, ShieldCheck, Tags } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/common/empty-state";
@@ -104,6 +104,12 @@ export function ResourceManagementPage({
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
+          <Button asChild variant="outline" className="h-10">
+            <Link href="/admin/resources/categories">
+              <Tags className="size-4" aria-hidden="true" />
+              Categories
+            </Link>
+          </Button>
           <Button asChild variant="outline" className="h-10">
             <Link href="/admin/resources/permissions">
               <ShieldCheck className="size-4" aria-hidden="true" />

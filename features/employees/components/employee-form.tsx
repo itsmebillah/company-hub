@@ -139,10 +139,13 @@ export function EmployeeForm({
           <span className="text-sm font-medium">Employee ID</span>
           <input
             value={values.employeeId}
-            onChange={(event) => updateValue("employeeId", event.target.value)}
+            onChange={(event) =>
+              updateValue("employeeId", event.target.value.toUpperCase())
+            }
             className={cn("h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring", errors.employeeId && "border-destructive")}
             placeholder="EMP001"
             disabled={isSubmitting || isEditMode}
+            autoCapitalize="characters"
           />
           {isEditMode ? (
             <p className="text-xs text-muted-foreground">

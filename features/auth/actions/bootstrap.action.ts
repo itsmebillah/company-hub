@@ -15,7 +15,10 @@ export type BootstrapActionState =
 
 type BootstrapActionInput = {
   companyName: string;
+  shortName: string;
   companyLogo: string;
+  primaryColor: string;
+  secondaryColor: string;
   supportEmail: string;
   supportPhone: string;
   employeeId: string;
@@ -68,7 +71,10 @@ export async function bootstrapAction(
   try {
     await bootstrapFirstAdmin({
       companyName,
+      shortName: input.shortName,
       companyLogo: input.companyLogo,
+      primaryColor: input.primaryColor,
+      secondaryColor: input.secondaryColor,
       supportEmail: input.supportEmail,
       supportPhone: input.supportPhone,
       employeeId,

@@ -334,7 +334,7 @@ async function validateEmployeeInput(values: EmployeeFormValues, currentId?: str
   const duplicateQuery = supabase
     .from("employees")
     .select("id")
-    .eq("employee_id", normalizedEmployeeId)
+    .ilike("employee_id", normalizedEmployeeId)
     .limit(1);
 
   const { data: duplicates, error } = currentId
@@ -400,7 +400,10 @@ export async function createEmployee(values: EmployeeFormValues) {
     throw new Error("Unable to create employee.");
   }
 
-  return data.id;
+  return {
+    id: data.id,
+    employeeId,
+  };
 }
 
 export async function updateEmployee(id: string, values: EmployeeFormValues) {

@@ -25,7 +25,10 @@ import { cn } from "@/lib/utils";
 type BootstrapSetupFormProps = {
   onBootstrap: (input: {
     companyName: string;
+    shortName: string;
     companyLogo: string;
+    primaryColor: string;
+    secondaryColor: string;
     supportEmail: string;
     supportPhone: string;
     employeeId: string;
@@ -107,8 +110,11 @@ function TextField({
 export function BootstrapSetupForm({ onBootstrap }: BootstrapSetupFormProps) {
   const router = useRouter();
   const [step, setStep] = useState<1 | 2>(1);
-  const [companyName, setCompanyName] = useState("Company Hub");
+  const [companyName, setCompanyName] = useState("");
+  const [shortName, setShortName] = useState("");
   const [companyLogo, setCompanyLogo] = useState("");
+  const [primaryColor, setPrimaryColor] = useState("#2563EB");
+  const [secondaryColor, setSecondaryColor] = useState("#16A34A");
   const [supportEmail, setSupportEmail] = useState("");
   const [supportPhone, setSupportPhone] = useState("");
   const [employeeId, setEmployeeId] = useState("");
@@ -204,7 +210,10 @@ export function BootstrapSetupForm({ onBootstrap }: BootstrapSetupFormProps) {
 
     const result = await onBootstrap({
       companyName,
+      shortName,
       companyLogo,
+      primaryColor,
+      secondaryColor,
       supportEmail,
       supportPhone,
       employeeId,
@@ -237,7 +246,7 @@ export function BootstrapSetupForm({ onBootstrap }: BootstrapSetupFormProps) {
             Bootstrap Setup
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Create the first administrator account.
+            Initialize your company and first administrator.
           </p>
         </div>
       </div>
@@ -250,7 +259,7 @@ export function BootstrapSetupForm({ onBootstrap }: BootstrapSetupFormProps) {
               step === 1 && "bg-background shadow-sm",
             )}
           >
-            Company
+            Step 1 of 2
           </div>
           <div
             className={cn(
@@ -258,7 +267,7 @@ export function BootstrapSetupForm({ onBootstrap }: BootstrapSetupFormProps) {
               step === 2 && "bg-background shadow-sm",
             )}
           >
-            Administrator
+            Step 2 of 2
           </div>
         </div>
 
@@ -276,14 +285,51 @@ export function BootstrapSetupForm({ onBootstrap }: BootstrapSetupFormProps) {
               autoComplete="organization"
             />
             <TextField
+              id="company-short-name"
+              label="Short Name"
+              value={shortName}
+              onChange={setShortName}
+              placeholder="Optional short name"
+              icon={Building2}
+              disabled={isLoading}
+            />
+            <TextField
               id="company-logo"
               label="Company Logo"
               value={companyLogo}
               onChange={setCompanyLogo}
-              placeholder="Optional logo URL"
+              placeholder="Optional logo path"
               icon={Image}
               disabled={isLoading}
             />
+            <div className="grid gap-5 sm:grid-cols-2">
+              <div className="space-y-2">
+                <label htmlFor="primary-color" className="text-sm font-medium">
+                  Primary Color
+                </label>
+                <input
+                  id="primary-color"
+                  type="color"
+                  value={primaryColor}
+                  onChange={(event) => setPrimaryColor(event.target.value)}
+                  disabled={isLoading}
+                  className="h-12 w-full rounded-lg border bg-background px-2"
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="secondary-color" className="text-sm font-medium">
+                  Secondary Color
+                </label>
+                <input
+                  id="secondary-color"
+                  type="color"
+                  value={secondaryColor}
+                  onChange={(event) => setSecondaryColor(event.target.value)}
+                  disabled={isLoading}
+                  className="h-12 w-full rounded-lg border bg-background px-2"
+                />
+              </div>
+            </div>
             <TextField
               id="support-email"
               label="Support Email"
@@ -319,10 +365,11 @@ export function BootstrapSetupForm({ onBootstrap }: BootstrapSetupFormProps) {
           <div className="space-y-5">
             <EmployeeIdInput
               value={employeeId}
-              onChange={(event) => setEmployeeId(event.target.value)}
+              onChange={(event) => setEmployeeId(event.target.value.toUpperCase())}
               error={errors.employeeId}
               placeholder="ADMIN001"
               disabled={isLoading}
+              autoCapitalize="characters"
             />
 
             <TextField

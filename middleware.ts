@@ -20,9 +20,27 @@ export async function middleware(request: NextRequest) {
     return redirectToPath(request, AUTH_REDIRECTS.authenticatedFromAuthRoute);
   }
 
+  if (isProtectedRoute(request) || isPublicAuthRoute(request)) {
+    response.headers.set(
+      "Cache-Control",
+      "no-store, no-cache, must-revalidate, proxy-revalidate",
+    );
+    response.headers.set("Pragma", "no-cache");
+    response.headers.set("Expires", "0");
+  }
+
   return response;
 }
 
 export const config = {
-  matcher: ["/app/:path*", "/auth/:path*"],
+  matcher: [
+    "/admin/:path*",
+    "/announcements",
+    "/dashboard",
+    "/login",
+    "/profile",
+    "/register",
+    "/resources",
+    "/settings",
+  ],
 };

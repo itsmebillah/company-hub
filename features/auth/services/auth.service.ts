@@ -11,11 +11,12 @@ export async function resolveEmployeeAuthIdentity(
   employeeId: string,
 ): Promise<EmployeeAuthIdentity> {
   const supabase = createSupabaseAdminClient();
+  const normalizedEmployeeId = employeeId.trim();
 
   const { data, error } = await supabase
     .from("employees")
     .select(EMPLOYEE_AUTH_COLUMNS)
-    .eq("employee_id", employeeId)
+    .ilike("employee_id", normalizedEmployeeId)
     .single();
 
   if (error || !data) {

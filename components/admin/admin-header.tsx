@@ -5,6 +5,7 @@ import { Bell, Menu, UserCircle } from "lucide-react";
 import { AdminBreadcrumb } from "@/components/admin/admin-breadcrumb";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { Button } from "@/components/ui/button";
+import { LogoutButton } from "@/features/auth/components";
 import {
   adminNavigationFallback,
   adminNavigationItems,
@@ -68,6 +69,7 @@ export function AdminHeader({ pathname, onMenuClick }: AdminHeaderProps) {
           >
             <UserCircle className="size-5" aria-hidden="true" />
           </Button>
+          <LogoutButton compact />
         </div>
       </div>
     </header>

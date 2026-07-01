@@ -16,14 +16,14 @@ export async function createEmployeeAction(
   values: EmployeeFormValues,
 ): Promise<EmployeeActionState> {
   try {
-    const id = await createEmployee(values);
+    const employee = await createEmployee(values);
 
     revalidatePath("/admin/users");
 
     return {
       ok: true,
-      message: "Employee created.",
-      redirectTo: `/admin/users/${id}`,
+      message: `Employee created. Employee ID: ${employee.employeeId}. Default password: ${employee.employeeId}.`,
+      redirectTo: `/admin/users/${employee.id}?createdEmployeeId=${employee.employeeId}`,
     };
   } catch (error) {
     return {

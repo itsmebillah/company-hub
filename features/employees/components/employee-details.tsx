@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, Pencil, UserRound } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Pencil, UserRound } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { EmployeeStatusActions } from "@/features/employees/components/employee-status-actions";
@@ -9,6 +9,7 @@ type EmployeeDetailsProps = {
   employee: EmployeeDetailsType;
   onActivate: (id: string) => Promise<EmployeeActionState>;
   onDeactivate: (id: string) => Promise<EmployeeActionState>;
+  createdEmployeeId?: string;
 };
 
 function formatValue(value: string | null) {
@@ -19,9 +20,24 @@ export function EmployeeDetails({
   employee,
   onActivate,
   onDeactivate,
+  createdEmployeeId,
 }: EmployeeDetailsProps) {
   return (
     <section className="space-y-5">
+      {createdEmployeeId ? (
+        <div className="flex items-start gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-700 dark:text-emerald-300">
+          <CheckCircle2 className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          <div>
+            <p className="font-medium">Employee created successfully.</p>
+            <p>
+              Employee ID: <span className="font-semibold">{createdEmployeeId}</span>.
+              Default password:{" "}
+              <span className="font-semibold">{createdEmployeeId}</span>.
+            </p>
+          </div>
+        </div>
+      ) : null}
+
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <Button asChild variant="ghost" size="sm" className="-ml-2 mb-2">

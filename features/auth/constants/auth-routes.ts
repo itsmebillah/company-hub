@@ -1,9 +1,15 @@
 export const AUTH_ROUTES = {
-  login: "/auth/login",
-  register: "/auth/register",
-  forgotPassword: "/auth/forgot-password",
-  resetPassword: "/auth/reset-password",
+  login: "/login",
+  register: "/register",
+  setup: "/setup",
 } as const;
 
-export const PROTECTED_ROUTE_PREFIXES = ["/app"] as const;
-export const PUBLIC_ROUTE_PREFIXES = ["/auth"] as const;
+export const PROTECTED_ROUTE_PREFIXES = [
+  "/admin",
+  "/announcements",
+  "/dashboard",
+  "/profile",
+  "/resources",
+  "/settings",
+] as const;
+export const PUBLIC_ROUTE_PREFIXES = ["/login", "/register"] as const;
