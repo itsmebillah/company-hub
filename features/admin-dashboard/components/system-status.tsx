@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 type SystemStatusItem = {
   label: string;
   description: string;
-  status: "healthy" | "error";
+  status: "healthy" | "warning" | "error";
   icon: LucideIcon;
 };
 
@@ -17,12 +17,15 @@ type SystemStatusProps = {
 const badgeClasses = {
   healthy:
     "bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:ring-emerald-900",
+  warning:
+    "bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:ring-amber-900",
   error:
     "bg-destructive/10 text-destructive ring-destructive/30",
 };
 
 const statusLabels = {
   healthy: "Healthy",
+  warning: "Warning",
   error: "Error",
 };
 

@@ -10,6 +10,7 @@ export type EmployeeAuthIdentity = {
 
 export type AuthSessionProfile = {
   employeeId: string;
+  name: string;
   companyId: string;
   roleId: string;
   roleName: string;

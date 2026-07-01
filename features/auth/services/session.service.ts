@@ -14,7 +14,7 @@ export async function getCurrentSessionProfile(): Promise<AuthSessionProfile | n
   const supabase = createSupabaseAdminClient();
   const { data: employee, error } = await supabase
     .from("employees")
-    .select("employee_id, company_id, role_id, status")
+    .select("employee_id, name, company_id, role_id, status")
     .eq("auth_user_id", user.id)
     .single();
 
@@ -34,6 +34,7 @@ export async function getCurrentSessionProfile(): Promise<AuthSessionProfile | n
 
   return {
     employeeId: employee.employee_id,
+    name: employee.name,
     companyId: employee.company_id,
     roleId: employee.role_id,
     roleName: role.name,

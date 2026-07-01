@@ -1,8 +1,10 @@
-export default function AnnouncementsPage() {
-  return (
-    <section>
-      <h1 className="text-2xl font-semibold">Announcements</h1>
-      <p className="mt-2 text-muted-foreground">Placeholder</p>
-    </section>
-  );
+import { EmployeeAnnouncementsPage } from "@/features/announcements/components";
+import { AnnouncementService } from "@/features/announcements/services/announcement.service";
+
+export const dynamic = "force-dynamic";
+
+export default async function AnnouncementsPage() {
+  const result = await AnnouncementService.listForEmployee();
+
+  return <EmployeeAnnouncementsPage result={result} />;
 }

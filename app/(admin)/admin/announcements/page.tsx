@@ -1,8 +1,72 @@
-export default function AdminAnnouncementsPage() {
+import {
+  archiveAnnouncementAction,
+  createAnnouncementAction,
+  restoreAnnouncementAction,
+  updateAnnouncementAction,
+} from "@/features/announcements/actions/announcement.actions";
+import { AnnouncementManagementPage } from "@/features/announcements/components";
+import { AnnouncementService } from "@/features/announcements/services/announcement.service";
+import type {
+  AnnouncementPriority,
+  AnnouncementStatus,
+} from "@/features/announcements/types/announcement.types";
+
+export const dynamic = "force-dynamic";
+
+type AdminAnnouncementsPageProps = {
+  searchParams: Promise<{
+    search?: string;
+    status?: string;
+    priority?: string;
+    target?: string;
+  }>;
+};
+
+function parseStatus(value: string | undefined): AnnouncementStatus | "all" {
+  if (value === "active" || value === "inactive" || value === "archived") {
+    return value;
+  }
+
+  return "all";
+}
+
+function parsePriority(value: string | undefined): AnnouncementPriority | "all" {
+  if (
+    value === "low" ||
+    value === "normal" ||
+    value === "high" ||
+    value === "urgent"
+  ) {
+    return value;
+  }
+
+  return "all";
+}
+
+export default async function AdminAnnouncementsPage({
+  searchParams,
+}: AdminAnnouncementsPageProps) {
+  const params = await searchParams;
+  const result = await AnnouncementService.list({
+    search: params.search,
+    status: parseStatus(params.status),
+    priority: parsePriority(params.priority),
+    target: params.target === "company" ? "company" : "all",
+  });
+
   return (
-    <section>
-      <h1 className="text-2xl font-semibold">Admin Announcements</h1>
-      <p className="mt-2 text-muted-foreground">Placeholder</p>
-    </section>
+    <AnnouncementManagementPage
+      result={result}
+      filters={{
+        search: params.search ?? "",
+        status: params.status ?? "",
+        priority: params.priority ?? "",
+        target: params.target ?? "",
+      }}
+      onCreate={createAnnouncementAction}
+      onUpdate={updateAnnouncementAction}
+      onArchive={archiveAnnouncementAction}
+      onRestore={restoreAnnouncementAction}
+    />
   );
 }

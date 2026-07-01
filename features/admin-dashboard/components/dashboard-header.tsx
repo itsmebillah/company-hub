@@ -2,12 +2,14 @@ import { Building2, CalendarDays } from "lucide-react";
 
 type DashboardHeaderProps = {
   companyName: string;
+  companyLogo?: string | null;
   userName: string;
   currentDate: string;
 };
 
 export function DashboardHeader({
   companyName,
+  companyLogo,
   userName,
   currentDate,
 }: DashboardHeaderProps) {
@@ -15,9 +17,17 @@ export function DashboardHeader({
     <section className="overflow-hidden rounded-xl border bg-card shadow-sm">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex min-w-0 items-center gap-4 p-6">
-          <div className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
-            <Building2 className="size-7" aria-hidden="true" />
-          </div>
+          {companyLogo ? (
+            <img
+              src={companyLogo}
+              alt=""
+              className="size-14 shrink-0 rounded-xl border object-cover shadow-sm"
+            />
+          ) : (
+            <div className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+              <Building2 className="size-7" aria-hidden="true" />
+            </div>
+          )}
           <div className="min-w-0">
             <p className="text-sm font-medium text-muted-foreground">
               {companyName}

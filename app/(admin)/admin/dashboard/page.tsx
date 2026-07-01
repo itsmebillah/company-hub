@@ -14,11 +14,13 @@ import {
   DashboardHeader,
   KPICard,
   QuickActionCard,
+  RecentAnnouncements,
   RecentEmployees,
+  RecentResources,
   SummaryPanel,
   SystemStatus,
 } from "@/features/admin-dashboard/components";
-import { getAdminDashboardData } from "@/features/admin-dashboard/services/dashboard.service";
+import { DashboardService } from "@/features/admin-dashboard/services/dashboard.service";
 import { appConfig } from "@/lib/config/app";
 
 export const dynamic = "force-dynamic";
@@ -55,7 +57,7 @@ const quickActions = [
 ];
 
 export default async function AdminDashboardPage() {
-  const dashboard = await getAdminDashboardData();
+  const dashboard = await DashboardService.getAdminDashboardData();
   const kpis = [
     {
       title: "Employees",
@@ -65,11 +67,32 @@ export default async function AdminDashboardPage() {
       tone: "blue" as const,
     },
     {
+      title: "Active Employees",
+      value: String(dashboard.counts.activeEmployees),
+      trend: "Currently active records",
+      icon: Users,
+      tone: "green" as const,
+    },
+    {
+      title: "Inactive Employees",
+      value: String(dashboard.counts.inactiveEmployees),
+      trend: `${dashboard.counts.archivedEmployees} archived employees`,
+      icon: Users,
+      tone: "amber" as const,
+    },
+    {
       title: "Resources",
       value: String(dashboard.counts.resources),
       trend: "Available resource links",
       icon: FolderKanban,
-      tone: "green" as const,
+      tone: "violet" as const,
+    },
+    {
+      title: "Categories",
+      value: String(dashboard.counts.categories),
+      trend: "Resource groups",
+      icon: FolderKanban,
+      tone: "blue" as const,
     },
     {
       title: "Announcements",
@@ -77,13 +100,6 @@ export default async function AdminDashboardPage() {
       trend: "Published and archived records",
       icon: Bell,
       tone: "amber" as const,
-    },
-    {
-      title: "Inactive Employees",
-      value: String(dashboard.counts.inactiveEmployees),
-      trend: `${dashboard.counts.archivedEmployees} archived employees`,
-      icon: Users,
-      tone: "violet" as const,
     },
   ];
   const systemStatus = [
@@ -117,6 +133,7 @@ export default async function AdminDashboardPage() {
     <section className="mx-auto max-w-screen-2xl space-y-6">
       <DashboardHeader
         companyName={dashboard.companyName}
+        companyLogo={dashboard.companyLogo}
         userName={dashboard.loggedInUserName}
         currentDate={currentDate}
       />
@@ -125,7 +142,7 @@ export default async function AdminDashboardPage() {
         <div className="space-y-6">
           <section>
             <h2 className="mb-3 text-base font-semibold">Key Metrics</h2>
-            <div className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-4">
+            <div className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-3">
               {kpis.map((kpi) => (
                 <KPICard key={kpi.title} {...kpi} />
               ))}
@@ -144,6 +161,13 @@ export default async function AdminDashboardPage() {
           <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_420px]">
             <RecentEmployees employees={dashboard.recentEmployees} />
             <SystemStatus items={systemStatus} />
+          </div>
+
+          <div className="grid gap-4 2xl:grid-cols-2">
+            <RecentAnnouncements
+              announcements={dashboard.recentAnnouncements}
+            />
+            <RecentResources resources={dashboard.recentResources} />
           </div>
         </div>
 
