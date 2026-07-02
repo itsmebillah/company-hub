@@ -118,6 +118,27 @@ body {
   color: var(--foreground);
 }
 
+.announcement-ticker-track {
+  animation: announcement-ticker 36s linear infinite;
+}
+
+.announcement-ticker-track:hover,
+.announcement-ticker-track:focus,
+.announcement-ticker-track:focus-within,
+.announcement-ticker-track:active {
+  animation-play-state: paused;
+}
+
+@keyframes announcement-ticker {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   ::before,

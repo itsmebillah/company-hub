@@ -1,6 +1,8 @@
 import {
+  AnnouncementTicker,
   EmployeePortalHeader,
   EmployeeResourcePortal,
+  QuickResourceLinks,
 } from "@/features/employee-resources/components";
 import { EmployeeAnnouncementsPage } from "@/features/announcements/components";
 import { AnnouncementService } from "@/features/announcements/services/announcement.service";
@@ -20,10 +22,12 @@ export default async function DashboardPage() {
 
   return (
     <section className="space-y-6">
+      <AnnouncementTicker announcements={announcements.announcements} />
       <EmployeePortalHeader
         profile={data.profile}
         currentDate={currentDate}
       />
+      <QuickResourceLinks categories={data.categories} />
       <EmployeeResourcePortal data={data} />
       <EmployeeAnnouncementsPage result={announcements} />
     </section>
