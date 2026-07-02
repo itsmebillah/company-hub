@@ -1,5 +1,6 @@
 import {
   AnnouncementTicker,
+  EmployeePortalIdentityBar,
   EmployeePortalHeader,
   EmployeeResourcePortal,
   QuickResourceLinks,
@@ -21,7 +22,8 @@ export default async function DashboardPage() {
   ]);
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-4 md:space-y-5">
+      <EmployeePortalIdentityBar profile={data.profile} />
       <AnnouncementTicker announcements={announcements.announcements} />
       <EmployeePortalHeader
         profile={data.profile}
