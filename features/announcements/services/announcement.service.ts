@@ -1,5 +1,8 @@
 import "server-only";
 
+import { redirect } from "next/navigation";
+
+import { getCurrentAuthUser } from "@/features/auth/services/auth.service";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getPriorityRank } from "@/features/announcements/constants/announcement-options";
 import { AnnouncementValidationService } from "@/features/announcements/services/announcement-validation.service";
@@ -17,21 +20,52 @@ function normalizeOptional(value: string) {
   return nextValue.length > 0 ? nextValue : null;
 }
 
-async function getCompanyId() {
+async function getActiveCompanyId() {
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
     .from("companies")
     .select("id")
     .eq("status", "active")
     .order("created_at", { ascending: true })
-    .limit(1)
-    .single();
+    .limit(1);
 
-  if (error || !data) {
+  if (error) {
+    console.error("[AnnouncementService] Unable to load active company.", error);
+    throw new Error("Unable to load company information.");
+  }
+
+  return data[0]?.id ?? null;
+}
+
+async function requireActiveCompanyId() {
+  const companyId = await getActiveCompanyId();
+
+  if (!companyId) {
     throw new Error("Company was not found.");
   }
 
-  return data.id;
+  return companyId;
+}
+
+async function getCurrentEmployeeCompanyId() {
+  const user = await getCurrentAuthUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const supabase = createSupabaseAdminClient();
+  const { data: employee, error } = await supabase
+    .from("employees")
+    .select("company_id, status")
+    .eq("auth_user_id", user.id)
+    .single();
+
+  if (error || !employee || employee.status !== "active") {
+    redirect("/login");
+  }
+
+  return employee.company_id;
 }
 
 function toListItem(row: {
@@ -80,7 +114,7 @@ function sortAnnouncements(
 export const AnnouncementService = {
   async list(filters: AnnouncementFilters): Promise<AnnouncementListResult> {
     const supabase = createSupabaseAdminClient();
-    const companyId = await getCompanyId();
+    const companyId = await requireActiveCompanyId();
     const search = filters.search?.trim();
 
     let query = supabase
@@ -107,6 +141,7 @@ export const AnnouncementService = {
     });
 
     if (error) {
+      console.error("[AnnouncementService] Unable to load announcements.", error);
       throw new Error("Unable to load announcements.");
     }
 
@@ -117,7 +152,7 @@ export const AnnouncementService = {
 
   async listForEmployee(): Promise<AnnouncementListResult> {
     const supabase = createSupabaseAdminClient();
-    const companyId = await getCompanyId();
+    const companyId = await getCurrentEmployeeCompanyId();
     const now = new Date().toISOString();
     const { data, error } = await supabase
       .from("announcements")
@@ -131,6 +166,10 @@ export const AnnouncementService = {
       .order("created_at", { ascending: false });
 
     if (error) {
+      console.error(
+        "[AnnouncementService] Unable to load employee announcements.",
+        error,
+      );
       throw new Error("Unable to load announcements.");
     }
 
@@ -142,7 +181,7 @@ export const AnnouncementService = {
   async create(values: AnnouncementFormValues) {
     const validated = AnnouncementValidationService.validate(values);
     const supabase = createSupabaseAdminClient();
-    const companyId = await getCompanyId();
+    const companyId = await requireActiveCompanyId();
     const { error } = await supabase.from("announcements").insert({
       company_id: companyId,
       title: validated.title,
@@ -155,6 +194,7 @@ export const AnnouncementService = {
     });
 
     if (error) {
+      console.error("[AnnouncementService] Unable to create announcement.", error);
       throw new Error("Unable to create announcement.");
     }
   },
