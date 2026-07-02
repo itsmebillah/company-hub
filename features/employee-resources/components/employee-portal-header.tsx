@@ -1,6 +1,5 @@
-import { Building2, CalendarDays, UserCircle } from "lucide-react";
+import { Building2, CalendarDays } from "lucide-react";
 
-import { ThemeToggle } from "@/components/common/theme-toggle";
 import type { EmployeeResourceProfile } from "@/features/employee-resources/types/employee-resource.types";
 import { getRenderableImageSrc } from "@/lib/media";
 
@@ -48,15 +47,6 @@ export function EmployeePortalHeader({
             <CalendarDays className="size-4 text-muted-foreground" />
             {currentDate}
           </div>
-          <ThemeToggle />
-          <button
-            type="button"
-            className="flex size-10 items-center justify-center rounded-md border bg-background"
-            aria-label="Profile menu"
-            title="Profile menu"
-          >
-            <UserCircle className="size-5" aria-hidden="true" />
-          </button>
         </div>
       </div>
     </section>

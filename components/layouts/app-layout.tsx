@@ -11,7 +11,7 @@ type AppLayoutProps = {
 export function AppLayout({ children }: AppLayoutProps) {
   return (
     <div className="flex min-h-svh flex-col bg-background">
-      <AppHeader />
+      <AppHeader showProfile />
       <PageContainer className="flex-1 py-6">{children}</PageContainer>
       <AppFooter />
     </div>

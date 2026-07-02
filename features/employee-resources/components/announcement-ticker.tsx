@@ -16,9 +16,7 @@ function renderLinkedText(text: string) {
   const parts = text.split(urlPattern);
 
   return parts.map((part, index) => {
-    if (urlPattern.test(part)) {
-      urlPattern.lastIndex = 0;
-
+    if (/^https?:\/\//.test(part)) {
       return (
         <a
           key={`${part}-${index}`}
@@ -31,8 +29,6 @@ function renderLinkedText(text: string) {
         </a>
       );
     }
-
-    urlPattern.lastIndex = 0;
 
     return <span key={`${part}-${index}`}>{part}</span>;
   });
@@ -78,27 +74,21 @@ export function AnnouncementTicker({ announcements }: AnnouncementTickerProps) {
 
   return (
     <section
-      className="overflow-hidden rounded-xl border bg-card shadow-sm"
+      className="overflow-hidden rounded-xl border bg-card py-2 shadow-sm"
       aria-label="Latest announcements"
     >
-      <div className="flex items-stretch">
-        <div className="flex shrink-0 items-center gap-2 border-r bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground">
-          <Megaphone className="size-4" aria-hidden="true" />
-          Updates
-        </div>
-        <div className="min-w-0 flex-1 overflow-hidden py-2">
-          <div
-            className="announcement-ticker-track flex w-max gap-3 px-3"
-            tabIndex={0}
-            aria-live="polite"
-          >
-            {[...announcements, ...announcements].map((announcement, index) => (
-              <TickerItem
-                key={`${announcement.id}-${index}`}
-                announcement={announcement}
-              />
-            ))}
-          </div>
+      <div className="min-w-0 overflow-hidden">
+        <div
+          className="announcement-ticker-track flex w-max gap-3 px-3"
+          tabIndex={0}
+          aria-live="polite"
+        >
+          {[...announcements, ...announcements].map((announcement, index) => (
+            <TickerItem
+              key={`${announcement.id}-${index}`}
+              announcement={announcement}
+            />
+          ))}
         </div>
       </div>
     </section>
