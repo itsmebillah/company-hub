@@ -4,6 +4,7 @@ import { ExternalLink, Heart, Link2, Star } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import type { EmployeePortalResource } from "@/features/employee-resources/types/employee-resource.types";
+import { getRenderableImageSrc } from "@/lib/media";
 
 type EmployeeResourceCardProps = {
   resource: EmployeePortalResource;
@@ -18,6 +19,8 @@ function getRel(resource: EmployeePortalResource) {
 }
 
 export function EmployeeResourceCard({ resource }: EmployeeResourceCardProps) {
+  const thumbnailSrc = getRenderableImageSrc(resource.thumbnail);
+
   return (
     <article className="flex min-h-56 flex-col rounded-xl border bg-card p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
@@ -51,9 +54,9 @@ export function EmployeeResourceCard({ resource }: EmployeeResourceCardProps) {
         </button>
       </div>
 
-      {resource.thumbnail ? (
+      {thumbnailSrc ? (
         <img
-          src={resource.thumbnail}
+          src={thumbnailSrc}
           alt=""
           className="mt-4 aspect-video w-full rounded-lg border object-cover"
         />

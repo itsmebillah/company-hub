@@ -6,6 +6,7 @@ import {
   AnnouncementStatusBadge,
 } from "@/features/announcements/components/announcement-badges";
 import type { AnnouncementListResult } from "@/features/announcements/types/announcement.types";
+import { getRenderableImageSrc } from "@/lib/media";
 
 type EmployeeAnnouncementsPageProps = {
   result: AnnouncementListResult;
@@ -47,9 +48,9 @@ export function EmployeeAnnouncementsPage({
               key={announcement.id}
               className="overflow-hidden rounded-xl border bg-card shadow-sm"
             >
-              {announcement.bannerUrl ? (
+              {getRenderableImageSrc(announcement.bannerUrl) ? (
                 <img
-                  src={announcement.bannerUrl}
+                  src={getRenderableImageSrc(announcement.bannerUrl) ?? ""}
                   alt=""
                   className="aspect-[4/1] w-full object-cover"
                 />

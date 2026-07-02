@@ -1,5 +1,7 @@
 import { Building2, CalendarDays } from "lucide-react";
 
+import { getRenderableImageSrc } from "@/lib/media";
+
 type DashboardHeaderProps = {
   companyName: string;
   companyLogo?: string | null;
@@ -13,13 +15,15 @@ export function DashboardHeader({
   userName,
   currentDate,
 }: DashboardHeaderProps) {
+  const logoSrc = getRenderableImageSrc(companyLogo);
+
   return (
     <section className="overflow-hidden rounded-xl border bg-card shadow-sm">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex min-w-0 items-center gap-4 p-6">
-          {companyLogo ? (
+          {logoSrc ? (
             <img
-              src={companyLogo}
+              src={logoSrc}
               alt=""
               className="size-14 shrink-0 rounded-xl border object-cover shadow-sm"
             />

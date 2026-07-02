@@ -6,6 +6,7 @@ import {
   AnnouncementStatusBadge,
 } from "@/features/announcements/components/announcement-badges";
 import type { AnnouncementListItem } from "@/features/announcements/types/announcement.types";
+import { getRenderableImageSrc } from "@/lib/media";
 
 type AnnouncementPreviewProps = {
   announcement: AnnouncementListItem | null;
@@ -37,6 +38,8 @@ export function AnnouncementPreview({
     return null;
   }
 
+  const bannerSrc = getRenderableImageSrc(announcement.bannerUrl);
+
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-background/80 backdrop-blur-sm">
       <button
@@ -53,9 +56,9 @@ export function AnnouncementPreview({
           </Button>
         </div>
         <div className="p-5">
-          {announcement.bannerUrl ? (
+          {bannerSrc ? (
             <img
-              src={announcement.bannerUrl}
+              src={bannerSrc}
               alt=""
               className="mb-5 aspect-video w-full rounded-xl border object-cover"
             />

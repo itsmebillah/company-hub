@@ -1,7 +1,8 @@
-import { CalendarDays, UserCircle } from "lucide-react";
+import { Building2, CalendarDays, UserCircle } from "lucide-react";
 
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import type { EmployeeResourceProfile } from "@/features/employee-resources/types/employee-resource.types";
+import { getRenderableImageSrc } from "@/lib/media";
 
 type EmployeePortalHeaderProps = {
   profile: EmployeeResourceProfile;
@@ -12,19 +13,21 @@ export function EmployeePortalHeader({
   profile,
   currentDate,
 }: EmployeePortalHeaderProps) {
+  const companyLogo = getRenderableImageSrc(profile.companyLogo);
+
   return (
     <section className="rounded-xl border bg-card p-5 shadow-sm">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex min-w-0 items-center gap-4">
-          {profile.companyLogo ? (
+          {companyLogo ? (
             <img
-              src={profile.companyLogo}
+              src={companyLogo}
               alt=""
               className="size-12 rounded-xl border object-cover"
             />
           ) : (
             <div className="flex size-12 items-center justify-center rounded-xl bg-primary text-lg font-semibold text-primary-foreground">
-              {profile.companyName.slice(0, 2).toUpperCase()}
+              <Building2 className="size-6" aria-hidden="true" />
             </div>
           )}
           <div className="min-w-0">

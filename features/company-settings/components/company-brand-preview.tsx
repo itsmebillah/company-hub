@@ -1,12 +1,14 @@
 import { Building2 } from "lucide-react";
 
 import type { CompanySettingsValues } from "@/features/company-settings/types/company-settings.types";
+import { getRenderableImageSrc } from "@/lib/media";
 
 type CompanyBrandPreviewProps = {
   values: CompanySettingsValues;
 };
 
 export function CompanyBrandPreview({ values }: CompanyBrandPreviewProps) {
+  const logoSrc = getRenderableImageSrc(values.logo);
   const themeLabel =
     values.theme === "auto" ? "Auto" : values.theme === "dark" ? "Dark" : "Light";
 
@@ -20,9 +22,9 @@ export function CompanyBrandPreview({ values }: CompanyBrandPreviewProps) {
 
         <div className="mt-5 rounded-xl border bg-background p-4">
           <div className="flex items-center gap-3">
-            {values.logo ? (
+            {logoSrc ? (
               <img
-                src={values.logo}
+                src={logoSrc}
                 alt=""
                 className="size-12 rounded-lg border object-cover"
               />

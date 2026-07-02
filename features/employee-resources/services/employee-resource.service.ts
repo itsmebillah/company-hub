@@ -72,7 +72,13 @@ export const EmployeeResourceService = {
 
     const [{ data: role }, { data: settings }, categoriesResult] =
       await Promise.all([
-        supabase.from("roles").select("name").eq("id", employee.role_id).single(),
+        supabase
+          .from("roles")
+          .select("name")
+          .eq("company_id", employee.company_id)
+          .eq("id", employee.role_id)
+          .eq("status", "active")
+          .maybeSingle(),
         supabase
           .from("company_settings")
           .select("company_name, company_logo")
@@ -105,29 +111,51 @@ export const EmployeeResourceService = {
       };
     }
 
-    const [{ data: resources, error: resourcesError }, permissionsResult] =
-      await Promise.all([
-        supabase
-          .from("resources")
-          .select(
-            "id, category_id, title, description, resource_type, url, icon, thumbnail, open_mode, display_order, is_featured",
-          )
-          .eq("company_id", employee.company_id)
-          .eq("status", "active")
-          .in("category_id", categoryIds)
-          .order("display_order", { ascending: true }),
-        supabase
-          .from("resource_permissions")
-          .select("resource_id, permission_type, role_id, employee_id")
-          .eq("company_id", employee.company_id)
-          .eq("status", "active"),
-      ]);
+    const { data: resources, error: resourcesError } = await supabase
+      .from("resources")
+      .select(
+        "id, category_id, title, description, resource_type, url, icon, thumbnail, open_mode, display_order, is_featured",
+      )
+      .eq("company_id", employee.company_id)
+      .eq("status", "active")
+      .in("category_id", categoryIds)
+      .order("display_order", { ascending: true });
 
     if (resourcesError) {
+      console.error(
+        "[EmployeeResourceService] Unable to load resources.",
+        resourcesError,
+      );
       throw new Error("Unable to load resources.");
     }
 
+    const resourceIds = resources.map((resource) => resource.id);
+
+    if (resourceIds.length === 0) {
+      return {
+        profile: {
+          employeeId: employee.employee_id,
+          employeeName: employee.name,
+          roleName: role?.name ?? "Employee",
+          companyName: settings?.company_name ?? "Company Hub",
+          companyLogo: settings?.company_logo ?? null,
+        },
+        categories: [],
+      };
+    }
+
+    const permissionsResult = await supabase
+      .from("resource_permissions")
+      .select("resource_id, permission_type, role_id, employee_id")
+      .eq("company_id", employee.company_id)
+      .eq("status", "active")
+      .in("resource_id", resourceIds);
+
     if (permissionsResult.error) {
+      console.error(
+        "[EmployeeResourceService] Unable to load resource permissions.",
+        permissionsResult.error,
+      );
       throw new Error("Unable to load resource permissions.");
     }
 

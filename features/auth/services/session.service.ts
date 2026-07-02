@@ -25,8 +25,10 @@ export async function getCurrentSessionProfile(): Promise<AuthSessionProfile | n
   const { data: role, error: roleError } = await supabase
     .from("roles")
     .select("name")
+    .eq("company_id", employee.company_id)
     .eq("id", employee.role_id)
-    .single();
+    .eq("status", "active")
+    .maybeSingle();
 
   if (roleError || !role) {
     return null;
