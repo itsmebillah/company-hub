@@ -1,11 +1,9 @@
 import {
   AnnouncementTicker,
-  EmployeePortalIdentityBar,
   EmployeePortalHeader,
   EmployeeResourcePortal,
   QuickResourceLinks,
 } from "@/features/employee-resources/components";
-import { EmployeeAnnouncementsPage } from "@/features/announcements/components";
 import { AnnouncementService } from "@/features/announcements/services/announcement.service";
 import { EmployeeResourceService } from "@/features/employee-resources/services/employee-resource.service";
 
@@ -23,15 +21,13 @@ export default async function DashboardPage() {
 
   return (
     <section className="space-y-4 md:space-y-5">
-      <EmployeePortalIdentityBar profile={data.profile} />
-      <AnnouncementTicker announcements={announcements.announcements} />
       <EmployeePortalHeader
         profile={data.profile}
         currentDate={currentDate}
       />
+      <AnnouncementTicker announcements={announcements.announcements} />
       <QuickResourceLinks categories={data.categories} />
       <EmployeeResourcePortal data={data} />
-      <EmployeeAnnouncementsPage result={announcements} />
     </section>
   );
 }

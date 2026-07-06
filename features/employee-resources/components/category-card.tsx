@@ -17,12 +17,12 @@ export function CategoryCard({
     <button
       type="button"
       onClick={() => onSelect(category.id)}
-      className="rounded-xl border bg-card p-4 text-left shadow-sm transition hover:border-ring data-[active=true]:border-primary data-[active=true]:bg-primary/10"
+      className="w-44 shrink-0 snap-start rounded-xl border bg-card p-3 text-left shadow-sm transition hover:border-ring data-[active=true]:border-primary data-[active=true]:bg-primary/10 sm:w-auto"
       data-active={isActive}
     >
       <div className="flex items-center gap-3">
         <div
-          className="flex size-10 items-center justify-center rounded-lg text-white"
+          className="flex size-9 shrink-0 items-center justify-center rounded-lg text-white"
           style={{ backgroundColor: category.color }}
         >
           {category.icon ? (
@@ -35,7 +35,7 @@ export function CategoryCard({
         </div>
         <div className="min-w-0">
           <p className="truncate font-semibold">{category.name}</p>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             {category.resources.length} resource
             {category.resources.length === 1 ? "" : "s"}
           </p>

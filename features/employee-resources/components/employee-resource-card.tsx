@@ -22,7 +22,7 @@ export function EmployeeResourceCard({ resource }: EmployeeResourceCardProps) {
   const thumbnailSrc = getRenderableImageSrc(resource.thumbnail);
 
   return (
-    <article className="flex min-h-56 flex-col rounded-xl border bg-card p-4 shadow-sm">
+    <article className="flex min-h-48 flex-col rounded-xl border bg-card p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           {resource.icon ? (
@@ -62,7 +62,7 @@ export function EmployeeResourceCard({ resource }: EmployeeResourceCardProps) {
         />
       ) : null}
 
-      <p className="mt-4 line-clamp-3 flex-1 text-sm text-muted-foreground">
+      <p className="mt-4 line-clamp-2 flex-1 text-sm text-muted-foreground">
         {resource.description || "No description provided."}
       </p>
 

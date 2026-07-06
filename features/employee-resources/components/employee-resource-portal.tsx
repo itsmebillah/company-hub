@@ -43,8 +43,8 @@ export function EmployeeResourcePortal({ data }: EmployeeResourcePortalProps) {
     filteredCategories[0];
 
   return (
-    <div className="space-y-5">
-      <div className="rounded-xl border bg-card p-4 shadow-sm">
+    <div className="space-y-4">
+      <div className="rounded-xl border bg-card p-3 shadow-sm">
         <label className="relative block">
           <span className="sr-only">Search resources</span>
           <Search
@@ -55,7 +55,7 @@ export function EmployeeResourcePortal({ data }: EmployeeResourcePortalProps) {
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search resources by title or description"
-            className="h-12 w-full rounded-lg border bg-background pl-10 pr-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="h-11 w-full rounded-lg border bg-background pl-10 pr-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
         </label>
       </div>
@@ -67,10 +67,10 @@ export function EmployeeResourcePortal({ data }: EmployeeResourcePortalProps) {
           className="bg-card shadow-sm"
         />
       ) : (
-        <div className="grid gap-5 xl:grid-cols-[320px_minmax(0,1fr)]">
+        <div className="grid gap-4 xl:grid-cols-[300px_minmax(0,1fr)]">
           <aside className="space-y-3">
             <h2 className="text-base font-semibold">Categories</h2>
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+            <div className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 xl:grid-cols-1">
               {filteredCategories.map((category) => (
                 <CategoryCard
                   key={category.id}
@@ -87,10 +87,6 @@ export function EmployeeResourcePortal({ data }: EmployeeResourcePortalProps) {
               <h2 className="text-base font-semibold">
                 {activeCategory?.name ?? "Resources"}
               </h2>
-              <p className="text-sm text-muted-foreground">
-                Favorites are prepared in the interface and will be saved in a
-                later sprint.
-              </p>
             </div>
             <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
               {activeCategory?.resources.map((resource) => (
