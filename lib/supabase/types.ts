@@ -390,11 +390,58 @@ export type Database = {
         };
         Relationships: [];
       };
+      notifications: {
+        Row: {
+          id: string;
+          company_id: string;
+          employee_id: string | null;
+          type: Database["public"]["Enums"]["notification_type"];
+          title: string;
+          message: string;
+          action_url: string | null;
+          is_read: boolean;
+          created_at: string;
+          created_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          company_id: string;
+          employee_id?: string | null;
+          type: Database["public"]["Enums"]["notification_type"];
+          title: string;
+          message: string;
+          action_url?: string | null;
+          is_read?: boolean;
+          created_at?: string;
+          created_by?: string | null;
+        };
+        Update: {
+          id?: string;
+          company_id?: string;
+          employee_id?: string | null;
+          type?: Database["public"]["Enums"]["notification_type"];
+          title?: string;
+          message?: string;
+          action_url?: string | null;
+          is_read?: boolean;
+          created_at?: string;
+          created_by?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
     Enums: {
       announcement_priority: "low" | "normal" | "high" | "urgent";
+      notification_type:
+        | "announcement"
+        | "resource"
+        | "attendance"
+        | "leave"
+        | "approval"
+        | "document"
+        | "system";
       permission_type: "public" | "role" | "employee";
       record_status: "active" | "inactive" | "archived";
       resource_open_mode: "same_tab" | "new_tab" | "external";

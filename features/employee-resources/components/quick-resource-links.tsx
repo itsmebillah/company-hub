@@ -1,27 +1,15 @@
 "use client";
 
-import { ExternalLink, Link2, Star } from "lucide-react";
+import { Link2, Star } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import type {
   EmployeePortalCategory,
   EmployeePortalResource,
 } from "@/features/employee-resources/types/employee-resource.types";
+import { cn } from "@/lib/utils";
 
 type QuickResourceLinksProps = {
   categories: EmployeePortalCategory[];
-};
-
-const resourceTypeLabels: Record<string, string> = {
-  apps_script: "Apps Script",
-  google_sheet: "Google Sheet",
-  power_bi: "Power BI",
-  looker: "Looker",
-  website: "Website",
-  pdf: "PDF",
-  drive: "Drive",
-  youtube: "Video",
-  internal: "Internal Page",
 };
 
 function getTarget(resource: EmployeePortalResource) {
@@ -69,63 +57,67 @@ export function QuickResourceLinks({ categories }: QuickResourceLinksProps) {
         </div>
       </div>
 
-      <div className="-mx-3 flex snap-x gap-3 overflow-x-auto px-3 pb-1 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 md:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
         {resources.map((resource) => (
-          <article
-            key={resource.id}
-            className="flex min-h-36 w-44 shrink-0 snap-start flex-col rounded-xl border bg-background p-3 shadow-sm transition hover:border-ring sm:w-auto"
-          >
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-secondary text-secondary-foreground">
-                {resource.icon ? (
-                  <span className="text-sm font-semibold">
-                    {resource.icon.slice(0, 2).toUpperCase()}
-                  </span>
-                ) : (
-                  <Link2 className="size-4" aria-hidden="true" />
-                )}
-              </div>
-              {resource.isFeatured ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[0.68rem] font-medium text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
-                  <Star className="size-3" aria-hidden="true" />
-                  Featured
-                </span>
-              ) : null}
-            </div>
-
-            <div className="mt-3 min-w-0">
-              <h3 className="line-clamp-2 text-sm font-semibold">
-                {resource.title}
-              </h3>
-              <p className="mt-1 truncate text-xs text-muted-foreground">
-                {resourceTypeLabels[resource.resourceType] ??
-                  resource.categoryName}
-              </p>
-            </div>
-
-            <p className="mt-2 line-clamp-1 flex-1 text-xs leading-5 text-muted-foreground">
-              {resource.description || resource.categoryName}
-            </p>
-
-            {resource.url ? (
-              <Button asChild size="sm" className="mt-4 h-9 w-full">
-                <a
-                  href={resource.url}
-                  target={getTarget(resource)}
-                  rel={getRel(resource)}
-                >
-                  <ExternalLink className="size-4" aria-hidden="true" />
-                  Open
-                </a>
-              </Button>
-            ) : (
-              <Button type="button" size="sm" className="mt-4 h-9 w-full" disabled>
-                Internal
-              </Button>
-            )}
-          </article>
+          <QuickResourceCard key={resource.id} resource={resource} />
         ))}
       </div>
     </section>
+  );
+}
+
+function QuickResourceCard({ resource }: { resource: EmployeePortalResource }) {
+  const className =
+    "group relative flex min-h-28 flex-col items-center justify-center gap-2 rounded-xl border bg-background p-2.5 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-ring hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:min-h-32 sm:p-3";
+  const content = (
+    <>
+      {resource.isFeatured ? (
+        <span
+          className="absolute right-1.5 top-1.5 inline-flex size-5 items-center justify-center rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
+          aria-label="Featured"
+          title="Featured"
+        >
+          <Star className="size-3" aria-hidden="true" />
+        </span>
+      ) : null}
+
+      <div className="flex size-10 items-center justify-center rounded-xl bg-secondary text-secondary-foreground sm:size-11">
+        {resource.icon ? (
+          <span className="text-xs font-semibold sm:text-sm">
+            {resource.icon.slice(0, 2).toUpperCase()}
+          </span>
+        ) : (
+          <Link2 className="size-4 sm:size-5" aria-hidden="true" />
+        )}
+      </div>
+
+      <h3 className="line-clamp-2 min-h-8 w-full text-xs font-semibold leading-4 sm:text-sm sm:leading-5">
+        {resource.title}
+      </h3>
+    </>
+  );
+
+  if (!resource.url) {
+    return (
+      <div
+        className={cn(className, "cursor-not-allowed opacity-70")}
+        aria-disabled="true"
+        title="Internal resource"
+      >
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <a
+      href={resource.url}
+      target={getTarget(resource)}
+      rel={getRel(resource)}
+      className={className}
+      aria-label={`Open ${resource.title}`}
+    >
+      {content}
+    </a>
   );
 }

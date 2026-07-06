@@ -6,6 +6,7 @@ import { getCurrentAuthUser } from "@/features/auth/services/auth.service";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getPriorityRank } from "@/features/announcements/constants/announcement-options";
 import { AnnouncementValidationService } from "@/features/announcements/services/announcement-validation.service";
+import { NotificationService } from "@/features/notifications/services/notification.service";
 import type {
   AnnouncementFilters,
   AnnouncementFormValues,
@@ -111,6 +112,26 @@ function sortAnnouncements(
   });
 }
 
+function isAnnouncementVisibleNow(values: {
+  status: AnnouncementStatus;
+  publishFrom: string | null;
+  publishUntil: string | null;
+}) {
+  const now = Date.now();
+  const publishFrom = values.publishFrom
+    ? new Date(values.publishFrom).getTime()
+    : null;
+  const publishUntil = values.publishUntil
+    ? new Date(values.publishUntil).getTime()
+    : null;
+
+  return (
+    values.status === "active" &&
+    (!publishFrom || publishFrom <= now) &&
+    (!publishUntil || publishUntil >= now)
+  );
+}
+
 export const AnnouncementService = {
   async list(filters: AnnouncementFilters): Promise<AnnouncementListResult> {
     const supabase = createSupabaseAdminClient();
@@ -196,6 +217,29 @@ export const AnnouncementService = {
     if (error) {
       console.error("[AnnouncementService] Unable to create announcement.", error);
       throw new Error("Unable to create announcement.");
+    }
+
+    if (
+      isAnnouncementVisibleNow({
+        status: validated.status,
+        publishFrom: validated.publishFrom,
+        publishUntil: validated.publishUntil,
+      })
+    ) {
+      try {
+        await NotificationService.createForActiveCompanyEmployees({
+          companyId,
+          type: "announcement",
+          title: "New announcement",
+          message: validated.title,
+          actionUrl: "/announcements",
+        });
+      } catch (notificationError) {
+        console.error(
+          "[AnnouncementService] Unable to create announcement notifications.",
+          notificationError,
+        );
+      }
     }
   },
 

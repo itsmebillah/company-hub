@@ -7,12 +7,14 @@ import { usePathname } from "next/navigation";
 import { AdminHeader } from "@/components/admin/admin-header";
 import { AdminMobileDrawer } from "@/components/admin/admin-mobile-drawer";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
+import type { NotificationSummary } from "@/features/notifications/types/notification.types";
 
 type AdminShellProps = {
   children: ReactNode;
+  notificationSummary: NotificationSummary;
 };
 
-export function AdminShell({ children }: AdminShellProps) {
+export function AdminShell({ children, notificationSummary }: AdminShellProps) {
   const pathname = usePathname();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
@@ -32,6 +34,7 @@ export function AdminShell({ children }: AdminShellProps) {
         />
         <div className="flex min-w-0 flex-1 flex-col">
           <AdminHeader
+            notificationSummary={notificationSummary}
             pathname={pathname}
             onMenuClick={() => setIsMobileDrawerOpen(true)}
           />

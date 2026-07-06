@@ -1,11 +1,17 @@
 import type { ReactNode } from "react";
 
 import { AdminShell } from "@/components/admin";
+import { NotificationService } from "@/features/notifications/services/notification.service";
 
-export default function AdminRouteGroupLayout({
+export default async function AdminRouteGroupLayout({
   children,
 }: Readonly<{
   children: ReactNode;
 }>) {
-  return <AdminShell>{children}</AdminShell>;
+  const notificationSummary =
+    await NotificationService.getCurrentAdminSummary();
+
+  return (
+    <AdminShell notificationSummary={notificationSummary}>{children}</AdminShell>
+  );
 }

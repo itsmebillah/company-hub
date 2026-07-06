@@ -1,17 +1,20 @@
 "use client";
 
-import { Bell, Menu, UserCircle } from "lucide-react";
+import { Menu, UserCircle } from "lucide-react";
 
 import { AdminBreadcrumb } from "@/components/admin/admin-breadcrumb";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { LogoutButton } from "@/features/auth/components";
+import { NotificationDropdown } from "@/features/notifications/components";
+import type { NotificationSummary } from "@/features/notifications/types/notification.types";
 import {
   adminNavigationFallback,
   adminNavigationItems,
 } from "@/lib/navigation/admin-navigation";
 
 type AdminHeaderProps = {
+  notificationSummary: NotificationSummary;
   pathname: string;
   onMenuClick: () => void;
 };
@@ -24,7 +27,11 @@ function getPageTitle(pathname: string) {
   ).title;
 }
 
-export function AdminHeader({ pathname, onMenuClick }: AdminHeaderProps) {
+export function AdminHeader({
+  notificationSummary,
+  pathname,
+  onMenuClick,
+}: AdminHeaderProps) {
   const title = getPageTitle(pathname);
 
   return (
@@ -48,16 +55,7 @@ export function AdminHeader({ pathname, onMenuClick }: AdminHeaderProps) {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            size="icon"
-            variant="ghost"
-            className="size-9"
-            aria-label="Notifications"
-            title="Notifications"
-          >
-            <Bell className="size-4" aria-hidden="true" />
-          </Button>
+          <NotificationDropdown summary={notificationSummary} />
           <ThemeToggle />
           <Button
             type="button"

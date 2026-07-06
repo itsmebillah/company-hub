@@ -1,5 +1,6 @@
 import "server-only";
 
+import { NotificationService } from "@/features/notifications/services/notification.service";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { PermissionValidationService } from "@/features/resource-permissions/services/permission-validation.service";
 import type { Database } from "@/lib/supabase/types";
@@ -205,7 +206,7 @@ export const PermissionService = {
     const companyId = await requireActiveCompanyId();
     const { data: resource, error: resourceError } = await supabase
       .from("resources")
-      .select("id")
+      .select("id, title, status")
       .eq("company_id", companyId)
       .eq("id", resourceId)
       .single();
@@ -264,6 +265,48 @@ export const PermissionService = {
 
     if (insertError) {
       throw new Error("Unable to save permissions.");
+    }
+
+    if (resource.status === "active") {
+      try {
+        const recipientQuery = supabase
+          .from("employees")
+          .select("id, role_id")
+          .eq("company_id", companyId)
+          .eq("status", "active");
+
+        const { data: employees, error: employeesError } = await recipientQuery;
+
+        if (employeesError) {
+          throw employeesError;
+        }
+
+        const recipientIds = draft.isPublic
+          ? employees.map((employee) => employee.id)
+          : employees
+              .filter(
+                (employee) =>
+                  draft.employeeIds.includes(employee.id) ||
+                  draft.roleIds.includes(employee.role_id),
+              )
+              .map((employee) => employee.id);
+
+        await NotificationService.createForRecipients(
+          {
+            companyId,
+            type: "resource",
+            title: "Resource available",
+            message: resource.title,
+            actionUrl: "/resources",
+          },
+          recipientIds.map((id) => ({ id })),
+        );
+      } catch (notificationError) {
+        console.error(
+          "[PermissionService] Unable to create resource notifications.",
+          notificationError,
+        );
+      }
     }
   },
 };
