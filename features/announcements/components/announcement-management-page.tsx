@@ -11,6 +11,7 @@ import {
   AnnouncementStatusBadge,
 } from "@/features/announcements/components/announcement-badges";
 import { AnnouncementForm } from "@/features/announcements/components/announcement-form";
+import { AnnouncementImage } from "@/features/announcements/components/announcement-image";
 import { AnnouncementPreview } from "@/features/announcements/components/announcement-preview";
 import { ANNOUNCEMENT_PRIORITIES } from "@/features/announcements/constants/announcement-options";
 import type {
@@ -181,6 +182,7 @@ export function AnnouncementManagementPage({
             <table className="w-full min-w-[980px] text-left text-sm">
               <thead className="border-b bg-muted/50 text-muted-foreground">
                 <tr>
+                  <th className="px-4 py-3 font-medium">Image</th>
                   <th className="px-4 py-3 font-medium">Title</th>
                   <th className="px-4 py-3 font-medium">Priority</th>
                   <th className="px-4 py-3 font-medium">Publish From</th>
@@ -192,6 +194,13 @@ export function AnnouncementManagementPage({
               <tbody>
                 {result.announcements.map((announcement) => (
                   <tr key={announcement.id} className="border-b last:border-0">
+                    <td className="px-4 py-3">
+                      <AnnouncementImage
+                        src={announcement.bannerUrl}
+                        className="h-12 w-20 rounded-lg"
+                        compact
+                      />
+                    </td>
                     <td className="max-w-96 px-4 py-3">
                       <p className="font-medium">{announcement.title}</p>
                       <p className="truncate text-xs text-muted-foreground">
@@ -240,6 +249,10 @@ export function AnnouncementManagementPage({
           <div className="grid gap-3 p-3 lg:hidden">
             {result.announcements.map((announcement) => (
               <article key={announcement.id} className="rounded-xl border bg-background p-4">
+                <AnnouncementImage
+                  src={announcement.bannerUrl}
+                  className="mb-3 aspect-video w-full rounded-lg"
+                />
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <h2 className="font-semibold">{announcement.title}</h2>

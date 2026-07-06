@@ -5,8 +5,8 @@ import {
   AnnouncementPriorityBadge,
   AnnouncementStatusBadge,
 } from "@/features/announcements/components/announcement-badges";
+import { AnnouncementImage } from "@/features/announcements/components/announcement-image";
 import type { AnnouncementListItem } from "@/features/announcements/types/announcement.types";
-import { getRenderableImageSrc } from "@/lib/media";
 
 type AnnouncementPreviewProps = {
   announcement: AnnouncementListItem | null;
@@ -38,8 +38,6 @@ export function AnnouncementPreview({
     return null;
   }
 
-  const bannerSrc = getRenderableImageSrc(announcement.bannerUrl);
-
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-background/80 backdrop-blur-sm">
       <button
@@ -56,13 +54,10 @@ export function AnnouncementPreview({
           </Button>
         </div>
         <div className="p-5">
-          {bannerSrc ? (
-            <img
-              src={bannerSrc}
-              alt=""
-              className="mb-5 aspect-video w-full rounded-xl border object-cover"
-            />
-          ) : null}
+          <AnnouncementImage
+            src={announcement.bannerUrl}
+            className="mb-5 aspect-video w-full rounded-xl"
+          />
           <div className="rounded-xl border bg-card p-5">
             <div className="flex flex-wrap gap-2">
               <AnnouncementPriorityBadge priority={announcement.priority} />

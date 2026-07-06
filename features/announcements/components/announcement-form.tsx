@@ -1,15 +1,18 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
-import { AlertCircle, Loader2, X } from "lucide-react";
+import { useState, type ChangeEvent, type FormEvent } from "react";
+import { AlertCircle, ImagePlus, Loader2, Trash2, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { AnnouncementImage } from "@/features/announcements/components/announcement-image";
 import { ANNOUNCEMENT_PRIORITIES } from "@/features/announcements/constants/announcement-options";
 import type {
   AnnouncementActionState,
   AnnouncementFormValues,
   AnnouncementListItem,
 } from "@/features/announcements/types/announcement.types";
+import { ANNOUNCEMENT_IMAGES_BUCKET } from "@/lib/media";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type AnnouncementFormProps = {
   announcement?: AnnouncementListItem | null;
@@ -50,6 +53,12 @@ function toValues(announcement?: AnnouncementListItem | null) {
   };
 }
 
+function getAnnouncementImagePath(file: File) {
+  const safeName = file.name.toLowerCase().replace(/[^a-z0-9._-]/g, "-");
+
+  return `announcements/${Date.now()}-${safeName}`;
+}
+
 export function AnnouncementForm({
   announcement,
   onClose,
@@ -59,6 +68,8 @@ export function AnnouncementForm({
     toValues(announcement),
   );
   const [message, setMessage] = useState("");
+  const [uploadMessage, setUploadMessage] = useState("");
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isEdit = Boolean(announcement);
 
@@ -67,6 +78,43 @@ export function AnnouncementForm({
     value: AnnouncementFormValues[Key],
   ) {
     setValues((current) => ({ ...current, [key]: value }));
+  }
+
+  async function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+
+    event.target.value = "";
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      setUploadMessage("Please choose a valid image file.");
+      return;
+    }
+
+    setIsUploadingImage(true);
+    setUploadMessage("");
+
+    const storagePath = getAnnouncementImagePath(file);
+    const supabase = createSupabaseBrowserClient();
+    const { error } = await supabase.storage
+      .from(ANNOUNCEMENT_IMAGES_BUCKET)
+      .upload(storagePath, file, {
+        cacheControl: "3600",
+        contentType: file.type || undefined,
+        upsert: true,
+      });
+
+    setIsUploadingImage(false);
+
+    if (error) {
+      setUploadMessage("Unable to upload image. Please try another image.");
+      return;
+    }
+
+    updateValue("bannerUrl", storagePath);
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -138,15 +186,62 @@ export function AnnouncementForm({
             />
           </label>
 
-          <label className="space-y-2 md:col-span-2">
-            <span className="text-sm font-medium">Banner Image</span>
-            <input
-              value={values.bannerUrl}
-              onChange={(event) => updateValue("bannerUrl", event.target.value)}
-              className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              placeholder="Optional banner URL"
-            />
-          </label>
+          <div className="space-y-3 md:col-span-2">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+              <label className="min-w-0 flex-1 space-y-2">
+                <span className="text-sm font-medium">Banner Image</span>
+                <input
+                  value={values.bannerUrl}
+                  onChange={(event) =>
+                    updateValue("bannerUrl", event.target.value)
+                  }
+                  className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  placeholder="announcement-images path or existing public URL"
+                />
+              </label>
+              <div className="flex gap-2">
+                <label className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-md border bg-background px-4 text-sm font-medium">
+                  {isUploadingImage ? (
+                    <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                  ) : (
+                    <ImagePlus className="size-4" aria-hidden="true" />
+                  )}
+                  {isUploadingImage ? "Uploading" : "Upload"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="sr-only"
+                    disabled={isUploadingImage}
+                    onChange={handleImageChange}
+                  />
+                </label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={!values.bannerUrl || isUploadingImage}
+                  onClick={() => {
+                    setUploadMessage("");
+                    updateValue("bannerUrl", "");
+                  }}
+                >
+                  <Trash2 className="size-4" aria-hidden="true" />
+                  Remove
+                </Button>
+              </div>
+            </div>
+            {values.bannerUrl ? (
+              <AnnouncementImage
+                src={values.bannerUrl}
+                className="aspect-video w-full rounded-xl"
+              />
+            ) : null}
+            {uploadMessage ? (
+              <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+                <AlertCircle className="mt-0.5 size-4 shrink-0" />
+                <p>{uploadMessage}</p>
+              </div>
+            ) : null}
+          </div>
 
           <label className="space-y-2">
             <span className="text-sm font-medium">Priority</span>

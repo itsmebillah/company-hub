@@ -19,6 +19,7 @@ export function getRenderableImageSrc(value: string | null | undefined) {
 }
 
 export const PROFILE_PHOTOS_BUCKET = "profile-photos";
+export const ANNOUNCEMENT_IMAGES_BUCKET = "announcement-images";
 
 function encodeStoragePath(path: string) {
   return path
@@ -77,4 +78,8 @@ export function getPublicStorageUrl(
 
 export function getProfilePhotoSrc(value: string | null | undefined) {
   return getPublicStorageUrl(PROFILE_PHOTOS_BUCKET, value);
+}
+
+export function getAnnouncementImageSrc(value: string | null | undefined) {
+  return getPublicStorageUrl(ANNOUNCEMENT_IMAGES_BUCKET, value);
 }

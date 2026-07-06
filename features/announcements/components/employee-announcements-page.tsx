@@ -5,8 +5,8 @@ import {
   AnnouncementPriorityBadge,
   AnnouncementStatusBadge,
 } from "@/features/announcements/components/announcement-badges";
+import { AnnouncementImage } from "@/features/announcements/components/announcement-image";
 import type { AnnouncementListResult } from "@/features/announcements/types/announcement.types";
-import { getRenderableImageSrc } from "@/lib/media";
 
 type EmployeeAnnouncementsPageProps = {
   result: AnnouncementListResult;
@@ -48,13 +48,10 @@ export function EmployeeAnnouncementsPage({
               key={announcement.id}
               className="overflow-hidden rounded-xl border bg-card shadow-sm"
             >
-              {getRenderableImageSrc(announcement.bannerUrl) ? (
-                <img
-                  src={getRenderableImageSrc(announcement.bannerUrl) ?? ""}
-                  alt=""
-                  className="aspect-[4/1] w-full object-cover"
-                />
-              ) : null}
+              <AnnouncementImage
+                src={announcement.bannerUrl}
+                className="aspect-[4/1] w-full"
+              />
               <div className="p-5">
                 <div className="flex flex-wrap items-center gap-2">
                   <AnnouncementPriorityBadge priority={announcement.priority} />

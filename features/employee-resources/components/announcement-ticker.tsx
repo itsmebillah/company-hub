@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { AlertTriangle, Info, Megaphone } from "lucide-react";
 
+import { AnnouncementImage } from "@/features/announcements/components/announcement-image";
 import type { AnnouncementListItem } from "@/features/announcements/types/announcement.types";
-import { getRenderableImageSrc } from "@/lib/media";
 import { cn } from "@/lib/utils";
 
 type AnnouncementTickerProps = {
@@ -62,29 +61,7 @@ function renderLinkedText(text: string, linkClassName: string) {
   });
 }
 
-function TickerImage({ src }: { src: string }) {
-  const [hasError, setHasError] = useState(false);
-
-  if (hasError) {
-    return (
-      <span className="flex h-12 w-16 shrink-0 items-center justify-center rounded-lg border bg-secondary text-secondary-foreground">
-        <Megaphone className="size-5" aria-hidden="true" />
-      </span>
-    );
-  }
-
-  return (
-    <img
-      src={src}
-      alt=""
-      className="h-12 w-16 shrink-0 rounded-lg border object-cover"
-      onError={() => setHasError(true)}
-    />
-  );
-}
-
 function TickerItem({ announcement }: { announcement: AnnouncementListItem }) {
-  const imageSrc = getRenderableImageSrc(announcement.bannerUrl);
   const style = priorityStyles[announcement.priority];
   const Icon = style.Icon;
   const text = [announcement.title, announcement.description]
@@ -98,10 +75,19 @@ function TickerItem({ announcement }: { announcement: AnnouncementListItem }) {
         style.card,
       )}
     >
-      {imageSrc ? (
-        <TickerImage src={imageSrc} />
+      {announcement.bannerUrl ? (
+        <AnnouncementImage
+          src={announcement.bannerUrl}
+          className="h-12 w-16 rounded-lg"
+          compact
+        />
       ) : (
-        <span className={cn("flex size-10 shrink-0 items-center justify-center rounded-lg", style.icon)}>
+        <span
+          className={cn(
+            "flex size-10 shrink-0 items-center justify-center rounded-lg",
+            style.icon,
+          )}
+        >
           <Icon className="size-5" aria-hidden="true" />
         </span>
       )}
