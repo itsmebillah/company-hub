@@ -1,6 +1,7 @@
 "use client";
 
-import { Megaphone } from "lucide-react";
+import { useState } from "react";
+import { AlertTriangle, Info, Megaphone } from "lucide-react";
 
 import type { AnnouncementListItem } from "@/features/announcements/types/announcement.types";
 import { getRenderableImageSrc } from "@/lib/media";
@@ -12,7 +13,34 @@ type AnnouncementTickerProps = {
 
 const urlPattern = /(https?:\/\/[^\s]+)/g;
 
-function renderLinkedText(text: string) {
+const priorityStyles = {
+  urgent: {
+    card: "border-red-300 bg-red-50 text-red-950 dark:border-red-900/70 dark:bg-red-950/30 dark:text-red-100",
+    icon: "bg-red-600 text-white",
+    link: "text-red-700 dark:text-red-200",
+    Icon: AlertTriangle,
+  },
+  high: {
+    card: "border-orange-300 bg-orange-50 text-orange-950 dark:border-orange-900/70 dark:bg-orange-950/30 dark:text-orange-100",
+    icon: "bg-orange-500 text-white",
+    link: "text-orange-700 dark:text-orange-200",
+    Icon: AlertTriangle,
+  },
+  normal: {
+    card: "border-blue-300 bg-blue-50 text-blue-950 dark:border-blue-900/70 dark:bg-blue-950/30 dark:text-blue-100",
+    icon: "bg-blue-600 text-white",
+    link: "text-blue-700 dark:text-blue-200",
+    Icon: Megaphone,
+  },
+  low: {
+    card: "border-border bg-background text-foreground",
+    icon: "bg-secondary text-secondary-foreground",
+    link: "text-foreground",
+    Icon: Info,
+  },
+} as const;
+
+function renderLinkedText(text: string, linkClassName: string) {
   const parts = text.split(urlPattern);
 
   return parts.map((part, index) => {
@@ -23,7 +51,7 @@ function renderLinkedText(text: string) {
           href={part}
           target="_blank"
           rel="noreferrer noopener"
-          className="font-medium underline underline-offset-4"
+          className={cn("font-medium underline underline-offset-4", linkClassName)}
         >
           {part}
         </a>
@@ -34,34 +62,51 @@ function renderLinkedText(text: string) {
   });
 }
 
+function TickerImage({ src }: { src: string }) {
+  const [hasError, setHasError] = useState(false);
+
+  if (hasError) {
+    return (
+      <span className="flex h-12 w-16 shrink-0 items-center justify-center rounded-lg border bg-secondary text-secondary-foreground">
+        <Megaphone className="size-5" aria-hidden="true" />
+      </span>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt=""
+      className="h-12 w-16 shrink-0 rounded-lg border object-cover"
+      onError={() => setHasError(true)}
+    />
+  );
+}
+
 function TickerItem({ announcement }: { announcement: AnnouncementListItem }) {
   const imageSrc = getRenderableImageSrc(announcement.bannerUrl);
+  const style = priorityStyles[announcement.priority];
+  const Icon = style.Icon;
   const text = [announcement.title, announcement.description]
     .filter(Boolean)
     .join(" - ");
 
   return (
-    <article className="inline-flex max-w-[min(34rem,80vw)] items-center gap-3 whitespace-normal rounded-lg border bg-background px-3 py-2 shadow-sm">
+    <article
+      className={cn(
+        "inline-flex max-w-[min(38rem,84vw)] items-center gap-3 whitespace-normal rounded-xl border px-3 py-2 shadow-sm",
+        style.card,
+      )}
+    >
       {imageSrc ? (
-        <img
-          src={imageSrc}
-          alt=""
-          className="h-10 w-14 shrink-0 rounded-md border object-cover"
-        />
+        <TickerImage src={imageSrc} />
       ) : (
-        <span
-          className={cn(
-            "flex size-9 shrink-0 items-center justify-center rounded-md",
-            announcement.priority === "urgent"
-              ? "bg-destructive text-destructive-foreground"
-              : "bg-primary text-primary-foreground",
-          )}
-        >
-          <Megaphone className="size-4" aria-hidden="true" />
+        <span className={cn("flex size-10 shrink-0 items-center justify-center rounded-lg", style.icon)}>
+          <Icon className="size-5" aria-hidden="true" />
         </span>
       )}
-      <span className="min-w-0 text-sm leading-5 text-foreground">
-        {renderLinkedText(text)}
+      <span className="min-w-0 whitespace-pre-wrap text-sm leading-5">
+        {renderLinkedText(text, style.link)}
       </span>
     </article>
   );
