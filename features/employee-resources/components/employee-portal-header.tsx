@@ -23,7 +23,7 @@ export function EmployeePortalHeader({
   const initials = getInitials(profile.employeeName);
 
   return (
-    <section className="rounded-xl border bg-card px-3 py-3 shadow-sm sm:px-4">
+    <section className="rounded-xl border bg-card px-3 py-2.5 shadow-sm sm:px-4">
       <div className="flex items-center gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <div className="flex size-16 shrink-0 items-center justify-center rounded-full border bg-primary text-lg font-semibold text-primary-foreground shadow-sm">
@@ -40,26 +40,25 @@ export function EmployeePortalHeader({
             <p className="truncate text-xs text-muted-foreground">
               {profile.companyName}
             </p>
+            <p className="mt-1 truncate text-xs text-muted-foreground sm:hidden">
+              ID {profile.employeeId}
+            </p>
           </div>
         </div>
 
-        <div className="hidden min-w-0 items-center gap-2 rounded-lg border bg-background px-3 py-2 text-xs text-muted-foreground sm:flex">
-          <span className="font-medium text-foreground">{profile.roleName}</span>
-          <span aria-hidden="true">/</span>
-          <span>{profile.employeeId}</span>
+        <div className="hidden min-w-0 rounded-lg border bg-background px-3 py-2 text-xs text-muted-foreground sm:block">
+          <p className="truncate">ID {profile.employeeId}</p>
         </div>
 
-        <div className="flex max-w-[9.5rem] shrink-0 items-center gap-2 rounded-lg border bg-background px-2.5 py-2 text-xs text-muted-foreground sm:max-w-none">
+        <div className="flex max-w-[7.5rem] shrink-0 flex-col items-end gap-1 rounded-lg border bg-background px-2.5 py-2 text-xs sm:max-w-none">
+          <div className="flex items-center gap-2 text-muted-foreground">
             <CalendarDays className="size-4 shrink-0" />
             <span className="truncate">{currentDate}</span>
+          </div>
+          <span className="max-w-full truncate font-medium text-foreground">
+            {profile.roleName}
+          </span>
         </div>
-      </div>
-
-      <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground sm:hidden">
-        <span className="rounded-md bg-secondary px-2 py-1 font-medium text-secondary-foreground">
-          {profile.roleName}
-        </span>
-        <span className="truncate">ID {profile.employeeId}</span>
       </div>
     </section>
   );

@@ -1,7 +1,6 @@
 import {
   AnnouncementTicker,
   EmployeePortalHeader,
-  EmployeeResourcePortal,
   QuickResourceLinks,
 } from "@/features/employee-resources/components";
 import { AnnouncementService } from "@/features/announcements/services/announcement.service";
@@ -10,7 +9,9 @@ import { EmployeeResourceService } from "@/features/employee-resources/services/
 export const dynamic = "force-dynamic";
 
 const currentDate = new Intl.DateTimeFormat("en", {
-  dateStyle: "full",
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
 }).format(new Date());
 
 export default async function DashboardPage() {
@@ -27,7 +28,6 @@ export default async function DashboardPage() {
       />
       <AnnouncementTicker announcements={announcements.announcements} />
       <QuickResourceLinks categories={data.categories} />
-      <EmployeeResourcePortal data={data} />
     </section>
   );
 }

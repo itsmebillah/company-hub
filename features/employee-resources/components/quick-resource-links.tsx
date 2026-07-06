@@ -51,26 +51,32 @@ export function QuickResourceLinks({ categories }: QuickResourceLinksProps) {
   }
 
   return (
-    <section className="space-y-3" aria-labelledby="quick-resource-links-title">
+    <section
+      className="space-y-3 rounded-2xl border bg-card p-3 shadow-sm sm:p-4"
+      aria-labelledby="quick-resource-links-title"
+    >
       <div className="flex items-end justify-between gap-3">
         <div>
-        <h2 id="quick-resource-links-title" className="text-base font-semibold">
-          Quick Resource Links
-        </h2>
-        <p className="mt-0.5 text-sm text-muted-foreground">
-          Open approved company applications and documents.
-        </p>
+          <h2
+            id="quick-resource-links-title"
+            className="text-base font-semibold"
+          >
+            Quick Resource Links
+          </h2>
+          <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">
+            Open approved company applications and documents.
+          </p>
         </div>
       </div>
 
-      <div className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 md:grid-cols-3 xl:grid-cols-4">
+      <div className="-mx-3 flex snap-x gap-3 overflow-x-auto px-3 pb-1 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 md:grid-cols-3 xl:grid-cols-4">
         {resources.map((resource) => (
           <article
             key={resource.id}
-            className="flex min-h-40 w-44 shrink-0 snap-start flex-col rounded-xl border bg-card p-3 shadow-sm sm:w-auto"
+            className="flex min-h-36 w-44 shrink-0 snap-start flex-col rounded-xl border bg-background p-3 shadow-sm transition hover:border-ring sm:w-auto"
           >
             <div className="flex items-start justify-between gap-2">
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-secondary text-secondary-foreground">
+              <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-secondary text-secondary-foreground">
                 {resource.icon ? (
                   <span className="text-sm font-semibold">
                     {resource.icon.slice(0, 2).toUpperCase()}
@@ -80,11 +86,11 @@ export function QuickResourceLinks({ categories }: QuickResourceLinksProps) {
                 )}
               </div>
               {resource.isFeatured ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[0.68rem] font-medium text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
-                <Star className="size-3" aria-hidden="true" />
-                Featured
-              </span>
-            ) : null}
+                <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[0.68rem] font-medium text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
+                  <Star className="size-3" aria-hidden="true" />
+                  Featured
+                </span>
+              ) : null}
             </div>
 
             <div className="mt-3 min-w-0">
@@ -97,7 +103,7 @@ export function QuickResourceLinks({ categories }: QuickResourceLinksProps) {
               </p>
             </div>
 
-            <p className="mt-2 line-clamp-2 flex-1 text-xs leading-5 text-muted-foreground">
+            <p className="mt-2 line-clamp-1 flex-1 text-xs leading-5 text-muted-foreground">
               {resource.description || resource.categoryName}
             </p>
 
