@@ -171,4 +171,39 @@ export const NotificationRepository = {
       throw new Error("Unable to update notification.");
     }
   },
+
+  async markAllReadForEmployee(employeeId: string, companyId: string) {
+    const supabase = createSupabaseAdminClient();
+    const { error } = await supabase
+      .from("notifications")
+      .update({ is_read: true })
+      .eq("company_id", companyId)
+      .eq("employee_id", employeeId)
+      .eq("is_read", false);
+
+    if (error) {
+      console.error(
+        "[NotificationRepository] Unable to mark notifications read.",
+        error,
+      );
+      throw new Error("Unable to update notifications.");
+    }
+  },
+
+  async markAllReadForCompany(companyId: string) {
+    const supabase = createSupabaseAdminClient();
+    const { error } = await supabase
+      .from("notifications")
+      .update({ is_read: true })
+      .eq("company_id", companyId)
+      .eq("is_read", false);
+
+    if (error) {
+      console.error(
+        "[NotificationRepository] Unable to mark company notifications read.",
+        error,
+      );
+      throw new Error("Unable to update notifications.");
+    }
+  },
 };

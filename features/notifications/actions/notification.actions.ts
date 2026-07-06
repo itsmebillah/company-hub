@@ -15,3 +15,16 @@ export async function markNotificationReadAction(id: string) {
     return;
   }
 }
+
+export async function markAllNotificationsReadAction() {
+  try {
+    await NotificationService.markCurrentUserNotificationsRead();
+    revalidatePath("/admin/dashboard");
+    revalidatePath("/dashboard");
+    revalidatePath("/resources");
+    revalidatePath("/announcements");
+    revalidatePath("/profile");
+  } catch {
+    return;
+  }
+}

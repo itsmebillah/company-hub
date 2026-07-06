@@ -116,6 +116,24 @@ export const NotificationService = {
     );
   },
 
+  async markCurrentUserNotificationsRead() {
+    const context = await getCurrentNotificationContext();
+
+    if (!context) {
+      redirect("/login");
+    }
+
+    if (context.roleName === "Admin") {
+      await NotificationRepository.markAllReadForCompany(context.companyId);
+      return;
+    }
+
+    await NotificationRepository.markAllReadForEmployee(
+      context.employeeId,
+      context.companyId,
+    );
+  },
+
   async create(input: CreateNotificationInput) {
     await NotificationRepository.create(input);
   },
