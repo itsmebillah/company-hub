@@ -1,5 +1,6 @@
 import "server-only";
 
+import { logActivity } from "@/features/activity/utils/activity-log";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import {
   RESOURCE_SORTS,
@@ -218,30 +219,49 @@ export async function createResource(values: ResourceFormValues) {
 
   await assertDisplayOrderAvailable(values.categoryId, validated.displayOrder);
 
-  const { error } = await supabase.from("resources").insert({
-    company_id: companyId,
-    category_id: values.categoryId,
-    title: values.title.trim(),
-    description: normalizeOptional(values.description),
-    resource_type: validated.resourceType,
-    url: normalizeOptional(values.url),
-    icon: normalizeOptional(values.icon),
-    thumbnail: normalizeOptional(values.thumbnail),
-    display_order: validated.displayOrder,
-    open_mode: validated.openMode,
-    is_featured: values.isFeatured,
-    status: validated.status,
-  });
+  const { data, error } = await supabase
+    .from("resources")
+    .insert({
+      company_id: companyId,
+      category_id: values.categoryId,
+      title: values.title.trim(),
+      description: normalizeOptional(values.description),
+      resource_type: validated.resourceType,
+      url: normalizeOptional(values.url),
+      icon: normalizeOptional(values.icon),
+      thumbnail: normalizeOptional(values.thumbnail),
+      display_order: validated.displayOrder,
+      open_mode: validated.openMode,
+      is_featured: values.isFeatured,
+      status: validated.status,
+    })
+    .select("id")
+    .single();
 
-  if (error) {
+  if (error || !data) {
     console.error("[ResourceService] Unable to create resource.", error);
     throw new Error("Unable to create resource.");
   }
+
+  await logActivity({
+    companyId,
+    module: "resources",
+    action: "created",
+    entityType: "resources",
+    entityId: data.id,
+    description: `Created resource ${values.title.trim()}`,
+    metadata: {
+      categoryId: values.categoryId,
+      resourceType: validated.resourceType,
+      status: validated.status,
+    },
+  });
 }
 
 export async function updateResource(id: string, values: ResourceFormValues) {
   const validated = ResourceValidationService.validate(values);
   const supabase = createSupabaseAdminClient();
+  const companyId = await requireActiveCompanyId();
 
   await assertDisplayOrderAvailable(values.categoryId, validated.displayOrder, id);
 
@@ -265,6 +285,20 @@ export async function updateResource(id: string, values: ResourceFormValues) {
   if (error) {
     throw new Error("Unable to update resource.");
   }
+
+  await logActivity({
+    companyId,
+    module: "resources",
+    action: "updated",
+    entityType: "resources",
+    entityId: id,
+    description: `Updated resource ${values.title.trim()}`,
+    metadata: {
+      categoryId: values.categoryId,
+      resourceType: validated.resourceType,
+      status: validated.status,
+    },
+  });
 }
 
 export async function duplicateResource(id: string) {

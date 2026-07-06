@@ -1,5 +1,6 @@
 import "server-only";
 
+import { logActivity } from "@/features/activity/utils/activity-log";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getAllowedManagerRole } from "@/features/employees/constants/employee-rules";
 import type {
@@ -471,6 +472,20 @@ export async function createEmployee(values: EmployeeFormValues) {
     throw new Error("Unable to create employee.");
   }
 
+  await logActivity({
+    companyId,
+    module: "employee",
+    action: "created",
+    entityType: "employees",
+    entityId: data.id,
+    description: `Created employee ${employeeId}`,
+    metadata: {
+      employeeId,
+      roleId: values.roleId,
+      status: values.status,
+    },
+  });
+
   return {
     id: data.id,
     employeeId,
@@ -481,7 +496,7 @@ export async function updateEmployee(id: string, values: EmployeeFormValues) {
   const supabase = createSupabaseAdminClient();
   const { data: existingEmployee, error: existingEmployeeError } = await supabase
     .from("employees")
-    .select("employee_id")
+    .select("employee_id, company_id")
     .eq("id", id)
     .single();
 
@@ -514,6 +529,20 @@ export async function updateEmployee(id: string, values: EmployeeFormValues) {
   if (error) {
     throw new Error("Unable to update employee.");
   }
+
+  await logActivity({
+    companyId: existingEmployee.company_id,
+    module: "employee",
+    action: "updated",
+    entityType: "employees",
+    entityId: id,
+    description: `Updated employee ${existingEmployee.employee_id}`,
+    metadata: {
+      employeeId: existingEmployee.employee_id,
+      roleId: values.roleId,
+      status: values.status,
+    },
+  });
 }
 
 export async function setEmployeeStatus(id: string, status: Extract<EmployeeStatus, "active" | "inactive">) {

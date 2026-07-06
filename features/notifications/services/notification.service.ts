@@ -73,18 +73,27 @@ export const NotificationService = {
       return { unreadCount: 0, latest: [] };
     }
 
-    const [latest, unreadCount] = await Promise.all([
-      NotificationRepository.listForEmployee(
-        context.employeeId,
-        context.companyId,
-      ),
-      NotificationRepository.countUnreadForEmployee(
-        context.employeeId,
-        context.companyId,
-      ),
-    ]);
+    try {
+      const [latest, unreadCount] = await Promise.all([
+        NotificationRepository.listForEmployee(
+          context.employeeId,
+          context.companyId,
+        ),
+        NotificationRepository.countUnreadForEmployee(
+          context.employeeId,
+          context.companyId,
+        ),
+      ]);
 
-    return { latest, unreadCount };
+      return { latest, unreadCount };
+    } catch (error) {
+      console.error(
+        "[NotificationService] Unable to load current user notification summary.",
+        error,
+      );
+
+      return { unreadCount: 0, latest: [] };
+    }
   },
 
   async getCurrentAdminSummary(): Promise<NotificationSummary> {
@@ -94,12 +103,21 @@ export const NotificationService = {
       return { unreadCount: 0, latest: [] };
     }
 
-    const [latest, unreadCount] = await Promise.all([
-      NotificationRepository.listForCompany(context.companyId),
-      NotificationRepository.countUnreadForCompany(context.companyId),
-    ]);
+    try {
+      const [latest, unreadCount] = await Promise.all([
+        NotificationRepository.listForCompany(context.companyId),
+        NotificationRepository.countUnreadForCompany(context.companyId),
+      ]);
 
-    return { latest, unreadCount };
+      return { latest, unreadCount };
+    } catch (error) {
+      console.error(
+        "[NotificationService] Unable to load current admin notification summary.",
+        error,
+      );
+
+      return { unreadCount: 0, latest: [] };
+    }
   },
 
   async markCurrentUserNotificationRead(id: string) {

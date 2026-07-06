@@ -429,6 +429,51 @@ export type Database = {
         };
         Relationships: [];
       };
+      activity_logs: {
+        Row: {
+          id: string;
+          company_id: string;
+          employee_id: string | null;
+          module: string;
+          action: string;
+          entity_type: string;
+          entity_id: string | null;
+          description: string;
+          metadata: Json;
+          ip_address: string | null;
+          user_agent: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          company_id: string;
+          employee_id?: string | null;
+          module: string;
+          action: string;
+          entity_type: string;
+          entity_id?: string | null;
+          description: string;
+          metadata?: Json;
+          ip_address?: string | null;
+          user_agent?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          company_id?: string;
+          employee_id?: string | null;
+          module?: string;
+          action?: string;
+          entity_type?: string;
+          entity_id?: string | null;
+          description?: string;
+          metadata?: Json;
+          ip_address?: string | null;
+          user_agent?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

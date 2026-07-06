@@ -7,6 +7,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getPriorityRank } from "@/features/announcements/constants/announcement-options";
 import { AnnouncementValidationService } from "@/features/announcements/services/announcement-validation.service";
 import { NotificationService } from "@/features/notifications/services/notification.service";
+import { logActivity } from "@/features/activity/utils/activity-log";
 import type {
   AnnouncementFilters,
   AnnouncementFormValues,
@@ -203,21 +204,38 @@ export const AnnouncementService = {
     const validated = AnnouncementValidationService.validate(values);
     const supabase = createSupabaseAdminClient();
     const companyId = await requireActiveCompanyId();
-    const { error } = await supabase.from("announcements").insert({
-      company_id: companyId,
-      title: validated.title,
-      description: normalizeOptional(validated.description),
-      banner_url: normalizeOptional(validated.bannerUrl),
-      priority: validated.priority,
-      publish_from: validated.publishFrom,
-      publish_until: validated.publishUntil,
-      status: validated.status,
-    });
+    const { data, error } = await supabase
+      .from("announcements")
+      .insert({
+        company_id: companyId,
+        title: validated.title,
+        description: normalizeOptional(validated.description),
+        banner_url: normalizeOptional(validated.bannerUrl),
+        priority: validated.priority,
+        publish_from: validated.publishFrom,
+        publish_until: validated.publishUntil,
+        status: validated.status,
+      })
+      .select("id")
+      .single();
 
-    if (error) {
+    if (error || !data) {
       console.error("[AnnouncementService] Unable to create announcement.", error);
       throw new Error("Unable to create announcement.");
     }
+
+    await logActivity({
+      companyId,
+      module: "announcement",
+      action: "created",
+      entityType: "announcements",
+      entityId: data.id,
+      description: `Created announcement ${validated.title}`,
+      metadata: {
+        priority: validated.priority,
+        status: validated.status,
+      },
+    });
 
     if (
       isAnnouncementVisibleNow({
@@ -262,6 +280,18 @@ export const AnnouncementService = {
     if (error) {
       throw new Error("Unable to update announcement.");
     }
+
+    await logActivity({
+      module: "announcement",
+      action: "updated",
+      entityType: "announcements",
+      entityId: id,
+      description: `Updated announcement ${validated.title}`,
+      metadata: {
+        priority: validated.priority,
+        status: validated.status,
+      },
+    });
   },
 
   async setStatus(id: string, status: Extract<AnnouncementStatus, "active" | "archived">) {
