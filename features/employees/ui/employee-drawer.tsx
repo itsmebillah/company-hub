@@ -1,5 +1,6 @@
-import { CalendarDays, Phone, UserRound, X } from "lucide-react";
+import { CalendarDays, Phone, X } from "lucide-react";
 
+import { ProfilePhoto } from "@/components/common/profile-photo";
 import { Button } from "@/components/ui/button";
 import { EmployeeStatusBadge } from "@/features/employees/ui/employee-status-badge";
 import type { EmployeeUiRecord } from "@/features/employees/ui/employee-management.types";
@@ -33,17 +34,12 @@ export function EmployeeDrawer({ employee, onClose }: EmployeeDrawerProps) {
 
         <div className="p-5">
           <div className="flex flex-col items-center rounded-xl border bg-card p-6 text-center">
-            {employee.photoUrl ? (
-              <img
-                src={employee.photoUrl}
-                alt=""
-                className="size-20 rounded-full object-cover"
-              />
-            ) : (
-              <div className="flex size-20 items-center justify-center rounded-full bg-muted">
-                <UserRound className="size-9 text-muted-foreground" aria-hidden="true" />
-              </div>
-            )}
+            <ProfilePhoto
+              src={employee.photoUrl}
+              name={employee.name}
+              className="size-20"
+              iconClassName="size-9"
+            />
             <h3 className="mt-4 text-xl font-semibold">{employee.name}</h3>
             <p className="text-sm text-muted-foreground">{employee.employeeId}</p>
             <div className="mt-4 flex flex-wrap justify-center gap-2">

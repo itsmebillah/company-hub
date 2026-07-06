@@ -62,7 +62,7 @@ export const EmployeeResourceService = {
     const supabase = createSupabaseAdminClient();
     const { data: employee, error: employeeError } = await supabase
       .from("employees")
-      .select("id, employee_id, name, company_id, role_id, status")
+      .select("id, employee_id, name, photo_url, company_id, role_id, status")
       .eq("auth_user_id", user.id)
       .single();
 
@@ -106,6 +106,7 @@ export const EmployeeResourceService = {
           roleName: role?.name ?? "Employee",
           companyName: settings?.company_name ?? "Company Hub",
           companyLogo: settings?.company_logo ?? null,
+          photoUrl: employee.photo_url ?? null,
         },
         categories: [],
       };
@@ -139,6 +140,7 @@ export const EmployeeResourceService = {
           roleName: role?.name ?? "Employee",
           companyName: settings?.company_name ?? "Company Hub",
           companyLogo: settings?.company_logo ?? null,
+          photoUrl: employee.photo_url ?? null,
         },
         categories: [],
       };
@@ -178,6 +180,7 @@ export const EmployeeResourceService = {
         roleName: role?.name ?? "Employee",
         companyName: settings?.company_name ?? "Company Hub",
         companyLogo: settings?.company_logo ?? null,
+        photoUrl: employee.photo_url ?? null,
       },
       categories: categoriesResult.data
         .map((category): EmployeePortalCategory => ({

@@ -6,6 +6,7 @@ export type EmployeeResourceProfile = {
   roleName: string;
   companyName: string;
   companyLogo: string | null;
+  photoUrl: string | null;
 };
 
 export type EmployeePortalResource = {

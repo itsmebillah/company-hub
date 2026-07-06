@@ -1,5 +1,6 @@
-import { MoreHorizontal, Pencil, Power, UserRound } from "lucide-react";
+import { MoreHorizontal, Pencil, Power } from "lucide-react";
 
+import { ProfilePhoto } from "@/components/common/profile-photo";
 import { Button } from "@/components/ui/button";
 import { EmployeeCard } from "@/features/employees/ui/employee-card";
 import { EmployeeStatusBadge } from "@/features/employees/ui/employee-status-badge";
@@ -44,17 +45,12 @@ export function EmployeeTable({
               {employees.map((employee) => (
                 <tr key={employee.id} className="border-b last:border-0">
                   <td className="px-4 py-3">
-                    {employee.photoUrl ? (
-                      <img
-                        src={employee.photoUrl}
-                        alt=""
-                        className="size-9 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex size-9 items-center justify-center rounded-full bg-muted">
-                        <UserRound className="size-4 text-muted-foreground" aria-hidden="true" />
-                      </div>
-                    )}
+                    <ProfilePhoto
+                      src={employee.photoUrl}
+                      name={employee.name}
+                      className="size-9"
+                      iconClassName="size-4"
+                    />
                   </td>
                   <td className="px-4 py-3 font-medium">{employee.employeeId}</td>
                   <td className="px-4 py-3">{employee.name}</td>

@@ -1,5 +1,6 @@
-import { CalendarDays, UserRound } from "lucide-react";
+import { CalendarDays } from "lucide-react";
 
+import { ProfilePhoto } from "@/components/common/profile-photo";
 import type { EmployeeResourceProfile } from "@/features/employee-resources/types/employee-resource.types";
 
 type EmployeePortalHeaderProps = {
@@ -7,32 +8,21 @@ type EmployeePortalHeaderProps = {
   currentDate: string;
 };
 
-function getInitials(name: string) {
-  return name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("");
-}
-
 export function EmployeePortalHeader({
   profile,
   currentDate,
 }: EmployeePortalHeaderProps) {
-  const initials = getInitials(profile.employeeName);
-
   return (
     <section className="rounded-xl border bg-card px-3 py-2.5 shadow-sm sm:px-4">
       <div className="flex items-center gap-3">
         <div className="flex min-w-0 flex-1 items-center gap-3">
-          <div className="flex size-16 shrink-0 items-center justify-center rounded-full border bg-primary text-lg font-semibold text-primary-foreground shadow-sm">
-            {initials ? (
-              <span>{initials}</span>
-            ) : (
-              <UserRound className="size-7" aria-hidden="true" />
-            )}
-          </div>
+          <ProfilePhoto
+            src={profile.photoUrl}
+            name={profile.employeeName}
+            className="size-16 border shadow-sm"
+            fallbackClassName="bg-primary text-lg text-primary-foreground"
+            iconClassName="size-7 text-primary-foreground"
+          />
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold leading-5">
               Welcome, {profile.employeeName}

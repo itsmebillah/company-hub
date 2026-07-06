@@ -1,5 +1,6 @@
-import { MoreHorizontal, Pencil, Power, UserRound } from "lucide-react";
+import { MoreHorizontal, Pencil, Power } from "lucide-react";
 
+import { ProfilePhoto } from "@/components/common/profile-photo";
 import { Button } from "@/components/ui/button";
 import { EmployeeStatusBadge } from "@/features/employees/ui/employee-status-badge";
 import type { EmployeeUiRecord } from "@/features/employees/ui/employee-management.types";
@@ -24,17 +25,11 @@ export function EmployeeCard({
   return (
     <article className="rounded-xl border bg-card p-4 shadow-sm">
       <div className="flex items-start gap-3">
-        {employee.photoUrl ? (
-          <img
-            src={employee.photoUrl}
-            alt=""
-            className="size-11 shrink-0 rounded-full object-cover"
-          />
-        ) : (
-          <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-muted">
-            <UserRound className="size-5 text-muted-foreground" aria-hidden="true" />
-          </div>
-        )}
+        <ProfilePhoto
+          src={employee.photoUrl}
+          name={employee.name}
+          className="size-11"
+        />
         <div className="min-w-0 flex-1">
           <h3 className="truncate font-semibold">{employee.name}</h3>
           <p className="text-sm text-muted-foreground">{employee.employeeId}</p>

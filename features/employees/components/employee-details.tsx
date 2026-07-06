@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, Pencil, UserRound } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Pencil } from "lucide-react";
 
+import { ProfilePhoto } from "@/components/common/profile-photo";
 import { Button } from "@/components/ui/button";
 import { EmployeeStatusActions } from "@/features/employees/components/employee-status-actions";
 import type { EmployeeActionState, EmployeeDetails as EmployeeDetailsType } from "@/features/employees/types/employee.types";
@@ -60,20 +61,12 @@ export function EmployeeDetails({
       <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
         <div className="rounded-lg border bg-card p-5">
           <div className="mb-5 flex items-center gap-4">
-            {employee.photoUrl ? (
-              <img
-                src={employee.photoUrl}
-                alt=""
-                className="size-16 rounded-full object-cover"
-              />
-            ) : (
-              <div className="flex size-16 items-center justify-center rounded-full bg-muted">
-                <UserRound
-                  className="size-7 text-muted-foreground"
-                  aria-hidden="true"
-                />
-              </div>
-            )}
+            <ProfilePhoto
+              src={employee.photoUrl}
+              name={employee.name}
+              className="size-16"
+              iconClassName="size-7"
+            />
             <div>
               <h2 className="text-base font-semibold">Employee Details</h2>
               <p className="text-sm text-muted-foreground">
