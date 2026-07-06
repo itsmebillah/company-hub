@@ -7,6 +7,7 @@ export type ActivityModule =
   | "company_settings"
   | "roles"
   | "permissions"
+  | "attendance"
   | "future";
 
 export type ActivityAction =

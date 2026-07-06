@@ -38,6 +38,10 @@ export type DashboardData = {
     resources: number;
     categories: number;
     announcements: number;
+    presentToday: number;
+    lateToday: number;
+    checkedInToday: number;
+    notCheckedInToday: number;
   };
   recentEmployees: DashboardEmployee[];
   recentAnnouncements: DashboardAnnouncement[];

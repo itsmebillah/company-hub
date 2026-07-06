@@ -2,6 +2,7 @@ import {
   BarChart3,
   Bell,
   Building2,
+  CalendarCheck,
   FolderKanban,
   LayoutDashboard,
   ShieldCheck,
@@ -41,6 +42,11 @@ export const adminNavigationItems: AdminNavigationItem[] = [
     title: "Announcements",
     href: "/admin/announcements",
     icon: Bell,
+  },
+  {
+    title: "Attendance",
+    href: "/admin/attendance",
+    icon: CalendarCheck,
   },
   {
     title: "Company",

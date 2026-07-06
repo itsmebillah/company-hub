@@ -474,11 +474,64 @@ export type Database = {
         };
         Relationships: [];
       };
+      attendance_records: {
+        Row: {
+          id: string;
+          company_id: string;
+          employee_id: string;
+          attendance_date: string;
+          check_in: string | null;
+          check_out: string | null;
+          status: Database["public"]["Enums"]["attendance_status"];
+          working_minutes: number;
+          late_minutes: number;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          company_id: string;
+          employee_id: string;
+          attendance_date: string;
+          check_in?: string | null;
+          check_out?: string | null;
+          status?: Database["public"]["Enums"]["attendance_status"];
+          working_minutes?: number;
+          late_minutes?: number;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          company_id?: string;
+          employee_id?: string;
+          attendance_date?: string;
+          check_in?: string | null;
+          check_out?: string | null;
+          status?: Database["public"]["Enums"]["attendance_status"];
+          working_minutes?: number;
+          late_minutes?: number;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
     Enums: {
       announcement_priority: "low" | "normal" | "high" | "urgent";
+      attendance_status:
+        | "present"
+        | "absent"
+        | "late"
+        | "half_day"
+        | "holiday"
+        | "leave"
+        | "weekend";
       notification_type:
         | "announcement"
         | "resource"

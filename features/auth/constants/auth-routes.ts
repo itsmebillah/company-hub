@@ -7,6 +7,7 @@ export const AUTH_ROUTES = {
 export const PROTECTED_ROUTE_PREFIXES = [
   "/admin",
   "/announcements",
+  "/attendance",
   "/dashboard",
   "/profile",
   "/resources",

@@ -9,6 +9,7 @@ import {
   listResources,
 } from "@/features/resources/services/resource.service";
 import { AnnouncementService } from "@/features/announcements/services/announcement.service";
+import { AttendanceService } from "@/features/attendance/services/attendance.service";
 import type { DashboardData } from "@/features/admin-dashboard/types/dashboard.types";
 
 function getEnvironmentHealth() {
@@ -34,6 +35,10 @@ function getEmptyDashboard(): DashboardData {
       resources: 0,
       categories: 0,
       announcements: 0,
+      presentToday: 0,
+      lateToday: 0,
+      checkedInToday: 0,
+      notCheckedInToday: 0,
     },
     recentEmployees: [],
     recentAnnouncements: [],
@@ -59,6 +64,7 @@ export async function getAdminDashboardData(): Promise<DashboardData> {
       resourcesResult,
       categories,
       announcementsResult,
+      attendanceOverview,
     ] = await Promise.all([
       getCompanySettings(),
       getCurrentSessionProfile(),
@@ -69,6 +75,7 @@ export async function getAdminDashboardData(): Promise<DashboardData> {
       listResources({ sort: "created_at" }),
       getResourceCategories(),
       AnnouncementService.list({}),
+      AttendanceService.getAdminOverview(),
     ]);
     const recentAnnouncements = [...announcementsResult.announcements]
       .sort(
@@ -104,6 +111,10 @@ export async function getAdminDashboardData(): Promise<DashboardData> {
         resources: resourcesResult.resources.length,
         categories: categories.length,
         announcements: announcementsResult.announcements.length,
+        presentToday: attendanceOverview.presentToday,
+        lateToday: attendanceOverview.lateToday,
+        checkedInToday: attendanceOverview.checkedInToday,
+        notCheckedInToday: attendanceOverview.notCheckedInToday,
       },
       recentEmployees: allEmployees.employees.map((employee) => ({
         id: employee.id,

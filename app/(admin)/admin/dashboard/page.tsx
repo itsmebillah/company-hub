@@ -1,5 +1,6 @@
 import {
   Bell,
+  CalendarCheck,
   Database,
   FolderKanban,
   Megaphone,
@@ -99,6 +100,20 @@ export default async function AdminDashboardPage() {
       value: String(dashboard.counts.announcements),
       trend: "Published and archived records",
       icon: Bell,
+      tone: "amber" as const,
+    },
+    {
+      title: "Present Today",
+      value: String(dashboard.counts.presentToday),
+      trend: `${dashboard.counts.checkedInToday} checked in`,
+      icon: CalendarCheck,
+      tone: "green" as const,
+    },
+    {
+      title: "Late Today",
+      value: String(dashboard.counts.lateToday),
+      trend: `${dashboard.counts.notCheckedInToday} not checked in`,
+      icon: CalendarCheck,
       tone: "amber" as const,
     },
   ];

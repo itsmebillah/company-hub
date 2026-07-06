@@ -1,6 +1,7 @@
 import {
   Bell,
   Building2,
+  CalendarCheck,
   FileText,
   ShieldCheck,
   UserRound,
@@ -20,6 +21,7 @@ const moduleIcons = {
   company_settings: Building2,
   roles: ShieldCheck,
   permissions: ShieldCheck,
+  attendance: CalendarCheck,
   future: FileText,
 } as const;
 
@@ -38,7 +40,7 @@ export function ActivityLogItemView({ activity }: ActivityLogItemProps) {
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium">{activity.description}</p>
         <p className="mt-1 text-xs text-muted-foreground">
-          {activity.module} · {activity.action}
+          {activity.module} - {activity.action}
         </p>
       </div>
     </article>
