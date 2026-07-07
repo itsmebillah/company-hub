@@ -12,11 +12,14 @@ export async function prepareCheckInAction(
   input: AttendanceCheckInput = {},
 ): Promise<AttendanceActionState> {
   try {
-    await AttendanceService.prepareCheckIn(input);
+    const result = await AttendanceService.prepareCheckIn(input);
 
     return {
       ok: true,
-      message: "Check-in foundation is ready.",
+      message: `Inside ${result.locationName}. Attendance is available.`,
+      locationName: result.locationName,
+      distanceMeters: result.distanceMeters,
+      accuracyMeters: result.accuracyMeters,
     };
   } catch {
     return {
@@ -30,11 +33,14 @@ export async function prepareCheckOutAction(
   input: AttendanceCheckInput = {},
 ): Promise<AttendanceActionState> {
   try {
-    await AttendanceService.prepareCheckOut(input);
+    const result = await AttendanceService.prepareCheckOut(input);
 
     return {
       ok: true,
-      message: "Check-out foundation is ready.",
+      message: `Inside ${result.locationName}. Check-out is available.`,
+      locationName: result.locationName,
+      distanceMeters: result.distanceMeters,
+      accuracyMeters: result.accuracyMeters,
     };
   } catch {
     return {

@@ -3,8 +3,11 @@ import {
   Bell,
   Building2,
   CalendarCheck,
+  CalendarDays,
+  ClipboardList,
   FolderKanban,
   LayoutDashboard,
+  MapPin,
   ShieldCheck,
   Settings,
   Users,
@@ -49,9 +52,24 @@ export const adminNavigationItems: AdminNavigationItem[] = [
     icon: CalendarCheck,
   },
   {
+    title: "Calendar",
+    href: "/admin/calendar",
+    icon: CalendarDays,
+  },
+  {
+    title: "Leave",
+    href: "/admin/leave/requests",
+    icon: ClipboardList,
+  },
+  {
     title: "Company",
     href: "/admin/company",
     icon: Building2,
+  },
+  {
+    title: "Locations",
+    href: "/admin/company/locations",
+    icon: MapPin,
   },
   {
     title: "Settings",

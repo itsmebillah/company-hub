@@ -8,6 +8,8 @@ export type ActivityModule =
   | "roles"
   | "permissions"
   | "attendance"
+  | "calendar"
+  | "leave"
   | "future";
 
 export type ActivityAction =
@@ -16,7 +18,10 @@ export type ActivityAction =
   | "archived"
   | "restored"
   | "activated"
-  | "deactivated";
+  | "deactivated"
+  | "approved"
+  | "rejected"
+  | "cancelled";
 
 export type ActivityLogInput = {
   companyId: string;

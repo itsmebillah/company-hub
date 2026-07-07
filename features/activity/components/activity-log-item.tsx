@@ -2,6 +2,8 @@ import {
   Bell,
   Building2,
   CalendarCheck,
+  CalendarDays,
+  ClipboardList,
   FileText,
   ShieldCheck,
   UserRound,
@@ -22,6 +24,8 @@ const moduleIcons = {
   roles: ShieldCheck,
   permissions: ShieldCheck,
   attendance: CalendarCheck,
+  calendar: CalendarDays,
+  leave: ClipboardList,
   future: FileText,
 } as const;
 

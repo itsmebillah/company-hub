@@ -1,4 +1,14 @@
 export type CompanyTheme = "auto" | "light" | "dark";
+export type CompanyLocationStatus = "active" | "inactive";
+
+export type CompanyLocationValues = {
+  id?: string;
+  name: string;
+  latitude: string;
+  longitude: string;
+  radiusMeters: string;
+  status: CompanyLocationStatus;
+};
 
 export type CompanySettingsValues = {
   companyName: string;
@@ -15,6 +25,7 @@ export type CompanySettingsValues = {
   timezone: string;
   dateFormat: string;
   currency: string;
+  locations: CompanyLocationValues[];
 };
 
 export type CompanySettingsActionState =

@@ -25,3 +25,7 @@ export const ATTENDANCE_RULES = {
   halfDayWorkingMinutes: 240,
   fullDayWorkingMinutes: 480,
 } as const;
+
+export const ATTENDANCE_GPS_RULES = {
+  maxAccuracyMeters: 100,
+} as const;

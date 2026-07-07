@@ -3,6 +3,7 @@ import "server-only";
 import { logActivity } from "@/features/activity/utils/activity-log";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type {
+  CompanyLocationValues,
   CompanySettingsValues,
   CompanyTheme,
 } from "@/features/company-settings/types/company-settings.types";
@@ -21,12 +22,17 @@ const DEFAULT_SETTINGS: Omit<CompanySettingsValues, "companyName"> = {
   timezone: "Asia/Dhaka",
   dateFormat: "dd/MM/yyyy",
   currency: "BDT",
+  locations: [],
 };
 
 function normalizeOptional(value: string) {
   const nextValue = value.trim();
 
   return nextValue.length > 0 ? nextValue : null;
+}
+
+function normalizeLocationCode(value: string) {
+  return value.trim().toUpperCase().replace(/[^A-Z0-9]+/g, "_");
 }
 
 function normalizeTheme(value: string | null): CompanyTheme {
@@ -57,6 +63,33 @@ function validateSettings(values: CompanySettingsValues) {
   if (!["auto", "light", "dark"].includes(values.theme)) {
     throw new Error("Theme is invalid.");
   }
+
+  values.locations.forEach((location, index) => {
+    const label = `Office location ${index + 1}`;
+    const latitude = Number(location.latitude);
+    const longitude = Number(location.longitude);
+    const radiusMeters = Number(location.radiusMeters);
+
+    if (!location.name.trim()) {
+      throw new Error(`${label} name is required.`);
+    }
+
+    if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90) {
+      throw new Error(`${label} latitude is invalid.`);
+    }
+
+    if (!Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
+      throw new Error(`${label} longitude is invalid.`);
+    }
+
+    if (!Number.isInteger(radiusMeters) || radiusMeters <= 0) {
+      throw new Error(`${label} allowed radius must be a positive number.`);
+    }
+
+    if (location.status !== "active" && location.status !== "inactive") {
+      throw new Error(`${label} status is invalid.`);
+    }
+  });
 }
 
 async function getActiveCompany() {
@@ -79,15 +112,23 @@ async function getActiveCompany() {
 export async function getCompanySettings(): Promise<CompanySettingsValues> {
   const supabase = createSupabaseAdminClient();
   const company = await getActiveCompany();
-  const { data, error } = await supabase
+  const [{ data, error }, locationsResult] = await Promise.all([
+    supabase
     .from("company_settings")
     .select(
       "company_name, short_name, company_logo, favicon, primary_color, secondary_color, support_phone, support_email, website, address, timezone, date_format, currency, default_theme",
     )
     .eq("company_id", company.id)
-    .maybeSingle();
+      .maybeSingle(),
+    supabase
+      .from("company_locations")
+      .select("id, name, latitude, longitude, radius_meters, status")
+      .eq("company_id", company.id)
+      .neq("status", "archived")
+      .order("name", { ascending: true }),
+  ]);
 
-  if (error) {
+  if (error || locationsResult.error) {
     throw new Error("Unable to load company settings.");
   }
 
@@ -106,6 +147,17 @@ export async function getCompanySettings(): Promise<CompanySettingsValues> {
     timezone: data?.timezone ?? DEFAULT_SETTINGS.timezone,
     dateFormat: data?.date_format ?? DEFAULT_SETTINGS.dateFormat,
     currency: data?.currency ?? DEFAULT_SETTINGS.currency,
+    locations:
+      locationsResult.data?.map(
+        (location): CompanyLocationValues => ({
+          id: location.id,
+          name: location.name,
+          latitude: String(location.latitude),
+          longitude: String(location.longitude),
+          radiusMeters: String(location.radius_meters),
+          status: location.status === "active" ? "active" : "inactive",
+        }),
+      ) ?? DEFAULT_SETTINGS.locations,
   };
 }
 
@@ -138,6 +190,59 @@ export async function updateCompanySettings(values: CompanySettingsValues) {
 
   if (error) {
     throw new Error("Unable to save company settings.");
+  }
+
+  const existingLocations = await supabase
+    .from("company_locations")
+    .select("id")
+    .eq("company_id", company.id)
+    .neq("status", "archived");
+
+  if (existingLocations.error) {
+    throw new Error("Unable to save office locations.");
+  }
+
+  const providedLocationIds = values.locations
+    .map((location) => location.id)
+    .filter((id): id is string => Boolean(id));
+  const removedLocationIds = existingLocations.data
+    .map((location) => location.id)
+    .filter((id) => !providedLocationIds.includes(id));
+
+  if (removedLocationIds.length > 0) {
+    const removedResult = await supabase
+      .from("company_locations")
+      .update({
+        status: "inactive",
+        updated_at: new Date().toISOString(),
+      })
+      .in("id", removedLocationIds);
+
+    if (removedResult.error) {
+      throw new Error("Unable to save office locations.");
+    }
+  }
+
+  if (values.locations.length > 0) {
+    const locationRows = values.locations.map((location) => ({
+      ...(location.id ? { id: location.id } : {}),
+      company_id: company.id,
+      name: location.name.trim(),
+      code: normalizeLocationCode(location.name),
+      location_type: "branch" as const,
+      latitude: Number(location.latitude),
+      longitude: Number(location.longitude),
+      radius_meters: Number(location.radiusMeters),
+      status: location.status,
+      updated_at: new Date().toISOString(),
+    }));
+    const locationsUpsert = await supabase
+      .from("company_locations")
+      .upsert(locationRows, { onConflict: "id" });
+
+    if (locationsUpsert.error) {
+      throw new Error("Unable to save office locations.");
+    }
   }
 
   await logActivity({

@@ -482,6 +482,16 @@ export type Database = {
           attendance_date: string;
           check_in: string | null;
           check_out: string | null;
+          check_in_latitude: number | null;
+          check_in_longitude: number | null;
+          check_in_accuracy_meters: number | null;
+          check_in_location_id: string | null;
+          check_in_distance_meters: number | null;
+          check_out_latitude: number | null;
+          check_out_longitude: number | null;
+          check_out_accuracy_meters: number | null;
+          check_out_location_id: string | null;
+          check_out_distance_meters: number | null;
           status: Database["public"]["Enums"]["attendance_status"];
           working_minutes: number;
           late_minutes: number;
@@ -496,6 +506,16 @@ export type Database = {
           attendance_date: string;
           check_in?: string | null;
           check_out?: string | null;
+          check_in_latitude?: number | null;
+          check_in_longitude?: number | null;
+          check_in_accuracy_meters?: number | null;
+          check_in_location_id?: string | null;
+          check_in_distance_meters?: number | null;
+          check_out_latitude?: number | null;
+          check_out_longitude?: number | null;
+          check_out_accuracy_meters?: number | null;
+          check_out_location_id?: string | null;
+          check_out_distance_meters?: number | null;
           status?: Database["public"]["Enums"]["attendance_status"];
           working_minutes?: number;
           late_minutes?: number;
@@ -510,6 +530,16 @@ export type Database = {
           attendance_date?: string;
           check_in?: string | null;
           check_out?: string | null;
+          check_in_latitude?: number | null;
+          check_in_longitude?: number | null;
+          check_in_accuracy_meters?: number | null;
+          check_in_location_id?: string | null;
+          check_in_distance_meters?: number | null;
+          check_out_latitude?: number | null;
+          check_out_longitude?: number | null;
+          check_out_accuracy_meters?: number | null;
+          check_out_location_id?: string | null;
+          check_out_distance_meters?: number | null;
           status?: Database["public"]["Enums"]["attendance_status"];
           working_minutes?: number;
           late_minutes?: number;
@@ -517,7 +547,344 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "attendance_records_check_in_location_id_fkey";
+            columns: ["check_in_location_id"];
+            isOneToOne: false;
+            referencedRelation: "company_locations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "attendance_records_check_out_location_id_fkey";
+            columns: ["check_out_location_id"];
+            isOneToOne: false;
+            referencedRelation: "company_locations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      company_locations: {
+        Row: {
+          id: string;
+          company_id: string;
+          name: string;
+          code: string;
+          location_type: Database["public"]["Enums"]["company_location_type"];
+          latitude: number;
+          longitude: number;
+          radius_meters: number;
+          address: string | null;
+          is_default: boolean;
+          status: Database["public"]["Enums"]["record_status"];
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          company_id: string;
+          name: string;
+          code: string;
+          location_type?: Database["public"]["Enums"]["company_location_type"];
+          latitude: number;
+          longitude: number;
+          radius_meters: number;
+          address?: string | null;
+          is_default?: boolean;
+          status?: Database["public"]["Enums"]["record_status"];
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          company_id?: string;
+          name?: string;
+          code?: string;
+          location_type?: Database["public"]["Enums"]["company_location_type"];
+          latitude?: number;
+          longitude?: number;
+          radius_meters?: number;
+          address?: string | null;
+          is_default?: boolean;
+          status?: Database["public"]["Enums"]["record_status"];
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "company_locations_company_id_fkey";
+            columns: ["company_id"];
+            isOneToOne: false;
+            referencedRelation: "companies";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      employee_location_access: {
+        Row: {
+          id: string;
+          employee_id: string;
+          location_id: string;
+          status: Database["public"]["Enums"]["record_status"];
+          effective_from: string | null;
+          effective_to: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          employee_id: string;
+          location_id: string;
+          status?: Database["public"]["Enums"]["record_status"];
+          effective_from?: string | null;
+          effective_to?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          employee_id?: string;
+          location_id?: string;
+          status?: Database["public"]["Enums"]["record_status"];
+          effective_from?: string | null;
+          effective_to?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "employee_location_access_employee_id_fkey";
+            columns: ["employee_id"];
+            isOneToOne: false;
+            referencedRelation: "employees";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "employee_location_access_location_id_fkey";
+            columns: ["location_id"];
+            isOneToOne: false;
+            referencedRelation: "company_locations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      holiday_calendars: {
+        Row: {
+          id: string;
+          company_id: string;
+          name: string;
+          description: string | null;
+          is_default: boolean;
+          status: Database["public"]["Enums"]["record_status"];
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          company_id: string;
+          name: string;
+          description?: string | null;
+          is_default?: boolean;
+          status?: Database["public"]["Enums"]["record_status"];
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          company_id?: string;
+          name?: string;
+          description?: string | null;
+          is_default?: boolean;
+          status?: Database["public"]["Enums"]["record_status"];
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "holiday_calendars_company_id_fkey";
+            columns: ["company_id"];
+            isOneToOne: false;
+            referencedRelation: "companies";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      holiday_events: {
+        Row: {
+          id: string;
+          calendar_id: string;
+          title: string;
+          holiday_type: Database["public"]["Enums"]["holiday_type"];
+          date: string;
+          is_working_day: boolean;
+          description: string | null;
+          status: Database["public"]["Enums"]["record_status"];
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          calendar_id: string;
+          title: string;
+          holiday_type: Database["public"]["Enums"]["holiday_type"];
+          date: string;
+          is_working_day?: boolean;
+          description?: string | null;
+          status?: Database["public"]["Enums"]["record_status"];
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          calendar_id?: string;
+          title?: string;
+          holiday_type?: Database["public"]["Enums"]["holiday_type"];
+          date?: string;
+          is_working_day?: boolean;
+          description?: string | null;
+          status?: Database["public"]["Enums"]["record_status"];
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "holiday_events_calendar_id_fkey";
+            columns: ["calendar_id"];
+            isOneToOne: false;
+            referencedRelation: "holiday_calendars";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      leave_types: {
+        Row: {
+          id: string;
+          company_id: string;
+          name: string;
+          code: string;
+          color: string | null;
+          is_paid: boolean;
+          annual_limit: number | null;
+          requires_approval: boolean;
+          status: Database["public"]["Enums"]["record_status"];
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          company_id: string;
+          name: string;
+          code: string;
+          color?: string | null;
+          is_paid?: boolean;
+          annual_limit?: number | null;
+          requires_approval?: boolean;
+          status?: Database["public"]["Enums"]["record_status"];
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          company_id?: string;
+          name?: string;
+          code?: string;
+          color?: string | null;
+          is_paid?: boolean;
+          annual_limit?: number | null;
+          requires_approval?: boolean;
+          status?: Database["public"]["Enums"]["record_status"];
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "leave_types_company_id_fkey";
+            columns: ["company_id"];
+            isOneToOne: false;
+            referencedRelation: "companies";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      leave_requests: {
+        Row: {
+          id: string;
+          company_id: string;
+          employee_id: string;
+          leave_type_id: string;
+          start_date: string;
+          end_date: string;
+          total_days: number;
+          reason: string | null;
+          status: Database["public"]["Enums"]["leave_request_status"];
+          approved_by: string | null;
+          approved_at: string | null;
+          rejection_reason: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          company_id: string;
+          employee_id: string;
+          leave_type_id: string;
+          start_date: string;
+          end_date: string;
+          total_days: number;
+          reason?: string | null;
+          status?: Database["public"]["Enums"]["leave_request_status"];
+          approved_by?: string | null;
+          approved_at?: string | null;
+          rejection_reason?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          company_id?: string;
+          employee_id?: string;
+          leave_type_id?: string;
+          start_date?: string;
+          end_date?: string;
+          total_days?: number;
+          reason?: string | null;
+          status?: Database["public"]["Enums"]["leave_request_status"];
+          approved_by?: string | null;
+          approved_at?: string | null;
+          rejection_reason?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "leave_requests_company_id_fkey";
+            columns: ["company_id"];
+            isOneToOne: false;
+            referencedRelation: "companies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "leave_requests_employee_id_fkey";
+            columns: ["employee_id"];
+            isOneToOne: false;
+            referencedRelation: "employees";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "leave_requests_leave_type_id_fkey";
+            columns: ["leave_type_id"];
+            isOneToOne: false;
+            referencedRelation: "leave_types";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "leave_requests_approved_by_fkey";
+            columns: ["approved_by"];
+            isOneToOne: false;
+            referencedRelation: "employees";
+            referencedColumns: ["id"];
+          },
+        ];
       };
     };
     Views: Record<string, never>;
@@ -532,6 +899,22 @@ export type Database = {
         | "holiday"
         | "leave"
         | "weekend";
+      company_location_type:
+        | "head_office"
+        | "branch"
+        | "warehouse"
+        | "factory"
+        | "depot"
+        | "client_site";
+      holiday_type:
+        | "public_holiday"
+        | "company_holiday"
+        | "optional_holiday";
+      leave_request_status:
+        | "pending"
+        | "approved"
+        | "rejected"
+        | "cancelled";
       notification_type:
         | "announcement"
         | "resource"

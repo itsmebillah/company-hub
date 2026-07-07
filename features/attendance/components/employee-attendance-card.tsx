@@ -1,12 +1,21 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
-import { CalendarDays, Clock, LogIn, LogOut, StickyNote } from "lucide-react";
+import {
+  CalendarDays,
+  Clock,
+  LocateFixed,
+  LogIn,
+  LogOut,
+  RefreshCw,
+  StickyNote,
+} from "lucide-react";
 
 import { AttendanceStatusBadge } from "@/features/attendance/components/attendance-status-badge";
 import type {
   AttendanceActionState,
   AttendanceCheckInput,
+  AttendanceGpsInput,
   TodayAttendance,
 } from "@/features/attendance/types/attendance.types";
 import { cn } from "@/lib/utils";
@@ -15,6 +24,9 @@ type EmployeeAttendanceCardProps = {
   attendance: TodayAttendance;
   onCheckIn: (input?: AttendanceCheckInput) => Promise<AttendanceActionState>;
   onCheckOut: (input?: AttendanceCheckInput) => Promise<AttendanceActionState>;
+  onValidateLocation: (
+    input?: AttendanceCheckInput,
+  ) => Promise<AttendanceActionState>;
 };
 
 function formatDate(value: string) {
@@ -66,18 +78,24 @@ export function EmployeeAttendanceCard({
   attendance,
   onCheckIn,
   onCheckOut,
+  onValidateLocation,
 }: EmployeeAttendanceCardProps) {
   const record = attendance.record;
   const [notes, setNotes] = useState(record?.notes ?? "");
   const [message, setMessage] = useState<AttendanceActionState | null>(null);
+  const [gps, setGps] = useState<AttendanceGpsInput | null>(null);
+  const [locationStatus, setLocationStatus] =
+    useState<AttendanceActionState | null>(null);
+  const [isLocating, setIsLocating] = useState(false);
   const [elapsedMinutes, setElapsedMinutes] = useState(
     getElapsedMinutes(record?.checkIn ?? null),
   );
   const [isPending, startTransition] = useTransition();
   const hasCheckedIn = Boolean(record?.checkIn);
   const hasCheckedOut = Boolean(record?.checkOut);
-  const canCheckIn = !hasCheckedIn && !isPending;
-  const canCheckOut = hasCheckedIn && !hasCheckedOut && !isPending;
+  const hasValidLocation = locationStatus?.ok === true && Boolean(gps);
+  const canCheckIn = !hasCheckedIn && !isPending && hasValidLocation;
+  const canCheckOut = hasCheckedIn && !hasCheckedOut && !isPending && hasValidLocation;
   const workingMinutes = useMemo(() => {
     if (!record?.checkIn) {
       return 0;
@@ -102,13 +120,76 @@ export function EmployeeAttendanceCard({
     return () => window.clearInterval(interval);
   }, [record?.checkIn, record?.checkOut]);
 
+  function readCurrentLocation() {
+    if (!("geolocation" in navigator)) {
+      setLocationStatus({
+        ok: false,
+        message: "Location is not available on this device.",
+      });
+      return;
+    }
+
+    setIsLocating(true);
+    setLocationStatus(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const nextGps = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+          timestamp: new Date(position.timestamp).toISOString(),
+        };
+
+        setGps(nextGps);
+        startTransition(async () => {
+          const result = await onValidateLocation({ gps: nextGps });
+          setLocationStatus(result);
+          setIsLocating(false);
+        });
+      },
+      (error) => {
+        const message =
+          error.code === error.PERMISSION_DENIED
+            ? "Location permission was denied."
+            : error.code === error.POSITION_UNAVAILABLE
+              ? "Your current location is unavailable."
+              : "Location request timed out. Please try again.";
+
+        setGps(null);
+        setLocationStatus({ ok: false, message });
+        setIsLocating(false);
+      },
+      {
+        enableHighAccuracy: true,
+        maximumAge: 120000,
+        timeout: 15000,
+      },
+    );
+  }
+
+  useEffect(() => {
+    readCurrentLocation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function submit(action: "check-in" | "check-out") {
     setMessage(null);
+
+    if (!gps || locationStatus?.ok !== true) {
+      setMessage({
+        ok: false,
+        message: "Confirm your office location before continuing.",
+      });
+      return;
+    }
+
     startTransition(async () => {
+      const input = { notes, gps };
       const result =
         action === "check-in"
-          ? await onCheckIn({ notes })
-          : await onCheckOut({ notes });
+          ? await onCheckIn(input)
+          : await onCheckOut(input);
 
       setMessage(result);
     });
@@ -168,6 +249,62 @@ export function EmployeeAttendanceCard({
           </div>
         </div>
 
+        <div className="mt-5 rounded-lg border bg-muted/30 p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <span
+                className={cn(
+                  "flex size-10 shrink-0 items-center justify-center rounded-lg",
+                  locationStatus?.ok
+                    ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                    : "bg-secondary text-secondary-foreground",
+                )}
+              >
+                <LocateFixed className="size-5" aria-hidden="true" />
+              </span>
+              <div>
+                <h3 className="text-sm font-semibold">Current location</h3>
+                <p
+                  className={cn(
+                    "mt-1 text-sm",
+                    locationStatus?.ok
+                      ? "text-emerald-700 dark:text-emerald-300"
+                      : "text-muted-foreground",
+                  )}
+                >
+                  {isLocating
+                    ? "Checking your office location..."
+                    : locationStatus?.message ??
+                      "Allow location access to validate attendance."}
+                </p>
+                {gps ? (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {locationStatus?.locationName
+                      ? `Assigned Location: ${locationStatus.locationName} - `
+                      : ""}
+                    {typeof locationStatus?.distanceMeters === "number"
+                      ? `Distance: ${Math.round(locationStatus.distanceMeters)}m - `
+                      : ""}
+                    Accuracy: {Math.round(gps.accuracy)}m
+                  </p>
+                ) : null}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={readCurrentLocation}
+              disabled={isLocating || isPending}
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border bg-background px-3 py-2 text-sm font-semibold transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <RefreshCw
+                className={cn("size-4", isLocating && "animate-spin")}
+                aria-hidden="true"
+              />
+              Refresh
+            </button>
+          </div>
+        </div>
+
         <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
           <label className="block">
             <span className="flex items-center gap-2 text-sm font-medium">
@@ -191,8 +328,8 @@ export function EmployeeAttendanceCard({
                 aria-hidden="true"
               />
               <p>
-                Server time is used for attendance records. GPS and selfie
-                validation remain prepared for future sprints.
+                Server time and verified office GPS are used for attendance
+                records. Selfie validation remains prepared for a future sprint.
               </p>
             </div>
 

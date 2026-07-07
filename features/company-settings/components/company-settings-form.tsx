@@ -1,12 +1,22 @@
 "use client";
 
 import { useState, type ChangeEvent, type FormEvent } from "react";
-import { AlertCircle, CheckCircle2, Loader2, Save, Upload } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Loader2,
+  MapPin,
+  Plus,
+  Save,
+  Trash2,
+  Upload,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { CompanyBrandPreview } from "@/features/company-settings/components/company-brand-preview";
 import type {
   CompanySettingsActionState,
+  CompanyLocationValues,
   CompanySettingsValues,
   CompanyTheme,
 } from "@/features/company-settings/types/company-settings.types";
@@ -31,6 +41,16 @@ function filePathFromSelection(file: File | undefined, folder: string) {
   }
 
   return `${folder}/${file.name}`;
+}
+
+function createEmptyLocation(): CompanyLocationValues {
+  return {
+    name: "",
+    latitude: "",
+    longitude: "",
+    radiusMeters: "100",
+    status: "active",
+  };
 }
 
 export function CompanySettingsForm({
@@ -59,6 +79,33 @@ export function CompanySettingsForm({
     if (path) {
       updateValue(key, path);
     }
+  }
+
+  function addLocation() {
+    setValues((current) => ({
+      ...current,
+      locations: [...current.locations, createEmptyLocation()],
+    }));
+  }
+
+  function updateLocation<Key extends keyof CompanyLocationValues>(
+    index: number,
+    key: Key,
+    value: CompanyLocationValues[Key],
+  ) {
+    setValues((current) => ({
+      ...current,
+      locations: current.locations.map((location, locationIndex) =>
+        locationIndex === index ? { ...location, [key]: value } : location,
+      ),
+    }));
+  }
+
+  function removeLocation(index: number) {
+    setValues((current) => ({
+      ...current,
+      locations: current.locations.filter((_, locationIndex) => locationIndex !== index),
+    }));
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -293,6 +340,124 @@ export function CompanySettingsForm({
                 className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
             </label>
+          </div>
+        </section>
+
+        <section>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-base font-semibold">Office Locations</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Active locations are used for GPS attendance validation.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={addLocation}
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border bg-background px-3 text-sm font-semibold transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <Plus className="size-4" aria-hidden="true" />
+              Add Location
+            </button>
+          </div>
+
+          <div className="mt-4 space-y-3">
+            {values.locations.length === 0 ? (
+              <div className="rounded-lg border bg-muted/30 p-4 text-sm text-muted-foreground">
+                No office locations configured. Add at least one active office
+                before enabling GPS attendance.
+              </div>
+            ) : null}
+
+            {values.locations.map((location, index) => (
+              <div key={location.id ?? index} className="rounded-lg border p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 text-sm font-semibold">
+                    <MapPin className="size-4" aria-hidden="true" />
+                    Office Location {index + 1}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeLocation(index)}
+                    className="inline-flex size-9 items-center justify-center rounded-md border text-muted-foreground transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    aria-label={`Remove office location ${index + 1}`}
+                  >
+                    <Trash2 className="size-4" aria-hidden="true" />
+                  </button>
+                </div>
+
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
+                  <label className="space-y-2 md:col-span-2">
+                    <span className="text-sm font-medium">Location Name</span>
+                    <input
+                      value={location.name}
+                      onChange={(event) =>
+                        updateLocation(index, "name", event.target.value)
+                      }
+                      placeholder="Head Office"
+                      className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    />
+                  </label>
+                  <label className="space-y-2">
+                    <span className="text-sm font-medium">Latitude</span>
+                    <input
+                      value={location.latitude}
+                      inputMode="decimal"
+                      onChange={(event) =>
+                        updateLocation(index, "latitude", event.target.value)
+                      }
+                      placeholder="23.8103"
+                      className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    />
+                  </label>
+                  <label className="space-y-2">
+                    <span className="text-sm font-medium">Longitude</span>
+                    <input
+                      value={location.longitude}
+                      inputMode="decimal"
+                      onChange={(event) =>
+                        updateLocation(index, "longitude", event.target.value)
+                      }
+                      placeholder="90.4125"
+                      className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    />
+                  </label>
+                  <label className="space-y-2">
+                    <span className="text-sm font-medium">
+                      Allowed Radius (meters)
+                    </span>
+                    <input
+                      value={location.radiusMeters}
+                      inputMode="numeric"
+                      onChange={(event) =>
+                        updateLocation(index, "radiusMeters", event.target.value)
+                      }
+                      placeholder="100"
+                      className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    />
+                  </label>
+                  <label className="space-y-2">
+                    <span className="text-sm font-medium">Status</span>
+                    <select
+                      value={location.status}
+                      onChange={(event) =>
+                        updateLocation(
+                          index,
+                          "status",
+                          event.target.value === "active"
+                            ? "active"
+                            : "inactive",
+                        )
+                      }
+                      className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 

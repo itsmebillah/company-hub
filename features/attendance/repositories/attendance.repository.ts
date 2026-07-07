@@ -3,11 +3,17 @@ import "server-only";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type {
   AttendanceEmployeeOption,
+  AttendanceDetail,
   AttendanceListFilters,
   AttendanceListItem,
   AttendanceRecord,
+  AttendanceGpsInput,
   AttendanceStatus,
+  CompanyLocation,
 } from "@/features/attendance/types/attendance.types";
+
+const attendanceRecordSelect =
+  "id, company_id, employee_id, attendance_date, check_in, check_out, status, working_minutes, late_minutes, notes, check_in_latitude, check_in_longitude, check_in_accuracy_meters, check_in_location_id, check_in_distance_meters, check_out_latitude, check_out_longitude, check_out_accuracy_meters, check_out_location_id, check_out_distance_meters, created_at, updated_at";
 
 function toRecord(row: {
   id: string;
@@ -20,6 +26,16 @@ function toRecord(row: {
   working_minutes: number;
   late_minutes: number;
   notes: string | null;
+  check_in_latitude: number | null;
+  check_in_longitude: number | null;
+  check_in_accuracy_meters: number | null;
+  check_in_location_id: string | null;
+  check_in_distance_meters: number | null;
+  check_out_latitude: number | null;
+  check_out_longitude: number | null;
+  check_out_accuracy_meters: number | null;
+  check_out_location_id: string | null;
+  check_out_distance_meters: number | null;
   created_at: string;
   updated_at: string;
 }): AttendanceRecord {
@@ -34,6 +50,16 @@ function toRecord(row: {
     workingMinutes: row.working_minutes,
     lateMinutes: row.late_minutes,
     notes: row.notes,
+    checkInLatitude: row.check_in_latitude,
+    checkInLongitude: row.check_in_longitude,
+    checkInAccuracyMeters: row.check_in_accuracy_meters,
+    checkInLocationId: row.check_in_location_id,
+    checkInDistanceMeters: row.check_in_distance_meters,
+    checkOutLatitude: row.check_out_latitude,
+    checkOutLongitude: row.check_out_longitude,
+    checkOutAccuracyMeters: row.check_out_accuracy_meters,
+    checkOutLocationId: row.check_out_location_id,
+    checkOutDistanceMeters: row.check_out_distance_meters,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -49,7 +75,53 @@ type AttendanceRecordWithEmployeeRow = AttendanceRecordRow & {
       }
     | Array<{
         employee_id: string;
+      name: string;
+    }>;
+  check_in_location:
+    | {
         name: string;
+      }
+    | Array<{
+        name: string;
+      }>
+    | null;
+  check_out_location:
+    | {
+        name: string;
+      }
+    | Array<{
+        name: string;
+      }>
+    | null;
+};
+
+type AssignedCompanyLocationAccessRow = {
+  company_locations:
+    | {
+        id: string;
+        company_id: string;
+        name: string;
+        code: string;
+        location_type: CompanyLocation["locationType"];
+        latitude: number;
+        longitude: number;
+        radius_meters: number;
+        address: string | null;
+        status: CompanyLocation["status"];
+        is_default: boolean;
+      }
+    | Array<{
+        id: string;
+        company_id: string;
+        name: string;
+        code: string;
+        location_type: CompanyLocation["locationType"];
+        latitude: number;
+        longitude: number;
+        radius_meters: number;
+        address: string | null;
+        status: CompanyLocation["status"];
+        is_default: boolean;
       }>;
 };
 
@@ -58,9 +130,7 @@ export const AttendanceRepository = {
     const supabase = createSupabaseAdminClient();
     const { data, error } = await supabase
       .from("attendance_records")
-      .select(
-        "id, company_id, employee_id, attendance_date, check_in, check_out, status, working_minutes, late_minutes, notes, created_at, updated_at",
-      )
+      .select(attendanceRecordSelect)
       .eq("employee_id", employeeId)
       .eq("attendance_date", attendanceDate)
       .maybeSingle();
@@ -84,6 +154,9 @@ export const AttendanceRepository = {
     status: AttendanceStatus;
     lateMinutes: number;
     notes?: string | null;
+    gps: AttendanceGpsInput;
+    locationId: string;
+    distanceMeters: number;
   }) {
     const supabase = createSupabaseAdminClient();
     const { data, error } = await supabase
@@ -96,11 +169,14 @@ export const AttendanceRepository = {
         status: input.status,
         late_minutes: input.lateMinutes,
         notes: input.notes ?? null,
+        check_in_latitude: input.gps.latitude,
+        check_in_longitude: input.gps.longitude,
+        check_in_accuracy_meters: input.gps.accuracy,
+        check_in_location_id: input.locationId,
+        check_in_distance_meters: input.distanceMeters,
         updated_at: input.checkIn,
       })
-      .select(
-        "id, company_id, employee_id, attendance_date, check_in, check_out, status, working_minutes, late_minutes, notes, created_at, updated_at",
-      )
+      .select(attendanceRecordSelect)
       .single();
 
     if (error || !data) {
@@ -116,6 +192,9 @@ export const AttendanceRepository = {
     checkOut: string;
     status: AttendanceStatus;
     workingMinutes: number;
+    gps: AttendanceGpsInput;
+    locationId: string;
+    distanceMeters: number;
   }) {
     const supabase = createSupabaseAdminClient();
     const { data, error } = await supabase
@@ -124,12 +203,15 @@ export const AttendanceRepository = {
         check_out: input.checkOut,
         status: input.status,
         working_minutes: input.workingMinutes,
+        check_out_latitude: input.gps.latitude,
+        check_out_longitude: input.gps.longitude,
+        check_out_accuracy_meters: input.gps.accuracy,
+        check_out_location_id: input.locationId,
+        check_out_distance_meters: input.distanceMeters,
         updated_at: input.checkOut,
       })
       .eq("id", input.id)
-      .select(
-        "id, company_id, employee_id, attendance_date, check_in, check_out, status, working_minutes, late_minutes, notes, created_at, updated_at",
-      )
+      .select(attendanceRecordSelect)
       .single();
 
     if (error || !data) {
@@ -193,7 +275,7 @@ export const AttendanceRepository = {
     let query = supabase
       .from("attendance_records")
       .select(
-        "id, company_id, employee_id, attendance_date, check_in, check_out, status, working_minutes, late_minutes, notes, created_at, updated_at, employees!inner(employee_id, name)",
+        `${attendanceRecordSelect}, employees!inner(employee_id, name), check_in_location:company_locations!attendance_records_check_in_location_id_fkey(name), check_out_location:company_locations!attendance_records_check_out_location_id_fkey(name)`,
       )
       .eq("company_id", companyId);
 
@@ -234,12 +316,113 @@ export const AttendanceRepository = {
       const employee = Array.isArray(row.employees)
         ? row.employees[0]
         : row.employees;
+      const checkInLocation = Array.isArray(row.check_in_location)
+        ? row.check_in_location[0]
+        : row.check_in_location;
+      const checkOutLocation = Array.isArray(row.check_out_location)
+        ? row.check_out_location[0]
+        : row.check_out_location;
 
       return {
         ...record,
         employeeCode: employee?.employee_id ?? "Unknown",
         employeeName: employee?.name ?? "Unknown",
+        checkInLocationName: checkInLocation?.name ?? null,
+        checkOutLocationName: checkOutLocation?.name ?? null,
       };
+    });
+  },
+
+  async findDetailById(id: string): Promise<AttendanceDetail | null> {
+    const supabase = createSupabaseAdminClient();
+    const { data, error } = await supabase
+      .from("attendance_records")
+      .select(
+        `${attendanceRecordSelect}, employees!inner(employee_id, name), check_in_location:company_locations!attendance_records_check_in_location_id_fkey(name), check_out_location:company_locations!attendance_records_check_out_location_id_fkey(name)`,
+      )
+      .eq("id", id)
+      .maybeSingle();
+
+    if (error) {
+      console.error(
+        "[AttendanceRepository] Unable to load attendance detail.",
+        error,
+      );
+      throw new Error("Unable to load attendance detail.");
+    }
+
+    if (!data) {
+      return null;
+    }
+
+    const row = data as AttendanceRecordWithEmployeeRow;
+    const record = toRecord(row);
+    const employee = Array.isArray(row.employees)
+      ? row.employees[0]
+      : row.employees;
+    const checkInLocation = Array.isArray(row.check_in_location)
+      ? row.check_in_location[0]
+      : row.check_in_location;
+    const checkOutLocation = Array.isArray(row.check_out_location)
+      ? row.check_out_location[0]
+      : row.check_out_location;
+
+    return {
+      ...record,
+      employeeCode: employee?.employee_id ?? "Unknown",
+      employeeName: employee?.name ?? "Unknown",
+      checkInLocationName: checkInLocation?.name ?? null,
+      checkOutLocationName: checkOutLocation?.name ?? null,
+    };
+  },
+
+  async getAssignedCompanyLocations(companyId: string, employeeId: string) {
+    const supabase = createSupabaseAdminClient();
+    const today = new Date().toISOString().slice(0, 10);
+    const { data, error } = await supabase
+      .from("employee_location_access")
+      .select(
+        "effective_from, effective_to, company_locations!inner(id, company_id, name, code, location_type, latitude, longitude, radius_meters, address, status, is_default)",
+      )
+      .eq("employee_id", employeeId)
+      .eq("status", "active")
+      .eq("company_locations.company_id", companyId)
+      .eq("company_locations.status", "active")
+      .or(`effective_from.is.null,effective_from.lte.${today}`)
+      .or(`effective_to.is.null,effective_to.gte.${today}`)
+      .order("created_at", { ascending: true });
+
+    if (error) {
+      console.error(
+        "[AttendanceRepository] Unable to load assigned locations.",
+        error,
+      );
+      throw new Error("Unable to load assigned office locations.");
+    }
+
+    return (data as AssignedCompanyLocationAccessRow[]).flatMap(
+      (assignment): CompanyLocation[] => {
+      const location = Array.isArray(assignment.company_locations)
+        ? assignment.company_locations[0]
+        : assignment.company_locations;
+
+      if (!location) {
+        return [];
+      }
+
+      return [{
+        id: location.id,
+        companyId: location.company_id,
+        name: location.name,
+        code: location.code,
+        locationType: location.location_type,
+        latitude: location.latitude,
+        longitude: location.longitude,
+        radiusMeters: location.radius_meters,
+        address: location.address,
+        status: location.status,
+        isDefault: location.is_default,
+      }];
     });
   },
 

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { CalendarCheck, Clock, Search, Users } from "lucide-react";
 
 import { EmptyState } from "@/components/common/empty-state";
@@ -205,6 +206,7 @@ export function AdminAttendancePage({
                   <th className="px-4 py-3 font-medium">Check-out</th>
                   <th className="px-4 py-3 font-medium">Working Hours</th>
                   <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -224,6 +226,14 @@ export function AdminAttendancePage({
                     </td>
                     <td className="px-4 py-3">
                       <AttendanceStatusBadge status={record.status} />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Link
+                        href={`/admin/attendance/${record.id}`}
+                        className="text-sm font-semibold text-primary hover:underline"
+                      >
+                        View
+                      </Link>
                     </td>
                   </tr>
                 ))}
@@ -262,6 +272,12 @@ export function AdminAttendancePage({
                 <p className="text-xs text-muted-foreground">
                   Status: {getAttendanceStatusLabel(record.status)}
                 </p>
+                <Link
+                  href={`/admin/attendance/${record.id}`}
+                  className="inline-flex min-h-9 items-center rounded-md border px-3 text-sm font-semibold"
+                >
+                  View Detail
+                </Link>
               </article>
             ))}
           </div>

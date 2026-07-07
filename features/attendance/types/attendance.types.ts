@@ -14,8 +14,49 @@ export type AttendanceRecord = {
   workingMinutes: number;
   lateMinutes: number;
   notes: string | null;
+  checkInLatitude: number | null;
+  checkInLongitude: number | null;
+  checkInAccuracyMeters: number | null;
+  checkInLocationId: string | null;
+  checkInDistanceMeters: number | null;
+  checkOutLatitude: number | null;
+  checkOutLongitude: number | null;
+  checkOutAccuracyMeters: number | null;
+  checkOutLocationId: string | null;
+  checkOutDistanceMeters: number | null;
   createdAt: string;
   updatedAt: string;
+};
+
+export type CompanyLocationStatus = "active" | "inactive" | "archived";
+
+export type CompanyLocation = {
+  id: string;
+  companyId: string;
+  name: string;
+  code: string;
+  locationType: Database["public"]["Enums"]["company_location_type"];
+  latitude: number;
+  longitude: number;
+  radiusMeters: number;
+  address: string | null;
+  status: CompanyLocationStatus;
+  isDefault: boolean;
+};
+
+export type AttendanceGpsInput = {
+  latitude: number;
+  longitude: number;
+  accuracy: number;
+  timestamp?: string;
+};
+
+export type AttendanceLocationValidation = {
+  ok: boolean;
+  message: string;
+  locationName?: string;
+  distanceMeters?: number;
+  accuracyMeters?: number;
 };
 
 export type AttendanceEmployeeOption = {
@@ -34,6 +75,8 @@ export type TodayAttendance = {
 export type AttendanceListItem = AttendanceRecord & {
   employeeCode: string;
   employeeName: string;
+  checkInLocationName: string | null;
+  checkOutLocationName: string | null;
 };
 
 export type AttendanceListFilters = {
@@ -53,15 +96,24 @@ export type AttendanceActionState =
   | {
       ok: true;
       message: string;
+      locationName?: string;
+      distanceMeters?: number;
+      accuracyMeters?: number;
     }
   | {
       ok: false;
       message: string;
+      locationName?: string;
+      distanceMeters?: number;
+      accuracyMeters?: number;
     };
 
 export type AttendanceCheckInput = {
   notes?: string;
+  gps?: AttendanceGpsInput;
 };
+
+export type AttendanceDetail = AttendanceListItem;
 
 export type AdminAttendanceOverview = {
   today: string;
