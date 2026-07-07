@@ -1,5 +1,6 @@
 import "server-only";
 
+import { requireCurrentCompanyId } from "@/features/auth/services/current-employee-context.service";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { ResourceCategoryValidationService } from "@/features/resource-categories/services/resource-category-validation.service";
 import type {
@@ -14,40 +15,13 @@ function normalizeOptional(value: string) {
   return nextValue.length > 0 ? nextValue : null;
 }
 
-async function getActiveCompanyId() {
-  const supabase = createSupabaseAdminClient();
-  const { data, error } = await supabase
-    .from("companies")
-    .select("id")
-    .eq("status", "active")
-    .order("created_at", { ascending: true })
-    .limit(1);
-
-  if (error) {
-    console.error("[ResourceCategoryService] Unable to load active company.", error);
-    throw new Error("Unable to load company information.");
-  }
-
-  return data[0]?.id ?? null;
-}
-
-async function requireActiveCompanyId() {
-  const companyId = await getActiveCompanyId();
-
-  if (!companyId) {
-    throw new Error("Company was not found.");
-  }
-
-  return companyId;
-}
-
 async function assertCategoryUnique(
   name: string,
   displayOrder: number,
   currentId?: string,
 ) {
   const supabase = createSupabaseAdminClient();
-  const companyId = await requireActiveCompanyId();
+  const companyId = await requireCurrentCompanyId();
   let nameQuery = supabase
     .from("resource_categories")
     .select("id")
@@ -91,11 +65,7 @@ async function assertCategoryUnique(
 export const ResourceCategoryService = {
   async list(): Promise<ResourceCategoryListItem[]> {
     const supabase = createSupabaseAdminClient();
-    const companyId = await getActiveCompanyId();
-
-    if (!companyId) {
-      return [];
-    }
+    const companyId = await requireCurrentCompanyId();
 
     const { data, error } = await supabase
       .from("resource_categories")
@@ -121,7 +91,7 @@ export const ResourceCategoryService = {
   async create(values: ResourceCategoryFormValues) {
     const validated = ResourceCategoryValidationService.validate(values);
     const supabase = createSupabaseAdminClient();
-    const companyId = await requireActiveCompanyId();
+    const companyId = await requireCurrentCompanyId();
 
     await assertCategoryUnique(validated.name, validated.displayOrder);
 
@@ -143,6 +113,7 @@ export const ResourceCategoryService = {
   async update(id: string, values: ResourceCategoryFormValues) {
     const validated = ResourceCategoryValidationService.validate(values);
     const supabase = createSupabaseAdminClient();
+    const companyId = await requireCurrentCompanyId();
 
     await assertCategoryUnique(validated.name, validated.displayOrder, id);
 
@@ -155,6 +126,7 @@ export const ResourceCategoryService = {
         display_order: validated.displayOrder,
         status: validated.status,
       })
+      .eq("company_id", companyId)
       .eq("id", id);
 
     if (error) {
@@ -168,9 +140,11 @@ export const ResourceCategoryService = {
     status: Extract<ResourceCategoryStatus, "active" | "archived">,
   ) {
     const supabase = createSupabaseAdminClient();
+    const companyId = await requireCurrentCompanyId();
     const { error } = await supabase
       .from("resource_categories")
       .update({ status })
+      .eq("company_id", companyId)
       .eq("id", id);
 
     if (error) {

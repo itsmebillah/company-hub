@@ -1,6 +1,7 @@
 import "server-only";
 
 import { logActivity } from "@/features/activity/utils/activity-log";
+import { requireCurrentCompanyId } from "@/features/auth/services/current-employee-context.service";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import {
   RESOURCE_SORTS,
@@ -30,42 +31,11 @@ function parseSort(value: string | undefined): ResourceSort {
   return "display_order";
 }
 
-async function getActiveCompanyId() {
-  const supabase = createSupabaseAdminClient();
-  const { data, error } = await supabase
-    .from("companies")
-    .select("id")
-    .eq("status", "active")
-    .order("created_at", { ascending: true })
-    .limit(1);
-
-  if (error) {
-    console.error("[ResourceService] Unable to load active company.", error);
-    throw new Error("Unable to load company information.");
-  }
-
-  return data[0]?.id ?? null;
-}
-
-async function requireActiveCompanyId() {
-  const companyId = await getActiveCompanyId();
-
-  if (!companyId) {
-    throw new Error("Company was not found.");
-  }
-
-  return companyId;
-}
-
 export async function getResourceCategories(): Promise<
   ResourceCategoryOption[]
 > {
   const supabase = createSupabaseAdminClient();
-  const companyId = await getActiveCompanyId();
-
-  if (!companyId) {
-    return [];
-  }
+  const companyId = await requireCurrentCompanyId();
 
   const { data, error } = await supabase
     .from("resource_categories")
@@ -86,11 +56,7 @@ export async function listResources(
   filters: ResourceFilters,
 ): Promise<ResourceListResult> {
   const supabase = createSupabaseAdminClient();
-  const companyId = await getActiveCompanyId();
-
-  if (!companyId) {
-    return { resources: [] };
-  }
+  const companyId = await requireCurrentCompanyId();
 
   const search = filters.search?.trim();
   const sort = parseSort(filters.sort);
@@ -168,7 +134,7 @@ async function assertDisplayOrderAvailable(
   currentId?: string,
 ) {
   const supabase = createSupabaseAdminClient();
-  const companyId = await requireActiveCompanyId();
+  const companyId = await requireCurrentCompanyId();
   let query = supabase
     .from("resources")
     .select("id")
@@ -195,7 +161,7 @@ async function assertDisplayOrderAvailable(
 
 async function getNextDisplayOrder(categoryId: string) {
   const supabase = createSupabaseAdminClient();
-  const companyId = await requireActiveCompanyId();
+  const companyId = await requireCurrentCompanyId();
   const { data, error } = await supabase
     .from("resources")
     .select("display_order")
@@ -215,7 +181,7 @@ async function getNextDisplayOrder(categoryId: string) {
 export async function createResource(values: ResourceFormValues) {
   const validated = ResourceValidationService.validate(values);
   const supabase = createSupabaseAdminClient();
-  const companyId = await requireActiveCompanyId();
+  const companyId = await requireCurrentCompanyId();
 
   await assertDisplayOrderAvailable(values.categoryId, validated.displayOrder);
 
@@ -261,7 +227,7 @@ export async function createResource(values: ResourceFormValues) {
 export async function updateResource(id: string, values: ResourceFormValues) {
   const validated = ResourceValidationService.validate(values);
   const supabase = createSupabaseAdminClient();
-  const companyId = await requireActiveCompanyId();
+  const companyId = await requireCurrentCompanyId();
 
   await assertDisplayOrderAvailable(values.categoryId, validated.displayOrder, id);
 
@@ -303,7 +269,7 @@ export async function updateResource(id: string, values: ResourceFormValues) {
 
 export async function duplicateResource(id: string) {
   const supabase = createSupabaseAdminClient();
-  const companyId = await requireActiveCompanyId();
+  const companyId = await requireCurrentCompanyId();
   const { data: resource, error: loadError } = await supabase
     .from("resources")
     .select(
@@ -344,9 +310,11 @@ export async function setResourceStatus(
   status: Extract<ResourceStatus, "active" | "archived">,
 ) {
   const supabase = createSupabaseAdminClient();
+  const companyId = await requireCurrentCompanyId();
   const { error } = await supabase
     .from("resources")
     .update({ status })
+    .eq("company_id", companyId)
     .eq("id", id);
 
   if (error) {

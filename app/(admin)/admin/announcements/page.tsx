@@ -47,16 +47,26 @@ export default async function AdminAnnouncementsPage({
   searchParams,
 }: AdminAnnouncementsPageProps) {
   const params = await searchParams;
-  const result = await AnnouncementService.list({
-    search: params.search,
-    status: parseStatus(params.status),
-    priority: parsePriority(params.priority),
-    target: params.target === "company" ? "company" : "all",
-  });
+  const target =
+    params.target === "company" ||
+    params.target === "roles" ||
+    params.target === "employees"
+      ? params.target
+      : "all";
+  const [result, audienceOptions] = await Promise.all([
+    AnnouncementService.list({
+      search: params.search,
+      status: parseStatus(params.status),
+      priority: parsePriority(params.priority),
+      target,
+    }),
+    AnnouncementService.getAudienceOptions(),
+  ]);
 
   return (
     <AnnouncementManagementPage
       result={result}
+      audienceOptions={audienceOptions}
       filters={{
         search: params.search ?? "",
         status: params.status ?? "",

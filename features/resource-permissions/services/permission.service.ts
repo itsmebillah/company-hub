@@ -1,5 +1,7 @@
 import "server-only";
 
+import { logActivity } from "@/features/activity/utils/activity-log";
+import { requireCurrentCompanyId } from "@/features/auth/services/current-employee-context.service";
 import { NotificationService } from "@/features/notifications/services/notification.service";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { PermissionValidationService } from "@/features/resource-permissions/services/permission-validation.service";
@@ -13,33 +15,6 @@ import type {
 
 type ResourcePermissionInsert =
   Database["public"]["Tables"]["resource_permissions"]["Insert"];
-
-async function getActiveCompanyId() {
-  const supabase = createSupabaseAdminClient();
-  const { data, error } = await supabase
-    .from("companies")
-    .select("id")
-    .eq("status", "active")
-    .order("created_at", { ascending: true })
-    .limit(1);
-
-  if (error) {
-    console.error("[PermissionService] Unable to load active company.", error);
-    throw new Error("Unable to load company information.");
-  }
-
-  return data[0]?.id ?? null;
-}
-
-async function requireActiveCompanyId() {
-  const companyId = await getActiveCompanyId();
-
-  if (!companyId) {
-    throw new Error("Company was not found.");
-  }
-
-  return companyId;
-}
 
 function buildPermissionStates(
   permissions: Array<{
@@ -88,16 +63,7 @@ function buildPermissionStates(
 export const PermissionService = {
   async getManagementData(): Promise<ResourcePermissionManagementData> {
     const supabase = createSupabaseAdminClient();
-    const companyId = await getActiveCompanyId();
-
-    if (!companyId) {
-      return {
-        resources: [],
-        roles: [],
-        employees: [],
-        permissions: [],
-      };
-    }
+    const companyId = await requireCurrentCompanyId();
 
     const [categoriesResult, resourcesResult, rolesResult, employeesResult, permissionsResult] =
       await Promise.all([
@@ -203,7 +169,7 @@ export const PermissionService = {
     PermissionValidationService.validateDraft(draft);
 
     const supabase = createSupabaseAdminClient();
-    const companyId = await requireActiveCompanyId();
+    const companyId = await requireCurrentCompanyId();
     const { data: resource, error: resourceError } = await supabase
       .from("resources")
       .select("id, title, status")
@@ -255,17 +221,29 @@ export const PermissionService = {
       throw new Error("Unable to replace permissions.");
     }
 
-    if (rows.length === 0) {
-      return;
+    if (rows.length > 0) {
+      const { error: insertError } = await supabase
+        .from("resource_permissions")
+        .insert(rows);
+
+      if (insertError) {
+        throw new Error("Unable to save permissions.");
+      }
     }
 
-    const { error: insertError } = await supabase
-      .from("resource_permissions")
-      .insert(rows);
-
-    if (insertError) {
-      throw new Error("Unable to save permissions.");
-    }
+    await logActivity({
+      companyId,
+      module: "permissions",
+      action: "updated",
+      entityType: "resources",
+      entityId: resourceId,
+      description: `Updated resource permissions for ${resource.title}`,
+      metadata: {
+        isPublic: draft.isPublic,
+        roleCount: draft.roleIds.length,
+        employeeCount: draft.employeeIds.length,
+      },
+    });
 
     if (resource.status === "active") {
       try {

@@ -11,7 +11,6 @@ import {
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type ProfilePhotoUploaderProps = {
-  employeeId: string;
   name: string;
   value: string;
   onChange: (value: string) => void;
@@ -26,15 +25,55 @@ function getInitials(name: string) {
     .join("");
 }
 
-function profilePhotoPath(employeeId: string, file: File) {
-  const safeName = file.name.toLowerCase().replace(/[^a-z0-9._-]/g, "-");
-  const normalizedEmployeeId = employeeId.trim().toUpperCase();
+function getImageExtension(file: File) {
+  const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
 
-  return `${normalizedEmployeeId}/${Date.now()}-${safeName}`;
+  if (["jpg", "jpeg", "png", "webp", "gif"].includes(extension)) {
+    return extension === "jpeg" ? "jpg" : extension;
+  }
+
+  return "jpg";
+}
+
+function profilePhotoPath(authUserId: string, file: File) {
+  return `${authUserId}/avatar.${getImageExtension(file)}`;
+}
+
+function getUploadErrorMessage(error: unknown) {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  if (
+    error &&
+    typeof error === "object" &&
+    "message" in error &&
+    typeof error.message === "string"
+  ) {
+    return error.message;
+  }
+
+  return "Storage upload failed.";
+}
+
+function logProfilePhotoUploadError(
+  step: string,
+  details: {
+    bucket: string;
+    storagePath?: string;
+    authUserId?: string;
+    error: unknown;
+  },
+) {
+  console.error("[ProfilePhotoUploader]", step, {
+    bucket: details.bucket,
+    storagePath: details.storagePath,
+    authUserId: details.authUserId,
+    error: details.error,
+  });
 }
 
 export function ProfilePhotoUploader({
-  employeeId,
   name,
   value,
   onChange,
@@ -67,18 +106,44 @@ export function ProfilePhotoUploader({
       return;
     }
 
+    if (!file.type.startsWith("image/")) {
+      setUploadError("Please choose a valid image file.");
+      event.target.value = "";
+      return;
+    }
+
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);
     }
 
     const nextPreviewUrl = URL.createObjectURL(file);
-    const storagePath = profilePhotoPath(employeeId, file);
 
     setPreviewUrl(nextPreviewUrl);
     setUploadError("");
     setIsUploading(true);
 
     const supabase = createSupabaseBrowserClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      setIsUploading(false);
+      URL.revokeObjectURL(nextPreviewUrl);
+      setPreviewUrl("");
+      const message = getUploadErrorMessage(authError);
+
+      logProfilePhotoUploadError("Unable to resolve authenticated user.", {
+        bucket: PROFILE_PHOTOS_BUCKET,
+        error: authError ?? new Error("No authenticated user."),
+      });
+      setUploadError(`Unable to upload profile photo: ${message}`);
+      event.target.value = "";
+      return;
+    }
+
+    const storagePath = profilePhotoPath(user.id, file);
     const { error } = await supabase.storage
       .from(PROFILE_PHOTOS_BUCKET)
       .upload(storagePath, file, {
@@ -92,12 +157,22 @@ export function ProfilePhotoUploader({
     if (error) {
       URL.revokeObjectURL(nextPreviewUrl);
       setPreviewUrl("");
-      setUploadError("Unable to upload profile photo. Please try another image.");
+      const message = getUploadErrorMessage(error);
+
+      logProfilePhotoUploadError("Storage upload failed.", {
+        bucket: PROFILE_PHOTOS_BUCKET,
+        storagePath,
+        authUserId: user.id,
+        error,
+      });
+      setUploadError(`Unable to upload profile photo: ${message}`);
       onChange("");
+      event.target.value = "";
       return;
     }
 
     onChange(storagePath);
+    event.target.value = "";
   }
 
   return (
@@ -147,7 +222,7 @@ export function ProfilePhotoUploader({
             <input
               value={value}
               onChange={(event) => onChange(event.target.value)}
-              placeholder={`${employeeId}/avatar.jpg`}
+              placeholder="Upload a photo to generate a secure storage path"
               className="h-11 w-full rounded-md border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
             <label className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-md border bg-background px-4 text-sm font-medium">

@@ -37,6 +37,23 @@ export const AnnouncementValidationService = {
       }
     }
 
+    if (
+      !["company", "roles", "employees"].includes(values.targetAudience)
+    ) {
+      throw new Error("Target audience is invalid.");
+    }
+
+    const roleIds = Array.from(new Set(values.roleIds.filter(Boolean)));
+    const employeeIds = Array.from(new Set(values.employeeIds.filter(Boolean)));
+
+    if (values.targetAudience === "roles" && roleIds.length === 0) {
+      throw new Error("Select at least one role.");
+    }
+
+    if (values.targetAudience === "employees" && employeeIds.length === 0) {
+      throw new Error("Select at least one employee.");
+    }
+
     return {
       title: values.title.trim(),
       description: [values.description.trim(), values.content.trim()]
@@ -47,6 +64,9 @@ export const AnnouncementValidationService = {
       publishFrom: values.publishFrom || null,
       publishUntil: values.publishUntil || null,
       status: values.status,
+      targetAudience: values.targetAudience,
+      roleIds: values.targetAudience === "roles" ? roleIds : [],
+      employeeIds: values.targetAudience === "employees" ? employeeIds : [],
     };
   },
 };

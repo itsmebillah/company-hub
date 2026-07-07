@@ -480,6 +480,7 @@ export type Database = {
           priority: Database["public"]["Enums"]["announcement_priority"];
           publish_from: string | null;
           publish_until: string | null;
+          target_audience: "company" | "roles" | "employees";
           created_by: string | null;
           updated_by: string | null;
           created_at: string;
@@ -495,6 +496,7 @@ export type Database = {
           priority?: Database["public"]["Enums"]["announcement_priority"];
           publish_from?: string | null;
           publish_until?: string | null;
+          target_audience?: "company" | "roles" | "employees";
           created_by?: string | null;
           updated_by?: string | null;
           created_at?: string;
@@ -510,11 +512,60 @@ export type Database = {
           priority?: Database["public"]["Enums"]["announcement_priority"];
           publish_from?: string | null;
           publish_until?: string | null;
+          target_audience?: "company" | "roles" | "employees";
           created_by?: string | null;
           updated_by?: string | null;
           created_at?: string;
           updated_at?: string;
           status?: Database["public"]["Enums"]["record_status"];
+        };
+        Relationships: [];
+      };
+      announcement_roles: {
+        Row: {
+          id: string;
+          company_id: string;
+          announcement_id: string;
+          role_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          company_id: string;
+          announcement_id: string;
+          role_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          company_id?: string;
+          announcement_id?: string;
+          role_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      announcement_employees: {
+        Row: {
+          id: string;
+          company_id: string;
+          announcement_id: string;
+          employee_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          company_id: string;
+          announcement_id: string;
+          employee_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          company_id?: string;
+          announcement_id?: string;
+          employee_id?: string;
+          created_at?: string;
         };
         Relationships: [];
       };

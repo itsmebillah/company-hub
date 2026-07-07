@@ -65,7 +65,6 @@ export function ProfileDetailsForm({
   return (
     <form className="space-y-5" onSubmit={handleSubmit} noValidate>
       <ProfilePhotoUploader
-        employeeId={profile.employeeId}
         name={profile.fullName}
         value={values.photoUrl}
         onChange={(value) => updateValue("photoUrl", value)}

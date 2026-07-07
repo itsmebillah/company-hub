@@ -16,6 +16,7 @@ import { AnnouncementPreview } from "@/features/announcements/components/announc
 import { ANNOUNCEMENT_PRIORITIES } from "@/features/announcements/constants/announcement-options";
 import type {
   AnnouncementActionState,
+  AnnouncementAudienceOptions,
   AnnouncementFormValues,
   AnnouncementListItem,
   AnnouncementListResult,
@@ -23,6 +24,7 @@ import type {
 
 type AnnouncementManagementPageProps = {
   result: AnnouncementListResult;
+  audienceOptions: AnnouncementAudienceOptions;
   filters: {
     search: string;
     status: string;
@@ -51,6 +53,7 @@ function formatDate(value: string) {
 
 export function AnnouncementManagementPage({
   result,
+  audienceOptions,
   filters,
   onCreate,
   onUpdate,
@@ -155,6 +158,8 @@ export function AnnouncementManagementPage({
           >
             <option value="">All targets</option>
             <option value="company">Entire Company</option>
+            <option value="roles">Selected Roles</option>
+            <option value="employees">Selected Employees</option>
           </select>
         </div>
       </div>
@@ -296,6 +301,7 @@ export function AnnouncementManagementPage({
       {isCreating || editingAnnouncement ? (
         <AnnouncementForm
           announcement={editingAnnouncement}
+          audienceOptions={audienceOptions}
           onClose={closeForm}
           onSubmit={
             editingAnnouncement

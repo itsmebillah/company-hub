@@ -17,6 +17,8 @@ export async function createResourceCategoryAction(
     await ResourceCategoryService.create(values);
     revalidatePath(CATEGORIES_PATH);
     revalidatePath("/admin/resources");
+    revalidatePath("/dashboard");
+    revalidatePath("/resources");
 
     return { ok: true, message: "Category created." };
   } catch (error) {
@@ -36,6 +38,8 @@ export async function updateResourceCategoryAction(
     await ResourceCategoryService.update(id, values);
     revalidatePath(CATEGORIES_PATH);
     revalidatePath("/admin/resources");
+    revalidatePath("/dashboard");
+    revalidatePath("/resources");
 
     return { ok: true, message: "Category updated." };
   } catch (error) {
@@ -54,6 +58,8 @@ export async function archiveResourceCategoryAction(
     await ResourceCategoryService.setStatus(id, "archived");
     revalidatePath(CATEGORIES_PATH);
     revalidatePath("/admin/resources");
+    revalidatePath("/dashboard");
+    revalidatePath("/resources");
 
     return { ok: true, message: "Category archived." };
   } catch {
@@ -68,6 +74,8 @@ export async function restoreResourceCategoryAction(
     await ResourceCategoryService.setStatus(id, "active");
     revalidatePath(CATEGORIES_PATH);
     revalidatePath("/admin/resources");
+    revalidatePath("/dashboard");
+    revalidatePath("/resources");
 
     return { ok: true, message: "Category restored." };
   } catch {

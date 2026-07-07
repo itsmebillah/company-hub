@@ -8,6 +8,7 @@ import { AnnouncementImage } from "@/features/announcements/components/announcem
 import { ANNOUNCEMENT_PRIORITIES } from "@/features/announcements/constants/announcement-options";
 import type {
   AnnouncementActionState,
+  AnnouncementAudienceOptions,
   AnnouncementFormValues,
   AnnouncementListItem,
 } from "@/features/announcements/types/announcement.types";
@@ -16,6 +17,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type AnnouncementFormProps = {
   announcement?: AnnouncementListItem | null;
+  audienceOptions: AnnouncementAudienceOptions;
   onClose: () => void;
   onSubmit: (values: AnnouncementFormValues) => Promise<AnnouncementActionState>;
 };
@@ -30,6 +32,8 @@ const defaultValues: AnnouncementFormValues = {
   publishUntil: "",
   status: "active",
   targetAudience: "company",
+  roleIds: [],
+  employeeIds: [],
 };
 
 function toValues(announcement?: AnnouncementListItem | null) {
@@ -50,6 +54,9 @@ function toValues(announcement?: AnnouncementListItem | null) {
       ? announcement.publishUntil.slice(0, 16)
       : "",
     status: announcement.status,
+    targetAudience: announcement.targetAudience,
+    roleIds: announcement.roleIds,
+    employeeIds: announcement.employeeIds,
   };
 }
 
@@ -61,6 +68,7 @@ function getAnnouncementImagePath(file: File) {
 
 export function AnnouncementForm({
   announcement,
+  audienceOptions,
   onClose,
   onSubmit,
 }: AnnouncementFormProps) {
@@ -78,6 +86,21 @@ export function AnnouncementForm({
     value: AnnouncementFormValues[Key],
   ) {
     setValues((current) => ({ ...current, [key]: value }));
+  }
+
+  function toggleSelection(
+    key: "roleIds" | "employeeIds",
+    id: string,
+    checked: boolean,
+  ) {
+    setValues((current) => {
+      const currentIds = current[key];
+      const nextIds = checked
+        ? Array.from(new Set([...currentIds, id]))
+        : currentIds.filter((item) => item !== id);
+
+      return { ...current, [key]: nextIds };
+    });
   }
 
   async function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
@@ -326,17 +349,73 @@ export function AnnouncementForm({
                         value as AnnouncementFormValues["targetAudience"],
                       )
                     }
-                    disabled={value !== "company"}
                   />
                   {label}
                 </label>
               ))}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Existing schema stores company-wide announcements. Role and
-              employee targeting are prepared in the UI and require a future
-              audience table to persist.
-            </p>
+
+            {values.targetAudience === "roles" ? (
+              <div className="grid max-h-48 gap-2 overflow-y-auto rounded-md border bg-background p-3 sm:grid-cols-2">
+                {audienceOptions.roles.map((role) => (
+                  <label
+                    key={role.id}
+                    className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={values.roleIds.includes(role.id)}
+                      onChange={(event) =>
+                        toggleSelection("roleIds", role.id, event.target.checked)
+                      }
+                    />
+                    {role.label}
+                  </label>
+                ))}
+                {audienceOptions.roles.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    No active roles found.
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+
+            {values.targetAudience === "employees" ? (
+              <div className="grid max-h-56 gap-2 overflow-y-auto rounded-md border bg-background p-3 sm:grid-cols-2">
+                {audienceOptions.employees.map((employee) => (
+                  <label
+                    key={employee.id}
+                    className="flex items-start gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={values.employeeIds.includes(employee.id)}
+                      onChange={(event) =>
+                        toggleSelection(
+                          "employeeIds",
+                          employee.id,
+                          event.target.checked,
+                        )
+                      }
+                      className="mt-1"
+                    />
+                    <span>
+                      <span className="block font-medium">{employee.label}</span>
+                      {employee.description ? (
+                        <span className="block text-xs text-muted-foreground">
+                          {employee.description}
+                        </span>
+                      ) : null}
+                    </span>
+                  </label>
+                ))}
+                {audienceOptions.employees.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    No active employees found.
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
           </fieldset>
 
           {message ? (

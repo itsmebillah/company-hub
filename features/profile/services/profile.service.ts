@@ -2,6 +2,7 @@ import "server-only";
 
 import { redirect } from "next/navigation";
 
+import { logActivity } from "@/features/activity/utils/activity-log";
 import { getCurrentAuthUser } from "@/features/auth/services/auth.service";
 import type {
   ProfileData,
@@ -56,7 +57,7 @@ async function getCurrentEmployee() {
   const { data: employee, error } = await supabase
     .from("employees")
     .select(
-      "id, employee_id, name, phone, email, date_of_birth, joining_date, photo_url, manager_id, role_id, status",
+      "id, employee_id, name, phone, email, date_of_birth, joining_date, photo_url, manager_id, company_id, role_id, status",
     )
     .eq("auth_user_id", user.id)
     .single();
@@ -124,5 +125,17 @@ export const ProfileService = {
     if (error) {
       throw new Error("Unable to update profile.");
     }
+
+    await logActivity({
+      companyId: employee.company_id,
+      module: "employee",
+      action: "updated",
+      entityType: "employees",
+      entityId: employee.id,
+      description: `Updated profile for ${employee.name}`,
+      metadata: {
+        photoUpdated: Boolean(values.photoUrl),
+      },
+    });
   },
 };

@@ -13,8 +13,22 @@ export type AnnouncementListItem = {
   publishFrom: string;
   publishUntil: string;
   status: AnnouncementStatus;
+  targetAudience: "company" | "roles" | "employees";
+  roleIds: string[];
+  employeeIds: string[];
   createdAt: string;
   updatedAt: string;
+};
+
+export type AnnouncementAudienceOption = {
+  id: string;
+  label: string;
+  description?: string;
+};
+
+export type AnnouncementAudienceOptions = {
+  roles: AnnouncementAudienceOption[];
+  employees: AnnouncementAudienceOption[];
 };
 
 export type AnnouncementFormValues = {
@@ -27,6 +41,8 @@ export type AnnouncementFormValues = {
   publishUntil: string;
   status: AnnouncementStatus;
   targetAudience: "company" | "roles" | "employees";
+  roleIds: string[];
+  employeeIds: string[];
 };
 
 export type AnnouncementFilters = {

@@ -1,6 +1,7 @@
 import "server-only";
 
 import { logActivity } from "@/features/activity/utils/activity-log";
+import { requireCurrentCompanyId } from "@/features/auth/services/current-employee-context.service";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getAllowedManagerRole } from "@/features/employees/constants/employee-rules";
 import type {
@@ -65,20 +66,12 @@ function logEmployeeServiceError(context: string, error: unknown) {
 }
 
 async function getActiveCompanyId() {
-  const supabase = createSupabaseAdminClient();
-  const { data, error } = await supabase
-    .from("companies")
-    .select("id")
-    .eq("status", "active")
-    .order("created_at", { ascending: true })
-    .limit(1);
-
-  if (error) {
-    logEmployeeServiceError("Unable to load active company.", error);
-    throw new Error("Unable to load company information.");
+  try {
+    return await requireCurrentCompanyId();
+  } catch (error) {
+    logEmployeeServiceError("Unable to load current company.", error);
+    return null;
   }
-
-  return data[0]?.id ?? null;
 }
 
 async function requireActiveCompanyId() {

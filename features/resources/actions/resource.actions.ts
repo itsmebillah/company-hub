@@ -21,6 +21,8 @@ export async function createResourceAction(
   try {
     await createResource(values);
     revalidatePath(RESOURCES_PATH);
+    revalidatePath("/dashboard");
+    revalidatePath("/resources");
 
     return { ok: true, message: "Resource created." };
   } catch (error) {
@@ -39,6 +41,8 @@ export async function updateResourceAction(
   try {
     await updateResource(id, values);
     revalidatePath(RESOURCES_PATH);
+    revalidatePath("/dashboard");
+    revalidatePath("/resources");
 
     return { ok: true, message: "Resource updated." };
   } catch (error) {
@@ -56,6 +60,8 @@ export async function archiveResourceAction(
   try {
     await setResourceStatus(id, "archived");
     revalidatePath(RESOURCES_PATH);
+    revalidatePath("/dashboard");
+    revalidatePath("/resources");
 
     return { ok: true, message: "Resource archived." };
   } catch {
@@ -69,6 +75,8 @@ export async function duplicateResourceAction(
   try {
     await duplicateResource(id);
     revalidatePath(RESOURCES_PATH);
+    revalidatePath("/dashboard");
+    revalidatePath("/resources");
 
     return { ok: true, message: "Resource duplicated." };
   } catch (error) {
@@ -88,6 +96,8 @@ export async function restoreResourceAction(
   try {
     await setResourceStatus(id, "active");
     revalidatePath(RESOURCES_PATH);
+    revalidatePath("/dashboard");
+    revalidatePath("/resources");
 
     return { ok: true, message: "Resource restored." };
   } catch {

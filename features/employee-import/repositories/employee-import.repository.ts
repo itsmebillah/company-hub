@@ -1,5 +1,6 @@
 import "server-only";
 
+import { requireCurrentCompanyId } from "@/features/auth/services/current-employee-context.service";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type {
   EmployeeImportRecentJob,
@@ -10,12 +11,12 @@ import type {
 export const EmployeeImportRepository = {
   async getActiveCompany() {
     const supabase = createSupabaseAdminClient();
+    const companyId = await requireCurrentCompanyId();
     const { data, error } = await supabase
       .from("companies")
       .select("id, name")
+      .eq("id", companyId)
       .eq("status", "active")
-      .order("created_at", { ascending: true })
-      .limit(1)
       .maybeSingle();
 
     if (error) {

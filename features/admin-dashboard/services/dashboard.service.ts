@@ -332,7 +332,7 @@ export async function getAdminDashboardData(): Promise<DashboardData> {
     }
 
     const summary = await getCachedExecutiveSummary(companyId);
-    const health = {
+    const health: DashboardData["health"] = {
       authentication: session?.status === "active" ? "healthy" : "warning",
       database: "healthy" as const,
       storage: "warning" as const,
