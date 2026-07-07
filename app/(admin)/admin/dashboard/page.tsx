@@ -1,64 +1,73 @@
 import {
-  Bell,
-  CalendarCheck,
-  Database,
-  FolderKanban,
-  Megaphone,
-  ShieldCheck,
-  Settings,
-  Server,
-  UploadCloud,
-  Users,
-} from "lucide-react";
-
-import {
+  AreaChart,
+  BarChart,
   DashboardHeader,
+  ExecutiveOverview,
   KPICard,
+  LineChart,
+  PieChart,
   QuickActionCard,
-  RecentAnnouncements,
-  RecentEmployees,
-  RecentResources,
-  SummaryPanel,
+  RecentActivity,
   SystemStatus,
 } from "@/features/admin-dashboard/components";
 import { DashboardService } from "@/features/admin-dashboard/services/dashboard.service";
 import { appConfig } from "@/lib/config/app";
+import {
+  Bell,
+  CalendarClock,
+  CheckCircle2,
+  Database,
+  FileClock,
+  FolderKanban,
+  Megaphone,
+  Server,
+  UploadCloud,
+  UserCheck,
+  UserMinus,
+  UserX,
+  Users,
+} from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
-const currentDate = new Intl.DateTimeFormat("en", {
-  dateStyle: "full",
-}).format(new Date());
-
 const quickActions = [
   {
-    title: "Manage Employees",
-    description: "Review employee records, roles, and reporting structure.",
-    href: "/admin/users",
+    title: "Create Employee",
+    description: "Open the employee workspace and add a new company user.",
+    href: "/admin/users/new",
     icon: Users,
   },
   {
-    title: "Manage Resources",
-    description: "Organize links, documents, and internal tools.",
-    href: "/admin/resources",
-    icon: FolderKanban,
-  },
-  {
-    title: "Announcements",
-    description: "Publish company updates for employee visibility.",
+    title: "Create Announcement",
+    description: "Publish a new company-wide update from the announcements module.",
     href: "/admin/announcements",
     icon: Megaphone,
   },
   {
-    title: "Company Settings",
-    description: "Maintain company profile and platform preferences.",
-    href: "/admin/company",
-    icon: Settings,
+    title: "Create Resource",
+    description: "Add a new approved resource, link, or internal tool.",
+    href: "/admin/resources",
+    icon: FolderKanban,
   },
-];
+  {
+    title: "Approve Leave",
+    description: "Review and process pending leave requests from the queue.",
+    href: "/admin/leave/requests",
+    icon: FileClock,
+  },
+  {
+    title: "Manage Attendance",
+    description: "Open attendance operations for today's workforce activity.",
+    href: "/admin/attendance",
+    icon: CalendarClock,
+  },
+] as const;
 
 export default async function AdminDashboardPage() {
   const dashboard = await DashboardService.getAdminDashboardData();
+  const currentDate = new Intl.DateTimeFormat("en-US", {
+    dateStyle: "full",
+  }).format(new Date());
   const kpis = [
     {
       title: "Employees",
@@ -70,75 +79,110 @@ export default async function AdminDashboardPage() {
     {
       title: "Active Employees",
       value: String(dashboard.counts.activeEmployees),
-      trend: "Currently active records",
-      icon: Users,
+      trend: "Ready for current company operations",
+      icon: UserCheck,
       tone: "green" as const,
     },
     {
       title: "Inactive Employees",
       value: String(dashboard.counts.inactiveEmployees),
-      trend: `${dashboard.counts.archivedEmployees} archived employees`,
-      icon: Users,
+      trend: "Employee records currently inactive",
+      icon: UserMinus,
       tone: "amber" as const,
     },
     {
-      title: "Resources",
-      value: String(dashboard.counts.resources),
-      trend: "Available resource links",
-      icon: FolderKanban,
+      title: "Today's Attendance",
+      value: String(dashboard.counts.todaysAttendance),
+      trend: "Attendance records created today",
+      icon: CalendarClock,
+      tone: "blue" as const,
+    },
+    {
+      title: "Present",
+      value: String(dashboard.counts.presentToday),
+      trend: "Checked in on time",
+      icon: CheckCircle2,
+      tone: "green" as const,
+    },
+    {
+      title: "Late",
+      value: String(dashboard.counts.lateToday),
+      trend: "Employees with late arrival status",
+      icon: CalendarClock,
+      tone: "amber" as const,
+    },
+    {
+      title: "Absent",
+      value: String(dashboard.counts.absentToday),
+      trend: "Active employees without a check-in",
+      icon: UserX,
       tone: "violet" as const,
     },
     {
-      title: "Categories",
-      value: String(dashboard.counts.categories),
-      trend: "Resource groups",
+      title: "Pending Leave Requests",
+      value: String(dashboard.counts.pendingLeaveRequests),
+      trend: "Requests awaiting a decision",
+      icon: FileClock,
+      tone: "amber" as const,
+    },
+    {
+      title: "Approved Leave",
+      value: String(dashboard.counts.approvedLeaveRequests),
+      trend: "Approved leave requests on record",
+      icon: CheckCircle2,
+      tone: "green" as const,
+    },
+    {
+      title: "Rejected Leave",
+      value: String(dashboard.counts.rejectedLeaveRequests),
+      trend: "Rejected leave requests on record",
+      icon: UserX,
+      tone: "violet" as const,
+    },
+    {
+      title: "Active Resources",
+      value: String(dashboard.counts.activeResources),
+      trend: "Approved resources currently active",
       icon: FolderKanban,
       tone: "blue" as const,
     },
     {
-      title: "Announcements",
-      value: String(dashboard.counts.announcements),
-      trend: "Published and archived records",
+      title: "Active Announcements",
+      value: String(dashboard.counts.activeAnnouncements),
+      trend: "Announcement records marked active",
+      icon: Megaphone,
+      tone: "amber" as const,
+    },
+    {
+      title: "Unread Notifications",
+      value: String(dashboard.counts.unreadNotifications),
+      trend: "Unread company notifications",
       icon: Bell,
-      tone: "amber" as const,
-    },
-    {
-      title: "Present Today",
-      value: String(dashboard.counts.presentToday),
-      trend: `${dashboard.counts.checkedInToday} checked in`,
-      icon: CalendarCheck,
-      tone: "green" as const,
-    },
-    {
-      title: "Late Today",
-      value: String(dashboard.counts.lateToday),
-      trend: `${dashboard.counts.notCheckedInToday} not checked in`,
-      icon: CalendarCheck,
-      tone: "amber" as const,
+      tone: "violet" as const,
     },
   ];
   const systemStatus = [
     {
       label: "Authentication",
-      description: "Supabase Auth service",
+      description: "Supabase Auth session health",
       status: dashboard.health.authentication,
-      icon: ShieldCheck,
+      icon: UserCheck,
     },
     {
       label: "Database",
-      description: "Supabase PostgreSQL",
+      description: "Supabase PostgreSQL availability",
       status: dashboard.health.database,
       icon: Database,
     },
     {
       label: "Storage",
-      description: "Asset storage readiness",
+      description: "Storage readiness requires live runtime verification",
       status: dashboard.health.storage,
       icon: UploadCloud,
     },
     {
       label: "Environment",
-      description: appConfig.environment,
+      description: appConfig.environment ?? "unknown",
       status: dashboard.health.environment,
       icon: Server,
     },
@@ -156,8 +200,8 @@ export default async function AdminDashboardPage() {
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-6">
           <section>
-            <h2 className="mb-3 text-base font-semibold">Key Metrics</h2>
-            <div className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-3">
+            <h2 className="mb-3 text-base font-semibold">Executive KPI</h2>
+            <div className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-4">
               {kpis.map((kpi) => (
                 <KPICard key={kpi.title} {...kpi} />
               ))}
@@ -166,34 +210,54 @@ export default async function AdminDashboardPage() {
 
           <section>
             <h2 className="mb-3 text-base font-semibold">Quick Actions</h2>
-            <div className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-4">
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {quickActions.map((action) => (
                 <QuickActionCard key={action.href} {...action} />
               ))}
             </div>
           </section>
 
-          <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_420px]">
-            <RecentEmployees employees={dashboard.recentEmployees} />
-            <SystemStatus items={systemStatus} />
-          </div>
+          <section>
+            <h2 className="mb-3 text-base font-semibold">Analytics</h2>
+            <div className="grid gap-4 2xl:grid-cols-2">
+              <LineChart
+                title="Attendance Trend"
+                description="Daily attendance record volume for the last seven days."
+                data={dashboard.charts.attendanceTrend}
+              />
+              <AreaChart
+                title="Operational Activity"
+                description="Recent changes captured across employees, attendance, leave, resources, and announcements."
+                data={dashboard.charts.activityTrend}
+              />
+              <BarChart
+                title="Leave Breakdown"
+                description="Current leave request status totals from the leave module."
+                data={dashboard.charts.leaveStatusBreakdown}
+              />
+              <PieChart
+                title="Employee Status Mix"
+                description="Current distribution of employee records by status."
+                data={dashboard.charts.employeeStatusDistribution}
+              />
+            </div>
+          </section>
 
-          <div className="grid gap-4 2xl:grid-cols-2">
-            <RecentAnnouncements
-              announcements={dashboard.recentAnnouncements}
-            />
-            <RecentResources resources={dashboard.recentResources} />
+          <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_380px]">
+            <RecentActivity items={dashboard.recentActivity} />
+            <SystemStatus items={systemStatus} />
           </div>
         </div>
 
-        <SummaryPanel
-          currentDate={currentDate}
-          version={appConfig.version}
-          activeEmployees={dashboard.counts.activeEmployees}
-          inactiveEmployees={dashboard.counts.inactiveEmployees}
-          archivedEmployees={dashboard.counts.archivedEmployees}
-          announcements={dashboard.counts.announcements}
-        />
+        <div className="space-y-4">
+          <ExecutiveOverview
+            companyName={dashboard.companyName}
+            companyLogo={dashboard.companyLogo}
+            currentDate={currentDate}
+            totalModules={dashboard.totalModules}
+            systemStatus={dashboard.overallSystemStatus}
+          />
+        </div>
       </div>
     </section>
   );

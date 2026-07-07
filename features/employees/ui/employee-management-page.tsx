@@ -1,8 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Download, Plus, UsersRound } from "lucide-react";
+import { Download, Plus, UploadCloud, UsersRound } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/common/empty-state";
@@ -128,9 +129,15 @@ export function EmployeeManagementPage({
             <Plus className="size-4" aria-hidden="true" />
             New Employee
           </Button>
+          <Button type="button" variant="outline" className="h-10" asChild>
+            <Link href="/admin/users/import">
+              <UploadCloud className="size-4" aria-hidden="true" />
+              Import
+            </Link>
+          </Button>
           <Button type="button" variant="outline" className="h-10">
             <Download className="size-4" aria-hidden="true" />
-            Export
+            Export Soon
           </Button>
         </div>
       </div>

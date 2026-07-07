@@ -26,26 +26,54 @@ export type DashboardResource = {
   resourceType: Database["public"]["Enums"]["resource_type"];
 };
 
+export type DashboardChartPoint = {
+  label: string;
+  value: number;
+};
+
+export type DashboardPieSlice = {
+  label: string;
+  value: number;
+  color: string;
+};
+
+export type DashboardRecentActivityItem = {
+  id: string;
+  title: string;
+  description: string;
+  time: string;
+  module: string;
+  action: string;
+};
+
 export type DashboardData = {
   companyName: string;
   companyLogo: string | null;
   loggedInUserName: string;
+  totalModules: number;
+  overallSystemStatus: DashboardSystemStatus;
   counts: {
     employees: number;
     activeEmployees: number;
     inactiveEmployees: number;
-    archivedEmployees: number;
-    resources: number;
-    categories: number;
-    announcements: number;
+    todaysAttendance: number;
     presentToday: number;
     lateToday: number;
-    checkedInToday: number;
-    notCheckedInToday: number;
+    absentToday: number;
+    pendingLeaveRequests: number;
+    approvedLeaveRequests: number;
+    rejectedLeaveRequests: number;
+    activeResources: number;
+    activeAnnouncements: number;
+    unreadNotifications: number;
   };
-  recentEmployees: DashboardEmployee[];
-  recentAnnouncements: DashboardAnnouncement[];
-  recentResources: DashboardResource[];
+  charts: {
+    attendanceTrend: DashboardChartPoint[];
+    leaveStatusBreakdown: DashboardChartPoint[];
+    employeeStatusDistribution: DashboardPieSlice[];
+    activityTrend: DashboardChartPoint[];
+  };
+  recentActivity: DashboardRecentActivityItem[];
   health: {
     authentication: DashboardSystemStatus;
     database: DashboardSystemStatus;

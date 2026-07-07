@@ -1,6 +1,12 @@
+export { AreaChart } from "./area-chart";
+export { BarChart } from "./bar-chart";
+export { ChartCard } from "./chart-card";
 export { ActivityCard } from "./activity-card";
 export { DashboardHeader } from "./dashboard-header";
+export { ExecutiveOverview } from "./executive-overview";
 export { KPICard } from "./kpi-card";
+export { LineChart } from "./line-chart";
+export { PieChart } from "./pie-chart";
 export { QuickActionCard } from "./quick-action-card";
 export { RecentActivity } from "./recent-activity";
 export { RecentAnnouncements } from "./recent-announcements";

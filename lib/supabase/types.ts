@@ -165,6 +165,134 @@ export type Database = {
         };
         Relationships: [];
       };
+      employee_import_jobs: {
+        Row: {
+          id: string;
+          company_id: string;
+          created_by: string | null;
+          source_file_name: string;
+          source_file_path: string | null;
+          file_type: Database["public"]["Enums"]["employee_import_file_type"];
+          status: Database["public"]["Enums"]["employee_import_status"];
+          total_rows: number;
+          valid_rows: number;
+          invalid_rows: number;
+          processed_rows: number;
+          successful_rows: number;
+          failed_rows: number;
+          error_summary: Json;
+          metadata: Json;
+          created_at: string;
+          updated_at: string;
+          completed_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          company_id: string;
+          created_by?: string | null;
+          source_file_name: string;
+          source_file_path?: string | null;
+          file_type: Database["public"]["Enums"]["employee_import_file_type"];
+          status?: Database["public"]["Enums"]["employee_import_status"];
+          total_rows?: number;
+          valid_rows?: number;
+          invalid_rows?: number;
+          processed_rows?: number;
+          successful_rows?: number;
+          failed_rows?: number;
+          error_summary?: Json;
+          metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+          completed_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          company_id?: string;
+          created_by?: string | null;
+          source_file_name?: string;
+          source_file_path?: string | null;
+          file_type?: Database["public"]["Enums"]["employee_import_file_type"];
+          status?: Database["public"]["Enums"]["employee_import_status"];
+          total_rows?: number;
+          valid_rows?: number;
+          invalid_rows?: number;
+          processed_rows?: number;
+          successful_rows?: number;
+          failed_rows?: number;
+          error_summary?: Json;
+          metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+          completed_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "employee_import_jobs_company_id_fkey";
+            columns: ["company_id"];
+            isOneToOne: false;
+            referencedRelation: "companies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "employee_import_jobs_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "employees";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      employee_import_rows: {
+        Row: {
+          id: string;
+          import_job_id: string;
+          row_number: number;
+          raw_data: Json;
+          normalized_data: Json;
+          validation_errors: Json;
+          duplicate_keys: Json;
+          status: Database["public"]["Enums"]["employee_import_row_status"];
+          employee_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          import_job_id: string;
+          row_number: number;
+          raw_data?: Json;
+          normalized_data?: Json;
+          validation_errors?: Json;
+          duplicate_keys?: Json;
+          status?: Database["public"]["Enums"]["employee_import_row_status"];
+          employee_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          import_job_id?: string;
+          row_number?: number;
+          raw_data?: Json;
+          normalized_data?: Json;
+          validation_errors?: Json;
+          duplicate_keys?: Json;
+          status?: Database["public"]["Enums"]["employee_import_row_status"];
+          employee_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "employee_import_rows_import_job_id_fkey";
+            columns: ["import_job_id"];
+            isOneToOne: false;
+            referencedRelation: "employee_import_jobs";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       roles: {
         Row: {
           id: string;
@@ -906,6 +1034,21 @@ export type Database = {
         | "factory"
         | "depot"
         | "client_site";
+      employee_import_file_type: "csv" | "xlsx";
+      employee_import_row_status:
+        | "pending"
+        | "valid"
+        | "invalid"
+        | "processed"
+        | "failed";
+      employee_import_status:
+        | "uploaded"
+        | "preview_ready"
+        | "validated"
+        | "processing"
+        | "completed"
+        | "failed"
+        | "cancelled";
       holiday_type:
         | "public_holiday"
         | "company_holiday"
