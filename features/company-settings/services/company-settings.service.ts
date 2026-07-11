@@ -180,11 +180,9 @@ export async function getCompanySettings(): Promise<CompanySettingsValues> {
   const company = await getActiveCompany();
   const [{ data, error }, locationsResult] = await Promise.all([
     supabase
-    .from("company_settings")
-    .select(
-      "company_name, short_name, company_logo, company_banner, favicon, primary_color, secondary_color, support_phone, support_email, website, address, timezone, date_format, language, currency, working_days, office_start_time, office_end_time, notification_preferences, resource_preferences, security_preferences, default_theme",
-    )
-    .eq("company_id", company.id)
+      .from("company_settings")
+      .select("*")
+      .eq("company_id", company.id)
       .maybeSingle(),
     supabase
       .from("company_locations")
@@ -195,6 +193,11 @@ export async function getCompanySettings(): Promise<CompanySettingsValues> {
   ]);
 
   if (error || locationsResult.error) {
+    console.error("[CompanySettingsService.getCompanySettings] Unable to load settings.", {
+      companyId: company.id,
+      settingsError: error,
+      locationsError: locationsResult.error,
+    });
     throw new Error("Unable to load company settings.");
   }
 

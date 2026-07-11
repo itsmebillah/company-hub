@@ -23,16 +23,17 @@ export const AttendancePolicyRepository = {
     const supabase = createSupabaseAdminClient();
     const { data, error } = await supabase
       .from("company_settings")
-      .select(
-        "attendance_mode, gps_accuracy_threshold_meters, allowed_radius_meters, allow_early_check_in_minutes, allow_late_check_out, require_gps, require_selfie, require_high_accuracy, enable_geofence, face_verification_enabled, wifi_validation_enabled, bluetooth_beacon_enabled",
-      )
+      .select("*")
       .eq("company_id", companyId)
       .maybeSingle();
 
     if (error) {
       console.error(
-        "[AttendancePolicyRepository] Unable to load attendance settings.",
-        error,
+        "[AttendancePolicyRepository.getSettings] Unable to load attendance settings.",
+        {
+          companyId,
+          error,
+        },
       );
       throw new Error("Unable to load attendance settings.");
     }
