@@ -8,6 +8,7 @@ import { AdminHeader } from "@/components/admin/admin-header";
 import { AdminMobileDrawer } from "@/components/admin/admin-mobile-drawer";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import type { AuthSessionProfile } from "@/features/auth/types/auth.types";
+import { NativeNotificationBridge } from "@/features/notifications/components";
 import type { NotificationSummary } from "@/features/notifications/types/notification.types";
 import type { SchemaVersionStatus } from "@/features/schema-version/services/schema-version.service";
 
@@ -71,6 +72,7 @@ export function AdminShell({
           </main>
         </div>
       </div>
+      <NativeNotificationBridge summary={notificationSummary} />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { AppFooter } from "@/components/common/app-footer";
 import { AppHeader } from "@/components/common/app-header";
 import { MobileBottomNav } from "@/components/common/mobile-bottom-nav";
 import { PageContainer } from "@/components/common/page-container";
+import { NativeNotificationBridge } from "@/features/notifications/components";
 import { NotificationService } from "@/features/notifications/services/notification.service";
 
 type AppLayoutProps = {
@@ -21,6 +22,7 @@ export async function AppLayout({ children }: AppLayoutProps) {
       </PageContainer>
       <AppFooter />
       <MobileBottomNav />
+      <NativeNotificationBridge summary={notificationSummary} />
     </div>
   );
 }
