@@ -400,7 +400,7 @@ export const AttendanceRepository = {
       throw new Error("Unable to load assigned office locations.");
     }
 
-    return (data as AssignedCompanyLocationAccessRow[]).flatMap(
+    const assignedLocations = (data as AssignedCompanyLocationAccessRow[]).flatMap(
       (assignment): CompanyLocation[] => {
       const location = Array.isArray(assignment.company_locations)
         ? assignment.company_locations[0]
@@ -424,6 +424,42 @@ export const AttendanceRepository = {
         isDefault: location.is_default,
       }];
     });
+
+    if (assignedLocations.length > 0) {
+      return assignedLocations;
+    }
+
+    const { data: companyLocations, error: companyLocationsError } = await supabase
+      .from("company_locations")
+      .select(
+        "id, company_id, name, code, location_type, latitude, longitude, radius_meters, address, status, is_default",
+      )
+      .eq("company_id", companyId)
+      .eq("status", "active")
+      .order("is_default", { ascending: false })
+      .order("name", { ascending: true });
+
+    if (companyLocationsError) {
+      console.error(
+        "[AttendanceRepository] Unable to load company fallback locations.",
+        companyLocationsError,
+      );
+      throw new Error("Unable to load office locations.");
+    }
+
+    return companyLocations.map((location): CompanyLocation => ({
+      id: location.id,
+      companyId: location.company_id,
+      name: location.name,
+      code: location.code,
+      locationType: location.location_type,
+      latitude: location.latitude,
+      longitude: location.longitude,
+      radiusMeters: location.radius_meters,
+      address: location.address,
+      status: location.status,
+      isDefault: location.is_default,
+    }));
   },
 
   async getStatusCount(

@@ -21,10 +21,15 @@ export async function prepareCheckInAction(
       distanceMeters: result.distanceMeters,
       accuracyMeters: result.accuracyMeters,
     };
-  } catch {
+  } catch (error) {
+    console.error("[AttendanceAction] Prepare check-in failed.", error);
+
     return {
       ok: false,
-      message: "Unable to prepare check-in.",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Unable to prepare check-in.",
     };
   }
 }
@@ -42,10 +47,15 @@ export async function prepareCheckOutAction(
       distanceMeters: result.distanceMeters,
       accuracyMeters: result.accuracyMeters,
     };
-  } catch {
+  } catch (error) {
+    console.error("[AttendanceAction] Prepare check-out failed.", error);
+
     return {
       ok: false,
-      message: "Unable to prepare check-out.",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Unable to prepare check-out.",
     };
   }
 }

@@ -107,13 +107,13 @@ async function validateGpsForCompany(
   );
 
   if (locations.length === 0) {
-    throw new Error("No active office location is assigned to your profile.");
+    throw new Error("No active office location is configured for attendance.");
   }
 
   const nearest = findNearestCompanyLocation(gps, locations);
 
   if (!nearest) {
-    throw new Error("No active office location is assigned to your profile.");
+    throw new Error("No active office location is configured for attendance.");
   }
 
   if (nearest.distanceMeters > nearest.location.radiusMeters) {

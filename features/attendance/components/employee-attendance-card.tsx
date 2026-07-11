@@ -108,6 +108,22 @@ export function EmployeeAttendanceCard({
     return elapsedMinutes;
   }, [elapsedMinutes, record]);
 
+  async function resolvePermissionState() {
+    if (!("permissions" in navigator) || !navigator.permissions?.query) {
+      return null;
+    }
+
+    try {
+      const status = await navigator.permissions.query({
+        name: "geolocation",
+      });
+
+      return status.state;
+    } catch {
+      return null;
+    }
+  }
+
   useEffect(() => {
     if (!record?.checkIn || record.checkOut) {
       return;
@@ -120,11 +136,33 @@ export function EmployeeAttendanceCard({
     return () => window.clearInterval(interval);
   }, [record?.checkIn, record?.checkOut]);
 
-  function readCurrentLocation() {
+  async function readCurrentLocation() {
+    if (!window.isSecureContext) {
+      setGps(null);
+      setLocationStatus({
+        ok: false,
+        message:
+          "Location requires a secure browser context. Use HTTPS or localhost.",
+      });
+      return;
+    }
+
     if (!("geolocation" in navigator)) {
+      setGps(null);
       setLocationStatus({
         ok: false,
         message: "Location is not available on this device.",
+      });
+      return;
+    }
+
+    const permissionState = await resolvePermissionState();
+
+    if (permissionState === "denied") {
+      setGps(null);
+      setLocationStatus({
+        ok: false,
+        message: "Location permission denied.",
       });
       return;
     }
@@ -151,13 +189,16 @@ export function EmployeeAttendanceCard({
       (error) => {
         const message =
           error.code === error.PERMISSION_DENIED
-            ? "Location permission was denied."
+            ? "Location permission denied."
             : error.code === error.POSITION_UNAVAILABLE
-              ? "Your current location is unavailable."
-              : "Location request timed out. Please try again.";
+              ? "Location unavailable."
+              : "Location timeout.";
 
         setGps(null);
-        setLocationStatus({ ok: false, message });
+        setLocationStatus({
+          ok: false,
+          message: error.message ? `${message} ${error.message}` : message,
+        });
         setIsLocating(false);
       },
       {
