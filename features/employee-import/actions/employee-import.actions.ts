@@ -1,29 +1,57 @@
 "use server";
 
+import {
+  getEmployeeImportFailedRows,
+  previewEmployeeImport,
+  processEmployeeImportBatch,
+} from "@/features/employee-import/services/employee-import.service";
 import type {
   EmployeeImportActionState,
+  EmployeeImportExecutionState,
+  EmployeeImportFailedRowExport,
   EmployeeImportUploadValues,
 } from "@/features/employee-import/types/employee-import.types";
-import { EmployeeImportService } from "@/features/employee-import/services/employee-import.service";
 
-export async function prepareEmployeeImportAction(
+export async function previewEmployeeImportAction(
   values: EmployeeImportUploadValues,
 ): Promise<EmployeeImportActionState> {
   try {
-    return await EmployeeImportService.prepareFoundation(values);
+    return await previewEmployeeImport(values);
   } catch (error) {
     return {
       ok: false,
       message:
         error instanceof Error
           ? error.message
-          : "Unable to prepare employee import foundation.",
+          : "Unable to prepare employee import preview.",
       issues: [
         {
           field: "file",
-          message: "Unable to prepare employee import foundation.",
+          message: "Unable to prepare employee import preview.",
         },
       ],
     };
   }
+}
+
+export async function processEmployeeImportBatchAction(
+  jobId: string,
+): Promise<EmployeeImportExecutionState> {
+  try {
+    return await processEmployeeImportBatch(jobId);
+  } catch (error) {
+    return {
+      ok: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "Unable to process employee import batch.",
+    };
+  }
+}
+
+export async function getEmployeeImportFailedRowsAction(
+  jobId: string,
+): Promise<EmployeeImportFailedRowExport[]> {
+  return getEmployeeImportFailedRows(jobId);
 }

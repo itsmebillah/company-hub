@@ -1,30 +1,50 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useRef, useState, useTransition, type ChangeEvent } from "react";
+import { useRef, useState, useTransition, type ChangeEvent } from "react";
 import {
+  AlertCircle,
   ArrowLeft,
   Download,
   FileSpreadsheet,
   Loader2,
+  Play,
+  RotateCcw,
   ShieldCheck,
+  Trash2,
   UploadCloud,
   Users,
+  XCircle,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { parseEmployeeImportFile } from "@/features/employee-import/services/employee-import-parser";
 import type {
   EmployeeImportActionState,
+  EmployeeImportExecutionState,
+  EmployeeImportFailedRowExport,
   EmployeeImportFileMetadata,
   EmployeeImportFoundationData,
+  EmployeeImportPreviewResult,
   EmployeeImportUploadValues,
 } from "@/features/employee-import/types/employee-import.types";
 
-type EmployeeImportFoundationPageProps = {
+type EmployeeImportPageProps = {
   data: EmployeeImportFoundationData;
-  onPrepareImport: (
+  onPreviewImport: (
     values: EmployeeImportUploadValues,
   ) => Promise<EmployeeImportActionState>;
+  onProcessBatch: (jobId: string) => Promise<EmployeeImportExecutionState>;
+  onGetFailedRows: (jobId: string) => Promise<EmployeeImportFailedRowExport[]>;
+};
+
+type ImportSummaryState = {
+  imported: number;
+  failed: number;
+  remaining: number;
+  skipped: number;
+  duplicate: number;
+  total: number;
 };
 
 function formatBytes(value: number) {
@@ -37,6 +57,56 @@ function formatBytes(value: number) {
   }
 
   return `${(value / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function buildFailedRowCsv(rows: EmployeeImportFailedRowExport[]) {
+  const headers = [
+    "row_number",
+    "employee_id",
+    "employee_name",
+    "phone",
+    "role_name",
+    "manager_employee_id",
+    "joining_date",
+    "status",
+    "email",
+    "date_of_birth",
+    "photo_url",
+    "reason",
+  ];
+
+  const escape = (value: string) => `"${value.replace(/"/g, '""')}"`;
+  const body = rows.map((row) =>
+    [
+      String(row.rowNumber),
+      row.employeeId,
+      row.employeeName,
+      row.phone,
+      row.roleName,
+      row.managerEmployeeId,
+      row.joiningDate,
+      row.status,
+      row.email,
+      row.dateOfBirth,
+      row.photoUrl,
+      row.reason,
+    ]
+      .map(escape)
+      .join(","),
+  );
+
+  return [headers.join(","), ...body].join("\n");
+}
+
+function downloadCsv(fileName: string, content: string) {
+  const blob = new Blob([content], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+
+  anchor.href = url;
+  anchor.download = fileName;
+  anchor.click();
+  URL.revokeObjectURL(url);
 }
 
 function StatCard({
@@ -59,36 +129,83 @@ function StatCard({
 
 export function EmployeeImportFoundationPage({
   data,
-  onPrepareImport,
-}: EmployeeImportFoundationPageProps) {
+  onPreviewImport,
+  onProcessBatch,
+  onGetFailedRows,
+}: EmployeeImportPageProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [isPending, startTransition] = useTransition();
+  const [isPreparingPreview, startPreviewTransition] = useTransition();
+  const [isImporting, startImportTransition] = useTransition();
+  const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<EmployeeImportFileMetadata | null>(
     null,
   );
-  const [result, setResult] = useState<EmployeeImportActionState | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-
-  const acceptedFormats = useMemo(
-    () => ".csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv",
-    [],
+  const [previewState, setPreviewState] = useState<EmployeeImportActionState | null>(
+    null,
   );
+  const [progressMessage, setProgressMessage] = useState("");
+  const [summary, setSummary] = useState<ImportSummaryState | null>(null);
+  const [batchRows, setBatchRows] = useState<string[]>([]);
+  const [failedRows, setFailedRows] = useState<EmployeeImportFailedRowExport[]>([]);
 
-  function toFileMetadata(file: File): EmployeeImportFileMetadata {
-    return {
+  const preview = previewState?.ok ? previewState.preview : null;
+
+  function resetImportState() {
+    setSelectedFile(null);
+    setPreviewState(null);
+    setProgressMessage("");
+    setSummary(null);
+    setBatchRows([]);
+    setFailedRows([]);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }
+
+  async function preparePreview(file: File) {
+    const metadata: EmployeeImportFileMetadata = {
       name: file.name,
       size: file.size,
       mimeType: file.type,
+      lastModified: file.lastModified,
     };
-  }
 
-  function runPreparation(file: File) {
-    const metadata = toFileMetadata(file);
     setSelectedFile(metadata);
+    setProgressMessage("Parsing file...");
+    setSummary(null);
+    setBatchRows([]);
+    setFailedRows([]);
 
-    startTransition(async () => {
-      const nextResult = await onPrepareImport({ file: metadata });
-      setResult(nextResult);
+    startPreviewTransition(async () => {
+      try {
+        const parsed = await parseEmployeeImportFile(file);
+        setProgressMessage("Running validation preview...");
+        const result = await onPreviewImport({
+          file: { ...metadata, mimeType: metadata.mimeType || parsed.fileType },
+          rows: parsed.rows,
+        });
+        setPreviewState(result);
+        setProgressMessage(
+          result.ok
+            ? "Preview ready. Review rows, then start the import."
+            : result.message,
+        );
+      } catch (error) {
+        setPreviewState({
+          ok: false,
+          message:
+            error instanceof Error ? error.message : "Unable to parse import file.",
+          issues: [
+            {
+              field: "file",
+              message:
+                error instanceof Error ? error.message : "Unable to parse import file.",
+            },
+          ],
+        });
+        setProgressMessage("Unable to parse the selected file.");
+      }
     });
   }
 
@@ -99,7 +216,50 @@ export function EmployeeImportFoundationPage({
       return;
     }
 
-    runPreparation(file);
+    void preparePreview(file);
+  }
+
+  function startImport(jobId: string) {
+    startImportTransition(async () => {
+      setProgressMessage("Import started...");
+      const failedExportRows: EmployeeImportFailedRowExport[] = [];
+
+      while (true) {
+        const result = await onProcessBatch(jobId);
+
+        if (!result.ok) {
+          setProgressMessage(result.message);
+          break;
+        }
+
+        setSummary({
+          imported: result.importedCount,
+          failed: result.failedCount,
+          remaining: result.remainingCount,
+          skipped: result.skippedCount,
+          duplicate: result.duplicateCount,
+          total: result.totalRows,
+        });
+        setBatchRows(
+          result.rows.map(
+            (row) =>
+              `Row ${row.rowNumber}: ${row.employeeId || "Unknown"} - ${row.status} (${row.reason})`,
+          ),
+        );
+        setProgressMessage(
+          result.completed
+            ? "Import completed."
+            : `Importing... ${result.importedCount} imported, ${result.failedCount} failed, ${result.remainingCount} remaining.`,
+        );
+
+        if (result.completed) {
+          const rows = await onGetFailedRows(jobId);
+          failedExportRows.push(...rows);
+          setFailedRows(rows);
+          break;
+        }
+      }
+    });
   }
 
   return (
@@ -116,8 +276,8 @@ export function EmployeeImportFoundationPage({
           <div>
             <h1 className="text-2xl font-semibold">Import Employees</h1>
             <p className="text-sm text-muted-foreground">
-              Prepare a safe, scalable employee import workflow for {data.companyName}
-              without executing records yet.
+              Parse, validate, preview, import, and summarize employee files for{" "}
+              {data.companyName}.
             </p>
           </div>
         </div>
@@ -129,9 +289,13 @@ export function EmployeeImportFoundationPage({
               Download Template
             </Link>
           </Button>
+          <Button type="button" variant="outline" onClick={resetImportState}>
+            <RotateCcw className="size-4" aria-hidden="true" />
+            Reset
+          </Button>
           <Button type="button" onClick={() => fileInputRef.current?.click()}>
             <UploadCloud className="size-4" aria-hidden="true" />
-            Choose File
+            Browse File
           </Button>
         </div>
       </div>
@@ -139,7 +303,7 @@ export function EmployeeImportFoundationPage({
       <input
         ref={fileInputRef}
         type="file"
-        accept={acceptedFormats}
+        accept=".csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"
         className="hidden"
         onChange={onFileChange}
       />
@@ -148,26 +312,26 @@ export function EmployeeImportFoundationPage({
         <StatCard
           title="Employees"
           value={String(data.employeeCount)}
-          description="Existing records available for duplicate detection architecture."
+          description="Existing records used for duplicate validation."
         />
         <StatCard
           title="Active Roles"
           value={String(data.roleCount)}
-          description="Future role mapping will use current active role definitions."
+          description="Role mapping uses active role definitions from the company."
         />
         <StatCard
           title="Manager Options"
           value={String(data.managerCount)}
-          description="Reporting manager checks will reuse the current employee hierarchy."
+          description="Manager mapping uses active employees inside the current company."
         />
         <StatCard
           title="Upload Limit"
           value={formatBytes(data.maxUploadSizeBytes)}
-          description="Foundation file validation is ready for CSV and Excel uploads."
+          description="Maximum supported upload size for CSV and Excel import files."
         />
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
         <div className="space-y-6">
           <section className="rounded-xl border bg-card p-5 shadow-sm">
             <div className="flex items-center gap-3">
@@ -175,9 +339,9 @@ export function EmployeeImportFoundationPage({
                 <UploadCloud className="size-5" aria-hidden="true" />
               </div>
               <div>
-                <h2 className="text-base font-semibold">Upload Source</h2>
+                <h2 className="text-base font-semibold">Upload</h2>
                 <p className="text-sm text-muted-foreground">
-                  Drag and drop a CSV or Excel file, or choose one from your device.
+                  Drag and drop a CSV or Excel file, replace it at any time, or remove it.
                 </p>
               </div>
             </div>
@@ -199,10 +363,10 @@ export function EmployeeImportFoundationPage({
                 const file = event.dataTransfer.files?.[0];
 
                 if (file) {
-                  runPreparation(file);
+                  void preparePreview(file);
                 }
               }}
-              className={`mt-5 flex min-h-52 w-full flex-col items-center justify-center rounded-xl border border-dashed px-6 py-10 text-center transition-colors ${
+              className={`mt-5 flex min-h-56 w-full flex-col items-center justify-center rounded-xl border border-dashed px-6 py-10 text-center transition-colors ${
                 isDragging
                   ? "border-primary bg-primary/5"
                   : "border-border bg-background hover:border-primary/40 hover:bg-accent/20"
@@ -211,12 +375,10 @@ export function EmployeeImportFoundationPage({
               <div className="flex size-12 items-center justify-center rounded-full bg-secondary text-secondary-foreground">
                 <FileSpreadsheet className="size-6" aria-hidden="true" />
               </div>
-              <p className="mt-4 text-base font-semibold">
-                Drop your import file here
-              </p>
+              <p className="mt-4 text-base font-semibold">Drop CSV or Excel here</p>
               <p className="mt-2 max-w-lg text-sm text-muted-foreground">
-                Supported formats: {data.supportedFormats.join(" and ")}. This sprint
-                validates file readiness only and does not import employees yet.
+                Supported formats: {data.supportedFormats.join(" and ")}. File parsing and
+                preview validation run before any employee is imported.
               </p>
               <p className="mt-4 text-xs text-muted-foreground">
                 Maximum size: {formatBytes(data.maxUploadSizeBytes)}
@@ -233,28 +395,42 @@ export function EmployeeImportFoundationPage({
                       : "No file selected yet."}
                   </p>
                 </div>
-                {isPending ? (
-                  <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-                    <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-                    Preparing foundation
-                  </div>
-                ) : null}
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    Replace
+                  </Button>
+                  <Button type="button" size="sm" variant="outline" onClick={resetImportState}>
+                    <Trash2 className="size-4" aria-hidden="true" />
+                    Remove
+                  </Button>
+                </div>
               </div>
 
-              {result?.ok ? (
-                <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200">
-                  {result.message}
+              {(isPreparingPreview || isImporting) && (
+                <div className="mt-4 inline-flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                  {progressMessage || "Working..."}
                 </div>
+              )}
+
+              {!isPreparingPreview && !isImporting && progressMessage ? (
+                <p className="mt-4 text-sm text-muted-foreground">{progressMessage}</p>
               ) : null}
 
-              {result && !result.ok ? (
+              {previewState && !previewState.ok ? (
                 <div className="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
-                  <p className="font-medium">{result.message}</p>
+                  <div className="flex items-center gap-2 font-medium">
+                    <AlertCircle className="size-4" aria-hidden="true" />
+                    {previewState.message}
+                  </div>
                   <ul className="mt-2 space-y-1">
-                    {result.issues.map((issue) => (
-                      <li key={`${issue.field}-${issue.message}`}>
-                        {issue.message}
-                      </li>
+                    {previewState.issues.map((issue) => (
+                      <li key={`${issue.field}-${issue.message}`}>{issue.message}</li>
                     ))}
                   </ul>
                 </div>
@@ -270,12 +446,10 @@ export function EmployeeImportFoundationPage({
               <div>
                 <h2 className="text-base font-semibold">Import Wizard</h2>
                 <p className="text-sm text-muted-foreground">
-                  The pipeline is designed now so future sprints can add parsing,
-                  validation, preview, import, and summary without refactoring.
+                  End-to-end import pipeline with real parsing, preview, import, and summary.
                 </p>
               </div>
             </div>
-
             <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               {data.wizardSteps.map((step, index) => (
                 <div key={step.key} className="rounded-lg border bg-background p-4">
@@ -289,87 +463,209 @@ export function EmployeeImportFoundationPage({
                 </div>
               ))}
             </div>
+          </section>
 
-            <div className="mt-5 rounded-lg border bg-background p-4">
-              <div className="flex items-center justify-between gap-3">
+          {preview ? (
+            <section className="rounded-xl border bg-card p-5 shadow-sm">
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
-                  <p className="font-medium">Progress Placeholder</p>
+                  <h2 className="text-base font-semibold">Preview</h2>
                   <p className="text-sm text-muted-foreground">
-                    {result?.ok
-                      ? result.preparedFile.progressLabel
-                      : "Upload validation is available now. Preview and execution remain disabled until later sprints."}
+                    Review valid rows, invalid rows, and duplicate detection before import.
                   </p>
                 </div>
-                <span className="rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
-                  Foundation Only
-                </span>
+                <Button
+                  type="button"
+                  onClick={() => startImport(preview.jobId)}
+                  disabled={isImporting || preview.summary.validRows === 0}
+                >
+                  <Play className="size-4" aria-hidden="true" />
+                  Start Import
+                </Button>
               </div>
-            </div>
-          </section>
 
-          <section className="rounded-xl border bg-card p-5 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-lg bg-secondary text-secondary-foreground">
-                <FileSpreadsheet className="size-5" aria-hidden="true" />
+              <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <StatCard
+                  title="Total Rows"
+                  value={String(preview.summary.totalRows)}
+                  description="Parsed from the selected file."
+                />
+                <StatCard
+                  title="Valid Rows"
+                  value={String(preview.summary.validRows)}
+                  description="Ready for import execution."
+                />
+                <StatCard
+                  title="Invalid Rows"
+                  value={String(preview.summary.invalidRows)}
+                  description="Require correction before import."
+                />
+                <StatCard
+                  title="Duplicate Rows"
+                  value={String(preview.summary.duplicateRows)}
+                  description="Detected in-file or against current company records."
+                />
               </div>
-              <div>
-                <h2 className="text-base font-semibold">Template Columns</h2>
-                <p className="text-sm text-muted-foreground">
-                  Start imports with one stable schema across CSV and Excel sources.
-                </p>
-              </div>
-            </div>
 
-            <div className="mt-5 overflow-x-auto">
-              <table className="min-w-full text-sm">
-                <thead>
-                  <tr className="border-b text-left text-muted-foreground">
-                    <th className="px-3 py-2 font-medium">Column</th>
-                    <th className="px-3 py-2 font-medium">Required</th>
-                    <th className="px-3 py-2 font-medium">Description</th>
-                    <th className="px-3 py-2 font-medium">Example</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.templateColumns.map((column) => (
-                    <tr key={column.key} className="border-b last:border-b-0">
-                      <td className="px-3 py-3 font-medium">{column.label}</td>
-                      <td className="px-3 py-3">
-                        {column.required ? "Yes" : "No"}
-                      </td>
-                      <td className="px-3 py-3 text-muted-foreground">
-                        {column.description}
-                      </td>
-                      <td className="px-3 py-3 text-muted-foreground">
-                        {column.example}
-                      </td>
+              <div className="mt-5 overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <thead>
+                    <tr className="border-b text-left text-muted-foreground">
+                      <th className="px-3 py-2 font-medium">Row</th>
+                      <th className="px-3 py-2 font-medium">Employee ID</th>
+                      <th className="px-3 py-2 font-medium">Name</th>
+                      <th className="px-3 py-2 font-medium">Phone</th>
+                      <th className="px-3 py-2 font-medium">Role</th>
+                      <th className="px-3 py-2 font-medium">Manager</th>
+                      <th className="px-3 py-2 font-medium">Status</th>
+                      <th className="px-3 py-2 font-medium">Issues</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
+                  </thead>
+                  <tbody>
+                    {preview.rows.map((row) => (
+                      <tr key={row.rowNumber} className="border-b last:border-b-0">
+                        <td className="px-3 py-3">{row.rowNumber}</td>
+                        <td
+                          className={`px-3 py-3 ${
+                            row.issues.some((issue) => issue.field === "employeeId")
+                              ? "bg-destructive/10 text-destructive"
+                              : ""
+                          }`}
+                        >
+                          {row.normalized.employeeId}
+                        </td>
+                        <td className="px-3 py-3">{row.normalized.name}</td>
+                        <td
+                          className={`px-3 py-3 ${
+                            row.issues.some((issue) => issue.field === "phone")
+                              ? "bg-destructive/10 text-destructive"
+                              : ""
+                          }`}
+                        >
+                          {row.normalized.phone}
+                        </td>
+                        <td
+                          className={`px-3 py-3 ${
+                            row.issues.some((issue) => issue.field === "roleName")
+                              ? "bg-destructive/10 text-destructive"
+                              : ""
+                          }`}
+                        >
+                          {row.normalized.roleName}
+                        </td>
+                        <td
+                          className={`px-3 py-3 ${
+                            row.issues.some((issue) => issue.field === "managerEmployeeId")
+                              ? "bg-destructive/10 text-destructive"
+                              : ""
+                          }`}
+                        >
+                          {row.normalized.managerEmployeeId || "—"}
+                        </td>
+                        <td
+                          className={`px-3 py-3 ${
+                            row.issues.some((issue) => issue.field === "status")
+                              ? "bg-destructive/10 text-destructive"
+                              : ""
+                          }`}
+                        >
+                          {row.normalized.status}
+                        </td>
+                        <td className="px-3 py-3">
+                          {row.issues.length > 0 ? (
+                            <ul className="space-y-1 text-xs text-destructive">
+                              {row.issues.map((issue) => (
+                                <li key={`${row.rowNumber}-${issue.field}-${issue.message}`}>
+                                  {issue.message}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <span className="text-emerald-600">Valid</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          ) : null}
+
+          {summary ? (
+            <section className="rounded-xl border bg-card p-5 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="flex size-10 items-center justify-center rounded-lg bg-secondary text-secondary-foreground">
+                  <Users className="size-5" aria-hidden="true" />
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold">Import Summary</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Real-time progress and final results from batch execution.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+                <StatCard title="Imported" value={String(summary.imported)} description="Successfully created employees." />
+                <StatCard title="Failed" value={String(summary.failed)} description="Rows that failed during execution." />
+                <StatCard title="Remaining" value={String(summary.remaining)} description="Valid rows still waiting for processing." />
+                <StatCard title="Skipped" value={String(summary.skipped)} description="Preview-invalid rows not sent to execution." />
+                <StatCard title="Duplicate" value={String(summary.duplicate)} description="Rows flagged as duplicates during preview." />
+              </div>
+
+              {failedRows.length > 0 ? (
+                <div className="mt-5 flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() =>
+                      downloadCsv(
+                        "employee-import-failed-rows.csv",
+                        buildFailedRowCsv(failedRows),
+                      )
+                    }
+                  >
+                    <Download className="size-4" aria-hidden="true" />
+                    Export Failed Rows
+                  </Button>
+                </div>
+              ) : null}
+
+              {batchRows.length > 0 ? (
+                <div className="mt-5 rounded-lg border bg-background p-4">
+                  <p className="font-medium">Latest Batch Result</p>
+                  <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+                    {batchRows.map((row) => (
+                      <li key={row}>{row}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </section>
+          ) : null}
         </div>
 
         <div className="space-y-4">
           <section className="rounded-xl border bg-card p-5 shadow-sm">
             <div className="flex items-center gap-3">
               <div className="flex size-10 items-center justify-center rounded-lg bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
-                <Users className="size-5" aria-hidden="true" />
+                <ShieldCheck className="size-5" aria-hidden="true" />
               </div>
               <div>
-                <h2 className="text-base font-semibold">Validation Scope</h2>
+                <h2 className="text-base font-semibold">Validation Rules</h2>
                 <p className="text-sm text-muted-foreground">
-                  Rules prepared in the architecture for later row-level validation.
+                  Preview checks run before any employee is imported.
                 </p>
               </div>
             </div>
             <ul className="mt-5 space-y-3 text-sm text-muted-foreground">
-              <li>Employee ID required, uppercase-normalized, and checked for uniqueness.</li>
-              <li>Phone required and prepared for Bangladesh mobile number validation.</li>
-              <li>Role must match an existing active company role.</li>
-              <li>Manager must match an existing active employee record.</li>
-              <li>Joining date format validation is prepared for future preview checks.</li>
+              <li>Employee ID required, uppercased, unique in file, and unique in database.</li>
+              <li>Phone required, Bangladesh-formatted, and duplicate-checked in file and database.</li>
+              <li>Role must exist in the current company.</li>
+              <li>Manager must exist in the current company and satisfy hierarchy rules.</li>
+              <li>Joining date and optional date of birth must use YYYY-MM-DD format.</li>
+              <li>Status must be active, inactive, or archived.</li>
             </ul>
           </section>
 
@@ -379,9 +675,9 @@ export function EmployeeImportFoundationPage({
                 <UploadCloud className="size-5" aria-hidden="true" />
               </div>
               <div>
-                <h2 className="text-base font-semibold">Recent Import Jobs</h2>
+                <h2 className="text-base font-semibold">Import History</h2>
                 <p className="text-sm text-muted-foreground">
-                  Job history storage is ready even though execution has not started yet.
+                  Recent import jobs stored in the database.
                 </p>
               </div>
             </div>
@@ -397,18 +693,43 @@ export function EmployeeImportFoundationPage({
                       </span>
                     </div>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      {job.fileType.toUpperCase()} • {job.totalRows} row(s)
+                      {job.fileType.toUpperCase()} • {job.totalRows} row(s) • {job.successfulRows} success • {job.failedRows} failed
                     </p>
                   </div>
                 ))}
               </div>
             ) : (
               <div className="mt-5 rounded-lg border border-dashed bg-background p-6 text-center text-sm text-muted-foreground">
-                No import jobs yet. Future sprints will populate this history after
-                preview and execution are enabled.
+                No import history yet.
               </div>
             )}
           </section>
+
+          {failedRows.length > 0 ? (
+            <section className="rounded-xl border bg-card p-5 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="flex size-10 items-center justify-center rounded-lg bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">
+                  <XCircle className="size-5" aria-hidden="true" />
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold">Failed Rows</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Execution and preview failures are available for export.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-5 space-y-3">
+                {failedRows.slice(0, 5).map((row) => (
+                  <div key={`${row.rowNumber}-${row.employeeId}`} className="rounded-lg border bg-background p-4">
+                    <p className="font-medium">
+                      Row {row.rowNumber}: {row.employeeId || "Unknown Employee"}
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">{row.reason}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
         </div>
       </div>
     </section>

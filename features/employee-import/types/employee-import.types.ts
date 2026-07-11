@@ -8,6 +8,7 @@ export type EmployeeImportRowStatus =
   Database["public"]["Enums"]["employee_import_row_status"];
 export type EmployeeImportFileType =
   Database["public"]["Enums"]["employee_import_file_type"];
+export type EmployeeRecordStatus = Database["public"]["Enums"]["record_status"];
 
 export type EmployeeImportTemplateColumn = {
   key: string;
@@ -21,10 +22,7 @@ export type EmployeeImportFileMetadata = {
   name: string;
   size: number;
   mimeType: string;
-};
-
-export type EmployeeImportUploadValues = {
-  file: EmployeeImportFileMetadata;
+  lastModified?: number;
 };
 
 export type EmployeeImportValidationIssue = {
@@ -32,27 +30,10 @@ export type EmployeeImportValidationIssue = {
   message: string;
 };
 
-export type EmployeeImportPreparedFile = {
-  fileName: string;
-  fileType: EmployeeImportFileType;
-  normalizedFileName: string;
-  size: number;
-  pipeline: EmployeeImportPipelineStage[];
-  progressLabel: string;
+export type EmployeeImportUploadValues = {
+  file: EmployeeImportFileMetadata;
+  rows: EmployeeImportRowDraft[];
 };
-
-export type EmployeeImportActionState =
-  | {
-      ok: true;
-      message: string;
-      preparedFile: EmployeeImportPreparedFile;
-      issues: [];
-    }
-  | {
-      ok: false;
-      message: string;
-      issues: EmployeeImportValidationIssue[];
-    };
 
 export type EmployeeImportPipelineStage =
   | "upload"
@@ -78,6 +59,7 @@ export type EmployeeImportManagerReference = {
   id: string;
   employeeId: string;
   name: string;
+  roleName: string;
 };
 
 export type EmployeeImportRecentJob = {
@@ -87,6 +69,8 @@ export type EmployeeImportRecentJob = {
   status: EmployeeImportJobStatus;
   totalRows: number;
   createdAt: string;
+  successfulRows: number;
+  failedRows: number;
 };
 
 export type EmployeeImportFoundationData = {
@@ -102,32 +86,154 @@ export type EmployeeImportFoundationData = {
 };
 
 export type EmployeeImportRowDraft = {
+  rowNumber: number;
   employeeId: string;
   name: string;
   phone: string;
-  email: string;
-  dateOfBirth: string;
-  joiningDate: string;
   roleName: string;
   managerEmployeeId: string;
+  joiningDate: string;
   status: string;
+  email: string;
+  dateOfBirth: string;
+  photoUrl: string;
 };
 
 export type EmployeeImportNormalizedRow = EmployeeImportRowDraft & {
+  employeeId: string;
+  name: string;
+  phone: string;
+  roleName: string;
+  managerEmployeeId: string;
+  joiningDate: string;
+  status: string;
+  email: string;
+  dateOfBirth: string;
+  photoUrl: string;
   internalAuthEmail: string;
   defaultPassword: string;
 };
 
+export type EmployeeImportPreviewIssue = EmployeeImportValidationIssue & {
+  severity: "error";
+};
+
+export type EmployeeImportPreviewRow = {
+  rowNumber: number;
+  raw: EmployeeImportRowDraft;
+  normalized: EmployeeImportNormalizedRow;
+  issues: EmployeeImportPreviewIssue[];
+  duplicateFields: string[];
+  status: "valid" | "invalid";
+};
+
+export type EmployeeImportPreviewSummary = {
+  totalRows: number;
+  validRows: number;
+  invalidRows: number;
+  duplicateRows: number;
+};
+
+export type EmployeeImportPreviewResult = {
+  jobId: string;
+  fileName: string;
+  fileType: EmployeeImportFileType;
+  rows: EmployeeImportPreviewRow[];
+  summary: EmployeeImportPreviewSummary;
+  pipeline: EmployeeImportPipelineStage[];
+};
+
+export type EmployeeImportActionState =
+  | {
+      ok: true;
+      preview: EmployeeImportPreviewResult;
+    }
+  | {
+      ok: false;
+      message: string;
+      issues: EmployeeImportValidationIssue[];
+    };
+
+export type EmployeeImportBatchRowResult = {
+  rowNumber: number;
+  employeeId: string;
+  name: string;
+  status: "imported" | "failed" | "skipped";
+  reason: string;
+};
+
+export type EmployeeImportProgressResult = {
+  ok: true;
+  jobId: string;
+  status: EmployeeImportJobStatus;
+  importedCount: number;
+  failedCount: number;
+  remainingCount: number;
+  skippedCount: number;
+  duplicateCount: number;
+  totalRows: number;
+  completed: boolean;
+  rows: EmployeeImportBatchRowResult[];
+};
+
+export type EmployeeImportExecutionState =
+  | EmployeeImportProgressResult
+  | {
+      ok: false;
+      message: string;
+    };
+
+export type EmployeeImportFailedRowExport = {
+  rowNumber: number;
+  employeeId: string;
+  employeeName: string;
+  phone: string;
+  roleName: string;
+  managerEmployeeId: string;
+  joiningDate: string;
+  status: string;
+  email: string;
+  dateOfBirth: string;
+  photoUrl: string;
+  reason: string;
+};
+
 export type EmployeeImportValidationCatalog = {
-  roleNames: string[];
-  managerEmployeeIds: string[];
-  employeeIds: string[];
+  roleByName: Map<string, EmployeeImportRoleReference>;
+  managerByEmployeeId: Map<string, EmployeeImportManagerReference>;
+  existingEmployeeIds: Set<string>;
+  existingPhones: Set<string>;
+  existingInternalAuthEmails: Set<string>;
 };
 
 export type EmployeeImportFoundationHooks = {
-  activityLog: Omit<
+  started: Omit<
+    ActivityLogInput,
+    "companyId" | "employeeId" | "ipAddress" | "userAgent"
+  >;
+  completed: Omit<
+    ActivityLogInput,
+    "companyId" | "employeeId" | "ipAddress" | "userAgent"
+  >;
+  failed: Omit<
     ActivityLogInput,
     "companyId" | "employeeId" | "ipAddress" | "userAgent"
   >;
   notification: Omit<CreateNotificationInput, "companyId" | "employeeId">;
+};
+
+export type EmployeeImportJobContext = {
+  id: string;
+  companyId: string;
+  createdBy: string | null;
+  sourceFileName: string;
+  fileType: EmployeeImportFileType;
+  status: EmployeeImportJobStatus;
+  totalRows: number;
+  validRows: number;
+  invalidRows: number;
+  processedRows: number;
+  successfulRows: number;
+  failedRows: number;
+  metadata: Record<string, unknown>;
 };

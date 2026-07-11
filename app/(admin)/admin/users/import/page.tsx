@@ -1,4 +1,8 @@
-import { prepareEmployeeImportAction } from "@/features/employee-import/actions/employee-import.actions";
+import {
+  getEmployeeImportFailedRowsAction,
+  previewEmployeeImportAction,
+  processEmployeeImportBatchAction,
+} from "@/features/employee-import/actions/employee-import.actions";
 import { EmployeeImportFoundationPage } from "@/features/employee-import/components";
 import { EmployeeImportService } from "@/features/employee-import/services/employee-import.service";
 
@@ -10,7 +14,9 @@ export default async function AdminEmployeeImportPage() {
   return (
     <EmployeeImportFoundationPage
       data={data}
-      onPrepareImport={prepareEmployeeImportAction}
+      onPreviewImport={previewEmployeeImportAction}
+      onProcessBatch={processEmployeeImportBatchAction}
+      onGetFailedRows={getEmployeeImportFailedRowsAction}
     />
   );
 }

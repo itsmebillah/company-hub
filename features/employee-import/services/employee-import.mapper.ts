@@ -55,12 +55,14 @@ export const EmployeeImportMapper = {
     const employeeId = normalizeEmployeeId(row.employeeId);
 
     return {
+      rowNumber: row.rowNumber,
       employeeId,
       name: normalizeWhitespace(row.name),
       phone: normalizeWhitespace(row.phone),
       email: normalizeOptional(row.email).toLowerCase(),
       dateOfBirth: normalizeOptional(row.dateOfBirth),
       joiningDate: normalizeOptional(row.joiningDate),
+      photoUrl: normalizeOptional(row.photoUrl),
       roleName: normalizeWhitespace(row.roleName),
       managerEmployeeId: normalizeEmployeeId(row.managerEmployeeId),
       status: normalizeStatus(row.status),
