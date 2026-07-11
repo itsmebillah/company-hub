@@ -2,6 +2,10 @@
 
 import { Link2, Star } from "lucide-react";
 
+import {
+  getPremiumCardClassName,
+  PremiumIconContainer,
+} from "@/components/common/premium-card";
 import type {
   EmployeePortalCategory,
   EmployeePortalResource,
@@ -63,8 +67,10 @@ export function QuickResourceLinks({ categories }: QuickResourceLinksProps) {
 }
 
 function QuickResourceCard({ resource }: { resource: EmployeePortalResource }) {
-  const className =
-    "group relative flex aspect-square min-w-0 flex-col items-center justify-center gap-2 rounded-[1.25rem] border border-white/20 bg-background/75 p-2 text-center shadow-[var(--shadow-soft)] transition duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:p-3";
+  const className = getPremiumCardClassName(
+    "cyan",
+    "group relative flex aspect-square min-w-0 flex-col items-center justify-center gap-2 rounded-[1.35rem] p-2 text-center transition duration-200 hover:-translate-y-0.5 hover:border-primary/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:p-3",
+  );
   const content = (
     <>
       {resource.isFeatured ? (
@@ -77,7 +83,7 @@ function QuickResourceCard({ resource }: { resource: EmployeePortalResource }) {
         </span>
       ) : null}
 
-      <div className="flex size-9 items-center justify-center rounded-2xl border border-white/20 bg-primary/8 text-primary sm:size-10">
+      <PremiumIconContainer className="size-9 sm:size-10">
         {resource.icon ? (
           <span className="text-xs font-semibold sm:text-sm">
             {resource.icon.slice(0, 2).toUpperCase()}
@@ -85,7 +91,7 @@ function QuickResourceCard({ resource }: { resource: EmployeePortalResource }) {
         ) : (
           <Link2 className="size-4 sm:size-5" aria-hidden="true" />
         )}
-      </div>
+      </PremiumIconContainer>
 
       <h3 className="line-clamp-2 min-h-8 w-full text-[0.72rem] font-semibold leading-4 sm:text-xs">
         {resource.title}

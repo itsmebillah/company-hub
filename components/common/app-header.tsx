@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Sparkles, UserCircle } from "lucide-react";
+import { UserCircle } from "lucide-react";
 
 import { Logo } from "@/components/common/logo";
 import { ThemeToggle } from "@/components/common/theme-toggle";
@@ -93,14 +93,6 @@ export function AppHeader({
               );
             })}
           </nav>
-
-          <div className="flex items-center gap-2 rounded-2xl border border-dashed border-primary/20 bg-primary/5 px-3 py-2 text-xs text-muted-foreground md:hidden">
-            <Sparkles className="size-4 shrink-0 text-primary" aria-hidden="true" />
-            <p>
-              Use the floating bottom navigation to move between workspace
-              modules.
-            </p>
-          </div>
         </div>
       </PageContainer>
     </header>

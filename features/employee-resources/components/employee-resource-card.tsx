@@ -3,6 +3,10 @@
 import { ExternalLink, Heart, Link2, Star } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import {
+  PremiumCard,
+  PremiumIconContainer,
+} from "@/components/common/premium-card";
 import type { EmployeePortalResource } from "@/features/employee-resources/types/employee-resource.types";
 import { getRenderableImageSrc } from "@/lib/media";
 
@@ -22,17 +26,15 @@ export function EmployeeResourceCard({ resource }: EmployeeResourceCardProps) {
   const thumbnailSrc = getRenderableImageSrc(resource.thumbnail);
 
   return (
-    <article className="app-card flex min-h-48 flex-col p-4">
+    <PremiumCard tone="cyan" className="flex min-h-48 flex-col p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           {resource.icon ? (
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-white/20 bg-background/75 text-sm font-semibold shadow-[var(--shadow-soft)]">
+            <PremiumIconContainer className="size-11 text-sm font-semibold">
               {resource.icon.slice(0, 2).toUpperCase()}
-            </div>
+            </PremiumIconContainer>
           ) : (
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-secondary/80 shadow-[var(--shadow-soft)]">
-              <Link2 className="size-5" aria-hidden="true" />
-            </div>
+            <PremiumIconContainer icon={Link2} className="size-11" />
           )}
           <div className="min-w-0">
             <h3 className="truncate font-semibold">{resource.title}</h3>
@@ -82,6 +84,6 @@ export function EmployeeResourceCard({ resource }: EmployeeResourceCardProps) {
           Internal Resource
         </Button>
       )}
-    </article>
+    </PremiumCard>
   );
 }

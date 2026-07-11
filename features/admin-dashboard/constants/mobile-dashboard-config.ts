@@ -34,7 +34,7 @@ export const mobileDashboardQuickActions = [
     title: "Create Resource",
     href: "/admin/resources",
     icon: FolderPlus,
-    tone: "green" as const,
+    tone: "cyan" as const,
   },
   {
     title: "Manage Roles",
@@ -46,13 +46,13 @@ export const mobileDashboardQuickActions = [
     title: "Company",
     href: "/admin/company",
     icon: Building2,
-    tone: "slate" as const,
+    tone: "gray" as const,
   },
   {
     title: "Reports",
     href: "/admin/attendance/reports",
     icon: FileBarChart,
-    tone: "red" as const,
+    tone: "purple" as const,
   },
   {
     title: "Import",
@@ -64,7 +64,7 @@ export const mobileDashboardQuickActions = [
     title: "Settings",
     href: "/admin/settings",
     icon: Settings,
-    tone: "slate" as const,
+    tone: "gray" as const,
   },
 ];
 
@@ -74,37 +74,37 @@ export function getCompanySnapshotItems(counts: DashboardData["counts"]) {
       title: "Present",
       value: counts.presentToday,
       icon: CheckCircle2,
-      tone: "text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-300",
+      tone: "green" as const,
     },
     {
       title: "Absent",
       value: counts.absentToday,
       icon: UserX,
-      tone: "text-rose-600 bg-rose-50 dark:bg-rose-950/40 dark:text-rose-300",
+      tone: "pink" as const,
     },
     {
       title: "Leave",
       value: counts.employeesOnLeaveToday,
       icon: CalendarClock,
-      tone: "text-blue-600 bg-blue-50 dark:bg-blue-950/40 dark:text-blue-300",
+      tone: "blue" as const,
     },
     {
       title: "Late",
       value: counts.lateToday,
       icon: CalendarClock,
-      tone: "text-amber-600 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-300",
+      tone: "orange" as const,
     },
     {
       title: "Pending",
       value: counts.pendingLeaveRequests,
       icon: FileClock,
-      tone: "text-violet-600 bg-violet-50 dark:bg-violet-950/40 dark:text-violet-300",
+      tone: "purple" as const,
     },
     {
       title: "Alerts",
       value: counts.unreadNotifications,
       icon: Bell,
-      tone: "text-slate-700 bg-slate-100 dark:bg-slate-900/70 dark:text-slate-300",
+      tone: "gray" as const,
     },
   ];
 }
@@ -115,19 +115,19 @@ export function getPendingWorkItems(counts: DashboardData["counts"]) {
       title: "Pending Leave",
       value: counts.pendingLeaveRequests,
       icon: FileClock,
-      tone: "bg-violet-50 text-violet-700 dark:bg-violet-950/40 dark:text-violet-300",
+      tone: "purple" as const,
     },
     {
       title: "Attendance Gaps",
       value: counts.absentToday,
       icon: ClipboardCheck,
-      tone: "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300",
+      tone: "orange" as const,
     },
     {
       title: "Unread Notifications",
       value: counts.unreadNotifications,
       icon: Bell,
-      tone: "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300",
+      tone: "blue" as const,
     },
   ];
 }

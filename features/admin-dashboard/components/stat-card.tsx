@@ -1,5 +1,10 @@
 import type { LucideIcon } from "lucide-react";
 
+import {
+  PremiumCard,
+  PremiumIconContainer,
+} from "@/components/common/premium-card";
+
 type StatCardProps = {
   title: string;
   value: string;
@@ -8,16 +13,14 @@ type StatCardProps = {
 
 export function StatCard({ title, value, icon: Icon }: StatCardProps) {
   return (
-    <div className="rounded-xl border bg-card p-5 shadow-sm">
+    <PremiumCard tone="blue" className="p-5">
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-sm text-muted-foreground">{title}</p>
           <p className="mt-3 text-3xl font-semibold tracking-tight">{value}</p>
         </div>
-        <div className="flex size-10 items-center justify-center rounded-lg bg-muted">
-          <Icon className="size-5 text-muted-foreground" aria-hidden="true" />
-        </div>
+        <PremiumIconContainer icon={Icon} className="size-10" />
       </div>
-    </div>
+    </PremiumCard>
   );
 }

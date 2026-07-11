@@ -1,10 +1,16 @@
 import type { LucideIcon } from "lucide-react";
 
+import {
+  PremiumCard,
+  PremiumIconContainer,
+  type PremiumCardTone,
+} from "@/components/common/premium-card";
+
 type CompactMetricItem = {
   title: string;
   value: number;
   icon: LucideIcon;
-  tone: string;
+  tone: PremiumCardTone;
 };
 
 type CompactMetricGridProps = {
@@ -46,19 +52,18 @@ function SnapshotMetricCard({ item }: { item: CompactMetricItem }) {
   const Icon = item.icon;
 
   return (
-    <div className="flex min-h-[5.4rem] items-center gap-2.5 rounded-[1.25rem] border bg-card/95 p-3 shadow-[var(--shadow-soft)]">
-      <span
-        className={`flex size-10 shrink-0 items-center justify-center rounded-2xl ${item.tone}`}
-      >
-        <Icon className="size-5" aria-hidden="true" />
-      </span>
+    <PremiumCard
+      tone={item.tone}
+      className="flex min-h-[5.4rem] items-center gap-2.5 p-3"
+    >
+      <PremiumIconContainer icon={Icon} className="size-10" />
       <div className="min-w-0">
         <p className="truncate text-xs font-medium text-muted-foreground">
           {item.title}
         </p>
         <p className="text-xl font-semibold leading-tight">{item.value}</p>
       </div>
-    </div>
+    </PremiumCard>
   );
 }
 
@@ -66,18 +71,21 @@ function PendingMetricCard({ item }: { item: CompactMetricItem }) {
   const Icon = item.icon;
 
   return (
-    <div className="flex min-h-[4.3rem] items-center justify-between gap-3 rounded-[1.25rem] border bg-card/95 px-3 py-2.5 shadow-[var(--shadow-soft)]">
+    <PremiumCard
+      tone={item.tone}
+      className="flex min-h-[4.3rem] items-center justify-between gap-3 px-3 py-2.5"
+    >
       <div className="flex min-w-0 items-center gap-2.5">
-        <span
-          className={`flex size-9 shrink-0 items-center justify-center rounded-2xl ${item.tone}`}
-        >
-          <Icon className="size-[1.125rem]" aria-hidden="true" />
-        </span>
+        <PremiumIconContainer
+          icon={Icon}
+          className="size-9"
+          iconClassName="size-[1.125rem]"
+        />
         <p className="line-clamp-2 text-sm font-medium leading-4">
           {item.title}
         </p>
       </div>
       <span className="shrink-0 text-xl font-semibold">{item.value}</span>
-    </div>
+    </PremiumCard>
   );
 }
