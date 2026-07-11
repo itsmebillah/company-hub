@@ -7,29 +7,25 @@ import { redirectToPath } from "@/lib/auth/redirects";
 import { isProtectedRoute, isPublicAuthRoute } from "@/lib/auth/route-protection";
 
 export async function middleware(request: NextRequest) {
-  const { supabase, response } = createSupabaseMiddlewareClient(request);
+  const middlewareClient = createSupabaseMiddlewareClient(request);
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await middlewareClient.supabase.auth.getUser();
 
   if (isProtectedRoute(request) && !user) {
     return redirectToPath(request, AUTH_REDIRECTS.unauthenticated);
   }
 
-  if (isPublicAuthRoute(request) && user) {
-    return redirectToPath(request, AUTH_REDIRECTS.authenticatedFromAuthRoute);
-  }
-
   if (isProtectedRoute(request) || isPublicAuthRoute(request)) {
-    response.headers.set(
+    middlewareClient.response.headers.set(
       "Cache-Control",
       "no-store, no-cache, must-revalidate, proxy-revalidate",
     );
-    response.headers.set("Pragma", "no-cache");
-    response.headers.set("Expires", "0");
+    middlewareClient.response.headers.set("Pragma", "no-cache");
+    middlewareClient.response.headers.set("Expires", "0");
   }
 
-  return response;
+  return middlewareClient.response;
 }
 
 export const config = {

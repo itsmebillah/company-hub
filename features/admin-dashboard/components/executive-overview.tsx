@@ -37,8 +37,8 @@ export function ExecutiveOverview({
 
   return (
     <section className="rounded-xl border bg-card p-5 shadow-sm">
-      <div className="flex items-start justify-between gap-4">
-        <div>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
           <h2 className="text-base font-semibold">Admin Overview</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Company identity, module coverage, and overall platform readiness.
@@ -46,7 +46,7 @@ export function ExecutiveOverview({
         </div>
         <span
           className={cn(
-            "rounded-full px-2.5 py-1 text-xs font-medium ring-1",
+            "w-fit rounded-full px-2.5 py-1 text-xs font-medium ring-1",
             statusTone[systemStatus],
           )}
         >
@@ -70,7 +70,7 @@ export function ExecutiveOverview({
             )}
             <div>
               <p className="text-xs text-muted-foreground">Company</p>
-              <p className="font-medium">{companyName}</p>
+              <p className="break-words font-medium">{companyName}</p>
             </div>
           </div>
         </div>

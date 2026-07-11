@@ -18,7 +18,7 @@ export function QuickActionCard({
   return (
     <Link
       href={href}
-      className="group flex min-h-36 flex-col justify-between rounded-xl border bg-card p-5 shadow-sm transition-colors hover:border-ring/60 hover:bg-accent/40"
+      className="group flex min-h-36 min-w-0 flex-col justify-between rounded-xl border bg-card p-5 shadow-sm transition-colors hover:border-ring/60 hover:bg-accent/40"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex size-10 items-center justify-center rounded-lg bg-secondary text-secondary-foreground">
@@ -30,8 +30,8 @@ export function QuickActionCard({
         />
       </div>
       <div>
-        <h2 className="text-base font-semibold">{title}</h2>
-        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+        <h2 className="break-words text-base font-semibold">{title}</h2>
+        <p className="mt-1 break-words text-sm text-muted-foreground">{description}</p>
       </div>
     </Link>
   );

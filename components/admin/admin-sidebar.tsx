@@ -22,7 +22,7 @@ export function AdminSidebar({
   return (
     <aside
       className={cn(
-        "hidden min-h-svh border-r bg-background transition-[width] duration-200 lg:flex lg:flex-col",
+        "hidden min-h-svh border-r bg-background transition-[width] duration-200 md:flex md:flex-col",
         isCollapsed ? "w-20" : "w-64",
       )}
     >

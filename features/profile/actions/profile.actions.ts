@@ -16,6 +16,7 @@ export async function updateProfileAction(
   try {
     await ProfileService.updateProfile(values);
     revalidatePath("/profile");
+    revalidatePath("/admin/profile");
     revalidatePath("/dashboard");
     revalidatePath("/admin/dashboard");
 

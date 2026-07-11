@@ -22,6 +22,10 @@ type AdminHeaderProps = {
 };
 
 function getPageTitle(pathname: string) {
+  if (pathname === "/admin/profile") {
+    return "Profile";
+  }
+
   return (
     adminNavigationItems.find(
       (item) => pathname === item.href || pathname.startsWith(`${item.href}/`),
@@ -65,13 +69,13 @@ export function AdminHeader({
 
   return (
     <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      <div className="flex h-14 items-center justify-between gap-3 px-4 sm:px-6">
+      <div className="flex min-h-14 flex-wrap items-center justify-between gap-3 px-4 py-2 sm:px-6">
         <div className="flex min-w-0 items-center gap-3">
           <Button
             type="button"
             size="icon"
             variant="ghost"
-            className="size-9 lg:hidden"
+            className="size-9 md:hidden"
             onClick={onMenuClick}
             aria-label="Open navigation"
           >
@@ -79,11 +83,13 @@ export function AdminHeader({
           </Button>
           <div className="min-w-0">
             <h1 className="truncate text-base font-semibold">{title}</h1>
-            <AdminBreadcrumb pathname={pathname} />
+            <div className="hidden sm:block">
+              <AdminBreadcrumb pathname={pathname} />
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
           <NotificationDropdown summary={notificationSummary} />
           <ThemeToggle />
           <div className="relative" ref={profileMenuRef}>
@@ -106,7 +112,7 @@ export function AdminHeader({
                 className="absolute right-0 top-11 z-50 w-56 overflow-hidden rounded-xl border bg-popover p-1 text-popover-foreground shadow-lg"
               >
                 <Link
-                  href="/profile"
+                  href="/admin/profile"
                   role="menuitem"
                   className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm outline-none hover:bg-accent focus-visible:bg-accent"
                   onClick={() => setIsProfileOpen(false)}

@@ -20,7 +20,7 @@ export function DashboardHeader({
   return (
     <section className="overflow-hidden rounded-xl border bg-card shadow-sm">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="flex min-w-0 items-center gap-4 p-6">
+        <div className="flex min-w-0 flex-col gap-4 p-5 sm:flex-row sm:items-center sm:p-6">
           {logoSrc ? (
             <img
               src={logoSrc}
@@ -36,7 +36,7 @@ export function DashboardHeader({
             <p className="text-sm font-medium text-muted-foreground">
               {companyName}
             </p>
-            <h1 className="mt-1 text-2xl font-semibold tracking-tight md:text-3xl">
+            <h1 className="mt-1 break-words text-2xl font-semibold tracking-tight md:text-3xl">
               Good day, {userName}
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
@@ -45,8 +45,8 @@ export function DashboardHeader({
             </p>
           </div>
         </div>
-        <div className="border-t bg-secondary/40 p-6 md:border-l md:border-t-0">
-          <div className="flex items-center gap-3 rounded-lg border bg-background px-4 py-3 text-sm">
+        <div className="border-t bg-secondary/40 p-5 sm:p-6 md:border-l md:border-t-0">
+          <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-background px-4 py-3 text-sm">
             <CalendarDays
               className="size-4 text-muted-foreground"
               aria-hidden="true"

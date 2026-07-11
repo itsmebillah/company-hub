@@ -189,7 +189,7 @@ export default async function AdminDashboardPage() {
   ];
 
   return (
-    <section className="mx-auto max-w-screen-2xl space-y-6">
+    <section className="mx-auto max-w-screen-2xl space-y-6 overflow-x-hidden">
       <DashboardHeader
         companyName={dashboard.companyName}
         companyLogo={dashboard.companyLogo}
@@ -197,11 +197,11 @@ export default async function AdminDashboardPage() {
         currentDate={currentDate}
       />
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
         <div className="space-y-6">
           <section>
             <h2 className="mb-3 text-base font-semibold">Executive KPI</h2>
-            <div className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-4">
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
               {kpis.map((kpi) => (
                 <KPICard key={kpi.title} {...kpi} />
               ))}
@@ -243,7 +243,7 @@ export default async function AdminDashboardPage() {
             </div>
           </section>
 
-          <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_380px]">
+          <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_minmax(280px,380px)]">
             <RecentActivity items={dashboard.recentActivity} />
             <SystemStatus items={systemStatus} />
           </div>
