@@ -31,8 +31,7 @@ function flattenResources(categories: EmployeePortalCategory[]) {
 
 export function QuickResourceLinks({ categories }: QuickResourceLinksProps) {
   const resources = flattenResources(categories)
-    .sort((first, second) => Number(second.isFeatured) - Number(first.isFeatured))
-    .slice(0, 8);
+    .sort((first, second) => Number(second.isFeatured) - Number(first.isFeatured));
 
   if (resources.length === 0) {
     return null;
@@ -57,7 +56,7 @@ export function QuickResourceLinks({ categories }: QuickResourceLinksProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 sm:gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3 md:grid-cols-4 xl:[grid-template-columns:repeat(auto-fit,minmax(9rem,1fr))]">
         {resources.map((resource) => (
           <QuickResourceCard key={resource.id} resource={resource} />
         ))}
