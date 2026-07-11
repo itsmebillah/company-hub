@@ -161,6 +161,22 @@ export function AttendanceSettingsForm({
           <label className="flex items-start gap-3 rounded-lg border p-4">
             <input
               type="checkbox"
+              checked={values.requireSelfie}
+              onChange={(event) =>
+                updateValue("requireSelfie", event.target.checked)
+              }
+              className="mt-1 size-4"
+            />
+            <span>
+              <span className="block text-sm font-medium">Require Selfie</span>
+              <span className="text-sm text-muted-foreground">
+                Require employees to capture a selfie before attendance check-in.
+              </span>
+            </span>
+          </label>
+          <label className="flex items-start gap-3 rounded-lg border p-4">
+            <input
+              type="checkbox"
               checked={values.requireHighAccuracy}
               onChange={(event) =>
                 updateValue("requireHighAccuracy", event.target.checked)

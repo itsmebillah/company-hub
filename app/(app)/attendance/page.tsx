@@ -6,6 +6,7 @@ import {
   checkOutAction,
   prepareCheckInAction,
 } from "@/features/attendance/actions/attendance.actions";
+import { uploadAttendanceSelfieAction } from "@/features/attendance/actions/attendance-selfie.actions";
 import { getAdminEquivalentPath } from "@/features/auth/services/redirect.service";
 import { getCurrentSessionProfile } from "@/features/auth/services/session.service";
 import { AttendanceService } from "@/features/attendance/services/attendance.service";
@@ -31,6 +32,7 @@ export default async function AttendancePage() {
       onCheckIn={checkInAction}
       onCheckOut={checkOutAction}
       onValidateLocation={prepareCheckInAction}
+      onUploadSelfie={uploadAttendanceSelfieAction}
     />
   );
 }

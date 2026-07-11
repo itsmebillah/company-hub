@@ -2,6 +2,7 @@ import "server-only";
 
 import { redirect } from "next/navigation";
 
+import { requireCurrentEmployeeContext } from "@/features/auth/services/current-employee-context.service";
 import { getCurrentAuthUser } from "@/features/auth/services/auth.service";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type {
@@ -204,5 +205,64 @@ export const EmployeeResourceService = {
         }))
         .filter((category) => category.resources.length > 0),
     };
+  },
+
+  async getAdminQuickResourceCategories(): Promise<EmployeePortalCategory[]> {
+    const employee = await requireCurrentEmployeeContext();
+    const supabase = createSupabaseAdminClient();
+    const [categoriesResult, resourcesResult] = await Promise.all([
+      supabase
+        .from("resource_categories")
+        .select("id, name, icon, color, display_order")
+        .eq("company_id", employee.companyId)
+        .eq("status", "active")
+        .order("display_order", { ascending: true }),
+      supabase
+        .from("resources")
+        .select(
+          "id, category_id, title, description, resource_type, url, icon, thumbnail, open_mode, display_order, is_featured",
+        )
+        .eq("company_id", employee.companyId)
+        .eq("status", "active")
+        .order("display_order", { ascending: true }),
+    ]);
+
+    if (categoriesResult.error || resourcesResult.error) {
+      console.error("[EmployeeResourceService] Unable to load admin resources.", {
+        categoriesError: categoriesResult.error,
+        resourcesError: resourcesResult.error,
+      });
+      throw new Error("Unable to load resources.");
+    }
+
+    const resourcesByCategory = new Map<string, ResourceRow[]>();
+
+    resourcesResult.data.forEach((resource) => {
+      const current = resourcesByCategory.get(resource.category_id) ?? [];
+      current.push(resource);
+      resourcesByCategory.set(resource.category_id, current);
+    });
+
+    return categoriesResult.data
+      .map((category): EmployeePortalCategory => ({
+        id: category.id,
+        name: category.name,
+        icon: category.icon ?? "",
+        color: category.color ?? "#2563EB",
+        resources: (resourcesByCategory.get(category.id) ?? []).map(
+          (resource): EmployeePortalResource => ({
+            id: resource.id,
+            title: resource.title,
+            description: resource.description ?? "",
+            resourceType: resource.resource_type,
+            url: resource.url ?? "",
+            icon: resource.icon ?? "",
+            thumbnail: resource.thumbnail ?? "",
+            openMode: resource.open_mode,
+            isFeatured: resource.is_featured,
+          }),
+        ),
+      }))
+      .filter((category) => category.resources.length > 0);
   },
 };

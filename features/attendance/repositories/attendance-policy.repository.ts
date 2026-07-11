@@ -10,6 +10,7 @@ const DEFAULT_ATTENDANCE_SETTINGS: AttendanceSettingsValues = {
   allowEarlyCheckInMinutes: 0,
   allowLateCheckOut: false,
   requireGps: true,
+  requireSelfie: false,
   requireHighAccuracy: true,
   enableGeofence: true,
   faceVerificationEnabled: false,
@@ -23,7 +24,7 @@ export const AttendancePolicyRepository = {
     const { data, error } = await supabase
       .from("company_settings")
       .select(
-        "attendance_mode, gps_accuracy_threshold_meters, allowed_radius_meters, allow_early_check_in_minutes, allow_late_check_out, require_gps, require_high_accuracy, enable_geofence, face_verification_enabled, wifi_validation_enabled, bluetooth_beacon_enabled",
+        "attendance_mode, gps_accuracy_threshold_meters, allowed_radius_meters, allow_early_check_in_minutes, allow_late_check_out, require_gps, require_selfie, require_high_accuracy, enable_geofence, face_verification_enabled, wifi_validation_enabled, bluetooth_beacon_enabled",
       )
       .eq("company_id", companyId)
       .maybeSingle();
@@ -53,6 +54,8 @@ export const AttendancePolicyRepository = {
         DEFAULT_ATTENDANCE_SETTINGS.allowLateCheckOut,
       requireGps:
         data?.require_gps ?? DEFAULT_ATTENDANCE_SETTINGS.requireGps,
+      requireSelfie:
+        data?.require_selfie ?? DEFAULT_ATTENDANCE_SETTINGS.requireSelfie,
       requireHighAccuracy:
         data?.require_high_accuracy ??
         DEFAULT_ATTENDANCE_SETTINGS.requireHighAccuracy,
@@ -89,6 +92,7 @@ export const AttendancePolicyRepository = {
           allow_early_check_in_minutes: values.allowEarlyCheckInMinutes,
           allow_late_check_out: values.allowLateCheckOut,
           require_gps: values.requireGps,
+          require_selfie: values.requireSelfie,
           require_high_accuracy: values.requireHighAccuracy,
           enable_geofence: values.enableGeofence,
           face_verification_enabled: values.faceVerificationEnabled,

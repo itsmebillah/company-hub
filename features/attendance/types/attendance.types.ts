@@ -5,6 +5,8 @@ export type AttendanceStatus =
 
 export type AttendancePolicyMode =
   Database["public"]["Enums"]["attendance_policy_mode"];
+export type AttendanceLocationSource =
+  Database["public"]["Enums"]["attendance_location_source"];
 
 export type AttendanceRecord = {
   id: string;
@@ -20,11 +22,21 @@ export type AttendanceRecord = {
   checkInLatitude: number | null;
   checkInLongitude: number | null;
   checkInAccuracyMeters: number | null;
+  checkInAddress: string | null;
+  checkInLocationSource: AttendanceLocationSource | null;
+  checkInSelfiePath: string | null;
+  checkInDeviceBrowser: string | null;
+  checkInDevicePlatform: string | null;
   checkInLocationId: string | null;
   checkInDistanceMeters: number | null;
   checkOutLatitude: number | null;
   checkOutLongitude: number | null;
   checkOutAccuracyMeters: number | null;
+  checkOutAddress: string | null;
+  checkOutLocationSource: AttendanceLocationSource | null;
+  checkOutSelfiePath: string | null;
+  checkOutDeviceBrowser: string | null;
+  checkOutDevicePlatform: string | null;
   checkOutLocationId: string | null;
   checkOutDistanceMeters: number | null;
   createdAt: string;
@@ -52,6 +64,8 @@ export type AttendanceGpsInput = {
   longitude: number;
   accuracy: number;
   timestamp?: string;
+  address?: string | null;
+  source?: AttendanceLocationSource;
 };
 
 export type AttendanceLocationValidation = {
@@ -76,6 +90,7 @@ export type AttendancePolicySettings = {
   allowEarlyCheckInMinutes: number;
   allowLateCheckOut: boolean;
   requireGps: boolean;
+  requireSelfie: boolean;
   requireHighAccuracy: boolean;
   enableGeofence: boolean;
   faceVerificationEnabled: boolean;
@@ -97,6 +112,8 @@ export type AttendanceEmployeeOption = {
 
 export type TodayAttendance = {
   date: string;
+  companyId: string;
+  employeeId: string;
   employeeName: string;
   employeeCode: string;
   record: AttendanceRecord | null;
@@ -132,6 +149,7 @@ export type AttendanceActionState =
       accuracyMeters?: number;
       modeLabel?: string;
       allowedLocations?: AttendanceAllowedLocation[];
+      requiresSelfie?: boolean;
     }
   | {
       ok: false;
@@ -141,14 +159,25 @@ export type AttendanceActionState =
       accuracyMeters?: number;
       modeLabel?: string;
       allowedLocations?: AttendanceAllowedLocation[];
+      requiresSelfie?: boolean;
     };
 
 export type AttendanceCheckInput = {
   notes?: string;
   gps?: AttendanceGpsInput;
+  selfiePath?: string;
+  deviceInfo?: {
+    browser: string;
+    platform: string;
+  };
 };
 
-export type AttendanceDetail = AttendanceListItem;
+export type AttendanceDetailRecord = AttendanceListItem;
+
+export type AttendanceDetail = AttendanceDetailRecord & {
+  checkInSelfieUrl: string | null;
+  checkOutSelfieUrl: string | null;
+};
 
 export type AdminAttendanceOverview = {
   today: string;

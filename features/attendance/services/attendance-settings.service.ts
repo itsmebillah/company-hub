@@ -61,6 +61,16 @@ export const AttendanceSettingsService = {
       actionUrl: "/attendance",
     });
 
+    if (values.requireSelfie) {
+      await NotificationService.createForActiveCompanyEmployees({
+        companyId: company.id,
+        type: "attendance",
+        title: "Attendance selfie required",
+        message: "A selfie is now required for attendance check-in.",
+        actionUrl: "/attendance",
+      });
+    }
+
     await logActivity({
       companyId: company.id,
       module: "attendance",
@@ -73,6 +83,7 @@ export const AttendanceSettingsService = {
         gpsAccuracyThresholdMeters: values.gpsAccuracyThresholdMeters,
         allowedRadiusMeters: values.allowedRadiusMeters,
         requireGps: values.requireGps,
+        requireSelfie: values.requireSelfie,
         requireHighAccuracy: values.requireHighAccuracy,
         enableGeofence: values.enableGeofence,
       },

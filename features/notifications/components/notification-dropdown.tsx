@@ -294,7 +294,7 @@ export function NotificationDropdown({ summary }: NotificationDropdownProps) {
 
       {isOpen ? (
         <div
-          className="absolute right-0 top-11 z-50 w-[min(24rem,calc(100vw-1rem))] overflow-hidden rounded-xl border bg-popover shadow-soft"
+          className="fixed inset-x-2 top-16 z-50 overflow-hidden rounded-xl border bg-popover shadow-soft sm:absolute sm:right-0 sm:left-auto sm:top-11 sm:w-[min(24rem,calc(100vw-1rem))]"
           role="menu"
         >
           <div className="flex items-start justify-between gap-3 border-b px-4 py-3">
@@ -325,7 +325,7 @@ export function NotificationDropdown({ summary }: NotificationDropdownProps) {
             </Button>
           </div>
 
-          <div className="max-h-[min(28rem,70vh)] overflow-y-auto p-2">
+          <div className="max-h-[calc(100dvh-5.5rem)] overflow-y-auto p-2 sm:max-h-[min(28rem,70vh)]">
             {sections.length === 0 ? (
               <div className="flex flex-col items-center px-3 py-10 text-center">
                 <span className="flex size-12 items-center justify-center rounded-full bg-secondary text-secondary-foreground">

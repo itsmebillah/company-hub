@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react";
 import {
+  Camera,
   CalendarDays,
   Clock,
   LocateFixed,
@@ -27,7 +28,27 @@ type EmployeeAttendanceCardProps = {
   onValidateLocation: (
     input?: AttendanceCheckInput,
   ) => Promise<AttendanceActionState>;
+  onUploadSelfie: (formData: FormData) => Promise<{
+    ok: boolean;
+    message: string;
+    path: string;
+  }>;
 };
+
+function getClientDeviceInfo() {
+  const navigatorWithUserAgentData = navigator as Navigator & {
+    userAgentData?: {
+      platform?: string;
+    };
+  };
+  const browser = navigator.userAgent;
+  const platform =
+    navigatorWithUserAgentData.userAgentData?.platform ||
+    navigator.platform ||
+    "Unknown";
+
+  return { browser, platform };
+}
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en", {
@@ -95,6 +116,7 @@ export function EmployeeAttendanceCard({
   onCheckIn,
   onCheckOut,
   onValidateLocation,
+  onUploadSelfie,
 }: EmployeeAttendanceCardProps) {
   const record = attendance.record;
   const [notes, setNotes] = useState(record?.notes ?? "");
@@ -102,6 +124,10 @@ export function EmployeeAttendanceCard({
   const [gps, setGps] = useState<AttendanceGpsInput | null>(null);
   const [locationStatus, setLocationStatus] =
     useState<AttendanceActionState | null>(null);
+  const [selfieFile, setSelfieFile] = useState<File | null>(null);
+  const [selfiePreviewUrl, setSelfiePreviewUrl] = useState("");
+  const [selfieError, setSelfieError] = useState("");
+  const [isUploadingSelfie, setIsUploadingSelfie] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
   const [elapsedMinutes, setElapsedMinutes] = useState(
     getElapsedMinutes(record?.checkIn ?? null),
@@ -115,6 +141,7 @@ export function EmployeeAttendanceCard({
     attendance.policy.allowedLocations.map((location) => location.name);
   const canCheckIn = !hasCheckedIn && !isPending && hasValidLocation;
   const canCheckOut = hasCheckedIn && !hasCheckedOut && !isPending && hasValidLocation;
+  const requiresSelfie = locationStatus?.requiresSelfie ?? attendance.policy.requireSelfie;
   const workingMinutes = useMemo(() => {
     if (!record?.checkIn) {
       return 0;
@@ -142,6 +169,14 @@ export function EmployeeAttendanceCard({
       return null;
     }
   }
+
+  useEffect(() => {
+    return () => {
+      if (selfiePreviewUrl) {
+        URL.revokeObjectURL(selfiePreviewUrl);
+      }
+    };
+  }, [selfiePreviewUrl]);
 
   useEffect(() => {
     if (!record?.checkIn || record.checkOut) {
@@ -221,8 +256,55 @@ export function EmployeeAttendanceCard({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  function handleSelfieChange(file: File | null) {
+    if (selfiePreviewUrl) {
+      URL.revokeObjectURL(selfiePreviewUrl);
+    }
+
+    if (!file) {
+      setSelfieFile(null);
+      setSelfiePreviewUrl("");
+      setSelfieError("");
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      setSelfieFile(null);
+      setSelfiePreviewUrl("");
+      setSelfieError("Please capture a valid selfie image.");
+      return;
+    }
+
+    setSelfieFile(file);
+    setSelfiePreviewUrl(URL.createObjectURL(file));
+    setSelfieError("");
+  }
+
+  async function uploadSelfie(phase: "checkin" | "checkout") {
+    if (!selfieFile) {
+      return "";
+    }
+
+    const formData = new FormData();
+    formData.set("phase", phase);
+    formData.set("attendanceDate", attendance.date);
+    formData.set("file", selfieFile);
+
+    setIsUploadingSelfie(true);
+    const result = await onUploadSelfie(formData);
+    setIsUploadingSelfie(false);
+
+    if (!result.ok) {
+      setSelfieError(result.message);
+      return "";
+    }
+
+    return result.path;
+  }
+
   function submit(action: "check-in" | "check-out") {
     setMessage(null);
+    setSelfieError("");
 
     if (locationStatus?.ok !== true) {
       setMessage({
@@ -233,7 +315,23 @@ export function EmployeeAttendanceCard({
     }
 
     startTransition(async () => {
-      const input = gps ? { notes, gps } : { notes };
+      const selfiePath =
+        selfieFile ? await uploadSelfie(action === "check-in" ? "checkin" : "checkout") : "";
+
+      if (requiresSelfie && action === "check-in" && !selfiePath) {
+        setMessage({
+          ok: false,
+          message: "Attendance selfie is required before check-in.",
+        });
+        return;
+      }
+
+      const input: AttendanceCheckInput = {
+        notes,
+        ...(gps ? { gps } : {}),
+        ...(selfiePath ? { selfiePath } : {}),
+        deviceInfo: getClientDeviceInfo(),
+      };
       const result =
         action === "check-in"
           ? await onCheckIn(input)
@@ -320,7 +418,7 @@ export function EmployeeAttendanceCard({
                 GPS Status
               </p>
               <p className="mt-2 text-sm font-semibold">
-                {gps ? "Captured" : "Pending"}
+                {gps ? `${gps.source ?? "gps"}`.toUpperCase() : "Pending"}
               </p>
             </div>
             <div className="rounded-lg border bg-background p-3">
@@ -384,6 +482,11 @@ export function EmployeeAttendanceCard({
                 <p className="mt-2 text-xs text-muted-foreground">
                   {attendance.policy.modeDescription}
                 </p>
+                {requiresSelfie ? (
+                  <p className="mt-1 text-xs font-medium text-amber-700 dark:text-amber-300">
+                    Selfie is required before check-in.
+                  </p>
+                ) : null}
               </div>
             </div>
             <button
@@ -428,6 +531,51 @@ export function EmployeeAttendanceCard({
                 and future validation hooks are evaluated from admin settings.
               </p>
             </div>
+
+            <label className="block">
+              <span className="mb-2 flex items-center gap-2 text-sm font-medium">
+                <Camera className="size-4" aria-hidden="true" />
+                Attendance Selfie
+              </span>
+              <div className="rounded-lg border bg-background p-3">
+                <div className="flex flex-col gap-3">
+                  {selfiePreviewUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={selfiePreviewUrl}
+                      alt="Attendance selfie preview"
+                      className="h-32 w-32 rounded-lg object-cover"
+                    />
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      {requiresSelfie
+                        ? "Capture a selfie before checking in."
+                        : "Optional for checkout and future attendance verification."}
+                    </p>
+                  )}
+                  <label className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-md border px-3 text-sm font-medium">
+                    <Camera className="size-4" aria-hidden="true" />
+                    {isUploadingSelfie ? "Uploading..." : "Capture Selfie"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="user"
+                      className="sr-only"
+                      onChange={(event) =>
+                        handleSelfieChange(event.target.files?.[0] ?? null)
+                      }
+                      disabled={isUploadingSelfie || isPending}
+                    />
+                  </label>
+                </div>
+              </div>
+            </label>
+
+            {selfieError ? (
+              <p className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-700 dark:text-rose-300">
+                {selfieError}
+              </p>
+            ) : null}
 
             <div className="grid gap-2">
               <button

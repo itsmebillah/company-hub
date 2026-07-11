@@ -3,7 +3,7 @@ import "server-only";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type {
   AttendanceEmployeeOption,
-  AttendanceDetail,
+  AttendanceDetailRecord,
   AttendanceListFilters,
   AttendanceListItem,
   AttendanceRecord,
@@ -13,7 +13,7 @@ import type {
 } from "@/features/attendance/types/attendance.types";
 
 const attendanceRecordSelect =
-  "id, company_id, employee_id, attendance_date, check_in, check_out, status, working_minutes, late_minutes, notes, check_in_latitude, check_in_longitude, check_in_accuracy_meters, check_in_location_id, check_in_distance_meters, check_out_latitude, check_out_longitude, check_out_accuracy_meters, check_out_location_id, check_out_distance_meters, created_at, updated_at";
+  "id, company_id, employee_id, attendance_date, check_in, check_out, status, working_minutes, late_minutes, notes, check_in_latitude, check_in_longitude, check_in_accuracy_meters, check_in_address, check_in_location_source, check_in_selfie_path, check_in_device_browser, check_in_device_platform, check_in_location_id, check_in_distance_meters, check_out_latitude, check_out_longitude, check_out_accuracy_meters, check_out_address, check_out_location_source, check_out_selfie_path, check_out_device_browser, check_out_device_platform, check_out_location_id, check_out_distance_meters, created_at, updated_at";
 
 function toRecord(row: {
   id: string;
@@ -29,11 +29,21 @@ function toRecord(row: {
   check_in_latitude: number | null;
   check_in_longitude: number | null;
   check_in_accuracy_meters: number | null;
+  check_in_address: string | null;
+  check_in_location_source: AttendanceRecord["checkInLocationSource"];
+  check_in_selfie_path: string | null;
+  check_in_device_browser: string | null;
+  check_in_device_platform: string | null;
   check_in_location_id: string | null;
   check_in_distance_meters: number | null;
   check_out_latitude: number | null;
   check_out_longitude: number | null;
   check_out_accuracy_meters: number | null;
+  check_out_address: string | null;
+  check_out_location_source: AttendanceRecord["checkOutLocationSource"];
+  check_out_selfie_path: string | null;
+  check_out_device_browser: string | null;
+  check_out_device_platform: string | null;
   check_out_location_id: string | null;
   check_out_distance_meters: number | null;
   created_at: string;
@@ -53,11 +63,21 @@ function toRecord(row: {
     checkInLatitude: row.check_in_latitude,
     checkInLongitude: row.check_in_longitude,
     checkInAccuracyMeters: row.check_in_accuracy_meters,
+    checkInAddress: row.check_in_address,
+    checkInLocationSource: row.check_in_location_source,
+    checkInSelfiePath: row.check_in_selfie_path,
+    checkInDeviceBrowser: row.check_in_device_browser,
+    checkInDevicePlatform: row.check_in_device_platform,
     checkInLocationId: row.check_in_location_id,
     checkInDistanceMeters: row.check_in_distance_meters,
     checkOutLatitude: row.check_out_latitude,
     checkOutLongitude: row.check_out_longitude,
     checkOutAccuracyMeters: row.check_out_accuracy_meters,
+    checkOutAddress: row.check_out_address,
+    checkOutLocationSource: row.check_out_location_source,
+    checkOutSelfiePath: row.check_out_selfie_path,
+    checkOutDeviceBrowser: row.check_out_device_browser,
+    checkOutDevicePlatform: row.check_out_device_platform,
     checkOutLocationId: row.check_out_location_id,
     checkOutDistanceMeters: row.check_out_distance_meters,
     createdAt: row.created_at,
@@ -157,6 +177,11 @@ export const AttendanceRepository = {
     gps?: AttendanceGpsInput | null;
     locationId?: string | null;
     distanceMeters?: number | null;
+    selfiePath?: string | null;
+    deviceInfo?: {
+      browser: string;
+      platform: string;
+    } | null;
   }) {
     const supabase = createSupabaseAdminClient();
     const { data, error } = await supabase
@@ -172,6 +197,11 @@ export const AttendanceRepository = {
         check_in_latitude: input.gps?.latitude ?? null,
         check_in_longitude: input.gps?.longitude ?? null,
         check_in_accuracy_meters: input.gps?.accuracy ?? null,
+        check_in_address: input.gps?.address ?? null,
+        check_in_location_source: input.gps?.source ?? null,
+        check_in_selfie_path: input.selfiePath ?? null,
+        check_in_device_browser: input.deviceInfo?.browser ?? null,
+        check_in_device_platform: input.deviceInfo?.platform ?? null,
         check_in_location_id: input.locationId ?? null,
         check_in_distance_meters: input.distanceMeters ?? null,
         updated_at: input.checkIn,
@@ -195,6 +225,11 @@ export const AttendanceRepository = {
     gps?: AttendanceGpsInput | null;
     locationId?: string | null;
     distanceMeters?: number | null;
+    selfiePath?: string | null;
+    deviceInfo?: {
+      browser: string;
+      platform: string;
+    } | null;
   }) {
     const supabase = createSupabaseAdminClient();
     const { data, error } = await supabase
@@ -206,6 +241,11 @@ export const AttendanceRepository = {
         check_out_latitude: input.gps?.latitude ?? null,
         check_out_longitude: input.gps?.longitude ?? null,
         check_out_accuracy_meters: input.gps?.accuracy ?? null,
+        check_out_address: input.gps?.address ?? null,
+        check_out_location_source: input.gps?.source ?? null,
+        check_out_selfie_path: input.selfiePath ?? null,
+        check_out_device_browser: input.deviceInfo?.browser ?? null,
+        check_out_device_platform: input.deviceInfo?.platform ?? null,
         check_out_location_id: input.locationId ?? null,
         check_out_distance_meters: input.distanceMeters ?? null,
         updated_at: input.checkOut,
@@ -333,7 +373,7 @@ export const AttendanceRepository = {
     });
   },
 
-  async findDetailById(id: string): Promise<AttendanceDetail | null> {
+  async findDetailById(id: string): Promise<AttendanceDetailRecord | null> {
     const supabase = createSupabaseAdminClient();
     const { data, error } = await supabase
       .from("attendance_records")

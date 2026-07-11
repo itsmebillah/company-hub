@@ -1,4 +1,6 @@
 import type { Database } from "@/lib/supabase/types";
+import type { AnnouncementListItem } from "@/features/announcements/types/announcement.types";
+import type { EmployeePortalCategory } from "@/features/employee-resources/types/employee-resource.types";
 
 export type DashboardHealthStatus = "healthy" | "error";
 export type DashboardSystemStatus = "healthy" | "warning" | "error";
@@ -74,6 +76,8 @@ export type DashboardData = {
     activityTrend: DashboardChartPoint[];
   };
   recentActivity: DashboardRecentActivityItem[];
+  liveAnnouncements: AnnouncementListItem[];
+  quickResourceCategories: EmployeePortalCategory[];
   health: {
     authentication: DashboardSystemStatus;
     database: DashboardSystemStatus;

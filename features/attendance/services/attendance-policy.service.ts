@@ -83,6 +83,26 @@ function assertGpsCoordinates(gps: AttendanceGpsInput | undefined) {
   return gps;
 }
 
+function getLocationSource(gps: AttendanceGpsInput | null | undefined) {
+  if (gps?.source) {
+    return gps.source;
+  }
+
+  if (!gps) {
+    return undefined;
+  }
+
+  if (gps.accuracy <= 50) {
+    return "gps" as const;
+  }
+
+  if (gps.accuracy <= 150) {
+    return "hybrid" as const;
+  }
+
+  return "network" as const;
+}
+
 function getEffectiveRadiusMeters(
   settings: AttendanceSettingsValues,
   location: CompanyLocation,
@@ -103,11 +123,12 @@ function createSuccessResult(input: {
     message: input.message,
     locationName: input.location?.name,
     distanceMeters: input.distanceMeters,
-    accuracyMeters: input.gps?.accuracy,
-    modeLabel: input.modeLabel,
-    allowedLocations: input.allowedLocations,
-    gps: input.gps,
-    location: input.location ?? null,
+      accuracyMeters: input.gps?.accuracy,
+      modeLabel: input.modeLabel,
+      allowedLocations: input.allowedLocations,
+      requiresSelfie: false,
+      gps: input.gps,
+      location: input.location ?? null,
   };
 }
 
@@ -158,12 +179,15 @@ async function validateAgainstLocations(
   );
 
   return createSuccessResult({
-    message: `${successMessage} ${nearest.location.name}.`,
-    modeLabel: getAttendancePolicyOption(context.settings.attendanceMode).label,
-    allowedLocations: dedupeLocations(locations, assignedLocationIds),
-    gps,
-    location: nearest.location,
-    distanceMeters: nearest.distanceMeters,
+        message: `${successMessage} ${nearest.location.name}.`,
+        modeLabel: getAttendancePolicyOption(context.settings.attendanceMode).label,
+        allowedLocations: dedupeLocations(locations, assignedLocationIds),
+        gps: {
+          ...gps,
+          source: getLocationSource(gps),
+        },
+        location: nearest.location,
+        distanceMeters: nearest.distanceMeters,
   });
 }
 
@@ -238,7 +262,12 @@ const attendancePolicyStrategies: Record<
         modeLabel: getAttendancePolicyOption(context.settings.attendanceMode)
           .label,
         allowedLocations: [],
-        gps,
+        gps: gps
+          ? {
+              ...gps,
+              source: getLocationSource(gps),
+            }
+          : null,
         location: null,
       });
     },
@@ -283,7 +312,10 @@ const attendancePolicyStrategies: Record<
           modeLabel: getAttendancePolicyOption(context.settings.attendanceMode)
             .label,
           allowedLocations,
-          gps,
+          gps: {
+            ...gps,
+            source: getLocationSource(gps),
+          },
           location: null,
         });
       }
@@ -301,7 +333,10 @@ const attendancePolicyStrategies: Record<
           modeLabel: getAttendancePolicyOption(context.settings.attendanceMode)
             .label,
           allowedLocations,
-          gps,
+          gps: {
+            ...gps,
+            source: getLocationSource(gps),
+          },
           location: nearest?.location ?? null,
           distanceMeters: nearest?.distanceMeters,
         });
@@ -316,7 +351,10 @@ const attendancePolicyStrategies: Record<
           modeLabel: getAttendancePolicyOption(context.settings.attendanceMode)
             .label,
           allowedLocations,
-          gps,
+          gps: {
+            ...gps,
+            source: getLocationSource(gps),
+          },
           location: nearest.location,
           distanceMeters: nearest.distanceMeters,
         });
@@ -327,7 +365,10 @@ const attendancePolicyStrategies: Record<
         modeLabel: getAttendancePolicyOption(context.settings.attendanceMode)
           .label,
         allowedLocations,
-        gps,
+        gps: {
+          ...gps,
+          source: getLocationSource(gps),
+        },
         location: null,
         distanceMeters: nearest.distanceMeters,
       });
@@ -413,7 +454,14 @@ export const AttendancePolicyService = {
       },
     };
 
-    return attendancePolicyStrategies[settings.attendanceMode].validate(context);
+    const result = await attendancePolicyStrategies[settings.attendanceMode].validate(
+      context,
+    );
+
+    return {
+      ...result,
+      requiresSelfie: settings.requireSelfie,
+    };
   },
 
   async updateSettings(

@@ -10,6 +10,7 @@ import {
   RecentActivity,
   SystemStatus,
 } from "@/features/admin-dashboard/components";
+import { AnnouncementTicker, QuickResourceLinks } from "@/features/employee-resources/components";
 import { DashboardService } from "@/features/admin-dashboard/services/dashboard.service";
 import { appConfig } from "@/lib/config/app";
 import {
@@ -205,6 +206,54 @@ export default async function AdminDashboardPage() {
               {kpis.map((kpi) => (
                 <KPICard key={kpi.title} {...kpi} />
               ))}
+            </div>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-base font-semibold">Live Employee View</h2>
+            <AnnouncementTicker announcements={dashboard.liveAnnouncements} />
+            <QuickResourceLinks categories={dashboard.quickResourceCategories} />
+          </section>
+
+          <section>
+            <h2 className="mb-3 text-base font-semibold">Company Snapshot</h2>
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <div className="rounded-xl border bg-card p-4 shadow-sm">
+                <p className="text-sm text-muted-foreground">Active Announcements</p>
+                <p className="mt-2 text-2xl font-semibold">
+                  {dashboard.counts.activeAnnouncements}
+                </p>
+              </div>
+              <div className="rounded-xl border bg-card p-4 shadow-sm">
+                <p className="text-sm text-muted-foreground">Active Resources</p>
+                <p className="mt-2 text-2xl font-semibold">
+                  {dashboard.counts.activeResources}
+                </p>
+              </div>
+              <div className="rounded-xl border bg-card p-4 shadow-sm">
+                <p className="text-sm text-muted-foreground">Unread Notifications</p>
+                <p className="mt-2 text-2xl font-semibold">
+                  {dashboard.counts.unreadNotifications}
+                </p>
+              </div>
+              <div className="rounded-xl border bg-card p-4 shadow-sm">
+                <p className="text-sm text-muted-foreground">Today&apos;s Attendance</p>
+                <p className="mt-2 text-2xl font-semibold">
+                  {dashboard.counts.todaysAttendance}
+                </p>
+              </div>
+              <div className="rounded-xl border bg-card p-4 shadow-sm">
+                <p className="text-sm text-muted-foreground">Pending Approvals</p>
+                <p className="mt-2 text-2xl font-semibold">
+                  {dashboard.counts.pendingLeaveRequests}
+                </p>
+              </div>
+              <div className="rounded-xl border bg-card p-4 shadow-sm">
+                <p className="text-sm text-muted-foreground">Recent Activity</p>
+                <p className="mt-2 text-2xl font-semibold">
+                  {dashboard.recentActivity.length}
+                </p>
+              </div>
             </div>
           </section>
 

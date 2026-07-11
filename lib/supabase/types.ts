@@ -62,6 +62,7 @@ export type Database = {
           allow_early_check_in_minutes: number;
           allow_late_check_out: boolean;
           require_gps: boolean;
+          require_selfie: boolean;
           require_high_accuracy: boolean;
           enable_geofence: boolean;
           face_verification_enabled: boolean;
@@ -93,6 +94,7 @@ export type Database = {
           allow_early_check_in_minutes?: number;
           allow_late_check_out?: boolean;
           require_gps?: boolean;
+          require_selfie?: boolean;
           require_high_accuracy?: boolean;
           enable_geofence?: boolean;
           face_verification_enabled?: boolean;
@@ -124,6 +126,7 @@ export type Database = {
           allow_early_check_in_minutes?: number;
           allow_late_check_out?: boolean;
           require_gps?: boolean;
+          require_selfie?: boolean;
           require_high_accuracy?: boolean;
           enable_geofence?: boolean;
           face_verification_enabled?: boolean;
@@ -697,11 +700,25 @@ export type Database = {
           check_in_latitude: number | null;
           check_in_longitude: number | null;
           check_in_accuracy_meters: number | null;
+          check_in_address: string | null;
+          check_in_location_source:
+            | Database["public"]["Enums"]["attendance_location_source"]
+            | null;
+          check_in_selfie_path: string | null;
+          check_in_device_browser: string | null;
+          check_in_device_platform: string | null;
           check_in_location_id: string | null;
           check_in_distance_meters: number | null;
           check_out_latitude: number | null;
           check_out_longitude: number | null;
           check_out_accuracy_meters: number | null;
+          check_out_address: string | null;
+          check_out_location_source:
+            | Database["public"]["Enums"]["attendance_location_source"]
+            | null;
+          check_out_selfie_path: string | null;
+          check_out_device_browser: string | null;
+          check_out_device_platform: string | null;
           check_out_location_id: string | null;
           check_out_distance_meters: number | null;
           status: Database["public"]["Enums"]["attendance_status"];
@@ -721,11 +738,25 @@ export type Database = {
           check_in_latitude?: number | null;
           check_in_longitude?: number | null;
           check_in_accuracy_meters?: number | null;
+          check_in_address?: string | null;
+          check_in_location_source?:
+            | Database["public"]["Enums"]["attendance_location_source"]
+            | null;
+          check_in_selfie_path?: string | null;
+          check_in_device_browser?: string | null;
+          check_in_device_platform?: string | null;
           check_in_location_id?: string | null;
           check_in_distance_meters?: number | null;
           check_out_latitude?: number | null;
           check_out_longitude?: number | null;
           check_out_accuracy_meters?: number | null;
+          check_out_address?: string | null;
+          check_out_location_source?:
+            | Database["public"]["Enums"]["attendance_location_source"]
+            | null;
+          check_out_selfie_path?: string | null;
+          check_out_device_browser?: string | null;
+          check_out_device_platform?: string | null;
           check_out_location_id?: string | null;
           check_out_distance_meters?: number | null;
           status?: Database["public"]["Enums"]["attendance_status"];
@@ -745,11 +776,25 @@ export type Database = {
           check_in_latitude?: number | null;
           check_in_longitude?: number | null;
           check_in_accuracy_meters?: number | null;
+          check_in_address?: string | null;
+          check_in_location_source?:
+            | Database["public"]["Enums"]["attendance_location_source"]
+            | null;
+          check_in_selfie_path?: string | null;
+          check_in_device_browser?: string | null;
+          check_in_device_platform?: string | null;
           check_in_location_id?: string | null;
           check_in_distance_meters?: number | null;
           check_out_latitude?: number | null;
           check_out_longitude?: number | null;
           check_out_accuracy_meters?: number | null;
+          check_out_address?: string | null;
+          check_out_location_source?:
+            | Database["public"]["Enums"]["attendance_location_source"]
+            | null;
+          check_out_selfie_path?: string | null;
+          check_out_device_browser?: string | null;
+          check_out_device_platform?: string | null;
           check_out_location_id?: string | null;
           check_out_distance_meters?: number | null;
           status?: Database["public"]["Enums"]["attendance_status"];
@@ -1103,6 +1148,7 @@ export type Database = {
     Functions: Record<string, never>;
     Enums: {
       announcement_priority: "low" | "normal" | "high" | "urgent";
+      attendance_location_source: "gps" | "network" | "hybrid";
       attendance_policy_mode:
         | "assigned_location_only"
         | "company_location"

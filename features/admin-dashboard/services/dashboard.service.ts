@@ -2,8 +2,10 @@ import "server-only";
 
 import { unstable_cache } from "next/cache";
 
+import { AnnouncementService } from "@/features/announcements/services/announcement.service";
 import { getCurrentSessionProfile } from "@/features/auth/services/session.service";
 import { getCompanySettings } from "@/features/company-settings/services/company-settings.service";
+import { EmployeeResourceService } from "@/features/employee-resources/services/employee-resource.service";
 import { NotificationRepository } from "@/features/notifications/repositories/notification.repository";
 import { AttendanceService } from "@/features/attendance/services/attendance.service";
 import { getSupabaseAdminEnv, getSupabaseEnv } from "@/lib/env";
@@ -138,6 +140,8 @@ function getEmptyDashboard(): DashboardData {
       activityTrend: [],
     },
     recentActivity: [],
+    liveAnnouncements: [],
+    quickResourceCategories: [],
     health,
   };
 }
@@ -331,7 +335,12 @@ export async function getAdminDashboardData(): Promise<DashboardData> {
       return getEmptyDashboard();
     }
 
-    const summary = await getCachedExecutiveSummary(companyId);
+    const [summary, liveAnnouncements, quickResourceCategories] =
+      await Promise.all([
+        getCachedExecutiveSummary(companyId),
+        AnnouncementService.listForAdminDashboard(),
+        EmployeeResourceService.getAdminQuickResourceCategories(),
+      ]);
     const health: DashboardData["health"] = {
       authentication: session?.status === "active" ? "healthy" : "warning",
       database: "healthy" as const,
@@ -348,6 +357,8 @@ export async function getAdminDashboardData(): Promise<DashboardData> {
       counts: summary.counts,
       charts: summary.charts,
       recentActivity: summary.recentActivity,
+      liveAnnouncements: liveAnnouncements.announcements,
+      quickResourceCategories,
       health,
     };
   } catch {

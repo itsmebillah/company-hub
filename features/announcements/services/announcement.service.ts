@@ -371,6 +371,49 @@ export const AnnouncementService = {
     };
   },
 
+  async listForAdminDashboard(): Promise<AnnouncementListResult> {
+    const supabase = createSupabaseAdminClient();
+    const companyId = await requireActiveCompanyId();
+    const now = new Date().toISOString();
+    const { data, error } = await supabase
+      .from("announcements")
+      .select(
+        "id, title, description, banner_url, priority, publish_from, publish_until, status, target_audience, created_at, updated_at",
+      )
+      .eq("company_id", companyId)
+      .eq("status", "active")
+      .or(`publish_from.is.null,publish_from.lte.${now}`)
+      .or(`publish_until.is.null,publish_until.gte.${now}`)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error(
+        "[AnnouncementService] Unable to load admin dashboard announcements.",
+        error,
+      );
+      throw new Error("Unable to load announcements.");
+    }
+
+    const audienceById = await loadAudienceByAnnouncementIds(
+      companyId,
+      data.map((announcement) => announcement.id),
+    );
+
+    return {
+      announcements: sortAnnouncements(
+        data.map((announcement) =>
+          toListItem({
+            ...announcement,
+            ...(audienceById.get(announcement.id) ?? {
+              roleIds: [],
+              employeeIds: [],
+            }),
+          }),
+        ),
+      ),
+    };
+  },
+
   async getAudienceOptions(): Promise<AnnouncementAudienceOptions> {
     const supabase = createSupabaseAdminClient();
     const companyId = await requireActiveCompanyId();

@@ -20,6 +20,7 @@ export function getRenderableImageSrc(value: string | null | undefined) {
 
 export const PROFILE_PHOTOS_BUCKET = "profile-photos";
 export const ANNOUNCEMENT_IMAGES_BUCKET = "announcement-images";
+export const ATTENDANCE_SELFIES_BUCKET = "attendance-selfies";
 
 function encodeStoragePath(path: string) {
   return path
@@ -45,6 +46,19 @@ function normalizeStorageObjectPath(bucket: string, value: string) {
   }
 
   return path;
+}
+
+export function getStorageObjectPath(
+  bucket: string,
+  value: string | null | undefined,
+) {
+  const src = value?.trim();
+
+  if (!src) {
+    return null;
+  }
+
+  return normalizeStorageObjectPath(bucket, src);
 }
 
 export function getPublicStorageUrl(
@@ -82,4 +96,24 @@ export function getProfilePhotoSrc(value: string | null | undefined) {
 
 export function getAnnouncementImageSrc(value: string | null | undefined) {
   return getPublicStorageUrl(ANNOUNCEMENT_IMAGES_BUCKET, value);
+}
+
+export function buildAttendanceSelfiePath(input: {
+  companyId: string;
+  employeeId: string;
+  attendanceDate: string;
+  phase: "checkin" | "checkout";
+  extension?: string;
+}) {
+  const [year, month, day] = input.attendanceDate.split("-");
+  const extension = input.extension?.replace(/^\.+/, "") || "jpg";
+
+  return [
+    input.companyId,
+    input.employeeId,
+    year,
+    month,
+    day,
+    `${input.phase}.${extension}`,
+  ].join("/");
 }

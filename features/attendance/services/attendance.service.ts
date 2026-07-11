@@ -6,6 +6,8 @@ import { ATTENDANCE_RULES } from "@/features/attendance/constants/attendance-opt
 import { getAttendancePolicyOption } from "@/features/attendance/constants/attendance-policy-options";
 import { AttendanceRepository } from "@/features/attendance/repositories/attendance.repository";
 import { AttendancePolicyService } from "@/features/attendance/services/attendance-policy.service";
+import { AttendanceReverseGeocodeService } from "@/features/attendance/services/attendance-reverse-geocode.service";
+import { AttendanceSelfieService } from "@/features/attendance/services/attendance-selfie.service";
 import type {
   AdminAttendanceOverview,
   AttendanceCheckInput,
@@ -19,6 +21,7 @@ import type {
 import { logActivity } from "@/features/activity/utils/activity-log";
 import { getCurrentAuthUser } from "@/features/auth/services/auth.service";
 import { CalendarService } from "@/features/company-calendar/services/calendar.service";
+import { NotificationService } from "@/features/notifications/services/notification.service";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 function getTodayDate() {
@@ -110,6 +113,8 @@ export const AttendanceService = {
 
     return {
       date: today,
+      companyId: employee.company_id,
+      employeeId: employee.id,
       employeeName: employee.name,
       employeeCode: employee.employee_id,
       record,
@@ -253,6 +258,23 @@ export const AttendanceService = {
       input.gps,
       policySettings,
     );
+
+    if (policySettings.requireSelfie && !input.selfiePath) {
+      throw new Error("Attendance selfie is required before check-in.");
+    }
+
+    const reverseGeocode = policyValidation.gps
+      ? await AttendanceReverseGeocodeService.reverseLookup({
+          latitude: policyValidation.gps.latitude,
+          longitude: policyValidation.gps.longitude,
+        })
+      : { address: null };
+    const gpsWithAddress = policyValidation.gps
+      ? {
+          ...policyValidation.gps,
+          address: input.gps?.address ?? reverseGeocode.address ?? null,
+        }
+      : null;
     const lateMinutes = getLateMinutes(serverTimestamp, attendanceDate);
     const record = await AttendanceRepository.createCheckIn({
       companyId: employee.company_id,
@@ -262,9 +284,11 @@ export const AttendanceService = {
       status: getCheckInStatus(lateMinutes),
       lateMinutes,
       notes: input.notes?.trim() || null,
-      gps: policyValidation.gps,
+      gps: gpsWithAddress,
       locationId: policyValidation.location?.id ?? null,
       distanceMeters: policyValidation.distanceMeters ?? null,
+      selfiePath: input.selfiePath ?? null,
+      deviceInfo: input.deviceInfo ?? null,
     });
 
     await logActivity({
@@ -281,12 +305,23 @@ export const AttendanceService = {
         attendanceMode: getAttendancePolicyOption(policySettings.attendanceMode)
           .label,
         gpsLocationName: policyValidation.location?.name ?? null,
+        gpsAddress: gpsWithAddress?.address ?? null,
+        selfiePath: input.selfiePath ?? null,
         gpsDistanceMeters:
           typeof policyValidation.distanceMeters === "number"
             ? Math.round(policyValidation.distanceMeters)
             : null,
         gpsAccuracyMeters: policyValidation.gps?.accuracy ?? null,
       },
+    });
+
+    await NotificationService.create({
+      companyId: employee.company_id,
+      employeeId: employee.id,
+      type: "attendance",
+      title: "Attendance completed",
+      message: `Check-in recorded for ${attendanceDate}.`,
+      actionUrl: "/attendance",
     });
 
     return record;
@@ -318,15 +353,29 @@ export const AttendanceService = {
       input.gps,
       policySettings,
     );
+    const reverseGeocode = policyValidation.gps
+      ? await AttendanceReverseGeocodeService.reverseLookup({
+          latitude: policyValidation.gps.latitude,
+          longitude: policyValidation.gps.longitude,
+        })
+      : { address: null };
+    const gpsWithAddress = policyValidation.gps
+      ? {
+          ...policyValidation.gps,
+          address: input.gps?.address ?? reverseGeocode.address ?? null,
+        }
+      : null;
     const workingMinutes = getWorkingMinutes(record.checkIn, serverTimestamp);
     const updatedRecord = await AttendanceRepository.updateCheckOut({
       id: record.id,
       checkOut: serverTimestamp,
       workingMinutes,
       status: getCheckOutStatus(record, workingMinutes),
-      gps: policyValidation.gps,
+      gps: gpsWithAddress,
       locationId: policyValidation.location?.id ?? null,
       distanceMeters: policyValidation.distanceMeters ?? null,
+      selfiePath: input.selfiePath ?? null,
+      deviceInfo: input.deviceInfo ?? null,
     });
 
     await logActivity({
@@ -345,6 +394,8 @@ export const AttendanceService = {
         attendanceMode: getAttendancePolicyOption(policySettings.attendanceMode)
           .label,
         gpsLocationName: policyValidation.location?.name ?? null,
+        gpsAddress: gpsWithAddress?.address ?? null,
+        selfiePath: input.selfiePath ?? null,
         gpsDistanceMeters:
           typeof policyValidation.distanceMeters === "number"
             ? Math.round(policyValidation.distanceMeters)
@@ -353,10 +404,38 @@ export const AttendanceService = {
       },
     });
 
+    await NotificationService.create({
+      companyId: employee.company_id,
+      employeeId: employee.id,
+      type: "attendance",
+      title: "Attendance completed",
+      message: `Check-out recorded for ${attendanceDate}.`,
+      actionUrl: "/attendance",
+    });
+
     return updatedRecord;
   },
 
   async getAttendanceDetail(id: string) {
-    return AttendanceRepository.findDetailById(id);
+    const record = await AttendanceRepository.findDetailById(id);
+
+    if (!record) {
+      return null;
+    }
+
+    const [checkInSelfieUrl, checkOutSelfieUrl] = await Promise.all([
+      record.checkInSelfiePath
+        ? AttendanceSelfieService.getSignedUrl(record.checkInSelfiePath)
+        : Promise.resolve(null),
+      record.checkOutSelfiePath
+        ? AttendanceSelfieService.getSignedUrl(record.checkOutSelfiePath)
+        : Promise.resolve(null),
+    ]);
+
+    return {
+      ...record,
+      checkInSelfieUrl,
+      checkOutSelfieUrl,
+    };
   },
 };
