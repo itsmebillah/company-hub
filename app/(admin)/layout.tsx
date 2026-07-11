@@ -2,8 +2,10 @@ import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { AdminShell } from "@/components/admin";
+import { AttendanceSettingsService } from "@/features/attendance/services/attendance-settings.service";
 import { getPostLoginRedirectPath } from "@/features/auth/services/redirect.service";
 import { getCurrentSessionProfile } from "@/features/auth/services/session.service";
+import { getCompanySettings } from "@/features/company-settings/services/company-settings.service";
 import { NotificationService } from "@/features/notifications/services/notification.service";
 import { SchemaVersionService } from "@/features/schema-version/services/schema-version.service";
 import { ROLE_NAMES } from "@/lib/auth/permissions";
@@ -23,9 +25,12 @@ export default async function AdminRouteGroupLayout({
     redirect(getPostLoginRedirectPath(profile.roleName));
   }
 
-  const [notificationSummary, schemaStatus] = await Promise.all([
+  const [notificationSummary, schemaStatus, attendanceSettings, companySettings] =
+    await Promise.all([
     NotificationService.getCurrentAdminSummary(),
     SchemaVersionService.getStatus(),
+    AttendanceSettingsService.getSettings(),
+    getCompanySettings(),
   ]);
 
   return (
@@ -36,6 +41,10 @@ export default async function AdminRouteGroupLayout({
         type: "company",
         companyId: profile.companyId,
       }}
+      onboardingVersion={
+        companySettings.securityPreferences.permissionOnboardingVersion
+      }
+      requireCameraOnboarding={attendanceSettings.requireSelfie}
       schemaStatus={schemaStatus}
     >
       {children}

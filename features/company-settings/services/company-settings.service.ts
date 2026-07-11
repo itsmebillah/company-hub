@@ -46,6 +46,7 @@ const DEFAULT_SETTINGS: Omit<CompanySettingsValues, "companyName"> = {
     passwordPolicy: "standard",
     sessionTimeoutMinutes: 480,
     forceLogoutEnabled: false,
+    permissionOnboardingVersion: 1,
   },
   locations: [],
 };
@@ -354,6 +355,8 @@ export async function updateCompanySettings(values: CompanySettingsValues) {
       theme: values.theme,
       language: values.language,
       workingDays: values.workingDays,
+      permissionOnboardingVersion:
+        values.securityPreferences.permissionOnboardingVersion,
     },
   });
 }

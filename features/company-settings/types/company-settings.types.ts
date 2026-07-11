@@ -28,6 +28,7 @@ export type SecurityPreferenceValues = {
   passwordPolicy: "standard" | "strong";
   sessionTimeoutMinutes: number;
   forceLogoutEnabled: boolean;
+  permissionOnboardingVersion: number;
 };
 
 export type CompanyLocationValues = {

@@ -8,6 +8,7 @@ import { AdminHeader } from "@/components/admin/admin-header";
 import { AdminMobileDrawer } from "@/components/admin/admin-mobile-drawer";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import type { AuthSessionProfile } from "@/features/auth/types/auth.types";
+import { PermissionOnboarding } from "@/features/device-onboarding/components/permission-onboarding";
 import type {
   NotificationSummary,
   RealtimeNotificationScope,
@@ -19,6 +20,8 @@ type AdminShellProps = {
   profile: AuthSessionProfile;
   notificationSummary: NotificationSummary;
   notificationScope: RealtimeNotificationScope;
+  onboardingVersion: number;
+  requireCameraOnboarding: boolean;
   schemaStatus: SchemaVersionStatus;
 };
 
@@ -27,6 +30,8 @@ export function AdminShell({
   profile,
   notificationSummary,
   notificationScope,
+  onboardingVersion,
+  requireCameraOnboarding,
   schemaStatus,
 }: AdminShellProps) {
   const pathname = usePathname();
@@ -77,6 +82,11 @@ export function AdminShell({
           </main>
         </div>
       </div>
+      <PermissionOnboarding
+        companyId={profile.companyId}
+        version={onboardingVersion}
+        requireCamera={requireCameraOnboarding}
+      />
     </div>
   );
 }

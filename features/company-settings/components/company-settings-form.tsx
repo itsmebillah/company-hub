@@ -7,6 +7,7 @@ import {
   Loader2,
   MapPin,
   Plus,
+  RotateCcw,
   Save,
   Trash2,
   Upload,
@@ -618,6 +619,35 @@ export function CompanySettingsForm({
                 </span>
               </span>
             </label>
+            <div className="rounded-lg border p-4 md:col-span-2">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm font-medium">Force Onboarding Again</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Ask every browser to show the permission onboarding flow
+                    again after users sign in.
+                  </p>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Current version:{" "}
+                    {values.securityPreferences.permissionOnboardingVersion}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border bg-background px-3 text-sm font-semibold transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  onClick={() =>
+                    updateValue("securityPreferences", {
+                      ...values.securityPreferences,
+                      permissionOnboardingVersion:
+                        values.securityPreferences.permissionOnboardingVersion + 1,
+                    })
+                  }
+                >
+                  <RotateCcw className="size-4" aria-hidden="true" />
+                  Reset Onboarding
+                </button>
+              </div>
+            </div>
           </div>
         </section>
 

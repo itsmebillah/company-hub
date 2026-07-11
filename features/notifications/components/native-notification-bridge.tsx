@@ -17,8 +17,6 @@ type NativeNotificationOptions = NotificationOptions & {
   vibrate?: number[];
 };
 
-const PERMISSION_REQUESTED_KEY =
-  "company-hub:native-notifications:permission-requested";
 const SHOWN_NOTIFICATIONS_KEY = "company-hub:native-notifications:shown";
 const APP_ICON = "/icon.svg";
 const APP_BADGE = "/icon.svg";
@@ -137,28 +135,7 @@ export function NativeNotificationBridge({
       }
 
       if (Notification.permission === "default") {
-        const hasRequestedPermission =
-          window.localStorage.getItem(PERMISSION_REQUESTED_KEY) === "true";
-
-        if (hasRequestedPermission) {
-          return;
-        }
-
-        window.localStorage.setItem(PERMISSION_REQUESTED_KEY, "true");
-        const permission = await Notification.requestPermission();
-
-        if (!isMounted) {
-          return;
-        }
-
-        if (permission === "denied") {
-          setShowDeniedHelper(true);
-          return;
-        }
-
-        if (permission !== "granted") {
-          return;
-        }
+        return;
       }
 
       const shownIds = getStoredIds();

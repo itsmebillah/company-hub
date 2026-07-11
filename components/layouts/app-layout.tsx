@@ -4,7 +4,10 @@ import { AppFooter } from "@/components/common/app-footer";
 import { AppHeader } from "@/components/common/app-header";
 import { MobileBottomNav } from "@/components/common/mobile-bottom-nav";
 import { PageContainer } from "@/components/common/page-container";
+import { AttendanceSettingsService } from "@/features/attendance/services/attendance-settings.service";
 import { CurrentEmployeeContextService } from "@/features/auth/services/current-employee-context.service";
+import { getCompanySettings } from "@/features/company-settings/services/company-settings.service";
+import { PermissionOnboarding } from "@/features/device-onboarding/components/permission-onboarding";
 import { NotificationService } from "@/features/notifications/services/notification.service";
 
 type AppLayoutProps = {
@@ -12,9 +15,16 @@ type AppLayoutProps = {
 };
 
 export async function AppLayout({ children }: AppLayoutProps) {
-  const [notificationSummary, employeeContext] = await Promise.all([
+  const [
+    notificationSummary,
+    employeeContext,
+    attendanceSettings,
+    companySettings,
+  ] = await Promise.all([
     NotificationService.getCurrentUserSummary(),
     CurrentEmployeeContextService.getCurrentEmployeeContext(),
+    AttendanceSettingsService.getSettings(),
+    getCompanySettings(),
   ]);
   const notificationScope =
     employeeContext?.status === "active"
@@ -37,6 +47,15 @@ export async function AppLayout({ children }: AppLayoutProps) {
       </PageContainer>
       <AppFooter />
       <MobileBottomNav />
+      {employeeContext?.companyId ? (
+        <PermissionOnboarding
+          companyId={employeeContext.companyId}
+          version={
+            companySettings.securityPreferences.permissionOnboardingVersion
+          }
+          requireCamera={attendanceSettings.requireSelfie}
+        />
+      ) : null}
     </div>
   );
 }
