@@ -154,9 +154,9 @@ export const AttendanceRepository = {
     status: AttendanceStatus;
     lateMinutes: number;
     notes?: string | null;
-    gps: AttendanceGpsInput;
-    locationId: string;
-    distanceMeters: number;
+    gps?: AttendanceGpsInput | null;
+    locationId?: string | null;
+    distanceMeters?: number | null;
   }) {
     const supabase = createSupabaseAdminClient();
     const { data, error } = await supabase
@@ -169,11 +169,11 @@ export const AttendanceRepository = {
         status: input.status,
         late_minutes: input.lateMinutes,
         notes: input.notes ?? null,
-        check_in_latitude: input.gps.latitude,
-        check_in_longitude: input.gps.longitude,
-        check_in_accuracy_meters: input.gps.accuracy,
-        check_in_location_id: input.locationId,
-        check_in_distance_meters: input.distanceMeters,
+        check_in_latitude: input.gps?.latitude ?? null,
+        check_in_longitude: input.gps?.longitude ?? null,
+        check_in_accuracy_meters: input.gps?.accuracy ?? null,
+        check_in_location_id: input.locationId ?? null,
+        check_in_distance_meters: input.distanceMeters ?? null,
         updated_at: input.checkIn,
       })
       .select(attendanceRecordSelect)
@@ -192,9 +192,9 @@ export const AttendanceRepository = {
     checkOut: string;
     status: AttendanceStatus;
     workingMinutes: number;
-    gps: AttendanceGpsInput;
-    locationId: string;
-    distanceMeters: number;
+    gps?: AttendanceGpsInput | null;
+    locationId?: string | null;
+    distanceMeters?: number | null;
   }) {
     const supabase = createSupabaseAdminClient();
     const { data, error } = await supabase
@@ -203,11 +203,11 @@ export const AttendanceRepository = {
         check_out: input.checkOut,
         status: input.status,
         working_minutes: input.workingMinutes,
-        check_out_latitude: input.gps.latitude,
-        check_out_longitude: input.gps.longitude,
-        check_out_accuracy_meters: input.gps.accuracy,
-        check_out_location_id: input.locationId,
-        check_out_distance_meters: input.distanceMeters,
+        check_out_latitude: input.gps?.latitude ?? null,
+        check_out_longitude: input.gps?.longitude ?? null,
+        check_out_accuracy_meters: input.gps?.accuracy ?? null,
+        check_out_location_id: input.locationId ?? null,
+        check_out_distance_meters: input.distanceMeters ?? null,
         updated_at: input.checkOut,
       })
       .eq("id", input.id)
@@ -400,36 +400,38 @@ export const AttendanceRepository = {
       throw new Error("Unable to load assigned office locations.");
     }
 
-    const assignedLocations = (data as AssignedCompanyLocationAccessRow[]).flatMap(
+    return (data as AssignedCompanyLocationAccessRow[]).flatMap(
       (assignment): CompanyLocation[] => {
-      const location = Array.isArray(assignment.company_locations)
-        ? assignment.company_locations[0]
-        : assignment.company_locations;
+        const location = Array.isArray(assignment.company_locations)
+          ? assignment.company_locations[0]
+          : assignment.company_locations;
 
-      if (!location) {
-        return [];
-      }
+        if (!location) {
+          return [];
+        }
 
-      return [{
-        id: location.id,
-        companyId: location.company_id,
-        name: location.name,
-        code: location.code,
-        locationType: location.location_type,
-        latitude: location.latitude,
-        longitude: location.longitude,
-        radiusMeters: location.radius_meters,
-        address: location.address,
-        status: location.status,
-        isDefault: location.is_default,
-      }];
-    });
+        return [
+          {
+            id: location.id,
+            companyId: location.company_id,
+            name: location.name,
+            code: location.code,
+            locationType: location.location_type,
+            latitude: location.latitude,
+            longitude: location.longitude,
+            radiusMeters: location.radius_meters,
+            address: location.address,
+            status: location.status,
+            isDefault: location.is_default,
+          },
+        ];
+      },
+    );
+  },
 
-    if (assignedLocations.length > 0) {
-      return assignedLocations;
-    }
-
-    const { data: companyLocations, error: companyLocationsError } = await supabase
+  async getActiveCompanyLocations(companyId: string) {
+    const supabase = createSupabaseAdminClient();
+    const { data, error } = await supabase
       .from("company_locations")
       .select(
         "id, company_id, name, code, location_type, latitude, longitude, radius_meters, address, status, is_default",
@@ -439,15 +441,15 @@ export const AttendanceRepository = {
       .order("is_default", { ascending: false })
       .order("name", { ascending: true });
 
-    if (companyLocationsError) {
+    if (error) {
       console.error(
-        "[AttendanceRepository] Unable to load company fallback locations.",
-        companyLocationsError,
+        "[AttendanceRepository] Unable to load active company locations.",
+        error,
       );
       throw new Error("Unable to load office locations.");
     }
 
-    return companyLocations.map((location): CompanyLocation => ({
+    return data.map((location): CompanyLocation => ({
       id: location.id,
       companyId: location.company_id,
       name: location.name,

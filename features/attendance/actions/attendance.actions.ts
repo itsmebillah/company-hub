@@ -12,15 +12,7 @@ export async function prepareCheckInAction(
   input: AttendanceCheckInput = {},
 ): Promise<AttendanceActionState> {
   try {
-    const result = await AttendanceService.prepareCheckIn(input);
-
-    return {
-      ok: true,
-      message: `Inside ${result.locationName}. Attendance is available.`,
-      locationName: result.locationName,
-      distanceMeters: result.distanceMeters,
-      accuracyMeters: result.accuracyMeters,
-    };
+    return await AttendanceService.prepareCheckIn(input);
   } catch (error) {
     console.error("[AttendanceAction] Prepare check-in failed.", error);
 
@@ -38,15 +30,7 @@ export async function prepareCheckOutAction(
   input: AttendanceCheckInput = {},
 ): Promise<AttendanceActionState> {
   try {
-    const result = await AttendanceService.prepareCheckOut(input);
-
-    return {
-      ok: true,
-      message: `Inside ${result.locationName}. Check-out is available.`,
-      locationName: result.locationName,
-      distanceMeters: result.distanceMeters,
-      accuracyMeters: result.accuracyMeters,
-    };
+    return await AttendanceService.prepareCheckOut(input);
   } catch (error) {
     console.error("[AttendanceAction] Prepare check-out failed.", error);
 

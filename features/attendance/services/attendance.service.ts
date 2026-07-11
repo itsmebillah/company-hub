@@ -2,15 +2,13 @@ import "server-only";
 
 import { redirect } from "next/navigation";
 
-import {
-  ATTENDANCE_GPS_RULES,
-  ATTENDANCE_RULES,
-} from "@/features/attendance/constants/attendance-options";
+import { ATTENDANCE_RULES } from "@/features/attendance/constants/attendance-options";
+import { getAttendancePolicyOption } from "@/features/attendance/constants/attendance-policy-options";
 import { AttendanceRepository } from "@/features/attendance/repositories/attendance.repository";
+import { AttendancePolicyService } from "@/features/attendance/services/attendance-policy.service";
 import type {
   AdminAttendanceOverview,
   AttendanceCheckInput,
-  AttendanceGpsInput,
   AttendanceListFilters,
   AttendanceListResult,
   AttendanceRecord,
@@ -18,7 +16,6 @@ import type {
   EmployeeAttendanceSummary,
   TodayAttendance,
 } from "@/features/attendance/types/attendance.types";
-import { findNearestCompanyLocation } from "@/features/attendance/utils/gps";
 import { logActivity } from "@/features/activity/utils/activity-log";
 import { getCurrentAuthUser } from "@/features/auth/services/auth.service";
 import { CalendarService } from "@/features/company-calendar/services/calendar.service";
@@ -64,68 +61,6 @@ function getWorkingMinutes(checkIn: string, checkOut: string) {
   );
 }
 
-function assertGpsInput(
-  gps: AttendanceGpsInput | undefined,
-): asserts gps is AttendanceGpsInput {
-  if (!gps) {
-    throw new Error("Allow location access before continuing.");
-  }
-
-  if (
-    !Number.isFinite(gps.latitude) ||
-    !Number.isFinite(gps.longitude) ||
-    !Number.isFinite(gps.accuracy)
-  ) {
-    throw new Error("Unable to read your current location.");
-  }
-
-  if (gps.latitude < -90 || gps.latitude > 90) {
-    throw new Error("Unable to read your current location.");
-  }
-
-  if (gps.longitude < -180 || gps.longitude > 180) {
-    throw new Error("Unable to read your current location.");
-  }
-
-  if (gps.accuracy > ATTENDANCE_GPS_RULES.maxAccuracyMeters) {
-    throw new Error(
-      "Location accuracy is too low. Move to an open area and try again.",
-    );
-  }
-}
-
-async function validateGpsForCompany(
-  companyId: string,
-  employeeId: string,
-  gps: AttendanceGpsInput | undefined,
-) {
-  assertGpsInput(gps);
-
-  const locations = await AttendanceRepository.getAssignedCompanyLocations(
-    companyId,
-    employeeId,
-  );
-
-  if (locations.length === 0) {
-    throw new Error("No active office location is configured for attendance.");
-  }
-
-  const nearest = findNearestCompanyLocation(gps, locations);
-
-  if (!nearest) {
-    throw new Error("No active office location is configured for attendance.");
-  }
-
-  if (nearest.distanceMeters > nearest.location.radiusMeters) {
-    throw new Error("You are outside the allowed office area.");
-  }
-
-  return {
-    ...nearest,
-    gps,
-  };
-}
-
 async function getCurrentEmployee() {
   const user = await getCurrentAuthUser();
 
@@ -168,16 +103,17 @@ export const AttendanceService = {
   async getTodayAttendance(): Promise<TodayAttendance> {
     const employee = await getCurrentEmployee();
     const today = getTodayDate();
-    const record = await AttendanceRepository.findByEmployeeDate(
-      employee.id,
-      today,
-    );
+    const [record, policy] = await Promise.all([
+      AttendanceRepository.findByEmployeeDate(employee.id, today),
+      AttendancePolicyService.getSummary(employee.company_id, employee.id),
+    ]);
 
     return {
       date: today,
       employeeName: employee.name,
       employeeCode: employee.employee_id,
       record,
+      policy,
     };
   },
 
@@ -262,40 +198,24 @@ export const AttendanceService = {
 
   async prepareCheckIn(_input: AttendanceCheckInput = {}) {
     const employee = await getCurrentEmployee();
-    const nearest = await validateGpsForCompany(
+    const result = await AttendancePolicyService.validate(
       employee.company_id,
       employee.id,
       _input.gps,
     );
 
-    return {
-      canProceed: true,
-      requiresGps: true,
-      requiresSelfie: false,
-      activityLogReady: true,
-      locationName: nearest.location.name,
-      distanceMeters: nearest.distanceMeters,
-      accuracyMeters: nearest.gps.accuracy,
-    };
+    return result;
   },
 
   async prepareCheckOut(_input: AttendanceCheckInput = {}) {
     const employee = await getCurrentEmployee();
-    const nearest = await validateGpsForCompany(
+    const result = await AttendancePolicyService.validate(
       employee.company_id,
       employee.id,
       _input.gps,
     );
 
-    return {
-      canProceed: true,
-      requiresGps: true,
-      requiresSelfie: false,
-      activityLogReady: true,
-      locationName: nearest.location.name,
-      distanceMeters: nearest.distanceMeters,
-      accuracyMeters: nearest.gps.accuracy,
-    };
+    return result;
   },
 
   async checkIn(input: AttendanceCheckInput = {}) {
@@ -324,10 +244,14 @@ export const AttendanceService = {
       throw new Error("Attendance already exists for today.");
     }
 
-    const gpsValidation = await validateGpsForCompany(
+    const policySettings = await AttendancePolicyService.getSettings(
+      employee.company_id,
+    );
+    const policyValidation = await AttendancePolicyService.validate(
       employee.company_id,
       employee.id,
       input.gps,
+      policySettings,
     );
     const lateMinutes = getLateMinutes(serverTimestamp, attendanceDate);
     const record = await AttendanceRepository.createCheckIn({
@@ -338,9 +262,9 @@ export const AttendanceService = {
       status: getCheckInStatus(lateMinutes),
       lateMinutes,
       notes: input.notes?.trim() || null,
-      gps: gpsValidation.gps,
-      locationId: gpsValidation.location.id,
-      distanceMeters: gpsValidation.distanceMeters,
+      gps: policyValidation.gps,
+      locationId: policyValidation.location?.id ?? null,
+      distanceMeters: policyValidation.distanceMeters ?? null,
     });
 
     await logActivity({
@@ -354,9 +278,14 @@ export const AttendanceService = {
         employeeId: employee.employee_id,
         attendanceDate,
         checkIn: serverTimestamp,
-        gpsLocationName: gpsValidation.location.name,
-        gpsDistanceMeters: Math.round(gpsValidation.distanceMeters),
-        gpsAccuracyMeters: gpsValidation.gps.accuracy,
+        attendanceMode: getAttendancePolicyOption(policySettings.attendanceMode)
+          .label,
+        gpsLocationName: policyValidation.location?.name ?? null,
+        gpsDistanceMeters:
+          typeof policyValidation.distanceMeters === "number"
+            ? Math.round(policyValidation.distanceMeters)
+            : null,
+        gpsAccuracyMeters: policyValidation.gps?.accuracy ?? null,
       },
     });
 
@@ -380,10 +309,14 @@ export const AttendanceService = {
       throw new Error("You have already checked out today.");
     }
 
-    const gpsValidation = await validateGpsForCompany(
+    const policySettings = await AttendancePolicyService.getSettings(
+      employee.company_id,
+    );
+    const policyValidation = await AttendancePolicyService.validate(
       employee.company_id,
       employee.id,
       input.gps,
+      policySettings,
     );
     const workingMinutes = getWorkingMinutes(record.checkIn, serverTimestamp);
     const updatedRecord = await AttendanceRepository.updateCheckOut({
@@ -391,9 +324,9 @@ export const AttendanceService = {
       checkOut: serverTimestamp,
       workingMinutes,
       status: getCheckOutStatus(record, workingMinutes),
-      gps: gpsValidation.gps,
-      locationId: gpsValidation.location.id,
-      distanceMeters: gpsValidation.distanceMeters,
+      gps: policyValidation.gps,
+      locationId: policyValidation.location?.id ?? null,
+      distanceMeters: policyValidation.distanceMeters ?? null,
     });
 
     await logActivity({
@@ -409,9 +342,14 @@ export const AttendanceService = {
         checkOut: serverTimestamp,
         workingMinutes,
         notes: input.notes?.trim() || null,
-        gpsLocationName: gpsValidation.location.name,
-        gpsDistanceMeters: Math.round(gpsValidation.distanceMeters),
-        gpsAccuracyMeters: gpsValidation.gps.accuracy,
+        attendanceMode: getAttendancePolicyOption(policySettings.attendanceMode)
+          .label,
+        gpsLocationName: policyValidation.location?.name ?? null,
+        gpsDistanceMeters:
+          typeof policyValidation.distanceMeters === "number"
+            ? Math.round(policyValidation.distanceMeters)
+            : null,
+        gpsAccuracyMeters: policyValidation.gps?.accuracy ?? null,
       },
     });
 

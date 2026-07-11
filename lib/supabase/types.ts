@@ -56,6 +56,17 @@ export type Database = {
           date_format: string | null;
           currency: string | null;
           default_theme: string | null;
+          attendance_mode: Database["public"]["Enums"]["attendance_policy_mode"];
+          gps_accuracy_threshold_meters: number;
+          allowed_radius_meters: number;
+          allow_early_check_in_minutes: number;
+          allow_late_check_out: boolean;
+          require_gps: boolean;
+          require_high_accuracy: boolean;
+          enable_geofence: boolean;
+          face_verification_enabled: boolean;
+          wifi_validation_enabled: boolean;
+          bluetooth_beacon_enabled: boolean;
           status: Database["public"]["Enums"]["record_status"];
           created_at: string;
           updated_at: string;
@@ -76,6 +87,17 @@ export type Database = {
           date_format?: string | null;
           currency?: string | null;
           default_theme?: string | null;
+          attendance_mode?: Database["public"]["Enums"]["attendance_policy_mode"];
+          gps_accuracy_threshold_meters?: number;
+          allowed_radius_meters?: number;
+          allow_early_check_in_minutes?: number;
+          allow_late_check_out?: boolean;
+          require_gps?: boolean;
+          require_high_accuracy?: boolean;
+          enable_geofence?: boolean;
+          face_verification_enabled?: boolean;
+          wifi_validation_enabled?: boolean;
+          bluetooth_beacon_enabled?: boolean;
           status?: Database["public"]["Enums"]["record_status"];
           created_at?: string;
           updated_at?: string;
@@ -96,6 +118,17 @@ export type Database = {
           date_format?: string | null;
           currency?: string | null;
           default_theme?: string | null;
+          attendance_mode?: Database["public"]["Enums"]["attendance_policy_mode"];
+          gps_accuracy_threshold_meters?: number;
+          allowed_radius_meters?: number;
+          allow_early_check_in_minutes?: number;
+          allow_late_check_out?: boolean;
+          require_gps?: boolean;
+          require_high_accuracy?: boolean;
+          enable_geofence?: boolean;
+          face_verification_enabled?: boolean;
+          wifi_validation_enabled?: boolean;
+          bluetooth_beacon_enabled?: boolean;
           status?: Database["public"]["Enums"]["record_status"];
           created_at?: string;
           updated_at?: string;
@@ -1070,6 +1103,12 @@ export type Database = {
     Functions: Record<string, never>;
     Enums: {
       announcement_priority: "low" | "normal" | "high" | "urgent";
+      attendance_policy_mode:
+        | "assigned_location_only"
+        | "company_location"
+        | "any_company_location"
+        | "remote"
+        | "hybrid";
       attendance_status:
         | "present"
         | "absent"

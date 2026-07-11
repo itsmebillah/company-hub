@@ -3,6 +3,9 @@ import type { Database } from "@/lib/supabase/types";
 export type AttendanceStatus =
   Database["public"]["Enums"]["attendance_status"];
 
+export type AttendancePolicyMode =
+  Database["public"]["Enums"]["attendance_policy_mode"];
+
 export type AttendanceRecord = {
   id: string;
   companyId: string;
@@ -59,6 +62,33 @@ export type AttendanceLocationValidation = {
   accuracyMeters?: number;
 };
 
+export type AttendanceAllowedLocation = {
+  id: string;
+  name: string;
+  radiusMeters: number;
+  isAssigned: boolean;
+};
+
+export type AttendancePolicySettings = {
+  attendanceMode: AttendancePolicyMode;
+  gpsAccuracyThresholdMeters: number;
+  allowedRadiusMeters: number;
+  allowEarlyCheckInMinutes: number;
+  allowLateCheckOut: boolean;
+  requireGps: boolean;
+  requireHighAccuracy: boolean;
+  enableGeofence: boolean;
+  faceVerificationEnabled: boolean;
+  wifiValidationEnabled: boolean;
+  bluetoothBeaconEnabled: boolean;
+};
+
+export type AttendancePolicySummary = AttendancePolicySettings & {
+  modeLabel: string;
+  modeDescription: string;
+  allowedLocations: AttendanceAllowedLocation[];
+};
+
 export type AttendanceEmployeeOption = {
   id: string;
   employeeId: string;
@@ -70,6 +100,7 @@ export type TodayAttendance = {
   employeeName: string;
   employeeCode: string;
   record: AttendanceRecord | null;
+  policy: AttendancePolicySummary;
 };
 
 export type AttendanceListItem = AttendanceRecord & {
@@ -99,6 +130,8 @@ export type AttendanceActionState =
       locationName?: string;
       distanceMeters?: number;
       accuracyMeters?: number;
+      modeLabel?: string;
+      allowedLocations?: AttendanceAllowedLocation[];
     }
   | {
       ok: false;
@@ -106,6 +139,8 @@ export type AttendanceActionState =
       locationName?: string;
       distanceMeters?: number;
       accuracyMeters?: number;
+      modeLabel?: string;
+      allowedLocations?: AttendanceAllowedLocation[];
     };
 
 export type AttendanceCheckInput = {
@@ -130,3 +165,5 @@ export type EmployeeAttendanceSummary = {
   checkOut: string | null;
   workingMinutes: number;
 };
+
+export type AttendanceSettingsValues = AttendancePolicySettings;

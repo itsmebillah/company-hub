@@ -74,6 +74,22 @@ function getElapsedMinutes(checkIn: string | null) {
   );
 }
 
+function summarizeAllowedLocations(names: string[]) {
+  if (names.length === 0) {
+    return "Remote or policy-based access";
+  }
+
+  if (names.length === 1) {
+    return names[0];
+  }
+
+  if (names.length === 2) {
+    return `${names[0]}, ${names[1]}`;
+  }
+
+  return `${names[0]}, ${names[1]} +${names.length - 2} more`;
+}
+
 export function EmployeeAttendanceCard({
   attendance,
   onCheckIn,
@@ -93,7 +109,10 @@ export function EmployeeAttendanceCard({
   const [isPending, startTransition] = useTransition();
   const hasCheckedIn = Boolean(record?.checkIn);
   const hasCheckedOut = Boolean(record?.checkOut);
-  const hasValidLocation = locationStatus?.ok === true && Boolean(gps);
+  const hasValidLocation = locationStatus?.ok === true;
+  const allowedLocationNames =
+    locationStatus?.allowedLocations?.map((location) => location.name) ??
+    attendance.policy.allowedLocations.map((location) => location.name);
   const canCheckIn = !hasCheckedIn && !isPending && hasValidLocation;
   const canCheckOut = hasCheckedIn && !hasCheckedOut && !isPending && hasValidLocation;
   const workingMinutes = useMemo(() => {
@@ -136,23 +155,28 @@ export function EmployeeAttendanceCard({
     return () => window.clearInterval(interval);
   }, [record?.checkIn, record?.checkOut]);
 
+  function validateAttendance(nextGps?: AttendanceGpsInput) {
+    startTransition(async () => {
+      const result = nextGps
+        ? await onValidateLocation({ gps: nextGps })
+        : await onValidateLocation();
+      setLocationStatus(result);
+      setIsLocating(false);
+    });
+  }
+
   async function readCurrentLocation() {
     if (!window.isSecureContext) {
       setGps(null);
-      setLocationStatus({
-        ok: false,
-        message:
-          "Location requires a secure browser context. Use HTTPS or localhost.",
-      });
+      setIsLocating(true);
+      validateAttendance();
       return;
     }
 
     if (!("geolocation" in navigator)) {
       setGps(null);
-      setLocationStatus({
-        ok: false,
-        message: "Location is not available on this device.",
-      });
+      setIsLocating(true);
+      validateAttendance();
       return;
     }
 
@@ -160,10 +184,8 @@ export function EmployeeAttendanceCard({
 
     if (permissionState === "denied") {
       setGps(null);
-      setLocationStatus({
-        ok: false,
-        message: "Location permission denied.",
-      });
+      setIsLocating(true);
+      validateAttendance();
       return;
     }
 
@@ -180,26 +202,11 @@ export function EmployeeAttendanceCard({
         };
 
         setGps(nextGps);
-        startTransition(async () => {
-          const result = await onValidateLocation({ gps: nextGps });
-          setLocationStatus(result);
-          setIsLocating(false);
-        });
+        validateAttendance(nextGps);
       },
       (error) => {
-        const message =
-          error.code === error.PERMISSION_DENIED
-            ? "Location permission denied."
-            : error.code === error.POSITION_UNAVAILABLE
-              ? "Location unavailable."
-              : "Location timeout.";
-
         setGps(null);
-        setLocationStatus({
-          ok: false,
-          message: error.message ? `${message} ${error.message}` : message,
-        });
-        setIsLocating(false);
+        validateAttendance();
       },
       {
         enableHighAccuracy: true,
@@ -217,16 +224,16 @@ export function EmployeeAttendanceCard({
   function submit(action: "check-in" | "check-out") {
     setMessage(null);
 
-    if (!gps || locationStatus?.ok !== true) {
+    if (locationStatus?.ok !== true) {
       setMessage({
         ok: false,
-        message: "Confirm your office location before continuing.",
+        message: "Validate attendance policy requirements before continuing.",
       });
       return;
     }
 
     startTransition(async () => {
-      const input = { notes, gps };
+      const input = gps ? { notes, gps } : { notes };
       const result =
         action === "check-in"
           ? await onCheckIn(input)
@@ -291,6 +298,51 @@ export function EmployeeAttendanceCard({
         </div>
 
         <div className="mt-5 rounded-lg border bg-muted/30 p-4">
+          <div className="grid gap-3 border-b pb-4 sm:grid-cols-2 xl:grid-cols-5">
+            <div className="rounded-lg border bg-background p-3">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Attendance Mode
+              </p>
+              <p className="mt-2 text-sm font-semibold">
+                {locationStatus?.modeLabel ?? attendance.policy.modeLabel}
+              </p>
+            </div>
+            <div className="rounded-lg border bg-background p-3">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Allowed Office
+              </p>
+              <p className="mt-2 text-sm font-semibold">
+                {summarizeAllowedLocations(allowedLocationNames)}
+              </p>
+            </div>
+            <div className="rounded-lg border bg-background p-3">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                GPS Status
+              </p>
+              <p className="mt-2 text-sm font-semibold">
+                {gps ? "Captured" : "Pending"}
+              </p>
+            </div>
+            <div className="rounded-lg border bg-background p-3">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Current Accuracy
+              </p>
+              <p className="mt-2 text-sm font-semibold">
+                {gps ? `${Math.round(gps.accuracy)}m` : "--"}
+              </p>
+            </div>
+            <div className="rounded-lg border bg-background p-3">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Current Distance
+              </p>
+              <p className="mt-2 text-sm font-semibold">
+                {typeof locationStatus?.distanceMeters === "number"
+                  ? `${Math.round(locationStatus.distanceMeters)}m`
+                  : "--"}
+              </p>
+            </div>
+          </div>
+
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3">
               <span
@@ -321,7 +373,7 @@ export function EmployeeAttendanceCard({
                 {gps ? (
                   <p className="mt-1 text-xs text-muted-foreground">
                     {locationStatus?.locationName
-                      ? `Assigned Location: ${locationStatus.locationName} - `
+                      ? `Matched Location: ${locationStatus.locationName} - `
                       : ""}
                     {typeof locationStatus?.distanceMeters === "number"
                       ? `Distance: ${Math.round(locationStatus.distanceMeters)}m - `
@@ -329,6 +381,9 @@ export function EmployeeAttendanceCard({
                     Accuracy: {Math.round(gps.accuracy)}m
                   </p>
                 ) : null}
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {attendance.policy.modeDescription}
+                </p>
               </div>
             </div>
             <button
@@ -369,8 +424,8 @@ export function EmployeeAttendanceCard({
                 aria-hidden="true"
               />
               <p>
-                Server time and verified office GPS are used for attendance
-                records. Selfie validation remains prepared for a future sprint.
+                Attendance follows the configured policy engine. GPS, geofence,
+                and future validation hooks are evaluated from admin settings.
               </p>
             </div>
 
