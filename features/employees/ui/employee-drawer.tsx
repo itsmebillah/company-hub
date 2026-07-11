@@ -58,6 +58,10 @@ export function EmployeeDrawer({ employee, onClose }: EmployeeDrawerProps) {
               <dd className="font-medium">{employee.directReportsCount}</dd>
             </div>
             <div className="flex items-center justify-between gap-4">
+              <dt className="text-muted-foreground">Work Mode</dt>
+              <dd className="font-medium capitalize">{employee.workMode}</dd>
+            </div>
+            <div className="flex items-center justify-between gap-4">
               <dt className="flex items-center gap-2 text-muted-foreground">
                 <Phone className="size-4" aria-hidden="true" />
                 Phone

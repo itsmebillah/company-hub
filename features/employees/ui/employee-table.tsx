@@ -34,6 +34,7 @@ export function EmployeeTable({
                 <th className="px-4 py-3 font-medium">Employee ID</th>
                 <th className="px-4 py-3 font-medium">Name</th>
                 <th className="px-4 py-3 font-medium">Role</th>
+                <th className="px-4 py-3 font-medium">Work Mode</th>
                 <th className="px-4 py-3 font-medium">Reports To</th>
                 <th className="px-4 py-3 font-medium">Phone</th>
                 <th className="px-4 py-3 font-medium">Joining Date</th>
@@ -55,6 +56,7 @@ export function EmployeeTable({
                   <td className="px-4 py-3 font-medium">{employee.employeeId}</td>
                   <td className="px-4 py-3">{employee.name}</td>
                   <td className="px-4 py-3"><RoleBadge role={employee.role} /></td>
+                  <td className="px-4 py-3 capitalize">{employee.workMode}</td>
                   <td className="px-4 py-3">{employee.reportsTo || "None"}</td>
                   <td className="px-4 py-3">{employee.phone}</td>
                   <td className="px-4 py-3">{employee.joiningDate}</td>

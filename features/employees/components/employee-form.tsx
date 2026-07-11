@@ -33,6 +33,7 @@ const defaultValues: EmployeeFormValues = {
   joiningDate: "",
   roleId: "",
   managerId: "",
+  workMode: "office",
   status: "active",
 };
 
@@ -267,6 +268,25 @@ export function EmployeeForm({
             ))}
           </select>
           <FieldError message={errors.managerId} />
+        </label>
+
+        <label className="space-y-2">
+          <span className="text-sm font-medium">Work Mode</span>
+          <select
+            value={values.workMode}
+            onChange={(event) =>
+              updateValue(
+                "workMode",
+                event.target.value as EmployeeFormValues["workMode"],
+              )
+            }
+            className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            disabled={isSubmitting}
+          >
+            <option value="office">Office - approved locations only</option>
+            <option value="field">Field - anywhere with GPS</option>
+            <option value="hybrid">Hybrid - office or field</option>
+          </select>
         </label>
 
         <label className="space-y-2">

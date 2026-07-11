@@ -13,6 +13,7 @@ const SUPPORTED_EXTENSIONS = [".csv", ".xlsx"] as const;
 const MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024;
 const BANGLADESH_PHONE_PATTERN = /^(?:\+8801|8801|01)[3-9]\d{8}$/;
 const VALID_STATUSES = new Set(["active", "inactive", "archived"]);
+const VALID_WORK_MODES = new Set(["office", "field", "hybrid"]);
 
 function hasSupportedExtension(name: string) {
   const normalized = name.trim().toLowerCase();
@@ -175,6 +176,12 @@ export const EmployeeImportValidator = {
         issues.push(toIssue("status", "Status is required."));
       } else if (!VALID_STATUSES.has(normalized.status)) {
         issues.push(toIssue("status", "Status must be active, inactive, or archived."));
+      }
+
+      if (!VALID_WORK_MODES.has(normalized.workMode)) {
+        issues.push(
+          toIssue("workMode", "Work Mode must be Office, Field, or Hybrid."),
+        );
       }
 
       if (normalized.email && !isEmailValid(normalized.email)) {

@@ -44,6 +44,7 @@ export function EmployeeForm({
     joiningDate: employee?.joiningDate ?? "",
     roleId: employee?.roleId ?? "",
     managerId: employee?.reportsToId ?? "",
+    workMode: employee?.workMode ?? "office",
     status: employee?.status ?? "active",
   });
   const [message, setMessage] = useState("");
@@ -180,7 +181,24 @@ export function EmployeeForm({
               {managerOptions.map((manager) => <option key={manager.id} value={manager.id}>{manager.name}</option>)}
             </select>
           </label>
-          <label className="space-y-2 md:col-span-2">
+          <label className="space-y-2">
+            <span className="text-sm font-medium">Work Mode</span>
+            <select
+              value={values.workMode}
+              onChange={(event) =>
+                updateValue(
+                  "workMode",
+                  event.target.value as EmployeeFormValues["workMode"],
+                )
+              }
+              className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <option value="office">Office - approved locations only</option>
+              <option value="field">Field - anywhere with GPS</option>
+              <option value="hybrid">Hybrid - office or field</option>
+            </select>
+          </label>
+          <label className="space-y-2">
             <span className="text-sm font-medium">Status</span>
             <select value={values.status} onChange={(event) => updateValue("status", event.target.value as EmployeeFormValues["status"])} className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring">
               <option value="active">Active</option>

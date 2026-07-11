@@ -8,6 +8,7 @@ export type EmployeeUiRecord = {
   role: string;
   reportsToId: string;
   reportsTo: string;
+  workMode: "office" | "field" | "hybrid";
   directReportsCount: number;
   phone: string;
   email: string;

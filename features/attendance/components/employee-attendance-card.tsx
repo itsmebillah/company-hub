@@ -453,7 +453,15 @@ export function EmployeeAttendanceCard({
         </div>
 
         <div className="mt-5 rounded-[1.6rem] border border-white/20 bg-muted/35 p-4">
-          <div className="grid gap-3 border-b pb-4 sm:grid-cols-2 xl:grid-cols-5">
+          <div className="grid gap-3 border-b pb-4 sm:grid-cols-2 xl:grid-cols-6">
+            <div className="rounded-2xl border border-white/20 bg-background/75 p-3">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Work Mode
+              </p>
+              <p className="mt-2 text-sm font-semibold capitalize">
+                {locationStatus?.workMode ?? attendance.workMode}
+              </p>
+            </div>
             <div className="rounded-2xl border border-white/20 bg-background/75 p-3">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Attendance Mode

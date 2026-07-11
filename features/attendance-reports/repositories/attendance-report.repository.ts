@@ -12,6 +12,11 @@ type AttendanceReportRecordRow = {
   status: Database["public"]["Enums"]["attendance_status"];
   working_minutes: number;
   late_minutes: number;
+  attendance_type: Database["public"]["Enums"]["attendance_type"];
+  check_in_address: string | null;
+  check_out_address: string | null;
+  check_in_latitude: number | null;
+  check_in_longitude: number | null;
   check_in_distance_meters: number | null;
   check_in_location_source: Database["public"]["Enums"]["attendance_location_source"] | null;
   check_in_location:
@@ -46,6 +51,7 @@ export type AttendanceReportCompanyContextRow = {
     name: string;
     joining_date: string | null;
     role_id: string;
+    work_mode: Database["public"]["Enums"]["employee_work_mode"];
   }>;
 };
 
@@ -58,6 +64,11 @@ export type AttendanceReportAttendanceRecord = {
   status: Database["public"]["Enums"]["attendance_status"];
   workingMinutes: number;
   lateMinutes: number;
+  attendanceType: Database["public"]["Enums"]["attendance_type"];
+  checkInAddress: string | null;
+  checkOutAddress: string | null;
+  checkInLatitude: number | null;
+  checkInLongitude: number | null;
   checkInDistanceMeters: number | null;
   checkInLocationSource:
     | Database["public"]["Enums"]["attendance_location_source"]
@@ -110,7 +121,7 @@ export const AttendanceReportRepository = {
           .order("name", { ascending: true }),
         supabase
           .from("employees")
-          .select("id, employee_id, name, joining_date, role_id")
+          .select("id, employee_id, name, joining_date, role_id, work_mode")
           .eq("company_id", companyId)
           .eq("status", "active")
           .order("name", { ascending: true }),
@@ -166,7 +177,7 @@ export const AttendanceReportRepository = {
     let query = supabase
       .from("attendance_records")
       .select(
-        "id, employee_id, attendance_date, check_in, check_out, status, working_minutes, late_minutes, check_in_distance_meters, check_in_location_source, check_in_location:company_locations!attendance_records_check_in_location_id_fkey(name)",
+        "id, employee_id, attendance_date, check_in, check_out, status, working_minutes, late_minutes, attendance_type, check_in_address, check_out_address, check_in_latitude, check_in_longitude, check_in_distance_meters, check_in_location_source, check_in_location:company_locations!attendance_records_check_in_location_id_fkey(name)",
       )
       .eq("company_id", input.companyId)
       .gte("attendance_date", input.startDate)
@@ -197,6 +208,11 @@ export const AttendanceReportRepository = {
       status: row.status,
       workingMinutes: row.working_minutes,
       lateMinutes: row.late_minutes,
+      attendanceType: row.attendance_type,
+      checkInAddress: row.check_in_address,
+      checkOutAddress: row.check_out_address,
+      checkInLatitude: row.check_in_latitude,
+      checkInLongitude: row.check_in_longitude,
       checkInDistanceMeters: row.check_in_distance_meters,
       checkInLocationSource: row.check_in_location_source,
       checkInLocationName: getLocationName(row.check_in_location),

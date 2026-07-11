@@ -9,6 +9,8 @@ export type EmployeeImportRowStatus =
 export type EmployeeImportFileType =
   Database["public"]["Enums"]["employee_import_file_type"];
 export type EmployeeRecordStatus = Database["public"]["Enums"]["record_status"];
+export type EmployeeWorkMode =
+  Database["public"]["Enums"]["employee_work_mode"];
 
 export type EmployeeImportTemplateColumn = {
   key: string;
@@ -94,6 +96,7 @@ export type EmployeeImportRowDraft = {
   managerEmployeeId: string;
   joiningDate: string;
   status: string;
+  workMode: string;
   email: string;
   dateOfBirth: string;
   photoUrl: string;
@@ -107,6 +110,7 @@ export type EmployeeImportNormalizedRow = EmployeeImportRowDraft & {
   managerEmployeeId: string;
   joiningDate: string;
   status: string;
+  workMode: EmployeeWorkMode;
   email: string;
   dateOfBirth: string;
   photoUrl: string;
@@ -192,6 +196,7 @@ export type EmployeeImportFailedRowExport = {
   managerEmployeeId: string;
   joiningDate: string;
   status: string;
+  workMode: string;
   email: string;
   dateOfBirth: string;
   photoUrl: string;

@@ -50,6 +50,7 @@ export default async function EditEmployeePage({ params }: EditEmployeePageProps
             joiningDate: employee.joiningDate ?? "",
             roleId: employee.roleId,
             managerId: employee.managerId ?? "",
+            workMode: employee.workMode,
             status: employee.status,
           }}
           submitLabel="Save Changes"

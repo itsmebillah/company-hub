@@ -173,6 +173,7 @@ export type Database = {
           joining_date: string | null;
           photo_url: string | null;
           manager_id: string | null;
+          work_mode: Database["public"]["Enums"]["employee_work_mode"];
           company_id: string;
           role_id: string;
           auth_user_id: string | null;
@@ -193,6 +194,7 @@ export type Database = {
           joining_date?: string | null;
           photo_url?: string | null;
           manager_id?: string | null;
+          work_mode?: Database["public"]["Enums"]["employee_work_mode"];
           company_id: string;
           role_id: string;
           auth_user_id?: string | null;
@@ -213,6 +215,7 @@ export type Database = {
           joining_date?: string | null;
           photo_url?: string | null;
           manager_id?: string | null;
+          work_mode?: Database["public"]["Enums"]["employee_work_mode"];
           company_id?: string;
           role_id?: string;
           auth_user_id?: string | null;
@@ -733,6 +736,7 @@ export type Database = {
           check_in_device_platform: string | null;
           check_in_location_id: string | null;
           check_in_distance_meters: number | null;
+          attendance_type: Database["public"]["Enums"]["attendance_type"];
           check_out_latitude: number | null;
           check_out_longitude: number | null;
           check_out_accuracy_meters: number | null;
@@ -771,6 +775,7 @@ export type Database = {
           check_in_device_platform?: string | null;
           check_in_location_id?: string | null;
           check_in_distance_meters?: number | null;
+          attendance_type?: Database["public"]["Enums"]["attendance_type"];
           check_out_latitude?: number | null;
           check_out_longitude?: number | null;
           check_out_accuracy_meters?: number | null;
@@ -809,6 +814,7 @@ export type Database = {
           check_in_device_platform?: string | null;
           check_in_location_id?: string | null;
           check_in_distance_meters?: number | null;
+          attendance_type?: Database["public"]["Enums"]["attendance_type"];
           check_out_latitude?: number | null;
           check_out_longitude?: number | null;
           check_out_accuracy_meters?: number | null;
@@ -1172,6 +1178,7 @@ export type Database = {
     Functions: Record<string, never>;
     Enums: {
       announcement_priority: "low" | "normal" | "high" | "urgent";
+      attendance_type: "office" | "field" | "hybrid";
       attendance_location_source: "gps" | "network" | "hybrid";
       attendance_policy_mode:
         | "assigned_location_only"
@@ -1209,6 +1216,7 @@ export type Database = {
         | "completed"
         | "failed"
         | "cancelled";
+      employee_work_mode: "office" | "field" | "hybrid";
       holiday_type:
         | "public_holiday"
         | "company_holiday"

@@ -12,8 +12,10 @@ import type {
   AttendanceGpsInput,
   AttendancePolicyMode,
   AttendancePolicySummary,
+  AttendanceType,
   AttendanceSettingsValues,
   CompanyLocation,
+  EmployeeWorkMode,
 } from "@/features/attendance/types/attendance.types";
 
 type AttendancePolicyEvaluation = AttendanceActionState & {
@@ -113,6 +115,8 @@ function getEffectiveRadiusMeters(
 function createSuccessResult(input: {
   message: string;
   modeLabel: string;
+  workMode?: EmployeeWorkMode;
+  attendanceType?: AttendanceType;
   allowedLocations: AttendanceAllowedLocation[];
   gps: AttendanceGpsInput | null;
   location?: CompanyLocation | null;
@@ -123,12 +127,78 @@ function createSuccessResult(input: {
     message: input.message,
     locationName: input.location?.name,
     distanceMeters: input.distanceMeters,
-      accuracyMeters: input.gps?.accuracy,
-      modeLabel: input.modeLabel,
-      allowedLocations: input.allowedLocations,
+    accuracyMeters: input.gps?.accuracy,
+    modeLabel: input.modeLabel,
+    workMode: input.workMode,
+    attendanceType: input.attendanceType,
+    allowedLocations: input.allowedLocations,
       requiresSelfie: false,
       gps: input.gps,
       location: input.location ?? null,
+  };
+}
+
+function assertRequiredGps(
+  gps: AttendanceGpsInput | undefined,
+  settings: AttendanceSettingsValues,
+) {
+  const nextGps = assertGpsCoordinates(gps);
+
+  if (!nextGps) {
+    throw new Error("Current GPS location is required for attendance.");
+  }
+
+  if (
+    settings.requireHighAccuracy &&
+    nextGps.accuracy > settings.gpsAccuracyThresholdMeters
+  ) {
+    throw new Error(
+      "GPS accuracy is too low. Move to an open area and try again.",
+    );
+  }
+
+  return {
+    ...nextGps,
+    source: getLocationSource(nextGps),
+  };
+}
+
+async function getOfficeCandidateLocations(context: StrategyContext) {
+  const assigned = await context.getAssignedLocations();
+
+  if (context.settings.attendanceMode === "assigned_location_only") {
+    return {
+      assigned,
+      locations: assigned,
+    };
+  }
+
+  const company = await context.getCompanyLocations();
+
+  if (context.settings.attendanceMode === "company_location") {
+    return {
+      assigned,
+      locations: assigned.length > 0 ? assigned : company,
+    };
+  }
+
+  if (context.settings.attendanceMode === "any_company_location") {
+    return {
+      assigned,
+      locations: company,
+    };
+  }
+
+  if (context.settings.attendanceMode === "hybrid") {
+    return {
+      assigned,
+      locations: [...assigned, ...company],
+    };
+  }
+
+  return {
+    assigned,
+    locations: [] as CompanyLocation[],
   };
 }
 
@@ -462,6 +532,103 @@ export const AttendancePolicyService = {
       ...result,
       requiresSelfie: settings.requireSelfie,
     };
+  },
+
+  async validateForWorkMode(
+    companyId: string,
+    employeeId: string,
+    workMode: EmployeeWorkMode,
+    gps?: AttendanceGpsInput,
+    settingsOverride?: AttendanceSettingsValues,
+  ): Promise<AttendancePolicyEvaluation> {
+    const settings =
+      settingsOverride ?? (await loadAttendanceSettings(companyId));
+
+    if (workMode === "office") {
+      const result = await this.validate(companyId, employeeId, gps, settings);
+
+      return {
+        ...result,
+        workMode,
+        attendanceType: "office",
+      };
+    }
+
+    let assignedLocationsPromise: Promise<CompanyLocation[]> | undefined;
+    let companyLocationsPromise: Promise<CompanyLocation[]> | undefined;
+    const context: StrategyContext = {
+      companyId,
+      employeeId,
+      settings,
+      gps,
+      getAssignedLocations: async () => {
+        assignedLocationsPromise ??= AttendanceRepository.getAssignedCompanyLocations(
+          companyId,
+          employeeId,
+        );
+        return assignedLocationsPromise;
+      },
+      getCompanyLocations: async () => {
+        companyLocationsPromise ??= AttendanceRepository.getActiveCompanyLocations(
+          companyId,
+        );
+        return companyLocationsPromise;
+      },
+    };
+    const modeLabel = getAttendancePolicyOption(settings.attendanceMode).label;
+    const normalizedGps = assertRequiredGps(gps, settings);
+    const { assigned, locations } = await getOfficeCandidateLocations(context);
+    const allowedLocations = dedupeLocations(
+      locations,
+      new Set(assigned.map((location) => location.id)),
+    );
+    const nearest =
+      locations.length > 0
+        ? findNearestCompanyLocation(normalizedGps, locations)
+        : null;
+
+    if (workMode === "field") {
+      return createSuccessResult({
+        message: "Field attendance allowed. GPS captured.",
+        modeLabel,
+        workMode,
+        attendanceType: "field",
+        allowedLocations,
+        gps: normalizedGps,
+        location: null,
+        distanceMeters: nearest?.distanceMeters,
+      });
+    }
+
+    if (nearest && settings.enableGeofence) {
+      const allowedRadius = getEffectiveRadiusMeters(settings, nearest.location);
+
+      if (nearest.distanceMeters <= allowedRadius) {
+        return createSuccessResult({
+          message: `Inside approved location ${nearest.location.name}.`,
+          modeLabel,
+          workMode,
+          attendanceType: "office",
+          allowedLocations,
+          gps: normalizedGps,
+          location: nearest.location,
+          distanceMeters: nearest.distanceMeters,
+        });
+      }
+    }
+
+    return createSuccessResult({
+      message: nearest
+        ? "Outside office radius, but hybrid work mode allows field attendance."
+        : "Hybrid work mode allows field attendance from this location.",
+      modeLabel,
+      workMode,
+      attendanceType: "hybrid",
+      allowedLocations,
+      gps: normalizedGps,
+      location: null,
+      distanceMeters: nearest?.distanceMeters,
+    });
   },
 
   async updateSettings(

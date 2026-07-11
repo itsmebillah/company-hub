@@ -413,6 +413,7 @@ export const EmployeeImportRepository = {
         managerEmployeeId: String(raw.managerEmployeeId ?? ""),
         joiningDate: String(raw.joiningDate ?? ""),
         status: String(raw.status ?? ""),
+        workMode: String(raw.workMode ?? ""),
         email: String(raw.email ?? ""),
         dateOfBirth: String(raw.dateOfBirth ?? ""),
         photoUrl: String(raw.photoUrl ?? ""),

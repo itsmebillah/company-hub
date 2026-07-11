@@ -88,6 +88,12 @@ export function EmployeeDetails({
               <dd className="font-medium">{employee.directReportsCount}</dd>
             </div>
             <div>
+              <dt className="text-sm text-muted-foreground">Work Mode</dt>
+              <dd className="font-medium capitalize">
+                {employee.workMode}
+              </dd>
+            </div>
+            <div>
               <dt className="text-sm text-muted-foreground">Phone</dt>
               <dd className="font-medium">{formatValue(employee.phone)}</dd>
             </div>

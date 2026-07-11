@@ -24,6 +24,24 @@ function normalizeStatus(value: string) {
   return normalizeOptional(value).toLowerCase();
 }
 
+function normalizeWorkMode(value: string) {
+  const normalized = normalizeOptional(value).toLowerCase();
+
+  if (!normalized || normalized === "office") {
+    return "office" as const;
+  }
+
+  if (normalized === "field") {
+    return "field" as const;
+  }
+
+  if (normalized === "hybrid") {
+    return "hybrid" as const;
+  }
+
+  return normalized as "office";
+}
+
 function getFileType(name: string): EmployeeImportFileType {
   const normalized = name.trim().toLowerCase();
 
@@ -66,6 +84,7 @@ export const EmployeeImportMapper = {
       roleName: normalizeWhitespace(row.roleName),
       managerEmployeeId: normalizeEmployeeId(row.managerEmployeeId),
       status: normalizeStatus(row.status),
+      workMode: normalizeWorkMode(row.workMode),
       internalAuthEmail: buildInternalAuthEmail(employeeId),
       defaultPassword: buildDefaultPassword(employeeId),
     };

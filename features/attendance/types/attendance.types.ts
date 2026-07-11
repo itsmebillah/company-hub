@@ -7,6 +7,9 @@ export type AttendancePolicyMode =
   Database["public"]["Enums"]["attendance_policy_mode"];
 export type AttendanceLocationSource =
   Database["public"]["Enums"]["attendance_location_source"];
+export type AttendanceType = Database["public"]["Enums"]["attendance_type"];
+export type EmployeeWorkMode =
+  Database["public"]["Enums"]["employee_work_mode"];
 
 export type AttendanceRecord = {
   id: string;
@@ -29,6 +32,7 @@ export type AttendanceRecord = {
   checkInDevicePlatform: string | null;
   checkInLocationId: string | null;
   checkInDistanceMeters: number | null;
+  attendanceType: AttendanceType;
   checkOutLatitude: number | null;
   checkOutLongitude: number | null;
   checkOutAccuracyMeters: number | null;
@@ -116,6 +120,7 @@ export type TodayAttendance = {
   employeeId: string;
   employeeName: string;
   employeeCode: string;
+  workMode: EmployeeWorkMode;
   record: AttendanceRecord | null;
   policy: AttendancePolicySummary;
 };
@@ -123,6 +128,7 @@ export type TodayAttendance = {
 export type AttendanceListItem = AttendanceRecord & {
   employeeCode: string;
   employeeName: string;
+  employeeWorkMode: EmployeeWorkMode;
   checkInLocationName: string | null;
   checkOutLocationName: string | null;
 };
@@ -148,6 +154,8 @@ export type AttendanceActionState =
       distanceMeters?: number;
       accuracyMeters?: number;
       modeLabel?: string;
+      workMode?: EmployeeWorkMode;
+      attendanceType?: AttendanceType;
       allowedLocations?: AttendanceAllowedLocation[];
       requiresSelfie?: boolean;
     }
@@ -158,6 +166,8 @@ export type AttendanceActionState =
       distanceMeters?: number;
       accuracyMeters?: number;
       modeLabel?: string;
+      workMode?: EmployeeWorkMode;
+      attendanceType?: AttendanceType;
       allowedLocations?: AttendanceAllowedLocation[];
       requiresSelfie?: boolean;
     };

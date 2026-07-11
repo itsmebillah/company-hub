@@ -120,6 +120,18 @@ export default async function AdminAttendanceDetailPage({
                 {formatDuration(record.workingMinutes)}
               </dd>
             </div>
+            <div className="rounded-lg border bg-background p-3">
+              <dt className="text-muted-foreground">Work Mode</dt>
+              <dd className="mt-1 font-semibold capitalize">
+                {record.employeeWorkMode}
+              </dd>
+            </div>
+            <div className="rounded-lg border bg-background p-3">
+              <dt className="text-muted-foreground">Attendance Type</dt>
+              <dd className="mt-1 font-semibold capitalize">
+                {record.attendanceType}
+              </dd>
+            </div>
           </dl>
         </article>
 

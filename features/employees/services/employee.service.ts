@@ -14,6 +14,7 @@ import type {
   EmployeeRoleName,
   EmployeeRoleOption,
   EmployeeStatus,
+  EmployeeWorkMode,
 } from "@/features/employees/types/employee.types";
 
 const INTERNAL_AUTH_EMAIL_DOMAIN = "companyhub.local";
@@ -51,6 +52,12 @@ function isPhoneValid(phone: string) {
 function assertStatus(status: string): asserts status is EmployeeStatus {
   if (!["active", "inactive", "archived"].includes(status)) {
     throw new Error("Invalid employee status.");
+  }
+}
+
+function assertWorkMode(workMode: string): asserts workMode is EmployeeWorkMode {
+  if (!["office", "field", "hybrid"].includes(workMode)) {
+    throw new Error("Invalid employee work mode.");
   }
 }
 
@@ -175,7 +182,7 @@ export async function listEmployees(
   let query = supabase
     .from("employees")
     .select(
-      "id, employee_id, name, phone, email, photo_url, date_of_birth, role_id, manager_id, status, joining_date",
+      "id, employee_id, name, phone, email, photo_url, date_of_birth, role_id, manager_id, work_mode, status, joining_date",
       { count: "exact" },
     )
     .eq("company_id", companyId);
@@ -260,6 +267,7 @@ export async function listEmployees(
       managerName: employee.manager_id
         ? managerById.get(employee.manager_id)?.name ?? null
         : null,
+      workMode: employee.work_mode,
       directReportsCount: directReportCountById.get(employee.id) ?? 0,
       status: employee.status,
       joiningDate: employee.joining_date,
@@ -276,7 +284,7 @@ export async function getEmployeeDetails(id: string): Promise<EmployeeDetails | 
   const { data, error } = await supabase
     .from("employees")
     .select(
-      "id, employee_id, name, phone, email, photo_url, date_of_birth, joining_date, company_id, role_id, manager_id, status, created_at, updated_at",
+      "id, employee_id, name, phone, email, photo_url, date_of_birth, joining_date, company_id, role_id, manager_id, work_mode, status, created_at, updated_at",
     )
     .eq("id", id)
     .single();
@@ -323,6 +331,7 @@ export async function getEmployeeDetails(id: string): Promise<EmployeeDetails | 
     companyId: data.company_id,
     roleId: data.role_id,
     managerId: data.manager_id,
+    workMode: data.work_mode,
     createdAt: data.created_at,
     updatedAt: data.updated_at,
   };
@@ -361,6 +370,7 @@ async function validateEmployeeInput(values: EmployeeFormValues, currentId?: str
   }
 
   assertStatus(values.status);
+  assertWorkMode(values.workMode);
 
   const allowedManagerRole = getAllowedManagerRole(role.name);
   const managerOptions = await getEmployeeManagerOptions();
@@ -453,6 +463,7 @@ export async function createEmployee(values: EmployeeFormValues) {
       company_id: companyId,
       role_id: values.roleId,
       manager_id: normalizeOptional(values.managerId),
+      work_mode: values.workMode,
       auth_user_id: authUser.user.id,
       internal_auth_email: internalAuthEmail,
       status: values.status,
@@ -515,6 +526,7 @@ export async function updateEmployee(id: string, values: EmployeeFormValues) {
       joining_date: values.joiningDate,
       role_id: values.roleId,
       manager_id: normalizeOptional(values.managerId),
+      work_mode: values.workMode,
       status: values.status,
     })
     .eq("id", id);

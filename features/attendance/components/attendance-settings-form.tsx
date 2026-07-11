@@ -91,6 +91,33 @@ export function AttendanceSettingsForm({
       </section>
 
       <section>
+        <h2 className="text-base font-semibold">Employee Work Modes</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Each employee follows their own work mode while this page keeps the shared GPS policy.
+        </p>
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          <div className="rounded-lg border bg-background p-4">
+            <p className="text-sm font-semibold">Office</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Only approved office locations.
+            </p>
+          </div>
+          <div className="rounded-lg border bg-background p-4">
+            <p className="text-sm font-semibold">Field</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Anywhere with GPS captured.
+            </p>
+          </div>
+          <div className="rounded-lg border bg-background p-4">
+            <p className="text-sm font-semibold">Hybrid</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Office when inside radius, otherwise field attendance.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section>
         <h2 className="text-base font-semibold">GPS Validation</h2>
         <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           <label className="space-y-2">

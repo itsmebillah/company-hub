@@ -120,6 +120,7 @@ export function AttendanceReportTable({
             <tr>
               <th className="px-4 py-3 font-medium">Employee</th>
               <th className="px-4 py-3 font-medium">Role</th>
+              <th className="px-4 py-3 font-medium">Work Mode</th>
               <th className="px-4 py-3 font-medium">Present</th>
               <th className="px-4 py-3 font-medium">Absent</th>
               <th className="px-4 py-3 font-medium">Late</th>
@@ -150,6 +151,7 @@ export function AttendanceReportTable({
                       </p>
                     </td>
                     <td className="px-4 py-3">{row.roleName}</td>
+                    <td className="px-4 py-3 capitalize">{row.workMode}</td>
                     <td className="px-4 py-3">{row.presentDays}</td>
                     <td className="px-4 py-3">{row.absentDays}</td>
                     <td className="px-4 py-3">{row.lateDays}</td>
@@ -180,7 +182,7 @@ export function AttendanceReportTable({
                   </tr>
                   {isExpanded ? (
                     <tr>
-                      <td colSpan={14} className="bg-background/60 px-4 py-4">
+                      <td colSpan={15} className="bg-background/60 px-4 py-4">
                         {isLoading ? (
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <LoaderCircle className="size-4 animate-spin" />
@@ -196,8 +198,11 @@ export function AttendanceReportTable({
                                   <th className="px-3 py-2 font-medium">Check-out</th>
                                   <th className="px-3 py-2 font-medium">Working Hours</th>
                                   <th className="px-3 py-2 font-medium">Status</th>
+                                  <th className="px-3 py-2 font-medium">Type</th>
                                   <th className="px-3 py-2 font-medium">Late</th>
                                   <th className="px-3 py-2 font-medium">Office</th>
+                                  <th className="px-3 py-2 font-medium">Address</th>
+                                  <th className="px-3 py-2 font-medium">Coordinates</th>
                                   <th className="px-3 py-2 font-medium">Distance</th>
                                 </tr>
                               </thead>
@@ -211,8 +216,20 @@ export function AttendanceReportTable({
                                     <td className="px-3 py-2 capitalize">
                                       {item.status.replaceAll("_", " ")}
                                     </td>
+                                    <td className="px-3 py-2 capitalize">
+                                      {item.attendanceType?.replaceAll("_", " ") ?? "--"}
+                                    </td>
                                     <td className="px-3 py-2">{item.lateMinutes}</td>
                                     <td className="px-3 py-2">{item.office}</td>
+                                    <td className="px-3 py-2">
+                                      {item.checkInAddress ?? "--"}
+                                    </td>
+                                    <td className="px-3 py-2">
+                                      {item.checkInLatitude !== null &&
+                                      item.checkInLongitude !== null
+                                        ? `${item.checkInLatitude.toFixed(6)}, ${item.checkInLongitude.toFixed(6)}`
+                                        : "--"}
+                                    </td>
                                     <td className="px-3 py-2">{item.distanceLabel}</td>
                                   </tr>
                                 ))}

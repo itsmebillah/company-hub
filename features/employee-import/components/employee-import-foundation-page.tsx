@@ -69,6 +69,7 @@ function buildFailedRowCsv(rows: EmployeeImportFailedRowExport[]) {
     "manager_employee_id",
     "joining_date",
     "status",
+    "work_mode",
     "email",
     "date_of_birth",
     "photo_url",
@@ -86,6 +87,7 @@ function buildFailedRowCsv(rows: EmployeeImportFailedRowExport[]) {
       row.managerEmployeeId,
       row.joiningDate,
       row.status,
+      row.workMode,
       row.email,
       row.dateOfBirth,
       row.photoUrl,
@@ -518,6 +520,7 @@ export function EmployeeImportFoundationPage({
                       <th className="px-3 py-2 font-medium">Role</th>
                       <th className="px-3 py-2 font-medium">Manager</th>
                       <th className="px-3 py-2 font-medium">Status</th>
+                      <th className="px-3 py-2 font-medium">Work Mode</th>
                       <th className="px-3 py-2 font-medium">Issues</th>
                     </tr>
                   </thead>
@@ -570,6 +573,15 @@ export function EmployeeImportFoundationPage({
                           }`}
                         >
                           {row.normalized.status}
+                        </td>
+                        <td
+                          className={`px-3 py-3 ${
+                            row.issues.some((issue) => issue.field === "workMode")
+                              ? "bg-destructive/10 text-destructive"
+                              : ""
+                          }`}
+                        >
+                          {row.normalized.workMode}
                         </td>
                         <td className="px-3 py-3">
                           {row.issues.length > 0 ? (
@@ -666,6 +678,7 @@ export function EmployeeImportFoundationPage({
               <li>Manager must exist in the current company and satisfy hierarchy rules.</li>
               <li>Joining date and optional date of birth must use YYYY-MM-DD format.</li>
               <li>Status must be active, inactive, or archived.</li>
+              <li>Work Mode must be Office, Field, or Hybrid. Blank defaults to Office.</li>
             </ul>
           </section>
 

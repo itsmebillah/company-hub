@@ -304,6 +304,7 @@ async function buildDataset(
       name: employee.name,
       roleId: employee.role_id,
       roleName: rolesById.get(employee.role_id) ?? "Unknown",
+      workMode: employee.work_mode,
     }),
   );
     const [attendanceRecords, leaveRows, holidayRows] = await Promise.all([
@@ -383,6 +384,7 @@ async function buildDataset(
       employeeName: employee.name,
       roleId: employee.role_id,
       roleName: rolesById.get(employee.role_id) ?? "Unknown",
+      workMode: employee.work_mode,
       departmentName: null,
       presentDays: 0,
       absentDays: 0,
@@ -432,6 +434,11 @@ async function buildDataset(
           status: "holiday",
           lateMinutes: 0,
           office: holiday.title,
+          attendanceType: null,
+          checkInAddress: null,
+          checkOutAddress: null,
+          checkInLatitude: null,
+          checkInLongitude: null,
           distanceLabel: "--",
           locationSource: null,
         });
@@ -448,6 +455,11 @@ async function buildDataset(
           status: "weekend",
           lateMinutes: 0,
           office: "Weekend",
+          attendanceType: null,
+          checkInAddress: null,
+          checkOutAddress: null,
+          checkInLatitude: null,
+          checkInLongitude: null,
           distanceLabel: "--",
           locationSource: null,
         });
@@ -464,6 +476,11 @@ async function buildDataset(
           status: "leave",
           lateMinutes: 0,
           office: "Approved leave",
+          attendanceType: null,
+          checkInAddress: null,
+          checkOutAddress: null,
+          checkInLatitude: null,
+          checkInLongitude: null,
           distanceLabel: "--",
           locationSource: null,
         });
@@ -482,6 +499,11 @@ async function buildDataset(
           status: "absent",
           lateMinutes: 0,
           office: "Absent",
+          attendanceType: null,
+          checkInAddress: null,
+          checkOutAddress: null,
+          checkInLatitude: null,
+          checkInLongitude: null,
           distanceLabel: "--",
           locationSource: null,
         });
@@ -506,11 +528,11 @@ async function buildDataset(
         row.weekendDays += 1;
       }
 
-      if (!record.checkInLocationName) {
+      if (record.attendanceType === "field" || !record.checkInLocationName) {
         row.remoteDays += 1;
       }
 
-      if (record.checkInLocationSource === "hybrid") {
+      if (record.attendanceType === "hybrid" || record.checkInLocationSource === "hybrid") {
         row.hybridDays += 1;
       }
 
@@ -536,6 +558,11 @@ async function buildDataset(
         status: record.status,
         lateMinutes: record.lateMinutes,
         office: record.checkInLocationName ?? "Remote",
+        attendanceType: record.attendanceType,
+        checkInAddress: record.checkInAddress,
+        checkOutAddress: record.checkOutAddress,
+        checkInLatitude: record.checkInLatitude,
+        checkInLongitude: record.checkInLongitude,
         distanceLabel: formatDistance(record.checkInDistanceMeters),
         locationSource: record.checkInLocationSource,
       });

@@ -50,6 +50,7 @@ function toUiRecord(employee: EmployeeListResult["employees"][number]): Employee
     role: employee.roleName,
     reportsToId: employee.managerId ?? "",
     reportsTo: employee.managerName ?? "",
+    workMode: employee.workMode,
     directReportsCount: employee.directReportsCount,
     phone: employee.phone ?? "",
     email: employee.email ?? "",

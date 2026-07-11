@@ -1,6 +1,8 @@
 import type {
   AttendanceLocationSource,
   AttendanceStatus,
+  AttendanceType,
+  EmployeeWorkMode,
 } from "@/features/attendance/types/attendance.types";
 
 export type AttendanceReportStatusFilter =
@@ -52,6 +54,7 @@ export type AttendanceReportEmployeeOption = {
   name: string;
   roleId: string;
   roleName: string;
+  workMode: EmployeeWorkMode;
 };
 
 export type AttendanceReportSummary = {
@@ -72,6 +75,7 @@ export type AttendanceReportRow = {
   employeeName: string;
   roleId: string;
   roleName: string;
+  workMode: EmployeeWorkMode;
   departmentName: string | null;
   presentDays: number;
   absentDays: number;
@@ -98,6 +102,11 @@ export type AttendanceReportDailyDetail = {
   status: AttendanceStatus | "absent";
   lateMinutes: number;
   office: string;
+  attendanceType: AttendanceType | null;
+  checkInAddress: string | null;
+  checkOutAddress: string | null;
+  checkInLatitude: number | null;
+  checkInLongitude: number | null;
   distanceLabel: string;
   locationSource: AttendanceLocationSource | null;
 };

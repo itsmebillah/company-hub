@@ -72,7 +72,7 @@ async function getCurrentEmployee() {
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
     .from("employees")
-    .select("id, employee_id, name, company_id, status")
+    .select("id, employee_id, name, company_id, status, work_mode")
     .eq("id", context.id)
     .eq("company_id", context.companyId)
     .single();
@@ -108,6 +108,7 @@ export const AttendanceService = {
       employeeId: employee.id,
       employeeName: employee.name,
       employeeCode: employee.employee_id,
+      workMode: employee.work_mode,
       record,
       policy,
     };
@@ -194,9 +195,10 @@ export const AttendanceService = {
 
   async prepareCheckIn(_input: AttendanceCheckInput = {}) {
     const employee = await getCurrentEmployee();
-    const result = await AttendancePolicyService.validate(
+    const result = await AttendancePolicyService.validateForWorkMode(
       employee.company_id,
       employee.id,
+      employee.work_mode,
       _input.gps,
     );
 
@@ -205,9 +207,10 @@ export const AttendanceService = {
 
   async prepareCheckOut(_input: AttendanceCheckInput = {}) {
     const employee = await getCurrentEmployee();
-    const result = await AttendancePolicyService.validate(
+    const result = await AttendancePolicyService.validateForWorkMode(
       employee.company_id,
       employee.id,
+      employee.work_mode,
       _input.gps,
     );
 
@@ -243,9 +246,10 @@ export const AttendanceService = {
     const policySettings = await AttendancePolicyService.getSettings(
       employee.company_id,
     );
-    const policyValidation = await AttendancePolicyService.validate(
+    const policyValidation = await AttendancePolicyService.validateForWorkMode(
       employee.company_id,
       employee.id,
+      employee.work_mode,
       input.gps,
       policySettings,
     );
@@ -278,6 +282,7 @@ export const AttendanceService = {
       gps: gpsWithAddress,
       locationId: policyValidation.location?.id ?? null,
       distanceMeters: policyValidation.distanceMeters ?? null,
+      attendanceType: policyValidation.attendanceType ?? "office",
       selfiePath: input.selfiePath ?? null,
       deviceInfo: input.deviceInfo ?? null,
     });
@@ -295,6 +300,8 @@ export const AttendanceService = {
         checkIn: serverTimestamp,
         attendanceMode: getAttendancePolicyOption(policySettings.attendanceMode)
           .label,
+        workMode: employee.work_mode,
+        attendanceType: policyValidation.attendanceType ?? "office",
         gpsLocationName: policyValidation.location?.name ?? null,
         gpsAddress: gpsWithAddress?.address ?? null,
         selfiePath: input.selfiePath ?? null,
@@ -338,9 +345,10 @@ export const AttendanceService = {
     const policySettings = await AttendancePolicyService.getSettings(
       employee.company_id,
     );
-    const policyValidation = await AttendancePolicyService.validate(
+    const policyValidation = await AttendancePolicyService.validateForWorkMode(
       employee.company_id,
       employee.id,
+      employee.work_mode,
       input.gps,
       policySettings,
     );
@@ -365,6 +373,7 @@ export const AttendanceService = {
       gps: gpsWithAddress,
       locationId: policyValidation.location?.id ?? null,
       distanceMeters: policyValidation.distanceMeters ?? null,
+      attendanceType: record.attendanceType ?? policyValidation.attendanceType,
       selfiePath: input.selfiePath ?? null,
       deviceInfo: input.deviceInfo ?? null,
     });
@@ -384,6 +393,8 @@ export const AttendanceService = {
         notes: input.notes?.trim() || null,
         attendanceMode: getAttendancePolicyOption(policySettings.attendanceMode)
           .label,
+        workMode: employee.work_mode,
+        attendanceType: record.attendanceType ?? policyValidation.attendanceType ?? "office",
         gpsLocationName: policyValidation.location?.name ?? null,
         gpsAddress: gpsWithAddress?.address ?? null,
         selfiePath: input.selfiePath ?? null,

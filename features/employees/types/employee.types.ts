@@ -1,6 +1,8 @@
 import type { Database } from "@/lib/supabase/types";
 
 export type EmployeeStatus = Database["public"]["Enums"]["record_status"];
+export type EmployeeWorkMode =
+  Database["public"]["Enums"]["employee_work_mode"];
 
 export type EmployeeRoleName = string;
 
@@ -30,6 +32,7 @@ export type EmployeeListItem = {
   roleName: string;
   managerId: string | null;
   managerName: string | null;
+  workMode: EmployeeWorkMode;
   directReportsCount: number;
   status: EmployeeStatus;
   joiningDate: string | null;
@@ -53,6 +56,7 @@ export type EmployeeFormValues = {
   joiningDate: string;
   roleId: string;
   managerId: string;
+  workMode: EmployeeWorkMode;
   status: EmployeeStatus;
 };
 

@@ -75,6 +75,13 @@ const EMPLOYEE_IMPORT_TEMPLATE_COLUMNS = [
     example: "active",
   },
   {
+    key: "work_mode",
+    label: "Work Mode",
+    required: false,
+    description: "Allowed values are Office, Field, or Hybrid. Blank defaults to Office.",
+    example: "Field",
+  },
+  {
     key: "email",
     label: "Email",
     required: false,
@@ -567,6 +574,7 @@ export async function processEmployeeImportBatch(
         company_id: actor.companyId,
         role_id: role.id,
         manager_id: managerId,
+        work_mode: String(row.normalized.workMode ?? "office") as Database["public"]["Enums"]["employee_work_mode"],
         auth_user_id: authData.user.id,
         internal_auth_email: internalAuthEmail,
         status: String(row.normalized.status ?? "active") as Database["public"]["Enums"]["record_status"],

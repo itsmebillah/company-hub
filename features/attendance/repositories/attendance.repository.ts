@@ -2,6 +2,7 @@ import "server-only";
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getAppDateString } from "@/lib/datetime";
+import type { Database } from "@/lib/supabase/types";
 import type {
   AttendanceEmployeeOption,
   AttendanceDetailRecord,
@@ -10,11 +11,12 @@ import type {
   AttendanceRecord,
   AttendanceGpsInput,
   AttendanceStatus,
+  AttendanceType,
   CompanyLocation,
 } from "@/features/attendance/types/attendance.types";
 
 const attendanceRecordSelect =
-  "id, company_id, employee_id, attendance_date, check_in, check_out, status, working_minutes, late_minutes, notes, check_in_latitude, check_in_longitude, check_in_accuracy_meters, check_in_address, check_in_location_source, check_in_selfie_path, check_in_device_browser, check_in_device_platform, check_in_location_id, check_in_distance_meters, check_out_latitude, check_out_longitude, check_out_accuracy_meters, check_out_address, check_out_location_source, check_out_selfie_path, check_out_device_browser, check_out_device_platform, check_out_location_id, check_out_distance_meters, created_at, updated_at";
+  "id, company_id, employee_id, attendance_date, check_in, check_out, status, working_minutes, late_minutes, notes, check_in_latitude, check_in_longitude, check_in_accuracy_meters, check_in_address, check_in_location_source, check_in_selfie_path, check_in_device_browser, check_in_device_platform, check_in_location_id, check_in_distance_meters, attendance_type, check_out_latitude, check_out_longitude, check_out_accuracy_meters, check_out_address, check_out_location_source, check_out_selfie_path, check_out_device_browser, check_out_device_platform, check_out_location_id, check_out_distance_meters, created_at, updated_at";
 
 function toRecord(row: {
   id: string;
@@ -37,6 +39,7 @@ function toRecord(row: {
   check_in_device_platform: string | null;
   check_in_location_id: string | null;
   check_in_distance_meters: number | null;
+  attendance_type: AttendanceType;
   check_out_latitude: number | null;
   check_out_longitude: number | null;
   check_out_accuracy_meters: number | null;
@@ -71,6 +74,7 @@ function toRecord(row: {
     checkInDevicePlatform: row.check_in_device_platform,
     checkInLocationId: row.check_in_location_id,
     checkInDistanceMeters: row.check_in_distance_meters,
+    attendanceType: row.attendance_type,
     checkOutLatitude: row.check_out_latitude,
     checkOutLongitude: row.check_out_longitude,
     checkOutAccuracyMeters: row.check_out_accuracy_meters,
@@ -93,10 +97,12 @@ type AttendanceRecordWithEmployeeRow = AttendanceRecordRow & {
     | {
         employee_id: string;
         name: string;
+        work_mode: Database["public"]["Enums"]["employee_work_mode"];
       }
     | Array<{
         employee_id: string;
       name: string;
+      work_mode: Database["public"]["Enums"]["employee_work_mode"];
     }>;
   check_in_location:
     | {
@@ -178,6 +184,7 @@ export const AttendanceRepository = {
     gps?: AttendanceGpsInput | null;
     locationId?: string | null;
     distanceMeters?: number | null;
+    attendanceType: AttendanceType;
     selfiePath?: string | null;
     deviceInfo?: {
       browser: string;
@@ -205,6 +212,7 @@ export const AttendanceRepository = {
         check_in_device_platform: input.deviceInfo?.platform ?? null,
         check_in_location_id: input.locationId ?? null,
         check_in_distance_meters: input.distanceMeters ?? null,
+        attendance_type: input.attendanceType,
         updated_at: input.checkIn,
       })
       .select(attendanceRecordSelect)
@@ -226,6 +234,7 @@ export const AttendanceRepository = {
     gps?: AttendanceGpsInput | null;
     locationId?: string | null;
     distanceMeters?: number | null;
+    attendanceType?: AttendanceType;
     selfiePath?: string | null;
     deviceInfo?: {
       browser: string;
@@ -249,6 +258,7 @@ export const AttendanceRepository = {
         check_out_device_platform: input.deviceInfo?.platform ?? null,
         check_out_location_id: input.locationId ?? null,
         check_out_distance_meters: input.distanceMeters ?? null,
+        ...(input.attendanceType ? { attendance_type: input.attendanceType } : {}),
         updated_at: input.checkOut,
       })
       .eq("id", input.id)
@@ -316,7 +326,7 @@ export const AttendanceRepository = {
     let query = supabase
       .from("attendance_records")
       .select(
-        `${attendanceRecordSelect}, employees!inner(employee_id, name), check_in_location:company_locations!attendance_records_check_in_location_id_fkey(name), check_out_location:company_locations!attendance_records_check_out_location_id_fkey(name)`,
+        `${attendanceRecordSelect}, employees!inner(employee_id, name, work_mode), check_in_location:company_locations!attendance_records_check_in_location_id_fkey(name), check_out_location:company_locations!attendance_records_check_out_location_id_fkey(name)`,
       )
       .eq("company_id", companyId);
 
@@ -368,6 +378,7 @@ export const AttendanceRepository = {
         ...record,
         employeeCode: employee?.employee_id ?? "Unknown",
         employeeName: employee?.name ?? "Unknown",
+        employeeWorkMode: employee?.work_mode ?? "office",
         checkInLocationName: checkInLocation?.name ?? null,
         checkOutLocationName: checkOutLocation?.name ?? null,
       };
@@ -382,7 +393,7 @@ export const AttendanceRepository = {
     const { data, error } = await supabase
       .from("attendance_records")
       .select(
-        `${attendanceRecordSelect}, employees!inner(employee_id, name), check_in_location:company_locations!attendance_records_check_in_location_id_fkey(name), check_out_location:company_locations!attendance_records_check_out_location_id_fkey(name)`,
+        `${attendanceRecordSelect}, employees!inner(employee_id, name, work_mode), check_in_location:company_locations!attendance_records_check_in_location_id_fkey(name), check_out_location:company_locations!attendance_records_check_out_location_id_fkey(name)`,
       )
       .eq("id", id)
       .eq("company_id", companyId)
@@ -416,6 +427,7 @@ export const AttendanceRepository = {
       ...record,
       employeeCode: employee?.employee_id ?? "Unknown",
       employeeName: employee?.name ?? "Unknown",
+      employeeWorkMode: employee?.work_mode ?? "office",
       checkInLocationName: checkInLocation?.name ?? null,
       checkOutLocationName: checkOutLocation?.name ?? null,
     };

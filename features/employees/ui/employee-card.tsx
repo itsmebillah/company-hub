@@ -47,6 +47,10 @@ export function EmployeeCard({
           <span>{employee.reportsTo || "None"}</span>
         </div>
         <div className="flex items-center justify-between gap-3">
+          <span className="text-muted-foreground">Work Mode</span>
+          <span className="capitalize">{employee.workMode}</span>
+        </div>
+        <div className="flex items-center justify-between gap-3">
           <span className="text-muted-foreground">Phone</span>
           <span>{employee.phone}</span>
         </div>
