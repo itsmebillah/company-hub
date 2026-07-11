@@ -13,6 +13,10 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import {
+  getPermissionOnboardingStorageKey,
+  PERMISSION_ONBOARDING_COMPLETE_EVENT,
+} from "@/features/device-onboarding/utils/onboarding-storage";
 import { cn } from "@/lib/utils";
 
 type PermissionOnboardingProps = {
@@ -23,12 +27,6 @@ type PermissionOnboardingProps = {
 
 type PermissionState = "idle" | "checking" | "granted" | "denied" | "skipped";
 type StepId = "welcome" | "location" | "notifications" | "camera" | "finished";
-
-const STORAGE_PREFIX = "company-hub:permission-onboarding";
-
-function getStorageKey(companyId: string, version: number) {
-  return `${STORAGE_PREFIX}:${companyId}:v${version}`;
-}
 
 function getPermissionLabel(state: PermissionState) {
   if (state === "granted") {
@@ -136,7 +134,7 @@ export function PermissionOnboarding({
         : ["welcome", "location", "notifications", "finished"],
     [requireCamera],
   );
-  const storageKey = getStorageKey(companyId, version);
+  const storageKey = getPermissionOnboardingStorageKey(companyId, version);
   const [isOpen, setIsOpen] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [locationState, setLocationState] = useState<PermissionState>("idle");
@@ -173,6 +171,7 @@ export function PermissionOnboarding({
       // still close for the current session.
     }
 
+    window.dispatchEvent(new Event(PERMISSION_ONBOARDING_COMPLETE_EVENT));
     setIsOpen(false);
   }
 

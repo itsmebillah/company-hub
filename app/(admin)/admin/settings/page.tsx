@@ -1,5 +1,6 @@
 import { DashboardService } from "@/features/admin-dashboard/services/dashboard.service";
 import { AttendanceSettingsService } from "@/features/attendance/services/attendance-settings.service";
+import { getCurrentSessionProfile } from "@/features/auth/services/session.service";
 import { AdminSettingsCenter } from "@/features/company-settings/components";
 import { getCompanySettings } from "@/features/company-settings/services/company-settings.service";
 import { appConfig } from "@/lib/config/app";
@@ -101,16 +102,24 @@ async function getStorageOverview() {
 }
 
 export default async function AdminSettingsPage() {
-  const [companySettings, attendanceSettings, storageOverview, dashboard] =
+  const [
+    companySettings,
+    attendanceSettings,
+    storageOverview,
+    dashboard,
+    profile,
+  ] =
     await Promise.all([
       getCompanySettings(),
       AttendanceSettingsService.getSettings(),
       getStorageOverview(),
       DashboardService.getAdminDashboardData(),
+      getCurrentSessionProfile(),
     ]);
 
   return (
     <AdminSettingsCenter
+      companyId={profile?.companyId ?? ""}
       companySettings={companySettings}
       attendanceSettings={attendanceSettings}
       storageOverview={storageOverview}

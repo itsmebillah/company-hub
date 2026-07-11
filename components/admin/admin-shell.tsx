@@ -13,6 +13,7 @@ import type {
   NotificationSummary,
   RealtimeNotificationScope,
 } from "@/features/notifications/types/notification.types";
+import { PwaInstallCard } from "@/features/pwa/components/pwa-install-card";
 import type { SchemaVersionStatus } from "@/features/schema-version/services/schema-version.service";
 
 type AdminShellProps = {
@@ -86,6 +87,10 @@ export function AdminShell({
         companyId={profile.companyId}
         version={onboardingVersion}
         requireCamera={requireCameraOnboarding}
+      />
+      <PwaInstallCard
+        companyId={profile.companyId}
+        onboardingVersion={onboardingVersion}
       />
     </div>
   );

@@ -9,6 +9,7 @@ import { CurrentEmployeeContextService } from "@/features/auth/services/current-
 import { getCompanySettings } from "@/features/company-settings/services/company-settings.service";
 import { PermissionOnboarding } from "@/features/device-onboarding/components/permission-onboarding";
 import { NotificationService } from "@/features/notifications/services/notification.service";
+import { PwaInstallCard } from "@/features/pwa/components/pwa-install-card";
 
 type AppLayoutProps = {
   children: ReactNode;
@@ -48,13 +49,21 @@ export async function AppLayout({ children }: AppLayoutProps) {
       <AppFooter />
       <MobileBottomNav />
       {employeeContext?.companyId ? (
-        <PermissionOnboarding
-          companyId={employeeContext.companyId}
-          version={
-            companySettings.securityPreferences.permissionOnboardingVersion
-          }
-          requireCamera={attendanceSettings.requireSelfie}
-        />
+        <>
+          <PermissionOnboarding
+            companyId={employeeContext.companyId}
+            version={
+              companySettings.securityPreferences.permissionOnboardingVersion
+            }
+            requireCamera={attendanceSettings.requireSelfie}
+          />
+          <PwaInstallCard
+            companyId={employeeContext.companyId}
+            onboardingVersion={
+              companySettings.securityPreferences.permissionOnboardingVersion
+            }
+          />
+        </>
       ) : null}
     </div>
   );

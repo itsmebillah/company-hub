@@ -22,6 +22,7 @@ import { CompanySettingsForm } from "@/features/company-settings/components/comp
 import { updateCompanySettingsAction } from "@/features/company-settings/actions/company-settings.actions";
 import type { AttendanceSettingsValues } from "@/features/attendance/types/attendance.types";
 import type { CompanySettingsValues } from "@/features/company-settings/types/company-settings.types";
+import { PwaInstallSettingsCard } from "@/features/pwa/components/pwa-install-settings-card";
 import { cn } from "@/lib/utils";
 
 type SettingsNavItem = {
@@ -58,6 +59,7 @@ type SystemOverview = {
 };
 
 type AdminSettingsCenterProps = {
+  companyId: string;
   companySettings: CompanySettingsValues;
   attendanceSettings: AttendanceSettingsValues;
   storageOverview: StorageOverview;
@@ -80,6 +82,7 @@ const navItems: SettingsNavItem[] = [
   { label: "Announcements", href: "#announcements", icon: Megaphone },
   { label: "Employees", href: "#employees", icon: Users },
   { label: "Security", href: "#security", icon: ShieldCheck },
+  { label: "Application", href: "#application", icon: Layers3 },
   { label: "Storage", href: "#storage", icon: HardDrive },
   { label: "System", href: "#system", icon: Database },
   { label: "Future Integrations", href: "#future-integrations", icon: Sparkles },
@@ -96,6 +99,7 @@ function MetricCard({ label, value, description }: SettingsMetric) {
 }
 
 export function AdminSettingsCenter({
+  companyId,
   companySettings,
   attendanceSettings,
   storageOverview,
@@ -161,6 +165,13 @@ export function AdminSettingsCenter({
       <CompanySettingsForm
         initialValues={companySettings}
         onSave={updateCompanySettingsAction}
+      />
+
+      <PwaInstallSettingsCard
+        companyId={companyId}
+        onboardingVersion={
+          companySettings.securityPreferences.permissionOnboardingVersion
+        }
       />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
