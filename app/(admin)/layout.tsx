@@ -32,6 +32,10 @@ export default async function AdminRouteGroupLayout({
     <AdminShell
       profile={profile}
       notificationSummary={notificationSummary}
+      notificationScope={{
+        type: "company",
+        companyId: profile.companyId,
+      }}
       schemaStatus={schemaStatus}
     >
       {children}

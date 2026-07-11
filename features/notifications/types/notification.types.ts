@@ -30,3 +30,14 @@ export type CreateNotificationInput = {
 export type NotificationRecipient = {
   id: string;
 };
+
+export type RealtimeNotificationScope =
+  | {
+      type: "employee";
+      employeeId: string;
+      companyId: string;
+    }
+  | {
+      type: "company";
+      companyId: string;
+    };

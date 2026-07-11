@@ -8,14 +8,17 @@ import { AdminHeader } from "@/components/admin/admin-header";
 import { AdminMobileDrawer } from "@/components/admin/admin-mobile-drawer";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import type { AuthSessionProfile } from "@/features/auth/types/auth.types";
-import { NativeNotificationBridge } from "@/features/notifications/components";
-import type { NotificationSummary } from "@/features/notifications/types/notification.types";
+import type {
+  NotificationSummary,
+  RealtimeNotificationScope,
+} from "@/features/notifications/types/notification.types";
 import type { SchemaVersionStatus } from "@/features/schema-version/services/schema-version.service";
 
 type AdminShellProps = {
   children: ReactNode;
   profile: AuthSessionProfile;
   notificationSummary: NotificationSummary;
+  notificationScope: RealtimeNotificationScope;
   schemaStatus: SchemaVersionStatus;
 };
 
@@ -23,6 +26,7 @@ export function AdminShell({
   children,
   profile,
   notificationSummary,
+  notificationScope,
   schemaStatus,
 }: AdminShellProps) {
   const pathname = usePathname();
@@ -50,6 +54,7 @@ export function AdminShell({
           <AdminHeader
             profile={profile}
             notificationSummary={notificationSummary}
+            notificationScope={notificationScope}
             pathname={pathname}
             onMenuClick={() => setIsMobileDrawerOpen(true)}
           />
@@ -72,7 +77,6 @@ export function AdminShell({
           </main>
         </div>
       </div>
-      <NativeNotificationBridge summary={notificationSummary} />
     </div>
   );
 }

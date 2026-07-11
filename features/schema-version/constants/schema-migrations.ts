@@ -18,4 +18,5 @@ export const SCHEMA_MIGRATION_MANIFEST = [
   "0017_attendance_policy_engine.sql",
   "0018_field_attendance_and_dashboard_enhancement.sql",
   "0019_admin_settings_center_refinement.sql",
+  "0020_notifications_realtime.sql",
 ] as const;

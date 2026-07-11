@@ -10,8 +10,11 @@ import { ThemeToggle } from "@/components/common/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { LogoutButton } from "@/features/auth/components";
 import type { AuthSessionProfile } from "@/features/auth/types/auth.types";
-import { NotificationDropdown } from "@/features/notifications/components";
-import type { NotificationSummary } from "@/features/notifications/types/notification.types";
+import { RealtimeNotificationCenter } from "@/features/notifications/components";
+import type {
+  NotificationSummary,
+  RealtimeNotificationScope,
+} from "@/features/notifications/types/notification.types";
 import {
   adminNavigationFallback,
   adminNavigationItems,
@@ -20,6 +23,7 @@ import {
 type AdminHeaderProps = {
   profile: AuthSessionProfile;
   notificationSummary: NotificationSummary;
+  notificationScope: RealtimeNotificationScope;
   pathname: string;
   onMenuClick: () => void;
 };
@@ -39,6 +43,7 @@ function getPageTitle(pathname: string) {
 export function AdminHeader({
   profile,
   notificationSummary,
+  notificationScope,
   pathname,
   onMenuClick,
 }: AdminHeaderProps) {
@@ -99,7 +104,10 @@ export function AdminHeader({
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
-          <NotificationDropdown summary={notificationSummary} />
+          <RealtimeNotificationCenter
+            initialSummary={notificationSummary}
+            scope={notificationScope}
+          />
           <ThemeToggle />
           <div className="relative" ref={profileMenuRef}>
             <Button

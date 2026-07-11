@@ -28,6 +28,8 @@ import { cn } from "@/lib/utils";
 
 type NotificationDropdownProps = {
   summary: NotificationSummary;
+  onNotificationRead?: (id: string) => void;
+  onAllNotificationsRead?: () => void;
 };
 
 type NotificationSection = {
@@ -140,7 +142,13 @@ function formatRelativeTime(value: string) {
   }).format(date);
 }
 
-function NotificationRow({ notification }: { notification: NotificationItem }) {
+function NotificationRow({
+  notification,
+  onNotificationRead,
+}: {
+  notification: NotificationItem;
+  onNotificationRead?: (id: string) => void;
+}) {
   const [, startTransition] = useTransition();
   const Icon = notificationIcons[notification.type];
   const content = (
@@ -200,6 +208,7 @@ function NotificationRow({ notification }: { notification: NotificationItem }) {
         )}
         onClick={() => {
           if (!notification.isRead) {
+            onNotificationRead?.(notification.id);
             startTransition(() => {
               void markNotificationReadAction(notification.id);
             });
@@ -220,6 +229,7 @@ function NotificationRow({ notification }: { notification: NotificationItem }) {
       )}
       onClick={() => {
         if (!notification.isRead) {
+          onNotificationRead?.(notification.id);
           startTransition(() => {
             void markNotificationReadAction(notification.id);
           });
@@ -231,7 +241,11 @@ function NotificationRow({ notification }: { notification: NotificationItem }) {
   );
 }
 
-export function NotificationDropdown({ summary }: NotificationDropdownProps) {
+export function NotificationDropdown({
+  summary,
+  onNotificationRead,
+  onAllNotificationsRead,
+}: NotificationDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMarkingAll, startMarkAllTransition] = useTransition();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -315,6 +329,7 @@ export function NotificationDropdown({ summary }: NotificationDropdownProps) {
               className="h-8 gap-1.5 px-2 text-xs"
               disabled={summary.unreadCount === 0 || isMarkingAll}
               onClick={() => {
+                onAllNotificationsRead?.();
                 startMarkAllTransition(() => {
                   void markAllNotificationsReadAction();
                 });
@@ -348,6 +363,7 @@ export function NotificationDropdown({ summary }: NotificationDropdownProps) {
                       <NotificationRow
                         key={notification.id}
                         notification={notification}
+                        onNotificationRead={onNotificationRead}
                       />
                     ))}
                   </div>

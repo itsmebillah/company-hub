@@ -28,3 +28,11 @@ export async function markAllNotificationsReadAction() {
     return;
   }
 }
+
+export async function getCurrentNotificationSummaryAction() {
+  return NotificationService.getCurrentUserSummary();
+}
+
+export async function getCurrentAdminNotificationSummaryAction() {
+  return NotificationService.getCurrentAdminSummary();
+}

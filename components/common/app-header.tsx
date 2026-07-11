@@ -9,20 +9,28 @@ import { Logo } from "@/components/common/logo";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { PageContainer } from "@/components/common/page-container";
 import { LogoutButton } from "@/features/auth/components";
-import { NotificationDropdown } from "@/features/notifications/components";
-import type { NotificationSummary } from "@/features/notifications/types/notification.types";
+import {
+  NotificationDropdown,
+  RealtimeNotificationCenter,
+} from "@/features/notifications/components";
+import type {
+  NotificationSummary,
+  RealtimeNotificationScope,
+} from "@/features/notifications/types/notification.types";
 import { appNavigationItems } from "@/lib/navigation/app-navigation";
 import { cn } from "@/lib/utils";
 
 type AppHeaderProps = {
   actions?: ReactNode;
   notificationSummary?: NotificationSummary;
+  notificationScope?: RealtimeNotificationScope;
   showProfile?: boolean;
 };
 
 export function AppHeader({
   actions,
   notificationSummary,
+  notificationScope,
   showProfile = false,
 }: AppHeaderProps) {
   const pathname = usePathname();
@@ -46,7 +54,12 @@ export function AppHeader({
 
             <div className="flex items-center gap-2">
               {actions}
-              {notificationSummary ? (
+              {notificationSummary && notificationScope ? (
+                <RealtimeNotificationCenter
+                  initialSummary={notificationSummary}
+                  scope={notificationScope}
+                />
+              ) : notificationSummary ? (
                 <NotificationDropdown summary={notificationSummary} />
               ) : null}
               <ThemeToggle />
