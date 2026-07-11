@@ -4,6 +4,7 @@ import { ArrowLeft, ExternalLink, LocateFixed, Route } from "lucide-react";
 
 import { AttendanceStatusBadge } from "@/features/attendance/components";
 import { AttendanceService } from "@/features/attendance/services/attendance.service";
+import { formatAppDateTime } from "@/lib/datetime";
 
 export const dynamic = "force-dynamic";
 
@@ -18,10 +19,7 @@ function formatTime(value: string | null) {
     return "--";
   }
 
-  return new Intl.DateTimeFormat("en", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
+  return formatAppDateTime(value);
 }
 
 function formatMeters(value: number | null) {

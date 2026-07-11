@@ -11,6 +11,7 @@ import type {
   HolidayEventItem,
   HolidayType,
 } from "@/features/company-calendar/types/calendar.types";
+import { getAppDateString } from "@/lib/datetime";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 function normalizeOptional(value: string) {
@@ -192,7 +193,7 @@ export const CalendarService = {
 
   async getEmployeePageData(): Promise<EmployeeCalendarPageData> {
     const companyId = await getActiveCompanyId();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getAppDateString();
     const calendar = await getDefaultCalendar(companyId);
 
     if (!calendar) {

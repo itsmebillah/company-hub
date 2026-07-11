@@ -8,6 +8,12 @@ import { getCompanySettings } from "@/features/company-settings/services/company
 import { EmployeeResourceService } from "@/features/employee-resources/services/employee-resource.service";
 import { NotificationRepository } from "@/features/notifications/repositories/notification.repository";
 import { AttendanceService } from "@/features/attendance/services/attendance.service";
+import {
+  formatAppDate,
+  formatAppDateTime,
+  getAppDateString,
+  shiftAppDateString,
+} from "@/lib/datetime";
 import { getSupabaseAdminEnv, getSupabaseEnv } from "@/lib/env";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type {
@@ -61,35 +67,26 @@ function getOverallStatus(
 }
 
 function formatChartDate(value: string) {
-  return new Intl.DateTimeFormat("en-US", {
+  return formatAppDate(value, {
     month: "short",
     day: "numeric",
-  }).format(new Date(value));
+  });
 }
 
 function formatActivityTime(value: string) {
-  return new Intl.DateTimeFormat("en-US", {
+  return formatAppDateTime(value, {
     month: "short",
     day: "numeric",
     hour: "numeric",
     minute: "2-digit",
-  }).format(new Date(value));
-}
-
-function startOfDay(date: Date) {
-  const next = new Date(date);
-  next.setHours(0, 0, 0, 0);
-  return next;
+  });
 }
 
 function getRecentDateLabels(days: number) {
-  const today = startOfDay(new Date());
+  const today = getAppDateString();
 
   return Array.from({ length: days }, (_, index) => {
-    const date = new Date(today);
-    date.setDate(today.getDate() - (days - index - 1));
-
-    return date.toISOString().slice(0, 10);
+    return shiftAppDateString(today, -(days - index - 1));
   });
 }
 
@@ -233,7 +230,7 @@ const getCachedExecutiveSummary = unstable_cache(
       inactive: employeeStatusesResult.data.filter((item) => item.status === "inactive").length,
       archived: employeeStatusesResult.data.filter((item) => item.status === "archived").length,
     };
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getAppDateString();
     const leaveCounts = {
       pending: leaveStatusesResult.data.filter((item) => item.status === "pending").length,
       approved: leaveStatusesResult.data.filter((item) => item.status === "approved").length,

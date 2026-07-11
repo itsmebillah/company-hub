@@ -12,17 +12,13 @@ import { getAdminEquivalentPath } from "@/features/auth/services/redirect.servic
 import { getCurrentSessionProfile } from "@/features/auth/services/session.service";
 import { EmployeeResourceService } from "@/features/employee-resources/services/employee-resource.service";
 import { ROLE_NAMES } from "@/lib/auth/permissions";
+import { formatAppDate } from "@/lib/datetime";
 
 export const dynamic = "force-dynamic";
 
-const currentDate = new Intl.DateTimeFormat("en", {
-  day: "2-digit",
-  month: "short",
-  year: "numeric",
-}).format(new Date());
-
 export default async function DashboardPage() {
   const sessionProfile = await getCurrentSessionProfile();
+  const currentDate = formatAppDate(new Date());
 
   if (
     sessionProfile?.status === "active" &&

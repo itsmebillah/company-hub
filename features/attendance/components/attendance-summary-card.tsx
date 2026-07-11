@@ -3,6 +3,7 @@ import { CalendarCheck, Clock, LogIn, LogOut } from "lucide-react";
 
 import { AttendanceStatusBadge } from "@/features/attendance/components/attendance-status-badge";
 import type { EmployeeAttendanceSummary } from "@/features/attendance/types/attendance.types";
+import { formatAppTime } from "@/lib/datetime";
 
 type AttendanceSummaryCardProps = {
   summary: EmployeeAttendanceSummary;
@@ -13,10 +14,7 @@ function formatTime(value: string | null) {
     return "--";
   }
 
-  return new Intl.DateTimeFormat("en", {
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
+  return formatAppTime(value);
 }
 
 function formatDuration(minutes: number) {

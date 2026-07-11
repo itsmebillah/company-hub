@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { getAppDateString } from "@/lib/datetime";
 import type {
   AttendanceEmployeeOption,
   AttendanceDetailRecord,
@@ -418,7 +419,7 @@ export const AttendanceRepository = {
 
   async getAssignedCompanyLocations(companyId: string, employeeId: string) {
     const supabase = createSupabaseAdminClient();
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getAppDateString();
     const { data, error } = await supabase
       .from("employee_location_access")
       .select(

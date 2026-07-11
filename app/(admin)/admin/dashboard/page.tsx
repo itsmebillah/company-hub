@@ -8,6 +8,7 @@ import {
   AnnouncementTicker,
   QuickResourceLinks,
 } from "@/features/employee-resources/components";
+import { formatAppDate } from "@/lib/datetime";
 import {
   Bell,
   CalendarClock,
@@ -56,11 +57,7 @@ const quickActions = [
 
 export default async function AdminDashboardPage() {
   const dashboard = await DashboardService.getAdminDashboardData();
-  const currentDate = new Intl.DateTimeFormat("en", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(new Date());
+  const currentDate = formatAppDate(new Date());
   const companySnapshot = [
     {
       title: "Present Today",

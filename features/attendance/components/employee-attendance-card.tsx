@@ -19,6 +19,7 @@ import type {
   AttendanceGpsInput,
   TodayAttendance,
 } from "@/features/attendance/types/attendance.types";
+import { formatAppDate, formatAppTime } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
 
 type EmployeeAttendanceCardProps = {
@@ -51,11 +52,7 @@ function getClientDeviceInfo() {
 }
 
 function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(`${value}T00:00:00`));
+  return formatAppDate(`${value}T00:00:00`);
 }
 
 function formatTime(value: string | null) {
@@ -63,10 +60,7 @@ function formatTime(value: string | null) {
     return "Not recorded";
   }
 
-  return new Intl.DateTimeFormat("en", {
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
+  return formatAppTime(value);
 }
 
 function formatDuration(minutes: number) {

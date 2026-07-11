@@ -5,6 +5,7 @@ import { AdminShell } from "@/components/admin";
 import { getPostLoginRedirectPath } from "@/features/auth/services/redirect.service";
 import { getCurrentSessionProfile } from "@/features/auth/services/session.service";
 import { NotificationService } from "@/features/notifications/services/notification.service";
+import { SchemaVersionService } from "@/features/schema-version/services/schema-version.service";
 import { ROLE_NAMES } from "@/lib/auth/permissions";
 
 export default async function AdminRouteGroupLayout({
@@ -22,11 +23,17 @@ export default async function AdminRouteGroupLayout({
     redirect(getPostLoginRedirectPath(profile.roleName));
   }
 
-  const notificationSummary =
-    await NotificationService.getCurrentAdminSummary();
+  const [notificationSummary, schemaStatus] = await Promise.all([
+    NotificationService.getCurrentAdminSummary(),
+    SchemaVersionService.getStatus(),
+  ]);
 
   return (
-    <AdminShell profile={profile} notificationSummary={notificationSummary}>
+    <AdminShell
+      profile={profile}
+      notificationSummary={notificationSummary}
+      schemaStatus={schemaStatus}
+    >
       {children}
     </AdminShell>
   );

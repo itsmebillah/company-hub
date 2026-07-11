@@ -22,18 +22,19 @@ import { logActivity } from "@/features/activity/utils/activity-log";
 import { getCurrentAuthUser } from "@/features/auth/services/auth.service";
 import { CalendarService } from "@/features/company-calendar/services/calendar.service";
 import { NotificationService } from "@/features/notifications/services/notification.service";
+import { getAppDateString, getAppDateTime } from "@/lib/datetime";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 function getTodayDate() {
-  return new Date().toISOString().slice(0, 10);
+  return getAppDateString();
 }
 
 function getDateFromTimestamp(value: string) {
-  return new Date(value).toISOString().slice(0, 10);
+  return getAppDateString(value);
 }
 
 function getOfficeStart(date: string) {
-  return new Date(`${date}T${ATTENDANCE_RULES.officeStartTime}:00`);
+  return getAppDateTime(date, ATTENDANCE_RULES.officeStartTime);
 }
 
 function getLateMinutes(checkIn: string, attendanceDate: string) {
