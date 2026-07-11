@@ -25,73 +25,54 @@ export function DashboardHeader({
   const logoSrc = getRenderableImageSrc(companyLogo);
 
   return (
-    <section className="app-card overflow-hidden p-4 sm:p-5">
-      <div className="flex flex-col gap-4">
-        <div className="app-card app-card-subtle flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex min-w-0 items-center gap-3">
-            <ProfilePhoto
-              src={photoUrl}
-              name={userName}
-              className="size-14 border border-white/20 shadow-[var(--shadow-card)]"
-              fallbackClassName="bg-primary/90 text-lg text-primary-foreground"
-              iconClassName="size-7 text-primary-foreground"
-            />
-            <div className="min-w-0 space-y-1">
-              <p className="app-page-eyebrow">Admin Dashboard</p>
-              <h1 className="break-words text-xl font-semibold tracking-tight sm:text-2xl">
-                {userName}
-              </h1>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-                <span>ID {employeeId}</span>
-                <span>{roleName}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid gap-2 sm:justify-items-end">
-            <div className="flex w-fit flex-wrap items-center gap-2 rounded-2xl border border-white/20 bg-background/70 px-3 py-2 text-sm shadow-[var(--shadow-soft)]">
-              <CalendarDays
-                className="size-4 text-muted-foreground"
-                aria-hidden="true"
-              />
-              <span className="font-medium">{currentDate}</span>
-            </div>
-          </div>
+    <section className="relative overflow-hidden rounded-[1.6rem] border bg-card/95 p-3.5 shadow-[var(--shadow-card)] sm:p-4">
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-emerald-500/10" />
+      <div className="relative flex min-w-0 items-center gap-3">
+        <div className="relative shrink-0">
+          <ProfilePhoto
+            src={photoUrl}
+            name={userName}
+            className="size-[4.25rem] border-2 border-white/60 shadow-[var(--shadow-card)]"
+            fallbackClassName="bg-primary/90 text-xl text-primary-foreground"
+            iconClassName="size-8 text-primary-foreground"
+          />
+          <span className="absolute -bottom-1 -right-1 flex size-7 items-center justify-center rounded-full border-2 border-card bg-emerald-500 text-white shadow-sm">
+            <ShieldCheck className="size-3.5" aria-hidden="true" />
+          </span>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-          <div className="app-card app-card-subtle flex min-w-0 items-center gap-3 px-4 py-4">
-            {logoSrc ? (
-              <img
-                src={logoSrc}
-                alt=""
-                className="size-12 shrink-0 rounded-2xl border border-white/20 object-cover shadow-[var(--shadow-soft)]"
-              />
-            ) : (
-              <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-[var(--shadow-raised)]">
-                <Building2 className="size-6" aria-hidden="true" />
-              </div>
-            )}
-            <div className="min-w-0">
-              <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                Company
-              </p>
-              <p className="break-words text-base font-semibold">{companyName}</p>
-            </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
+            Welcome
+          </p>
+          <h1 className="truncate text-xl font-semibold tracking-tight sm:text-2xl">
+            {userName}
+          </h1>
+          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground sm:text-sm">
+            <span className="rounded-full bg-background/75 px-2 py-0.5 font-medium">
+              {employeeId}
+            </span>
+            <span className="rounded-full bg-background/75 px-2 py-0.5 font-medium">
+              {roleName}
+            </span>
           </div>
-
-          <div className="app-card app-card-subtle flex min-w-0 items-center gap-3 px-4 py-4">
-            <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-secondary/80 text-secondary-foreground shadow-[var(--shadow-soft)]">
-              <ShieldCheck className="size-5" aria-hidden="true" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                Workspace
-              </p>
-              <p className="break-words text-sm text-muted-foreground">
-                Monitor company operations and jump into the most important admin flows.
-              </p>
-            </div>
+          <div className="mt-2 grid gap-1.5 text-xs text-muted-foreground sm:grid-cols-2">
+            <span className="flex min-w-0 items-center gap-1.5">
+              <CalendarDays className="size-3.5 shrink-0" aria-hidden="true" />
+              <span className="truncate">{currentDate}</span>
+            </span>
+            <span className="flex min-w-0 items-center gap-1.5">
+              {logoSrc ? (
+                <img
+                  src={logoSrc}
+                  alt=""
+                  className="size-4 shrink-0 rounded-md object-cover"
+                />
+              ) : (
+                <Building2 className="size-3.5 shrink-0" aria-hidden="true" />
+              )}
+              <span className="truncate">{companyName}</span>
+            </span>
           </div>
         </div>
       </div>

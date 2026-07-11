@@ -39,24 +39,21 @@ export function QuickResourceLinks({ categories }: QuickResourceLinksProps) {
 
   return (
     <section
-      className="app-card space-y-3 p-3 sm:p-4"
+      className="rounded-[1.45rem] border bg-card/95 p-3 shadow-[var(--shadow-card)] sm:p-4"
       aria-labelledby="quick-resource-links-title"
     >
-      <div className="flex items-end justify-between gap-3">
+      <div className="mb-3 flex items-end justify-between gap-3">
         <div>
           <h2
             id="quick-resource-links-title"
-            className="text-base font-semibold"
+            className="text-sm font-semibold sm:text-base"
           >
             Quick Resource Links
           </h2>
-          <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">
-            Open approved company applications and documents.
-          </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 sm:gap-3 md:grid-cols-4 xl:[grid-template-columns:repeat(auto-fit,minmax(9rem,1fr))]">
+      <div className="grid grid-cols-3 gap-2 md:grid-cols-4 xl:[grid-template-columns:repeat(auto-fit,minmax(7.75rem,1fr))]">
         {resources.map((resource) => (
           <QuickResourceCard key={resource.id} resource={resource} />
         ))}
@@ -67,7 +64,7 @@ export function QuickResourceLinks({ categories }: QuickResourceLinksProps) {
 
 function QuickResourceCard({ resource }: { resource: EmployeePortalResource }) {
   const className =
-    "group relative flex min-h-28 flex-col items-center justify-center gap-2 rounded-[1.4rem] border border-white/20 bg-background/75 p-2.5 text-center shadow-[var(--shadow-soft)] transition duration-200 hover:-translate-y-1 hover:border-primary/25 hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:min-h-32 sm:p-3";
+    "group relative flex aspect-square min-w-0 flex-col items-center justify-center gap-2 rounded-[1.25rem] border border-white/20 bg-background/75 p-2 text-center shadow-[var(--shadow-soft)] transition duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:p-3";
   const content = (
     <>
       {resource.isFeatured ? (
@@ -80,7 +77,7 @@ function QuickResourceCard({ resource }: { resource: EmployeePortalResource }) {
         </span>
       ) : null}
 
-      <div className="flex size-10 items-center justify-center rounded-2xl border border-white/20 bg-primary/8 text-primary sm:size-11">
+      <div className="flex size-9 items-center justify-center rounded-2xl border border-white/20 bg-primary/8 text-primary sm:size-10">
         {resource.icon ? (
           <span className="text-xs font-semibold sm:text-sm">
             {resource.icon.slice(0, 2).toUpperCase()}
@@ -90,7 +87,7 @@ function QuickResourceCard({ resource }: { resource: EmployeePortalResource }) {
         )}
       </div>
 
-      <h3 className="line-clamp-2 min-h-8 w-full text-xs font-semibold leading-4 sm:text-sm sm:leading-5">
+      <h3 className="line-clamp-2 min-h-8 w-full text-[0.72rem] font-semibold leading-4 sm:text-xs">
         {resource.title}
       </h3>
     </>

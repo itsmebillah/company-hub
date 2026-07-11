@@ -18,39 +18,40 @@ type RecentActivityProps = {
 
 export function RecentActivity({ items = [] }: RecentActivityProps) {
   return (
-    <section className="app-card p-5">
+    <section className="rounded-[1.45rem] border bg-card/95 p-3.5 shadow-[var(--shadow-card)] sm:p-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="app-page-eyebrow">Activity Stream</p>
-          <h2 className="text-base font-semibold">Recent Activity</h2>
-          <p className="mt-1 text-sm leading-6 text-muted-foreground">
-            Newest company changes from core operational modules.
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            Activity
           </p>
+          <h2 className="text-sm font-semibold sm:text-base">Recent Activity</h2>
         </div>
-        <IconBadge icon={History} />
+        <IconBadge icon={History} className="size-10" />
       </div>
 
       {items.length > 0 ? (
-        <ol className="mt-5 space-y-4">
+        <ol className="mt-3 space-y-2">
           {items.map((item) => (
             <li
               key={item.id}
-              className="flex gap-3 rounded-2xl border border-white/20 bg-background/65 px-4 py-4"
+              className="flex min-h-[4.25rem] gap-3 rounded-2xl border border-white/20 bg-background/65 px-3 py-2.5"
             >
-              <span className="mt-1 size-2.5 rounded-full bg-primary shadow-[0_0_0_6px_rgba(37,99,235,0.08)]" />
+              <span className="mt-2 size-2.5 rounded-full bg-primary shadow-[0_0_0_6px_rgba(37,99,235,0.08)]" />
               <div className="min-w-0 flex-1">
-                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-start justify-between gap-2">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="break-words font-medium">{item.title}</p>
+                    <p className="line-clamp-1 text-sm font-medium">
+                      {item.title}
+                    </p>
                     {item.module ? (
-                      <span className="rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide text-secondary-foreground">
+                      <span className="rounded-full bg-secondary px-2 py-0.5 text-[0.62rem] font-medium uppercase tracking-wide text-secondary-foreground">
                         {item.module}
                       </span>
                     ) : null}
                     {item.action ? (
                       <span
                         className={cn(
-                          "rounded-full px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide",
+                          "rounded-full px-2 py-0.5 text-[0.62rem] font-medium uppercase tracking-wide",
                           item.action === "approved"
                             ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
                             : item.action === "rejected"
@@ -66,7 +67,7 @@ export function RecentActivity({ items = [] }: RecentActivityProps) {
                     {item.time}
                   </span>
                 </div>
-                <p className="mt-1 break-words text-sm text-muted-foreground">
+                <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
                   {item.description}
                 </p>
               </div>
@@ -74,12 +75,9 @@ export function RecentActivity({ items = [] }: RecentActivityProps) {
           ))}
         </ol>
       ) : (
-        <div className="mt-5 rounded-2xl border border-dashed bg-background/70 p-6 text-center">
-          <Clock3 className="mx-auto size-8 text-muted-foreground" />
-          <p className="mt-3 text-sm font-medium">No recent activity</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Recent company changes will appear here once activity is recorded.
-          </p>
+        <div className="mt-3 rounded-2xl border border-dashed bg-background/70 p-4 text-center">
+          <Clock3 className="mx-auto size-6 text-muted-foreground" />
+          <p className="mt-2 text-sm font-medium">No recent activity</p>
         </div>
       )}
     </section>
