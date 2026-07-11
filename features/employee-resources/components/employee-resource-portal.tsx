@@ -22,10 +22,10 @@ export function EmployeeResourcePortal({ data }: EmployeeResourcePortalProps) {
   return (
     <section className="space-y-4" aria-label="Resources by category">
       {data.categories.map((category) => (
-        <div key={category.id} className="space-y-3">
+        <div key={category.id} className="app-card app-card-subtle space-y-4 p-4">
           <div className="flex items-center gap-3">
             <div
-              className="flex size-9 shrink-0 items-center justify-center rounded-lg text-sm font-semibold text-white"
+              className="flex size-10 shrink-0 items-center justify-center rounded-2xl text-sm font-semibold text-white shadow-[var(--shadow-soft)]"
               style={{ backgroundColor: category.color }}
             >
               {category.icon ? category.icon.slice(0, 2).toUpperCase() : "R"}

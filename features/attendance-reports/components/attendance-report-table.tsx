@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { ChevronDown, LoaderCircle } from "lucide-react";
 
 import type {
@@ -113,7 +113,7 @@ export function AttendanceReportTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border bg-card shadow-sm">
+    <div className="app-table-shell">
       <div className="overflow-x-auto">
         <table className="min-w-full text-left text-sm">
           <thead className="border-b bg-muted/50 text-xs uppercase text-muted-foreground">
@@ -141,8 +141,8 @@ export function AttendanceReportTable({
               const isLoading = loadingEmployeeId === row.employeeId;
 
               return (
-                <>
-                  <tr key={row.employeeId}>
+                <Fragment key={row.employeeId}>
+                  <tr>
                     <td className="px-4 py-3">
                       <p className="font-medium">{row.employeeName}</p>
                       <p className="text-xs text-muted-foreground">
@@ -165,7 +165,7 @@ export function AttendanceReportTable({
                       <button
                         type="button"
                         onClick={() => toggleRow(row.employeeId)}
-                        className="inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-semibold transition hover:bg-muted"
+                        className="inline-flex items-center gap-2 rounded-2xl border border-white/20 px-3 py-1.5 text-xs font-semibold transition hover:bg-muted"
                       >
                         <ChevronDown
                           className={cn(
@@ -179,15 +179,15 @@ export function AttendanceReportTable({
                     </td>
                   </tr>
                   {isExpanded ? (
-                    <tr key={`${row.employeeId}-details`}>
-                      <td colSpan={14} className="bg-background px-4 py-4">
+                    <tr>
+                      <td colSpan={14} className="bg-background/60 px-4 py-4">
                         {isLoading ? (
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <LoaderCircle className="size-4 animate-spin" />
                             Loading daily attendance...
                           </div>
                         ) : detail?.dailyItems.length ? (
-                          <div className="overflow-x-auto rounded-xl border">
+                          <div className="overflow-x-auto rounded-2xl border border-white/20">
                             <table className="min-w-full text-left text-xs">
                               <thead className="border-b bg-muted/50 uppercase text-muted-foreground">
                                 <tr>
@@ -227,7 +227,7 @@ export function AttendanceReportTable({
                       </td>
                     </tr>
                   ) : null}
-                </>
+                </Fragment>
               );
             })}
           </tbody>

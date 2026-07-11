@@ -1,6 +1,8 @@
 import { Megaphone } from "lucide-react";
 
+import { IconBadge } from "@/components/common/icon-badge";
 import { EmptyState } from "@/components/common/empty-state";
+import { PageHeader } from "@/components/common/page-header";
 import {
   AnnouncementPriorityBadge,
   AnnouncementStatusBadge,
@@ -28,12 +30,12 @@ export function EmployeeAnnouncementsPage({
 }: EmployeeAnnouncementsPageProps) {
   return (
     <section className="space-y-5">
-      <div>
-        <h1 className="text-2xl font-semibold">Announcements</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Latest company updates and internal communication.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Internal Communication"
+        title="Announcements"
+        description="Latest company updates, notices, and internal communication in one consistent feed."
+        aside={<IconBadge icon={Megaphone} className="mx-auto lg:mx-0" />}
+      />
 
       {result.announcements.length === 0 ? (
         <EmptyState
@@ -46,7 +48,7 @@ export function EmployeeAnnouncementsPage({
           {result.announcements.map((announcement) => (
             <article
               key={announcement.id}
-              className="overflow-hidden rounded-xl border bg-card shadow-sm"
+              className="app-card overflow-hidden p-0"
             >
               <AnnouncementImage
                 src={announcement.bannerUrl}
@@ -58,9 +60,7 @@ export function EmployeeAnnouncementsPage({
                   <AnnouncementStatusBadge status={announcement.status} />
                 </div>
                 <div className="mt-4 flex items-start gap-3">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-secondary">
-                    <Megaphone className="size-5" aria-hidden="true" />
-                  </div>
+                  <IconBadge icon={Megaphone} className="size-10 rounded-2xl" />
                   <div className="min-w-0">
                     <h2 className="text-lg font-semibold">
                       {announcement.title}
@@ -70,7 +70,7 @@ export function EmployeeAnnouncementsPage({
                     </p>
                   </div>
                 </div>
-                <div className="mt-4 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
+                <div className="mt-4 whitespace-pre-wrap text-sm leading-7 text-muted-foreground">
                   {announcement.description || "No content provided."}
                 </div>
               </div>

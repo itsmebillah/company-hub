@@ -21,15 +21,18 @@ export default function AppRouteError({
 
   return (
     <main className="flex min-h-[70svh] items-center justify-center px-6 py-12">
-      <section className="w-full max-w-md rounded-2xl border bg-card p-6 text-center shadow-sm">
-        <div className="mx-auto flex size-12 items-center justify-center rounded-xl bg-muted">
+      <section className="app-card w-full max-w-md p-6 text-center">
+        <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
           <AlertTriangle
-            className="size-5 text-muted-foreground"
+            className="size-5"
             aria-hidden="true"
           />
         </div>
-        <h1 className="mt-4 text-xl font-semibold">Workspace unavailable</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="app-page-eyebrow mt-4 justify-center">
+          Workspace Error
+        </p>
+        <h1 className="mt-3 text-xl font-semibold">Workspace unavailable</h1>
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">
           Your employee dashboard could not load completely. The server logs
           include the technical failure details.
         </p>

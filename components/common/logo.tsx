@@ -13,14 +13,21 @@ export function Logo({ href = "/", className }: LogoProps) {
     <Link
       href={href}
       className={cn(
-        "inline-flex items-center gap-2 text-sm font-semibold text-foreground",
+        "inline-flex min-w-0 items-center gap-3 text-sm font-semibold text-foreground",
         className,
       )}
     >
-      <span className="flex size-8 items-center justify-center rounded-md border bg-card">
-        <Building2 className="size-4" aria-hidden="true" />
+      <span className="app-icon-wrap size-10 rounded-2xl text-primary shadow-[var(--shadow-soft)]">
+        <Building2 className="size-5" aria-hidden="true" />
       </span>
-      <span>Company Hub</span>
+      <span className="min-w-0 leading-tight">
+        <span className="block text-sm font-semibold tracking-tight">
+          Company Hub
+        </span>
+        <span className="block text-[0.7rem] font-medium uppercase tracking-[0.22em] text-muted-foreground">
+          Workspace
+        </span>
+      </span>
     </Link>
   );
 }

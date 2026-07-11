@@ -104,7 +104,7 @@ export default async function AdminDashboardPage() {
   ];
 
   return (
-    <section className="mx-auto max-w-screen-2xl space-y-6 overflow-x-hidden">
+    <section className="mx-auto max-w-screen-2xl space-y-7 overflow-x-hidden">
       <DashboardHeader
         companyName={dashboard.companyName}
         companyLogo={dashboard.companyLogo}
@@ -119,8 +119,9 @@ export default async function AdminDashboardPage() {
         <div className="space-y-6">
           <section className="space-y-4">
             <div>
+              <p className="app-page-eyebrow">Shared Feed</p>
               <h2 className="text-base font-semibold">Live Company Feed</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
                 Reusing the employee announcement and resource experience so admins
                 can watch the same live communication surface employees see.
               </p>
@@ -131,8 +132,9 @@ export default async function AdminDashboardPage() {
 
           <section className="space-y-4">
             <div>
+              <p className="app-page-eyebrow">Operational Summary</p>
               <h2 className="text-base font-semibold">Company Snapshot</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
                 Today&apos;s operational summary across attendance, leave, and notifications.
               </p>
             </div>
@@ -143,7 +145,7 @@ export default async function AdminDashboardPage() {
                 return (
                   <div
                     key={item.title}
-                    className="rounded-2xl border bg-card p-4 shadow-sm"
+                    className="app-card p-4"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
@@ -169,10 +171,11 @@ export default async function AdminDashboardPage() {
         </div>
 
         <aside className="space-y-6">
-          <section className="rounded-2xl border bg-card p-5 shadow-sm">
+          <section className="app-card p-5">
             <div>
+              <p className="app-page-eyebrow">Workspace Context</p>
               <h2 className="text-base font-semibold">Admin Overview</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
                 Quick context for company management and navigation.
               </p>
             </div>
@@ -186,7 +189,7 @@ export default async function AdminDashboardPage() {
               ].map(([label, value]) => (
                 <div
                   key={label}
-                  className="flex items-center justify-between gap-3 rounded-xl border bg-background px-4 py-3"
+                  className="flex items-center justify-between gap-3 rounded-2xl border border-white/20 bg-background/75 px-4 py-3"
                 >
                   <span className="text-sm text-muted-foreground">{label}</span>
                   <span className="break-words text-right text-sm font-medium capitalize">
@@ -199,8 +202,9 @@ export default async function AdminDashboardPage() {
 
           <section className="space-y-4">
             <div>
+              <p className="app-page-eyebrow">Navigation Shortcuts</p>
               <h2 className="text-base font-semibold">Quick Actions</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
                 Jump into the most common admin workflows without leaving the dashboard.
               </p>
             </div>

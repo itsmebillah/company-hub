@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { X } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/common/logo";
+import { Button } from "@/components/ui/button";
 import { adminNavigationItems } from "@/lib/navigation/admin-navigation";
 import { cn } from "@/lib/utils";
 
@@ -46,25 +46,35 @@ export function AdminMobileDrawer({
     <div className="fixed inset-0 z-50 md:hidden">
       <button
         type="button"
-        className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+        className="absolute inset-0 bg-background/82 backdrop-blur-md"
         aria-label="Close navigation"
         onClick={() => onOpenChange(false)}
       />
-      <aside className="relative flex h-full w-80 max-w-[86vw] flex-col border-r bg-background shadow-soft">
-        <div className="flex h-14 items-center justify-between border-b px-4">
+      <aside className="relative m-3 flex h-[calc(100%-1.5rem)] w-80 max-w-[88vw] flex-col overflow-hidden rounded-[1.75rem] border bg-card/95 p-3 shadow-[var(--shadow-raised)] backdrop-blur-xl">
+        <div className="flex h-16 items-center justify-between rounded-2xl border border-white/20 bg-background/60 px-3">
           <Logo href="/admin/dashboard" />
           <Button
             type="button"
             size="icon"
-            variant="ghost"
-            className="size-8"
+            variant="outline"
+            className="size-9 border-white/20 bg-background/75 shadow-none"
             onClick={() => onOpenChange(false)}
             aria-label="Close navigation"
           >
             <X className="size-4" aria-hidden="true" />
           </Button>
         </div>
-        <nav className="space-y-1 p-3">
+
+        <div className="px-3 pb-4 pt-5">
+          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-primary">
+            Admin Navigation
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Move between company operations without leaving the workspace shell.
+          </p>
+        </div>
+
+        <nav className="space-y-1.5 overflow-y-auto px-1 pb-2">
           {adminNavigationItems.map((item) => {
             const Icon = item.icon;
             const isActive =
@@ -76,11 +86,19 @@ export function AdminMobileDrawer({
                 href={item.href}
                 onClick={() => onOpenChange(false)}
                 className={cn(
-                  "flex h-11 items-center gap-3 rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
-                  isActive && "bg-accent text-accent-foreground",
+                  "flex min-h-11 items-center gap-3 rounded-2xl px-3 py-2 text-sm font-semibold text-muted-foreground transition hover:bg-accent/70 hover:text-foreground",
+                  isActive &&
+                    "bg-primary/10 text-primary shadow-[0_18px_28px_-24px_rgba(37,99,235,0.78)]",
                 )}
               >
-                <Icon className="size-4" aria-hidden="true" />
+                <span
+                  className={cn(
+                    "flex size-9 items-center justify-center rounded-2xl border border-white/20 bg-background/75",
+                    isActive && "border-primary/20 bg-primary/12",
+                  )}
+                >
+                  <Icon className="size-4" aria-hidden="true" />
+                </span>
                 {item.title}
               </Link>
             );

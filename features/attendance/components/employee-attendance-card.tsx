@@ -12,6 +12,7 @@ import {
   StickyNote,
 } from "lucide-react";
 
+import { PageHeader } from "@/components/common/page-header";
 import { AttendanceStatusBadge } from "@/features/attendance/components/attendance-status-badge";
 import type {
   AttendanceActionState,
@@ -337,14 +338,13 @@ export function EmployeeAttendanceCard({
 
   return (
     <section className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-semibold">Attendance</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Manual check-in and check-out for {attendance.employeeName}.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Daily Attendance"
+        title="Attendance"
+        description={`Manual check-in and check-out for ${attendance.employeeName}.`}
+      />
 
-      <div className="rounded-xl border bg-card p-5 shadow-sm">
+      <div className="app-card p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm text-muted-foreground">
@@ -364,21 +364,21 @@ export function EmployeeAttendanceCard({
         </div>
 
         <div className="mt-5 grid gap-3 sm:grid-cols-3">
-          <div className="rounded-lg border bg-background p-4">
+          <div className="rounded-2xl border border-white/20 bg-background/75 p-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <LogIn className="size-4" aria-hidden="true" />
               Check-in
             </div>
             <p className="mt-2 font-semibold">{formatTime(record?.checkIn ?? null)}</p>
           </div>
-          <div className="rounded-lg border bg-background p-4">
+          <div className="rounded-2xl border border-white/20 bg-background/75 p-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <LogOut className="size-4" aria-hidden="true" />
               Check-out
             </div>
             <p className="mt-2 font-semibold">{formatTime(record?.checkOut ?? null)}</p>
           </div>
-          <div className="rounded-lg border bg-background p-4">
+          <div className="rounded-2xl border border-white/20 bg-background/75 p-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Clock className="size-4" aria-hidden="true" />
               Working time
@@ -389,9 +389,9 @@ export function EmployeeAttendanceCard({
           </div>
         </div>
 
-        <div className="mt-5 rounded-lg border bg-muted/30 p-4">
+        <div className="mt-5 rounded-[1.6rem] border border-white/20 bg-muted/35 p-4">
           <div className="grid gap-3 border-b pb-4 sm:grid-cols-2 xl:grid-cols-5">
-            <div className="rounded-lg border bg-background p-3">
+            <div className="rounded-2xl border border-white/20 bg-background/75 p-3">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Attendance Mode
               </p>
@@ -399,7 +399,7 @@ export function EmployeeAttendanceCard({
                 {locationStatus?.modeLabel ?? attendance.policy.modeLabel}
               </p>
             </div>
-            <div className="rounded-lg border bg-background p-3">
+            <div className="rounded-2xl border border-white/20 bg-background/75 p-3">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Allowed Office
               </p>
@@ -407,7 +407,7 @@ export function EmployeeAttendanceCard({
                 {summarizeAllowedLocations(allowedLocationNames)}
               </p>
             </div>
-            <div className="rounded-lg border bg-background p-3">
+            <div className="rounded-2xl border border-white/20 bg-background/75 p-3">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 GPS Status
               </p>
@@ -415,7 +415,7 @@ export function EmployeeAttendanceCard({
                 {gps ? `${gps.source ?? "gps"}`.toUpperCase() : "Pending"}
               </p>
             </div>
-            <div className="rounded-lg border bg-background p-3">
+            <div className="rounded-2xl border border-white/20 bg-background/75 p-3">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Current Accuracy
               </p>
@@ -423,7 +423,7 @@ export function EmployeeAttendanceCard({
                 {gps ? `${Math.round(gps.accuracy)}m` : "--"}
               </p>
             </div>
-            <div className="rounded-lg border bg-background p-3">
+            <div className="rounded-2xl border border-white/20 bg-background/75 p-3">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Current Distance
               </p>
@@ -439,7 +439,7 @@ export function EmployeeAttendanceCard({
             <div className="flex items-start gap-3">
               <span
                 className={cn(
-                  "flex size-10 shrink-0 items-center justify-center rounded-lg",
+                  "flex size-10 shrink-0 items-center justify-center rounded-2xl",
                   locationStatus?.ok
                     ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
                     : "bg-secondary text-secondary-foreground",
@@ -487,7 +487,7 @@ export function EmployeeAttendanceCard({
               type="button"
               onClick={readCurrentLocation}
               disabled={isLocating || isPending}
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border bg-background px-3 py-2 text-sm font-semibold transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-2xl border border-white/20 bg-background/75 px-3 py-2 text-sm font-semibold transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60"
             >
               <RefreshCw
                 className={cn("size-4", isLocating && "animate-spin")}
@@ -509,12 +509,12 @@ export function EmployeeAttendanceCard({
               onChange={(event) => setNotes(event.target.value)}
               disabled={hasCheckedOut || isPending}
               rows={4}
-              className="mt-2 min-h-28 w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none transition focus:border-ring focus:ring-2 focus:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-70"
+              className="mt-2 min-h-28 w-full rounded-2xl border border-white/20 bg-background/75 px-3 py-2 text-sm outline-none transition focus:border-ring focus:ring-2 focus:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-70"
               placeholder="Optional attendance note"
             />
           </label>
 
-          <div className="space-y-3 rounded-lg border bg-muted/30 p-4">
+          <div className="space-y-3 rounded-[1.6rem] border border-white/20 bg-muted/35 p-4">
             <div className="flex items-start gap-2 text-sm text-muted-foreground">
               <CalendarDays
                 className="mt-0.5 size-4 shrink-0"
@@ -531,14 +531,14 @@ export function EmployeeAttendanceCard({
                 <Camera className="size-4" aria-hidden="true" />
                 Attendance Selfie
               </span>
-              <div className="rounded-lg border bg-background p-3">
+              <div className="rounded-2xl border border-white/20 bg-background/75 p-3">
                 <div className="flex flex-col gap-3">
                   {selfiePreviewUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={selfiePreviewUrl}
                       alt="Attendance selfie preview"
-                      className="h-32 w-32 rounded-lg object-cover"
+                      className="h-32 w-32 rounded-2xl object-cover"
                     />
                   ) : (
                     <p className="text-xs text-muted-foreground">
@@ -547,7 +547,7 @@ export function EmployeeAttendanceCard({
                         : "Optional for checkout and future attendance verification."}
                     </p>
                   )}
-                  <label className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-md border px-3 text-sm font-medium">
+                  <label className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-2xl border border-white/20 px-3 text-sm font-medium">
                     <Camera className="size-4" aria-hidden="true" />
                     {isUploadingSelfie ? "Uploading..." : "Capture Selfie"}
                     <input
@@ -566,7 +566,7 @@ export function EmployeeAttendanceCard({
             </label>
 
             {selfieError ? (
-              <p className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-700 dark:text-rose-300">
+              <p className="rounded-2xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-700 dark:text-rose-300">
                 {selfieError}
               </p>
             ) : null}
@@ -577,7 +577,7 @@ export function EmployeeAttendanceCard({
                 onClick={() => submit("check-in")}
                 disabled={!canCheckIn}
                 className={cn(
-                  "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60",
+                  "inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60",
                 )}
               >
                 <LogIn className="size-4" aria-hidden="true" />
@@ -587,7 +587,7 @@ export function EmployeeAttendanceCard({
                 type="button"
                 onClick={() => submit("check-out")}
                 disabled={!canCheckOut}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border bg-background px-4 py-2 text-sm font-semibold transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-white/20 bg-background/75 px-4 py-2 text-sm font-semibold transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <LogOut className="size-4" aria-hidden="true" />
                 {isPending && canCheckOut ? "Checking out..." : "Check out"}
@@ -599,7 +599,7 @@ export function EmployeeAttendanceCard({
         {message ? (
           <p
             className={cn(
-              "mt-4 rounded-lg border px-3 py-2 text-sm",
+              "mt-4 rounded-2xl border px-3 py-2 text-sm",
               message.ok
                 ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
                 : "border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300",

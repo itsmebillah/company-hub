@@ -39,7 +39,7 @@ export function QuickResourceLinks({ categories }: QuickResourceLinksProps) {
 
   return (
     <section
-      className="space-y-3 rounded-2xl border bg-card p-3 shadow-sm sm:p-4"
+      className="app-card space-y-3 p-3 sm:p-4"
       aria-labelledby="quick-resource-links-title"
     >
       <div className="flex items-end justify-between gap-3">
@@ -67,12 +67,12 @@ export function QuickResourceLinks({ categories }: QuickResourceLinksProps) {
 
 function QuickResourceCard({ resource }: { resource: EmployeePortalResource }) {
   const className =
-    "group relative flex min-h-28 flex-col items-center justify-center gap-2 rounded-xl border bg-background p-2.5 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-ring hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:min-h-32 sm:p-3";
+    "group relative flex min-h-28 flex-col items-center justify-center gap-2 rounded-[1.4rem] border border-white/20 bg-background/75 p-2.5 text-center shadow-[var(--shadow-soft)] transition duration-200 hover:-translate-y-1 hover:border-primary/25 hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:min-h-32 sm:p-3";
   const content = (
     <>
       {resource.isFeatured ? (
         <span
-          className="absolute right-1.5 top-1.5 inline-flex size-5 items-center justify-center rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
+          className="absolute right-2 top-2 inline-flex size-5 items-center justify-center rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
           aria-label="Featured"
           title="Featured"
         >
@@ -80,7 +80,7 @@ function QuickResourceCard({ resource }: { resource: EmployeePortalResource }) {
         </span>
       ) : null}
 
-      <div className="flex size-10 items-center justify-center rounded-xl bg-secondary text-secondary-foreground sm:size-11">
+      <div className="flex size-10 items-center justify-center rounded-2xl border border-white/20 bg-primary/8 text-primary sm:size-11">
         {resource.icon ? (
           <span className="text-xs font-semibold sm:text-sm">
             {resource.icon.slice(0, 2).toUpperCase()}

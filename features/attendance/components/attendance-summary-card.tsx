@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CalendarCheck, Clock, LogIn, LogOut } from "lucide-react";
 
+import { IconBadge } from "@/components/common/icon-badge";
 import { AttendanceStatusBadge } from "@/features/attendance/components/attendance-status-badge";
 import type { EmployeeAttendanceSummary } from "@/features/attendance/types/attendance.types";
 import { formatAppTime } from "@/lib/datetime";
@@ -30,12 +31,10 @@ function formatDuration(minutes: number) {
 
 export function AttendanceSummaryCard({ summary }: AttendanceSummaryCardProps) {
   return (
-    <section className="rounded-2xl border bg-card p-4 shadow-sm">
+    <section className="app-card p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <span className="flex size-10 items-center justify-center rounded-xl bg-secondary text-secondary-foreground">
-            <CalendarCheck className="size-5" aria-hidden="true" />
-          </span>
+          <IconBadge icon={CalendarCheck} className="size-10 rounded-2xl" />
           <div>
             <h2 className="text-base font-semibold">Today&apos;s Attendance</h2>
             <p className="text-sm text-muted-foreground">
@@ -53,17 +52,17 @@ export function AttendanceSummaryCard({ summary }: AttendanceSummaryCardProps) {
       </div>
 
       <div className="mt-4 grid grid-cols-3 gap-2 text-sm">
-        <div className="rounded-lg border bg-background p-3">
+        <div className="rounded-2xl border border-white/20 bg-background/75 p-3">
           <LogIn className="mb-2 size-4 text-muted-foreground" aria-hidden="true" />
           <p className="text-xs text-muted-foreground">Check-in</p>
           <p className="mt-1 font-semibold">{formatTime(summary.checkIn)}</p>
         </div>
-        <div className="rounded-lg border bg-background p-3">
+        <div className="rounded-2xl border border-white/20 bg-background/75 p-3">
           <LogOut className="mb-2 size-4 text-muted-foreground" aria-hidden="true" />
           <p className="text-xs text-muted-foreground">Check-out</p>
           <p className="mt-1 font-semibold">{formatTime(summary.checkOut)}</p>
         </div>
-        <div className="rounded-lg border bg-background p-3">
+        <div className="rounded-2xl border border-white/20 bg-background/75 p-3">
           <Clock className="mb-2 size-4 text-muted-foreground" aria-hidden="true" />
           <p className="text-xs text-muted-foreground">Hours</p>
           <p className="mt-1 font-semibold">

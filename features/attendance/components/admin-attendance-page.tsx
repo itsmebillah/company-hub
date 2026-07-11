@@ -2,6 +2,8 @@ import Link from "next/link";
 import { CalendarCheck, Clock, FileSpreadsheet, Search, Users } from "lucide-react";
 
 import { EmptyState } from "@/components/common/empty-state";
+import { IconBadge } from "@/components/common/icon-badge";
+import { PageHeader } from "@/components/common/page-header";
 import { AttendanceStatusBadge } from "@/features/attendance/components/attendance-status-badge";
 import {
   ATTENDANCE_STATUS_OPTIONS,
@@ -50,30 +52,26 @@ export function AdminAttendancePage({
 }: AdminAttendancePageProps) {
   return (
     <section className="space-y-5">
-      <div>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold">Attendance</h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Read-only attendance management for manual check-in workflows.
-            </p>
-          </div>
+      <PageHeader
+        eyebrow="Admin Operations"
+        title="Attendance"
+        description="Read-only attendance management for manual check-in workflows."
+        actions={
           <Link
             href="/admin/attendance/reports"
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border bg-card px-4 py-2 text-sm font-semibold shadow-sm transition hover:bg-muted"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-white/20 bg-background/75 px-4 py-2 text-sm font-semibold shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5 hover:bg-muted"
           >
             <FileSpreadsheet className="size-4" aria-hidden="true" />
             Monthly Reports
           </Link>
-        </div>
-      </div>
+        }
+        aside={<IconBadge icon={CalendarCheck} className="mx-auto lg:mx-0" />}
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-xl border bg-card p-5 shadow-sm">
+        <div className="app-card p-5">
           <div className="flex items-center gap-3">
-            <span className="flex size-10 items-center justify-center rounded-lg bg-secondary text-secondary-foreground">
-              <CalendarCheck className="size-5" aria-hidden="true" />
-            </span>
+            <IconBadge icon={CalendarCheck} className="size-10 rounded-2xl" />
             <div>
               <p className="text-sm text-muted-foreground">Today</p>
               <p className="text-lg font-semibold">
@@ -82,11 +80,9 @@ export function AdminAttendancePage({
             </div>
           </div>
         </div>
-        <div className="rounded-xl border bg-card p-5 shadow-sm">
+        <div className="app-card p-5">
           <div className="flex items-center gap-3">
-            <span className="flex size-10 items-center justify-center rounded-lg bg-secondary text-secondary-foreground">
-              <Clock className="size-5" aria-hidden="true" />
-            </span>
+            <IconBadge icon={Clock} className="size-10 rounded-2xl" />
             <div>
               <p className="text-sm text-muted-foreground">Records Today</p>
               <p className="text-lg font-semibold">
@@ -95,11 +91,9 @@ export function AdminAttendancePage({
             </div>
           </div>
         </div>
-        <div className="rounded-xl border bg-card p-5 shadow-sm">
+        <div className="app-card p-5">
           <div className="flex items-center gap-3">
-            <span className="flex size-10 items-center justify-center rounded-lg bg-secondary text-secondary-foreground">
-              <Users className="size-5" aria-hidden="true" />
-            </span>
+            <IconBadge icon={Users} className="size-10 rounded-2xl" />
             <div>
               <p className="text-sm text-muted-foreground">Checked In</p>
               <p className="text-lg font-semibold">
@@ -108,11 +102,9 @@ export function AdminAttendancePage({
             </div>
           </div>
         </div>
-        <div className="rounded-xl border bg-card p-5 shadow-sm">
+        <div className="app-card p-5">
           <div className="flex items-center gap-3">
-            <span className="flex size-10 items-center justify-center rounded-lg bg-secondary text-secondary-foreground">
-              <Clock className="size-5" aria-hidden="true" />
-            </span>
+            <IconBadge icon={Clock} className="size-10 rounded-2xl" />
             <div>
               <p className="text-sm text-muted-foreground">Late Today</p>
               <p className="text-lg font-semibold">{overview.lateToday}</p>
@@ -121,7 +113,7 @@ export function AdminAttendancePage({
         </div>
       </div>
 
-      <form className="grid gap-3 rounded-xl border bg-card p-4 shadow-sm md:grid-cols-[minmax(0,1fr)_170px_170px_170px_auto]">
+      <form className="app-card grid gap-3 p-4 md:grid-cols-[minmax(0,1fr)_170px_170px_170px_auto]">
         <label className="block">
           <span className="text-xs font-medium text-muted-foreground">
             Search
@@ -200,7 +192,7 @@ export function AdminAttendancePage({
           className="bg-card shadow-sm"
         />
       ) : (
-        <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
+        <div className="app-table-shell">
           <div className="hidden overflow-x-auto lg:block">
             <table className="w-full text-left text-sm">
               <thead className="border-b bg-muted/50 text-xs uppercase text-muted-foreground">

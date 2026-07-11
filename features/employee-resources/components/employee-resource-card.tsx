@@ -22,15 +22,15 @@ export function EmployeeResourceCard({ resource }: EmployeeResourceCardProps) {
   const thumbnailSrc = getRenderableImageSrc(resource.thumbnail);
 
   return (
-    <article className="flex min-h-48 flex-col rounded-xl border bg-card p-4 shadow-sm">
+    <article className="app-card flex min-h-48 flex-col p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           {resource.icon ? (
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-lg border bg-background text-sm font-semibold">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-white/20 bg-background/75 text-sm font-semibold shadow-[var(--shadow-soft)]">
               {resource.icon.slice(0, 2).toUpperCase()}
             </div>
           ) : (
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-secondary">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-secondary/80 shadow-[var(--shadow-soft)]">
               <Link2 className="size-5" aria-hidden="true" />
             </div>
           )}
@@ -46,7 +46,7 @@ export function EmployeeResourceCard({ resource }: EmployeeResourceCardProps) {
         </div>
         <button
           type="button"
-          className="flex size-9 shrink-0 items-center justify-center rounded-md border bg-background text-muted-foreground"
+          className="flex size-9 shrink-0 items-center justify-center rounded-2xl border border-white/20 bg-background/75 text-muted-foreground"
           aria-label="Add to favorites"
           title="Favorites coming soon"
         >
@@ -58,11 +58,11 @@ export function EmployeeResourceCard({ resource }: EmployeeResourceCardProps) {
         <img
           src={thumbnailSrc}
           alt=""
-          className="mt-4 aspect-video w-full rounded-lg border object-cover"
+          className="mt-4 aspect-video w-full rounded-2xl border border-white/20 object-cover"
         />
       ) : null}
 
-      <p className="mt-4 line-clamp-2 flex-1 text-sm text-muted-foreground">
+      <p className="mt-4 line-clamp-2 flex-1 text-sm leading-6 text-muted-foreground">
         {resource.description || "No description provided."}
       </p>
 

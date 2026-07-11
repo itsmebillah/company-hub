@@ -37,8 +37,8 @@ export function ThemeToggle() {
       <Button
         type="button"
         size="icon"
-        variant="ghost"
-        className="size-9"
+        variant="outline"
+        className="size-10 border-white/30 bg-background/70 shadow-none backdrop-blur-md"
         onClick={() => setIsOpen((current) => !current)}
         aria-haspopup="menu"
         aria-expanded={isOpen}
@@ -51,7 +51,7 @@ export function ThemeToggle() {
       {isOpen ? (
         <div
           role="menu"
-          className="absolute right-0 top-11 z-50 min-w-36 rounded-md border bg-popover p-1 text-popover-foreground shadow-soft"
+          className="absolute right-0 top-12 z-50 min-w-40 rounded-2xl border bg-popover/95 p-1.5 text-popover-foreground shadow-[var(--shadow-card)] backdrop-blur-xl"
         >
           {themes.map((item) => {
             const Icon = item.icon;
@@ -63,7 +63,7 @@ export function ThemeToggle() {
                 type="button"
                 role="menuitemradio"
                 aria-checked={isActive}
-                className="flex h-9 w-full items-center justify-between gap-3 rounded-sm px-3 text-sm outline-none hover:bg-accent focus-visible:bg-accent"
+                className="flex h-10 w-full items-center justify-between gap-3 rounded-xl px-3 text-sm outline-none hover:bg-accent focus-visible:bg-accent"
                 onClick={() => {
                   setTheme(item.value);
                   setIsOpen(false);

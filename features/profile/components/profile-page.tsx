@@ -1,5 +1,7 @@
 import { CalendarDays, ShieldCheck } from "lucide-react";
 
+import { IconBadge } from "@/components/common/icon-badge";
+import { PageHeader } from "@/components/common/page-header";
 import { PasswordSection } from "@/features/profile/components/password-section";
 import { PreferencesSection } from "@/features/profile/components/preferences-section";
 import { ProfileDetailsForm } from "@/features/profile/components/profile-details-form";
@@ -35,33 +37,26 @@ export function ProfilePage({
 }: ProfilePageProps) {
   return (
     <section className="space-y-6">
-      <div className="flex flex-col gap-4 rounded-xl border bg-card p-5 shadow-sm lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">My Profile</p>
-          <h1 className="mt-1 break-words text-2xl font-semibold">
-            {profile.fullName}
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {profile.employeeId} · {profile.roleName}
-          </p>
-        </div>
+      <PageHeader
+        eyebrow="My Workspace"
+        title={profile.fullName}
+        description={`${profile.employeeId} · ${profile.roleName}`}
+        aside={<IconBadge icon={ShieldCheck} className="mx-auto lg:mx-0" />}
+      />
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="flex items-center gap-3 rounded-lg border bg-muted/30 px-4 py-3">
-            <CalendarDays className="size-5 text-muted-foreground" aria-hidden="true" />
-            <div>
-              <p className="text-xs text-muted-foreground">Joined</p>
-              <p className="text-sm font-medium">
-                {formatDate(profile.joiningDate)}
-              </p>
-            </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="app-card app-card-subtle flex items-center gap-3 px-4 py-4">
+          <IconBadge icon={CalendarDays} className="size-10 rounded-2xl" />
+          <div>
+            <p className="text-xs text-muted-foreground">Joined</p>
+            <p className="text-sm font-medium">{formatDate(profile.joiningDate)}</p>
           </div>
-          <div className="flex items-center gap-3 rounded-lg border bg-muted/30 px-4 py-3">
-            <ShieldCheck className="size-5 text-muted-foreground" aria-hidden="true" />
-            <div>
-              <p className="text-xs text-muted-foreground">Status</p>
-              <p className="text-sm font-medium capitalize">{profile.status}</p>
-            </div>
+        </div>
+        <div className="app-card app-card-subtle flex items-center gap-3 px-4 py-4">
+          <IconBadge icon={ShieldCheck} className="size-10 rounded-2xl" />
+          <div>
+            <p className="text-xs text-muted-foreground">Status</p>
+            <p className="text-sm font-medium capitalize">{profile.status}</p>
           </div>
         </div>
       </div>

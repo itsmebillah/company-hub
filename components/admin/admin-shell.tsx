@@ -33,7 +33,7 @@ export function AdminShell({
   }, [pathname]);
 
   return (
-    <div className="min-h-svh overflow-x-hidden bg-background">
+    <div className="app-shell min-h-svh overflow-x-hidden">
       <AdminMobileDrawer
         pathname={pathname}
         isOpen={isMobileDrawerOpen}
@@ -52,21 +52,21 @@ export function AdminShell({
             pathname={pathname}
             onMenuClick={() => setIsMobileDrawerOpen(true)}
           />
-          <main className="flex-1 overflow-x-hidden px-4 py-6 sm:px-6 lg:px-8">
-            <div className="min-w-0 space-y-4">
+          <main className="flex-1 overflow-x-hidden px-4 pb-8 pt-4 sm:px-6 lg:px-8">
+            <div className="min-w-0 space-y-5">
               {schemaStatus.state !== "current" ? (
-                <section className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950 shadow-sm">
+                <section className="app-card border-amber-300/70 bg-amber-50/90 px-4 py-3 text-sm text-amber-950 dark:bg-amber-950/35 dark:text-amber-100">
                   <p className="font-semibold">
                     {schemaStatus.message ?? "Database schema is outdated."}
                   </p>
                   {schemaStatus.pendingMigrations.length > 0 ? (
-                    <p className="mt-1 text-amber-900">
+                    <p className="mt-1 text-amber-900 dark:text-amber-200">
                       Pending migrations: {schemaStatus.pendingMigrations.join(", ")}
                     </p>
                   ) : null}
                 </section>
               ) : null}
-              <div>{children}</div>
+              <div className="app-page">{children}</div>
             </div>
           </main>
         </div>

@@ -12,9 +12,10 @@ type HomeLoginPageProps = {
 
 export function HomeLoginPage({ onLogin }: HomeLoginPageProps) {
   return (
-    <main className="min-h-svh bg-background lg:flex">
+    <main className="app-shell min-h-svh lg:flex">
       <BrandPanel />
-      <section className="flex min-h-svh items-center justify-center px-4 py-8 sm:px-6 lg:basis-[55%] lg:px-10">
+      <section className="relative flex min-h-svh items-center justify-center overflow-hidden px-4 py-8 sm:px-6 lg:basis-[55%] lg:px-10">
+        <div className="pointer-events-none absolute inset-x-6 top-8 h-40 rounded-full bg-primary/10 blur-3xl" />
         <LoginCard onLogin={onLogin} />
       </section>
     </main>

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Download, FileSpreadsheet, FileText, Table2 } from "lucide-react";
 
+import { IconBadge } from "@/components/common/icon-badge";
+import { PageHeader } from "@/components/common/page-header";
 import { AttendanceReportTable } from "@/features/attendance-reports/components/attendance-report-table";
 import type { AttendanceReportPageData } from "@/features/attendance-reports/types/attendance-report.types";
 
@@ -86,40 +88,33 @@ export function AttendanceReportPage({ data }: AttendanceReportPageProps) {
 
   return (
     <section className="space-y-6">
-      <div className="flex flex-col gap-4 rounded-3xl border bg-card p-5 shadow-sm lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <p className="text-sm font-medium uppercase tracking-[0.2em] text-muted-foreground">
-            Attendance Reporting
-          </p>
-          <h1 className="mt-2 text-3xl font-semibold">
-            Monthly Attendance Report
-          </h1>
-          <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-            Download payroll-friendly attendance reports generated directly
-            from attendance records for {data.company.name}. Current policy
-            reference: {data.attendanceModeLabel}.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {exportLinks.map((link) => {
-            const Icon = link.icon;
+      <PageHeader
+        eyebrow="Attendance Reporting"
+        title="Monthly Attendance Report"
+        description={`Download payroll-friendly attendance reports generated directly from attendance records for ${data.company.name}. Current policy reference: ${data.attendanceModeLabel}.`}
+        actions={
+          <>
+            {exportLinks.map((link) => {
+              const Icon = link.icon;
 
-            return (
-              <Link
-                key={link.label}
-                href={link.href}
-                className="inline-flex min-h-11 items-center gap-2 rounded-xl border bg-background px-4 py-2 text-sm font-semibold transition hover:bg-muted"
-              >
-                <Download className="size-4" aria-hidden="true" />
-                <Icon className="size-4" aria-hidden="true" />
-                {link.label}
-              </Link>
-            );
-          })}
-        </div>
-      </div>
+              return (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  className="inline-flex min-h-11 items-center gap-2 rounded-2xl border border-white/20 bg-background/75 px-4 py-2 text-sm font-semibold shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5 hover:bg-muted"
+                >
+                  <Download className="size-4" aria-hidden="true" />
+                  <Icon className="size-4" aria-hidden="true" />
+                  {link.label}
+                </Link>
+              );
+            })}
+          </>
+        }
+        aside={<IconBadge icon={FileSpreadsheet} className="mx-auto lg:mx-0" />}
+      />
 
-      <form className="grid gap-3 rounded-2xl border bg-card p-4 shadow-sm md:grid-cols-2 xl:grid-cols-4">
+      <form className="app-card grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-4">
         <label className="block">
           <span className="text-xs font-medium text-muted-foreground">Company</span>
           <select
@@ -271,7 +266,7 @@ export function AttendanceReportPage({ data }: AttendanceReportPageProps) {
         {kpis.map(([label, value], index) => (
           <article
             key={label}
-            className={`rounded-2xl border p-4 shadow-sm ${kpiCardStyles[index]}`}
+            className={`rounded-[1.6rem] border p-4 shadow-[var(--shadow-soft)] ${kpiCardStyles[index]}`}
           >
             <p className="text-sm font-medium">{label}</p>
             <p className="mt-3 text-3xl font-semibold">{value}</p>
@@ -282,7 +277,7 @@ export function AttendanceReportPage({ data }: AttendanceReportPageProps) {
         ))}
       </div>
 
-      <div className="rounded-2xl border bg-card p-4 shadow-sm">
+      <div className="app-card p-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-lg font-semibold">Employee Attendance Summary</h2>

@@ -16,6 +16,8 @@ import {
   Users,
 } from "lucide-react";
 
+import { IconBadge } from "@/components/common/icon-badge";
+import { PageHeader } from "@/components/common/page-header";
 import { CompanySettingsForm } from "@/features/company-settings/components/company-settings-form";
 import { updateCompanySettingsAction } from "@/features/company-settings/actions/company-settings.actions";
 import type { AttendanceSettingsValues } from "@/features/attendance/types/attendance.types";
@@ -85,10 +87,10 @@ const navItems: SettingsNavItem[] = [
 
 function MetricCard({ label, value, description }: SettingsMetric) {
   return (
-    <div className="rounded-xl border bg-card p-4 shadow-sm">
+    <div className="app-card app-card-subtle p-4">
       <p className="text-sm text-muted-foreground">{label}</p>
       <p className="mt-2 text-2xl font-semibold">{value}</p>
-      <p className="mt-2 text-sm text-muted-foreground">{description}</p>
+      <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
     </div>
   );
 }
@@ -102,41 +104,34 @@ export function AdminSettingsCenter({
 }: AdminSettingsCenterProps) {
   return (
     <section className="space-y-6">
-      <div className="rounded-2xl border bg-card p-5 shadow-sm">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-primary">Admin Settings Center</p>
-            <h1 className="text-2xl font-semibold tracking-tight">
-              Company-wide controls without leaving the admin workspace
-            </h1>
-            <p className="max-w-3xl text-sm text-muted-foreground">
-              Update branding, notifications, resource defaults, attendance rules,
-              storage visibility, and system context from one mobile-friendly hub.
-            </p>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <MetricCard
-              label="Employees"
-              value={String(metrics.employees)}
-              description="Current employee records managed by this company."
-            />
-            <MetricCard
-              label="Resources"
-              value={String(metrics.activeResources)}
-              description="Active quick links and resource entries available today."
-            />
-            <MetricCard
-              label="Announcements"
-              value={String(metrics.activeAnnouncements)}
-              description="Currently active communication items across the portal."
-            />
-            <MetricCard
-              label="Unread Notifications"
-              value={String(metrics.unreadNotifications)}
-              description="Company notifications still waiting to be opened."
-            />
-          </div>
-        </div>
+      <PageHeader
+        eyebrow="Admin Settings Center"
+        title="Company-wide controls without leaving the admin workspace"
+        description="Update branding, notifications, resource defaults, attendance rules, storage visibility, and system context from one mobile-friendly hub."
+        aside={<IconBadge icon={Database} className="mx-auto lg:mx-0" />}
+      />
+
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <MetricCard
+          label="Employees"
+          value={String(metrics.employees)}
+          description="Current employee records managed by this company."
+        />
+        <MetricCard
+          label="Resources"
+          value={String(metrics.activeResources)}
+          description="Active quick links and resource entries available today."
+        />
+        <MetricCard
+          label="Announcements"
+          value={String(metrics.activeAnnouncements)}
+          description="Currently active communication items across the portal."
+        />
+        <MetricCard
+          label="Unread Notifications"
+          value={String(metrics.unreadNotifications)}
+          description="Company notifications still waiting to be opened."
+        />
       </div>
 
       <section className="space-y-3">
@@ -152,9 +147,9 @@ export function AdminSettingsCenter({
             <a
               key={href}
               href={href}
-              className="flex min-h-14 items-center gap-3 rounded-xl border bg-card px-4 py-3 text-sm font-medium shadow-sm transition hover:border-primary/40 hover:bg-primary/5"
+              className="app-card app-card-subtle flex min-h-14 items-center gap-3 px-4 py-3 text-sm font-medium transition hover:-translate-y-0.5 hover:border-primary/25"
             >
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-secondary-foreground">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground">
                 <Icon className="size-4" aria-hidden="true" />
               </span>
               <span className="break-words">{label}</span>
@@ -171,7 +166,7 @@ export function AdminSettingsCenter({
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
         <section
           id="attendance"
-          className="scroll-mt-24 rounded-2xl border bg-card p-5 shadow-sm"
+          className="app-card scroll-mt-24 p-5"
         >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
@@ -183,7 +178,7 @@ export function AdminSettingsCenter({
             </div>
             <Link
               href="/admin/settings/attendance"
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border bg-background px-3 text-sm font-medium transition hover:bg-muted"
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-2xl border border-white/20 bg-background/75 px-3 text-sm font-medium transition hover:bg-muted"
             >
               Manage Attendance
               <ArrowRight className="size-4" aria-hidden="true" />
@@ -229,7 +224,7 @@ export function AdminSettingsCenter({
             ].map((item) => (
               <div
                 key={item.label}
-                className="rounded-xl border bg-background px-4 py-3"
+                className="rounded-2xl border border-white/20 bg-background/75 px-4 py-3"
               >
                 <p className="text-sm font-medium">{item.label}</p>
                 <p
@@ -248,7 +243,7 @@ export function AdminSettingsCenter({
         <div className="space-y-6">
           <section
             id="announcements"
-            className="scroll-mt-24 rounded-2xl border bg-card p-5 shadow-sm"
+            className="app-card scroll-mt-24 p-5"
           >
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -260,7 +255,7 @@ export function AdminSettingsCenter({
               </div>
               <Megaphone className="size-5 text-primary" aria-hidden="true" />
             </div>
-            <div className="mt-4 rounded-xl border bg-background p-4">
+            <div className="mt-4 rounded-2xl border border-white/20 bg-background/75 p-4">
               <p className="text-sm text-muted-foreground">Active announcements</p>
               <p className="mt-2 text-2xl font-semibold">
                 {metrics.activeAnnouncements}
@@ -277,7 +272,7 @@ export function AdminSettingsCenter({
 
           <section
             id="employees"
-            className="scroll-mt-24 rounded-2xl border bg-card p-5 shadow-sm"
+            className="app-card scroll-mt-24 p-5"
           >
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -289,7 +284,7 @@ export function AdminSettingsCenter({
               </div>
               <Users className="size-5 text-primary" aria-hidden="true" />
             </div>
-            <div className="mt-4 rounded-xl border bg-background p-4">
+            <div className="mt-4 rounded-2xl border border-white/20 bg-background/75 p-4">
               <p className="text-sm text-muted-foreground">Managed employees</p>
               <p className="mt-2 text-2xl font-semibold">{metrics.employees}</p>
               <Link
@@ -307,7 +302,7 @@ export function AdminSettingsCenter({
       <div className="grid gap-6 xl:grid-cols-3">
         <section
           id="storage"
-          className="scroll-mt-24 rounded-2xl border bg-card p-5 shadow-sm xl:col-span-1"
+          className="app-card scroll-mt-24 p-5 xl:col-span-1"
         >
           <div className="flex items-start justify-between gap-3">
             <div>
@@ -333,13 +328,13 @@ export function AdminSettingsCenter({
             />
           </div>
 
-          <div className="mt-4 rounded-xl border bg-background p-4">
+          <div className="mt-4 rounded-2xl border border-white/20 bg-background/75 p-4">
             <p className="text-sm font-medium">Bucket Overview</p>
             <div className="mt-3 space-y-2">
               {storageOverview.buckets.map((bucket) => (
                 <div
                   key={bucket.id}
-                  className="flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-sm"
+                  className="flex items-center justify-between gap-3 rounded-2xl border border-white/20 px-3 py-2 text-sm"
                 >
                   <span className="break-words">{bucket.id}</span>
                   <span
@@ -355,7 +350,7 @@ export function AdminSettingsCenter({
                 </div>
               ))}
             </div>
-            <div className="mt-4 rounded-lg border border-dashed p-3 text-sm text-muted-foreground">
+            <div className="mt-4 rounded-2xl border border-dashed p-3 text-sm text-muted-foreground">
               Media cleanup tools are intentionally prepared as a future safe admin workflow.
             </div>
           </div>
@@ -363,7 +358,7 @@ export function AdminSettingsCenter({
 
         <section
           id="system"
-          className="scroll-mt-24 rounded-2xl border bg-card p-5 shadow-sm xl:col-span-1"
+          className="app-card scroll-mt-24 p-5 xl:col-span-1"
         >
           <div className="flex items-start justify-between gap-3">
             <div>
@@ -386,7 +381,7 @@ export function AdminSettingsCenter({
             ].map(([label, value]) => (
               <div
                 key={label}
-                className="flex items-center justify-between gap-3 rounded-xl border bg-background px-4 py-3"
+                className="flex items-center justify-between gap-3 rounded-2xl border border-white/20 bg-background/75 px-4 py-3"
               >
                 <span className="text-sm text-muted-foreground">{label}</span>
                 <span className="text-sm font-medium">{value}</span>
@@ -397,7 +392,7 @@ export function AdminSettingsCenter({
 
         <section
           id="future-integrations"
-          className="scroll-mt-24 rounded-2xl border bg-card p-5 shadow-sm xl:col-span-1"
+          className="app-card scroll-mt-24 p-5 xl:col-span-1"
         >
           <div className="flex items-start justify-between gap-3">
             <div>
@@ -419,7 +414,7 @@ export function AdminSettingsCenter({
             ].map((item) => (
               <div
                 key={item}
-                className="rounded-xl border border-dashed bg-background px-4 py-3 text-sm text-muted-foreground"
+                className="rounded-2xl border border-dashed bg-background/75 px-4 py-3 text-sm text-muted-foreground"
               >
                 {item}
               </div>

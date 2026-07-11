@@ -1,4 +1,6 @@
 import { Clock3, History } from "lucide-react";
+
+import { IconBadge } from "@/components/common/icon-badge";
 import { cn } from "@/lib/utils";
 
 type ActivityItem = {
@@ -16,24 +18,26 @@ type RecentActivityProps = {
 
 export function RecentActivity({ items = [] }: RecentActivityProps) {
   return (
-    <section className="rounded-xl border bg-card p-5 shadow-sm">
+    <section className="app-card p-5">
       <div className="flex items-center justify-between gap-3">
         <div>
+          <p className="app-page-eyebrow">Activity Stream</p>
           <h2 className="text-base font-semibold">Recent Activity</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">
             Newest company changes from core operational modules.
           </p>
         </div>
-        <div className="flex size-10 items-center justify-center rounded-lg bg-secondary text-secondary-foreground">
-          <History className="size-5" aria-hidden="true" />
-        </div>
+        <IconBadge icon={History} />
       </div>
 
       {items.length > 0 ? (
         <ol className="mt-5 space-y-4">
           {items.map((item) => (
-            <li key={item.id} className="flex gap-3">
-              <span className="mt-1 size-2 rounded-full bg-primary" />
+            <li
+              key={item.id}
+              className="flex gap-3 rounded-2xl border border-white/20 bg-background/65 px-4 py-4"
+            >
+              <span className="mt-1 size-2.5 rounded-full bg-primary shadow-[0_0_0_6px_rgba(37,99,235,0.08)]" />
               <div className="min-w-0 flex-1">
                 <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex flex-wrap items-center gap-2">
@@ -70,7 +74,7 @@ export function RecentActivity({ items = [] }: RecentActivityProps) {
           ))}
         </ol>
       ) : (
-        <div className="mt-5 rounded-lg border border-dashed bg-background p-6 text-center">
+        <div className="mt-5 rounded-2xl border border-dashed bg-background/70 p-6 text-center">
           <Clock3 className="mx-auto size-8 text-muted-foreground" />
           <p className="mt-3 text-sm font-medium">No recent activity</p>
           <p className="mt-1 text-sm text-muted-foreground">

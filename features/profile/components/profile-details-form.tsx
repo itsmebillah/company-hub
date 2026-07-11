@@ -70,7 +70,7 @@ export function ProfileDetailsForm({
         onChange={(value) => updateValue("photoUrl", value)}
       />
 
-      <section className="rounded-xl border bg-card p-5 shadow-sm">
+      <section className="app-card p-5">
         <div className="grid gap-4 lg:grid-cols-2">
           <label className="space-y-2">
             <span className="text-sm font-medium">Employee ID</span>
@@ -153,7 +153,7 @@ export function ProfileDetailsForm({
         {message ? (
           <div
             className={cn(
-              "mt-4 flex items-start gap-2 rounded-md border p-3 text-sm",
+              "mt-4 flex items-start gap-2 rounded-2xl border p-3 text-sm",
               status === "success"
                 ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
                 : "border-destructive/30 bg-destructive/10 text-destructive",

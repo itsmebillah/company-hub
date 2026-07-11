@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useTransition, type FormEvent } from "react";
-import { Plus, X } from "lucide-react";
+import { CalendarRange, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+import { IconBadge } from "@/components/common/icon-badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/common/empty-state";
+import { PageHeader } from "@/components/common/page-header";
 import { LeaveStatusBadge } from "@/features/leave/components/leave-status-badge";
 import type {
   LeaveActionState,
@@ -52,19 +54,19 @@ export function EmployeeLeavePage({
 
   return (
     <section className="space-y-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Leave</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Request leave and review your request history. Remaining balance is prepared for future calculation.
-          </p>
-        </div>
-        <Button type="button" onClick={() => setForm(emptyRequest)}>
-          <Plus className="size-4" /> New Request
-        </Button>
-      </div>
+      <PageHeader
+        eyebrow="Employee Requests"
+        title="Leave"
+        description="Request leave and review your leave history without leaving the employee workspace."
+        actions={
+          <Button type="button" onClick={() => setForm(emptyRequest)}>
+            <Plus className="size-4" /> New Request
+          </Button>
+        }
+        aside={<IconBadge icon={CalendarRange} className="mx-auto lg:mx-0" />}
+      />
 
-      <div className="rounded-xl border bg-card p-5 shadow-sm">
+      <div className="app-card p-5">
         <p className="text-sm text-muted-foreground">Remaining Balance</p>
         <p className="mt-2 text-2xl font-semibold">--</p>
       </div>
@@ -77,7 +79,7 @@ export function EmployeeLeavePage({
       ) : (
         <div className="grid gap-3">
           {requests.map((request) => (
-            <article key={request.id} className="rounded-xl border bg-card p-4 shadow-sm">
+            <article key={request.id} className="app-card p-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <h2 className="font-semibold">{request.leaveTypeName}</h2>
@@ -129,7 +131,7 @@ function LeaveRequestForm({
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-background/80 p-4 backdrop-blur-sm">
-      <form onSubmit={handleSubmit} className="mx-auto my-10 max-w-xl space-y-4 rounded-xl border bg-card p-5 shadow-lg">
+      <form onSubmit={handleSubmit} className="app-card mx-auto my-10 max-w-xl space-y-4 p-5">
         <h2 className="text-xl font-semibold">New Leave Request</h2>
         <select value={values.leaveTypeId} onChange={(e) => onChange({ ...values, leaveTypeId: e.target.value })} className="h-11 w-full rounded-md border bg-background px-3">
           <option value="">Select leave type</option>

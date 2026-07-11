@@ -16,7 +16,7 @@ export function PreferencesSection() {
   const { theme, setTheme } = useTheme();
 
   return (
-    <section className="rounded-xl border bg-card p-5 shadow-sm">
+    <section className="app-card p-5">
       <h2 className="font-semibold">Preferences</h2>
 
       <div className="mt-4 space-y-5">
@@ -45,7 +45,7 @@ export function PreferencesSection() {
         </div>
 
         <div className="grid gap-3">
-          <div className="flex items-center justify-between gap-3 rounded-lg border bg-muted/30 p-3">
+          <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/20 bg-background/70 p-3">
             <div className="flex items-center gap-3">
               <Globe2 className="size-4 text-muted-foreground" aria-hidden="true" />
               <div>
@@ -58,7 +58,7 @@ export function PreferencesSection() {
             </span>
           </div>
 
-          <div className="flex items-center justify-between gap-3 rounded-lg border bg-muted/30 p-3">
+          <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/20 bg-background/70 p-3">
             <div className="flex items-center gap-3">
               <Bell className="size-4 text-muted-foreground" aria-hidden="true" />
               <div>

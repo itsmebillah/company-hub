@@ -25,19 +25,19 @@ export function DashboardHeader({
   const logoSrc = getRenderableImageSrc(companyLogo);
 
   return (
-    <section className="overflow-hidden rounded-xl border bg-card shadow-sm">
-      <div className="flex flex-col gap-4 p-4 sm:p-5">
-        <div className="flex flex-col gap-4 rounded-xl border bg-background/70 p-4 sm:flex-row sm:items-center sm:justify-between">
+    <section className="app-card overflow-hidden p-4 sm:p-5">
+      <div className="flex flex-col gap-4">
+        <div className="app-card app-card-subtle flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-center gap-3">
             <ProfilePhoto
               src={photoUrl}
               name={userName}
-              className="size-14 border shadow-sm"
-              fallbackClassName="bg-primary text-lg text-primary-foreground"
+              className="size-14 border border-white/20 shadow-[var(--shadow-card)]"
+              fallbackClassName="bg-primary/90 text-lg text-primary-foreground"
               iconClassName="size-7 text-primary-foreground"
             />
             <div className="min-w-0 space-y-1">
-              <p className="text-sm font-medium text-muted-foreground">Welcome</p>
+              <p className="app-page-eyebrow">Admin Dashboard</p>
               <h1 className="break-words text-xl font-semibold tracking-tight sm:text-2xl">
                 {userName}
               </h1>
@@ -49,7 +49,7 @@ export function DashboardHeader({
           </div>
 
           <div className="grid gap-2 sm:justify-items-end">
-            <div className="flex w-fit flex-wrap items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm">
+            <div className="flex w-fit flex-wrap items-center gap-2 rounded-2xl border border-white/20 bg-background/70 px-3 py-2 text-sm shadow-[var(--shadow-soft)]">
               <CalendarDays
                 className="size-4 text-muted-foreground"
                 aria-hidden="true"
@@ -60,32 +60,32 @@ export function DashboardHeader({
         </div>
 
         <div className="grid gap-3 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-          <div className="flex min-w-0 items-center gap-3 rounded-xl border bg-card p-4">
+          <div className="app-card app-card-subtle flex min-w-0 items-center gap-3 px-4 py-4">
             {logoSrc ? (
               <img
                 src={logoSrc}
                 alt=""
-                className="size-12 shrink-0 rounded-xl border object-cover shadow-sm"
+                className="size-12 shrink-0 rounded-2xl border border-white/20 object-cover shadow-[var(--shadow-soft)]"
               />
             ) : (
-              <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+              <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-[var(--shadow-raised)]">
                 <Building2 className="size-6" aria-hidden="true" />
               </div>
             )}
             <div className="min-w-0">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                 Company
               </p>
               <p className="break-words text-base font-semibold">{companyName}</p>
             </div>
           </div>
 
-          <div className="flex min-w-0 items-center gap-3 rounded-xl border bg-card p-4">
-            <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-secondary">
+          <div className="app-card app-card-subtle flex min-w-0 items-center gap-3 px-4 py-4">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-secondary/80 text-secondary-foreground shadow-[var(--shadow-soft)]">
               <ShieldCheck className="size-5" aria-hidden="true" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                 Workspace
               </p>
               <p className="break-words text-sm text-muted-foreground">
