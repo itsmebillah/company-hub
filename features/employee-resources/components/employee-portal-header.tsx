@@ -24,28 +24,28 @@ export function EmployeePortalHeader({
             iconClassName="size-7 text-primary-foreground"
           />
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold leading-5">
+            <p className="break-words text-sm font-semibold leading-5">
               Welcome, {profile.employeeName}
             </p>
-            <p className="truncate text-xs text-muted-foreground">
+            <p className="break-words text-xs text-muted-foreground">
               {profile.companyName}
             </p>
-            <p className="mt-1 truncate text-xs text-muted-foreground sm:hidden">
+            <p className="mt-1 break-words text-xs text-muted-foreground sm:hidden">
               ID {profile.employeeId}
             </p>
           </div>
         </div>
 
         <div className="hidden min-w-0 rounded-lg border bg-background px-3 py-2 text-xs text-muted-foreground sm:block">
-          <p className="truncate">ID {profile.employeeId}</p>
+          <p className="break-words">ID {profile.employeeId}</p>
         </div>
 
-        <div className="flex max-w-[7.5rem] shrink-0 flex-col items-end gap-1 rounded-lg border bg-background px-2.5 py-2 text-xs sm:max-w-none">
+        <div className="flex shrink-0 flex-col items-end gap-1 rounded-lg border bg-background px-2.5 py-2 text-xs sm:max-w-none">
           <div className="flex items-center gap-2 text-muted-foreground">
             <CalendarDays className="size-4 shrink-0" />
-            <span className="truncate">{currentDate}</span>
+            <span>{currentDate}</span>
           </div>
-          <span className="max-w-full truncate font-medium text-foreground">
+          <span className="break-words text-right font-medium text-foreground">
             {profile.roleName}
           </span>
         </div>

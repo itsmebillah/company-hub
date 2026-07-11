@@ -26,6 +26,8 @@ export default async function AdminRouteGroupLayout({
     await NotificationService.getCurrentAdminSummary();
 
   return (
-    <AdminShell notificationSummary={notificationSummary}>{children}</AdminShell>
+    <AdminShell profile={profile} notificationSummary={notificationSummary}>
+      {children}
+    </AdminShell>
   );
 }

@@ -5,9 +5,11 @@ import { useEffect, useRef, useState } from "react";
 import { Menu, Settings, UserCircle } from "lucide-react";
 
 import { AdminBreadcrumb } from "@/components/admin/admin-breadcrumb";
+import { ProfilePhoto } from "@/components/common/profile-photo";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { LogoutButton } from "@/features/auth/components";
+import type { AuthSessionProfile } from "@/features/auth/types/auth.types";
 import { NotificationDropdown } from "@/features/notifications/components";
 import type { NotificationSummary } from "@/features/notifications/types/notification.types";
 import {
@@ -16,6 +18,7 @@ import {
 } from "@/lib/navigation/admin-navigation";
 
 type AdminHeaderProps = {
+  profile: AuthSessionProfile;
   notificationSummary: NotificationSummary;
   pathname: string;
   onMenuClick: () => void;
@@ -34,6 +37,7 @@ function getPageTitle(pathname: string) {
 }
 
 export function AdminHeader({
+  profile,
   notificationSummary,
   pathname,
   onMenuClick,
@@ -111,6 +115,22 @@ export function AdminHeader({
                 role="menu"
                 className="absolute right-0 top-11 z-50 w-56 overflow-hidden rounded-xl border bg-popover p-1 text-popover-foreground shadow-lg"
               >
+                <div className="flex items-center gap-3 rounded-lg px-3 py-3">
+                  <ProfilePhoto
+                    src={profile.photoUrl}
+                    name={profile.name}
+                    className="size-10 border"
+                  />
+                  <div className="min-w-0">
+                    <p className="break-words text-sm font-semibold">
+                      {profile.name}
+                    </p>
+                    <p className="break-words text-xs text-muted-foreground">
+                      {profile.employeeId}
+                    </p>
+                  </div>
+                </div>
+                <div className="my-1 border-t" />
                 <Link
                   href="/admin/profile"
                   role="menuitem"

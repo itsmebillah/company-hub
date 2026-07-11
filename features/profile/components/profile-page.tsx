@@ -38,7 +38,9 @@ export function ProfilePage({
       <div className="flex flex-col gap-4 rounded-xl border bg-card p-5 shadow-sm lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p className="text-sm font-medium text-muted-foreground">My Profile</p>
-          <h1 className="mt-1 text-2xl font-semibold">{profile.fullName}</h1>
+          <h1 className="mt-1 break-words text-2xl font-semibold">
+            {profile.fullName}
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {profile.employeeId} · {profile.roleName}
           </p>

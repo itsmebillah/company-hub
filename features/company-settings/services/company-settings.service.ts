@@ -3,14 +3,17 @@ import "server-only";
 import { logActivity } from "@/features/activity/utils/activity-log";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type {
+  CompanyLanguage,
   CompanyLocationValues,
   CompanySettingsValues,
   CompanyTheme,
+  WorkingDay,
 } from "@/features/company-settings/types/company-settings.types";
 
 const DEFAULT_SETTINGS: Omit<CompanySettingsValues, "companyName"> = {
   shortName: "",
   logo: "",
+  banner: "",
   favicon: "",
   primaryColor: "#2563EB",
   secondaryColor: "#16A34A",
@@ -21,9 +24,44 @@ const DEFAULT_SETTINGS: Omit<CompanySettingsValues, "companyName"> = {
   address: "",
   timezone: "Asia/Dhaka",
   dateFormat: "dd/MM/yyyy",
+  language: "English",
   currency: "BDT",
+  workingDays: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"],
+  officeStartTime: "09:30",
+  officeEndTime: "18:00",
+  notificationPreferences: {
+    announcements: true,
+    attendance: true,
+    leave: true,
+    approvals: true,
+    system: true,
+  },
+  resourcePreferences: {
+    openMode: "new_tab",
+    sorting: "featured_first",
+    visibilityDefaults: "permission_aware",
+  },
+  securityPreferences: {
+    passwordPolicy: "standard",
+    sessionTimeoutMinutes: 480,
+    forceLogoutEnabled: false,
+  },
   locations: [],
 };
+
+const VALID_WORKING_DAYS: WorkingDay[] = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+
+function normalizeLanguage(value: string | null): CompanyLanguage {
+  return value === "Bangla" ? "Bangla" : "English";
+}
 
 function normalizeOptional(value: string) {
   const nextValue = value.trim();
@@ -62,6 +100,34 @@ function validateSettings(values: CompanySettingsValues) {
 
   if (!["auto", "light", "dark"].includes(values.theme)) {
     throw new Error("Theme is invalid.");
+  }
+
+  if (!["English", "Bangla"].includes(values.language)) {
+    throw new Error("Language is invalid.");
+  }
+
+  if (values.workingDays.length === 0) {
+    throw new Error("At least one working day is required.");
+  }
+
+  if (
+    values.workingDays.some(
+      (day) => !VALID_WORKING_DAYS.includes(day as WorkingDay),
+    )
+  ) {
+    throw new Error("Working days are invalid.");
+  }
+
+  if (!/^\d{2}:\d{2}$/.test(values.officeStartTime)) {
+    throw new Error("Office start time is invalid.");
+  }
+
+  if (!/^\d{2}:\d{2}$/.test(values.officeEndTime)) {
+    throw new Error("Office end time is invalid.");
+  }
+
+  if (values.securityPreferences.sessionTimeoutMinutes <= 0) {
+    throw new Error("Session timeout must be greater than 0.");
   }
 
   values.locations.forEach((location, index) => {
@@ -116,7 +182,7 @@ export async function getCompanySettings(): Promise<CompanySettingsValues> {
     supabase
     .from("company_settings")
     .select(
-      "company_name, short_name, company_logo, favicon, primary_color, secondary_color, support_phone, support_email, website, address, timezone, date_format, currency, default_theme",
+      "company_name, short_name, company_logo, company_banner, favicon, primary_color, secondary_color, support_phone, support_email, website, address, timezone, date_format, language, currency, working_days, office_start_time, office_end_time, notification_preferences, resource_preferences, security_preferences, default_theme",
     )
     .eq("company_id", company.id)
       .maybeSingle(),
@@ -136,6 +202,7 @@ export async function getCompanySettings(): Promise<CompanySettingsValues> {
     companyName: data?.company_name ?? company.name,
     shortName: data?.short_name ?? DEFAULT_SETTINGS.shortName,
     logo: data?.company_logo ?? DEFAULT_SETTINGS.logo,
+    banner: data?.company_banner ?? DEFAULT_SETTINGS.banner,
     favicon: data?.favicon ?? DEFAULT_SETTINGS.favicon,
     primaryColor: data?.primary_color ?? DEFAULT_SETTINGS.primaryColor,
     secondaryColor: data?.secondary_color ?? DEFAULT_SETTINGS.secondaryColor,
@@ -146,7 +213,36 @@ export async function getCompanySettings(): Promise<CompanySettingsValues> {
     address: data?.address ?? DEFAULT_SETTINGS.address,
     timezone: data?.timezone ?? DEFAULT_SETTINGS.timezone,
     dateFormat: data?.date_format ?? DEFAULT_SETTINGS.dateFormat,
+    language: normalizeLanguage(data?.language ?? null),
     currency: data?.currency ?? DEFAULT_SETTINGS.currency,
+    workingDays:
+      (data?.working_days?.filter((day): day is WorkingDay =>
+        VALID_WORKING_DAYS.includes(day as WorkingDay),
+      ) as WorkingDay[] | undefined) ?? DEFAULT_SETTINGS.workingDays,
+    officeStartTime:
+      data?.office_start_time ?? DEFAULT_SETTINGS.officeStartTime,
+    officeEndTime: data?.office_end_time ?? DEFAULT_SETTINGS.officeEndTime,
+    notificationPreferences: {
+      ...DEFAULT_SETTINGS.notificationPreferences,
+      ...(typeof data?.notification_preferences === "object" &&
+      data.notification_preferences
+        ? data.notification_preferences
+        : {}),
+    },
+    resourcePreferences: {
+      ...DEFAULT_SETTINGS.resourcePreferences,
+      ...(typeof data?.resource_preferences === "object" &&
+      data.resource_preferences
+        ? data.resource_preferences
+        : {}),
+    },
+    securityPreferences: {
+      ...DEFAULT_SETTINGS.securityPreferences,
+      ...(typeof data?.security_preferences === "object" &&
+      data.security_preferences
+        ? data.security_preferences
+        : {}),
+    },
     locations:
       locationsResult.data?.map(
         (location): CompanyLocationValues => ({
@@ -172,6 +268,7 @@ export async function updateCompanySettings(values: CompanySettingsValues) {
       company_name: values.companyName.trim(),
       short_name: normalizeOptional(values.shortName),
       company_logo: normalizeOptional(values.logo),
+      company_banner: normalizeOptional(values.banner),
       favicon: normalizeOptional(values.favicon),
       primary_color: normalizeOptional(values.primaryColor),
       secondary_color: normalizeOptional(values.secondaryColor),
@@ -181,7 +278,14 @@ export async function updateCompanySettings(values: CompanySettingsValues) {
       address: normalizeOptional(values.address),
       timezone: normalizeOptional(values.timezone),
       date_format: normalizeOptional(values.dateFormat),
+      language: values.language,
       currency: normalizeOptional(values.currency),
+      working_days: values.workingDays,
+      office_start_time: values.officeStartTime,
+      office_end_time: values.officeEndTime,
+      notification_preferences: values.notificationPreferences,
+      resource_preferences: values.resourcePreferences,
+      security_preferences: values.securityPreferences,
       default_theme: values.theme,
       status: "active",
     },
@@ -255,6 +359,8 @@ export async function updateCompanySettings(values: CompanySettingsValues) {
     metadata: {
       companyName: values.companyName.trim(),
       theme: values.theme,
+      language: values.language,
+      workingDays: values.workingDays,
     },
   });
 }

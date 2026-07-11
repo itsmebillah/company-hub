@@ -26,10 +26,10 @@ export function EmployeePortalIdentityBar({
         </div>
       )}
       <div className="min-w-0">
-        <h1 className="truncate text-lg font-semibold leading-6 md:text-xl">
+        <h1 className="break-words text-lg font-semibold leading-6 md:text-xl">
           {profile.companyName}
         </h1>
-        <p className="truncate text-sm text-muted-foreground">
+        <p className="break-words text-sm text-muted-foreground">
           Welcome, {profile.employeeName}
         </p>
       </div>

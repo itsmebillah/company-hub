@@ -15,6 +15,7 @@ export async function updateCompanySettingsAction(
     await updateCompanySettings(values);
     revalidatePath("/admin/company");
     revalidatePath("/admin/dashboard");
+    revalidatePath("/admin/settings");
 
     return { ok: true, message: "Company settings saved." };
   } catch (error) {

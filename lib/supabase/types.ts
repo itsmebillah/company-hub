@@ -45,6 +45,7 @@ export type Database = {
           company_name: string;
           short_name: string | null;
           company_logo: string | null;
+          company_banner: string | null;
           favicon: string | null;
           primary_color: string | null;
           secondary_color: string | null;
@@ -54,7 +55,14 @@ export type Database = {
           address: string | null;
           timezone: string | null;
           date_format: string | null;
+          language: string;
           currency: string | null;
+          working_days: string[];
+          office_start_time: string;
+          office_end_time: string;
+          notification_preferences: Json;
+          resource_preferences: Json;
+          security_preferences: Json;
           default_theme: string | null;
           attendance_mode: Database["public"]["Enums"]["attendance_policy_mode"];
           gps_accuracy_threshold_meters: number;
@@ -77,6 +85,7 @@ export type Database = {
           company_name: string;
           short_name?: string | null;
           company_logo?: string | null;
+          company_banner?: string | null;
           favicon?: string | null;
           primary_color?: string | null;
           secondary_color?: string | null;
@@ -86,7 +95,14 @@ export type Database = {
           address?: string | null;
           timezone?: string | null;
           date_format?: string | null;
+          language?: string;
           currency?: string | null;
+          working_days?: string[];
+          office_start_time?: string;
+          office_end_time?: string;
+          notification_preferences?: Json;
+          resource_preferences?: Json;
+          security_preferences?: Json;
           default_theme?: string | null;
           attendance_mode?: Database["public"]["Enums"]["attendance_policy_mode"];
           gps_accuracy_threshold_meters?: number;
@@ -109,6 +125,7 @@ export type Database = {
           company_name?: string;
           short_name?: string | null;
           company_logo?: string | null;
+          company_banner?: string | null;
           favicon?: string | null;
           primary_color?: string | null;
           secondary_color?: string | null;
@@ -118,7 +135,14 @@ export type Database = {
           address?: string | null;
           timezone?: string | null;
           date_format?: string | null;
+          language?: string;
           currency?: string | null;
+          working_days?: string[];
+          office_start_time?: string;
+          office_end_time?: string;
+          notification_preferences?: Json;
+          resource_preferences?: Json;
+          security_preferences?: Json;
           default_theme?: string | null;
           attendance_mode?: Database["public"]["Enums"]["attendance_policy_mode"];
           gps_accuracy_threshold_meters?: number;

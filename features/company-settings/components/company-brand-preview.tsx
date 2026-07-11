@@ -9,6 +9,7 @@ type CompanyBrandPreviewProps = {
 
 export function CompanyBrandPreview({ values }: CompanyBrandPreviewProps) {
   const logoSrc = getRenderableImageSrc(values.logo);
+  const bannerSrc = getRenderableImageSrc(values.banner);
   const themeLabel =
     values.theme === "auto" ? "Auto" : values.theme === "dark" ? "Dark" : "Light";
 
@@ -20,7 +21,23 @@ export function CompanyBrandPreview({ values }: CompanyBrandPreviewProps) {
           Branding preview for Company Hub surfaces.
         </p>
 
-        <div className="mt-5 rounded-xl border bg-background p-4">
+        <div className="mt-5 overflow-hidden rounded-xl border bg-background">
+          {bannerSrc ? (
+            <img
+              src={bannerSrc}
+              alt=""
+              className="h-28 w-full object-cover"
+            />
+          ) : (
+            <div
+              className="h-24 w-full"
+              style={{
+                background: `linear-gradient(135deg, ${values.primaryColor || "#2563EB"} 0%, ${values.secondaryColor || "#16A34A"} 100%)`,
+              }}
+            />
+          )}
+
+          <div className="p-4">
           <div className="flex items-center gap-3">
             {logoSrc ? (
               <img
@@ -37,10 +54,10 @@ export function CompanyBrandPreview({ values }: CompanyBrandPreviewProps) {
               </div>
             )}
             <div className="min-w-0">
-              <p className="truncate text-lg font-semibold">
+              <p className="break-words text-lg font-semibold">
                 {values.companyName || "Company Name"}
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="break-words text-sm text-muted-foreground">
                 {values.shortName || "Company short name"}
               </p>
             </div>
@@ -60,10 +77,23 @@ export function CompanyBrandPreview({ values }: CompanyBrandPreviewProps) {
               </div>
             </div>
             <div className="rounded-lg border p-3">
+              <p className="text-xs text-muted-foreground">Secondary</p>
+              <div className="mt-2 flex items-center gap-2">
+                <span
+                  className="size-5 rounded-full border"
+                  style={{ backgroundColor: values.secondaryColor || "#16A34A" }}
+                />
+                <span className="text-sm font-medium">
+                  {values.secondaryColor || "#16A34A"}
+                </span>
+              </div>
+            </div>
+            <div className="rounded-lg border p-3">
               <p className="text-xs text-muted-foreground">Theme</p>
               <p className="mt-2 text-sm font-medium">{themeLabel}</p>
             </div>
           </div>
+        </div>
         </div>
       </section>
     </aside>

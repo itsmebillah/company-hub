@@ -11,6 +11,7 @@ export type EmployeeAuthIdentity = {
 export type AuthSessionProfile = {
   employeeId: string;
   name: string;
+  photoUrl: string | null;
   companyId: string;
   roleId: string;
   roleName: string;

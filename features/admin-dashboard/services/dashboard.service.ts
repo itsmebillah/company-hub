@@ -112,6 +112,9 @@ function getEmptyDashboard(): DashboardData {
     companyName: "Company Hub",
     companyLogo: null,
     loggedInUserName: "Admin",
+    loggedInUserEmployeeId: "--",
+    loggedInUserPhotoUrl: null,
+    loggedInUserRoleName: "Admin",
     totalModules: EXECUTIVE_MODULES.length,
     overallSystemStatus: getOverallStatus(health),
     counts: {
@@ -122,6 +125,7 @@ function getEmptyDashboard(): DashboardData {
       presentToday: 0,
       lateToday: 0,
       absentToday: 0,
+      employeesOnLeaveToday: 0,
       pendingLeaveRequests: 0,
       approvedLeaveRequests: 0,
       rejectedLeaveRequests: 0,
@@ -184,7 +188,10 @@ const getCachedExecutiveSummary = unstable_cache(
       supabase.from("employees").select("status").eq("company_id", companyId),
       supabase.from("resources").select("status").eq("company_id", companyId),
       supabase.from("announcements").select("status").eq("company_id", companyId),
-      supabase.from("leave_requests").select("status").eq("company_id", companyId),
+      supabase
+        .from("leave_requests")
+        .select("status, start_date, end_date")
+        .eq("company_id", companyId),
       supabase
         .from("attendance_records")
         .select("attendance_date")
@@ -226,10 +233,17 @@ const getCachedExecutiveSummary = unstable_cache(
       inactive: employeeStatusesResult.data.filter((item) => item.status === "inactive").length,
       archived: employeeStatusesResult.data.filter((item) => item.status === "archived").length,
     };
+    const today = new Date().toISOString().slice(0, 10);
     const leaveCounts = {
       pending: leaveStatusesResult.data.filter((item) => item.status === "pending").length,
       approved: leaveStatusesResult.data.filter((item) => item.status === "approved").length,
       rejected: leaveStatusesResult.data.filter((item) => item.status === "rejected").length,
+      onLeaveToday: leaveStatusesResult.data.filter(
+        (item) =>
+          item.status === "approved" &&
+          item.start_date <= today &&
+          item.end_date >= today,
+      ).length,
     };
     const activeResources = resourceStatusesResult.data.filter(
       (item) => item.status === "active",
@@ -272,6 +286,7 @@ const getCachedExecutiveSummary = unstable_cache(
         presentToday: attendanceOverview.presentToday,
         lateToday: attendanceOverview.lateToday,
         absentToday: Math.max(employeeCounts.active - attendanceOverview.checkedInToday, 0),
+        employeesOnLeaveToday: leaveCounts.onLeaveToday,
         pendingLeaveRequests: leaveCounts.pending,
         approvedLeaveRequests: leaveCounts.approved,
         rejectedLeaveRequests: leaveCounts.rejected,
@@ -352,6 +367,9 @@ export async function getAdminDashboardData(): Promise<DashboardData> {
       companyName: settings.companyName,
       companyLogo: settings.logo || null,
       loggedInUserName: session?.name ?? "Admin",
+      loggedInUserEmployeeId: session?.employeeId ?? "--",
+      loggedInUserPhotoUrl: session?.photoUrl ?? null,
+      loggedInUserRoleName: session?.roleName ?? "Admin",
       totalModules: EXECUTIVE_MODULES.length,
       overallSystemStatus: getOverallStatus(health),
       counts: summary.counts,

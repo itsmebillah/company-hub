@@ -52,6 +52,9 @@ export type DashboardData = {
   companyName: string;
   companyLogo: string | null;
   loggedInUserName: string;
+  loggedInUserEmployeeId: string;
+  loggedInUserPhotoUrl: string | null;
+  loggedInUserRoleName: string;
   totalModules: number;
   overallSystemStatus: DashboardSystemStatus;
   counts: {
@@ -62,6 +65,7 @@ export type DashboardData = {
     presentToday: number;
     lateToday: number;
     absentToday: number;
+    employeesOnLeaveToday: number;
     pendingLeaveRequests: number;
     approvedLeaveRequests: number;
     rejectedLeaveRequests: number;
