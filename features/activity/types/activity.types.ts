@@ -21,7 +21,8 @@ export type ActivityAction =
   | "deactivated"
   | "approved"
   | "rejected"
-  | "cancelled";
+  | "cancelled"
+  | "downloaded";
 
 export type ActivityLogInput = {
   companyId: string;

@@ -5,6 +5,7 @@ import {
   CalendarCheck,
   CalendarDays,
   ClipboardList,
+  FileSpreadsheet,
   FolderKanban,
   LayoutDashboard,
   MapPin,
@@ -50,6 +51,11 @@ export const adminNavigationItems: AdminNavigationItem[] = [
     title: "Attendance",
     href: "/admin/attendance",
     icon: CalendarCheck,
+  },
+  {
+    title: "Attendance Reports",
+    href: "/admin/attendance/reports",
+    icon: FileSpreadsheet,
   },
   {
     title: "Calendar",

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarCheck, Clock, Search, Users } from "lucide-react";
+import { CalendarCheck, Clock, FileSpreadsheet, Search, Users } from "lucide-react";
 
 import { EmptyState } from "@/components/common/empty-state";
 import { AttendanceStatusBadge } from "@/features/attendance/components/attendance-status-badge";
@@ -51,10 +51,21 @@ export function AdminAttendancePage({
   return (
     <section className="space-y-5">
       <div>
-        <h1 className="text-2xl font-semibold">Attendance</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Read-only attendance management for manual check-in workflows.
-        </p>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold">Attendance</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Read-only attendance management for manual check-in workflows.
+            </p>
+          </div>
+          <Link
+            href="/admin/attendance/reports"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border bg-card px-4 py-2 text-sm font-semibold shadow-sm transition hover:bg-muted"
+          >
+            <FileSpreadsheet className="size-4" aria-hidden="true" />
+            Monthly Reports
+          </Link>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
