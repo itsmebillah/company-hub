@@ -9,6 +9,8 @@ import { CurrentEmployeeContextService } from "@/features/auth/services/current-
 import { getCompanySettings } from "@/features/company-settings/services/company-settings.service";
 import { PermissionOnboarding } from "@/features/device-onboarding/components/permission-onboarding";
 import { NotificationService } from "@/features/notifications/services/notification.service";
+import { OfflineStatusIndicator } from "@/features/offline/components/offline-status-indicator";
+import { OfflineSyncProvider } from "@/features/offline/components/offline-sync-provider";
 import { PwaInstallCard } from "@/features/pwa/components/pwa-install-card";
 
 type AppLayoutProps = {
@@ -48,6 +50,8 @@ export async function AppLayout({ children }: AppLayoutProps) {
       </PageContainer>
       <AppFooter />
       <MobileBottomNav />
+      <OfflineSyncProvider />
+      <OfflineStatusIndicator />
       {employeeContext?.companyId ? (
         <>
           <PermissionOnboarding

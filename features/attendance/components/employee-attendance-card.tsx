@@ -10,6 +10,7 @@ import {
   LogOut,
   RefreshCw,
   StickyNote,
+  WifiOff,
 } from "lucide-react";
 
 import { PageHeader } from "@/components/common/page-header";
@@ -20,6 +21,13 @@ import type {
   AttendanceGpsInput,
   TodayAttendance,
 } from "@/features/attendance/types/attendance.types";
+import {
+  createOfflineQueueId,
+  enqueueOfflineItem,
+  listOfflineQueue,
+  OFFLINE_QUEUE_UPDATED_EVENT,
+  type OfflineAttendanceQueueItem,
+} from "@/features/offline/utils/offline-queue";
 import { formatAppDate, formatAppTime } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
 
@@ -122,6 +130,9 @@ export function EmployeeAttendanceCard({
   const [selfieFile, setSelfieFile] = useState<File | null>(null);
   const [selfiePreviewUrl, setSelfiePreviewUrl] = useState("");
   const [selfieError, setSelfieError] = useState("");
+  const [pendingSyncItems, setPendingSyncItems] = useState<
+    OfflineAttendanceQueueItem[]
+  >([]);
   const [isUploadingSelfie, setIsUploadingSelfie] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
   const [elapsedMinutes, setElapsedMinutes] = useState(
@@ -251,6 +262,24 @@ export function EmployeeAttendanceCard({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    function syncPendingItems() {
+      setPendingSyncItems(
+        listOfflineQueue().filter(
+          (item): item is OfflineAttendanceQueueItem =>
+            item.type === "attendance" && item.attendanceDate === attendance.date,
+        ),
+      );
+    }
+
+    syncPendingItems();
+    window.addEventListener(OFFLINE_QUEUE_UPDATED_EVENT, syncPendingItems);
+
+    return () => {
+      window.removeEventListener(OFFLINE_QUEUE_UPDATED_EVENT, syncPendingItems);
+    };
+  }, [attendance.date]);
+
   function handleSelfieChange(file: File | null) {
     if (selfiePreviewUrl) {
       URL.revokeObjectURL(selfiePreviewUrl);
@@ -310,6 +339,42 @@ export function EmployeeAttendanceCard({
     }
 
     startTransition(async () => {
+      const offlineInput: AttendanceCheckInput = {
+        notes,
+        ...(gps ? { gps } : {}),
+        deviceInfo: getClientDeviceInfo(),
+      };
+
+      if (!navigator.onLine) {
+        if (requiresSelfie && action === "check-in") {
+          setMessage({
+            ok: false,
+            message:
+              "Attendance selfie upload needs a connection. Please reconnect before checking in.",
+          });
+          return;
+        }
+
+        enqueueOfflineItem({
+          id: createOfflineQueueId(),
+          type: "attendance",
+          action,
+          input: offlineInput,
+          attendanceDate: attendance.date,
+          createdAt: new Date().toISOString(),
+          status: "pending",
+        });
+
+        setMessage({
+          ok: true,
+          message:
+            action === "check-in"
+              ? "Check-in saved as Pending Sync."
+              : "Check-out saved as Pending Sync.",
+        });
+        return;
+      }
+
       const selfiePath =
         selfieFile ? await uploadSelfie(action === "check-in" ? "checkin" : "checkout") : "";
 
@@ -322,10 +387,8 @@ export function EmployeeAttendanceCard({
       }
 
       const input: AttendanceCheckInput = {
-        notes,
-        ...(gps ? { gps } : {}),
+        ...offlineInput,
         ...(selfiePath ? { selfiePath } : {}),
-        deviceInfo: getClientDeviceInfo(),
       };
       const result =
         action === "check-in"
@@ -608,6 +671,28 @@ export function EmployeeAttendanceCard({
           >
             {message.message}
           </p>
+        ) : null}
+
+        {pendingSyncItems.length > 0 ? (
+          <div className="mt-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-3 py-3 text-sm text-amber-800 dark:text-amber-300">
+            <div className="flex items-start gap-2">
+              <WifiOff className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+              <div>
+                <p className="font-semibold">Pending Sync</p>
+                <p className="mt-1">
+                  {pendingSyncItems.length} attendance action
+                  {pendingSyncItems.length === 1 ? "" : "s"} will sync
+                  automatically when the connection returns.
+                </p>
+                {pendingSyncItems.some((item) => item.status === "failed") ? (
+                  <p className="mt-1 text-xs">
+                    A previous sync failed. Reconnect and refresh location, then
+                    the app will retry automatically.
+                  </p>
+                ) : null}
+              </div>
+            </div>
+          </div>
         ) : null}
       </div>
     </section>

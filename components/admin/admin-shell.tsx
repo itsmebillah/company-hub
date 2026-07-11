@@ -13,6 +13,8 @@ import type {
   NotificationSummary,
   RealtimeNotificationScope,
 } from "@/features/notifications/types/notification.types";
+import { OfflineStatusIndicator } from "@/features/offline/components/offline-status-indicator";
+import { OfflineSyncProvider } from "@/features/offline/components/offline-sync-provider";
 import { PwaInstallCard } from "@/features/pwa/components/pwa-install-card";
 import type { SchemaVersionStatus } from "@/features/schema-version/services/schema-version.service";
 
@@ -88,6 +90,8 @@ export function AdminShell({
         version={onboardingVersion}
         requireCamera={requireCameraOnboarding}
       />
+      <OfflineSyncProvider />
+      <OfflineStatusIndicator />
       <PwaInstallCard
         companyId={profile.companyId}
         onboardingVersion={onboardingVersion}
