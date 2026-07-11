@@ -1,6 +1,6 @@
 import "server-only";
 
-import { requireCurrentCompanyId } from "@/features/auth/services/current-employee-context.service";
+import { requireCurrentCompanyId } from "@/features/auth/services/current-company-context.service";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { ResourceCategoryValidationService } from "@/features/resource-categories/services/resource-category-validation.service";
 import type {

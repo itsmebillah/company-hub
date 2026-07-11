@@ -12,7 +12,7 @@ export type CurrentEmployeeContext = {
   status: "active" | "inactive" | "archived";
 };
 
-export async function getCurrentEmployeeContext(): Promise<CurrentEmployeeContext | null> {
+async function loadCurrentEmployeeContext(): Promise<CurrentEmployeeContext | null> {
   const user = await getCurrentAuthUser();
 
   if (!user) {
@@ -45,8 +45,8 @@ export async function getCurrentEmployeeContext(): Promise<CurrentEmployeeContex
   };
 }
 
-export async function requireCurrentEmployeeContext() {
-  const employee = await getCurrentEmployeeContext();
+async function requireActiveCurrentEmployeeContext() {
+  const employee = await loadCurrentEmployeeContext();
 
   if (!employee || employee.status !== "active") {
     throw new Error("Active employee context was not found.");
@@ -55,6 +55,20 @@ export async function requireCurrentEmployeeContext() {
   return employee;
 }
 
+export const CurrentEmployeeContextService = {
+  getCurrentEmployeeContext: loadCurrentEmployeeContext,
+  requireCurrentEmployeeContext: requireActiveCurrentEmployeeContext,
+};
+
+export async function getCurrentEmployeeContext(): Promise<CurrentEmployeeContext | null> {
+  return CurrentEmployeeContextService.getCurrentEmployeeContext();
+}
+
+export async function requireCurrentEmployeeContext() {
+  return CurrentEmployeeContextService.requireCurrentEmployeeContext();
+}
+
 export async function requireCurrentCompanyId() {
-  return (await requireCurrentEmployeeContext()).companyId;
+  return (await CurrentEmployeeContextService.requireCurrentEmployeeContext())
+    .companyId;
 }

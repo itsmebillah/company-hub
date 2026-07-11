@@ -3,7 +3,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 
 import { logActivity } from "@/features/activity/utils/activity-log";
-import { getCurrentAuthUser } from "@/features/auth/services/auth.service";
+import { requireCurrentEmployeeContext } from "@/features/auth/services/current-employee-context.service";
 import type {
   ProfileData,
   ProfileFormValues,
@@ -47,11 +47,7 @@ function validateDate(value: string) {
 }
 
 async function getCurrentEmployee() {
-  const user = await getCurrentAuthUser();
-
-  if (!user) {
-    redirect("/login");
-  }
+  const context = await requireCurrentEmployeeContext();
 
   const supabase = createSupabaseAdminClient();
   const { data: employee, error } = await supabase
@@ -59,7 +55,8 @@ async function getCurrentEmployee() {
     .select(
       "id, employee_id, name, phone, email, date_of_birth, joining_date, photo_url, manager_id, company_id, role_id, status",
     )
-    .eq("auth_user_id", user.id)
+    .eq("id", context.id)
+    .eq("company_id", context.companyId)
     .single();
 
   if (error || !employee || employee.status !== "active") {

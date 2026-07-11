@@ -3,8 +3,8 @@ import "server-only";
 import { logActivity } from "@/features/activity/utils/activity-log";
 import { AttendancePolicyRepository } from "@/features/attendance/repositories/attendance-policy.repository";
 import type { AttendanceSettingsValues } from "@/features/attendance/types/attendance.types";
+import { CurrentCompanyContextService } from "@/features/auth/services/current-company-context.service";
 import { NotificationService } from "@/features/notifications/services/notification.service";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 function validateAttendanceSettings(values: AttendanceSettingsValues) {
   if (values.gpsAccuracyThresholdMeters <= 0) {
@@ -21,20 +21,7 @@ function validateAttendanceSettings(values: AttendanceSettingsValues) {
 }
 
 async function getActiveCompany() {
-  const supabase = createSupabaseAdminClient();
-  const { data, error } = await supabase
-    .from("companies")
-    .select("id, name")
-    .eq("status", "active")
-    .order("created_at", { ascending: true })
-    .limit(1)
-    .single();
-
-  if (error || !data) {
-    throw new Error("Company was not found.");
-  }
-
-  return data;
+  return CurrentCompanyContextService.requireCurrentCompanyContext();
 }
 
 export const AttendanceSettingsService = {

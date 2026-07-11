@@ -3,6 +3,7 @@ import "server-only";
 import { unstable_cache } from "next/cache";
 
 import { AnnouncementService } from "@/features/announcements/services/announcement.service";
+import { requireCurrentCompanyId } from "@/features/auth/services/current-company-context.service";
 import { getCurrentSessionProfile } from "@/features/auth/services/session.service";
 import { getCompanySettings } from "@/features/company-settings/services/company-settings.service";
 import { EmployeeResourceService } from "@/features/employee-resources/services/employee-resource.service";
@@ -147,23 +148,6 @@ function getEmptyDashboard(): DashboardData {
   };
 }
 
-async function getActiveCompanyId() {
-  const supabase = createSupabaseAdminClient();
-  const { data, error } = await supabase
-    .from("companies")
-    .select("id")
-    .eq("status", "active")
-    .order("created_at", { ascending: true })
-    .limit(1)
-    .maybeSingle();
-
-  if (error) {
-    throw new Error("Unable to load company information.");
-  }
-
-  return data?.id ?? null;
-}
-
 const getCachedExecutiveSummary = unstable_cache(
   async (companyId: string) => {
     const supabase = createSupabaseAdminClient();
@@ -209,7 +193,7 @@ const getCachedExecutiveSummary = unstable_cache(
         .in("module", ["employee", "announcement", "resources", "leave", "attendance"])
         .gte("created_at", recentActivityStart),
       NotificationRepository.countUnreadForCompany(companyId),
-      AttendanceService.getAdminOverview(),
+      AttendanceService.getAdminOverview(companyId),
     ]);
 
     if (
@@ -336,16 +320,11 @@ const getCachedExecutiveSummary = unstable_cache(
 
 export async function getAdminDashboardData(): Promise<DashboardData> {
   try {
-    const [settings, session, fallbackCompanyId] = await Promise.all([
+    const companyId = await requireCurrentCompanyId();
+    const [settings, session] = await Promise.all([
       getCompanySettings(),
       getCurrentSessionProfile(),
-      getActiveCompanyId(),
     ]);
-    const companyId = session?.companyId ?? fallbackCompanyId;
-
-    if (!companyId) {
-      return getEmptyDashboard();
-    }
 
     const [summary, liveAnnouncements, quickResourceCategories] =
       await Promise.all([

@@ -32,6 +32,24 @@ function toItem(row: {
 }
 
 export const NotificationRepository = {
+  async listActiveRecipientsForCompany(
+    companyId: string,
+  ): Promise<NotificationRecipient[]> {
+    const supabase = createSupabaseAdminClient();
+    const { data, error } = await supabase
+      .from("employees")
+      .select("id")
+      .eq("company_id", companyId)
+      .eq("status", "active");
+
+    if (error) {
+      console.error("[NotificationRepository] Unable to load recipients.", error);
+      throw new Error("Unable to create notifications.");
+    }
+
+    return data;
+  },
+
   async listForEmployee(employeeId: string, companyId: string, limit = 5) {
     const supabase = createSupabaseAdminClient();
     const { data, error } = await supabase

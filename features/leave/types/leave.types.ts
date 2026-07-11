@@ -59,6 +59,7 @@ export type LeaveAdminFilters = {
   search?: string;
   status?: LeaveRequestStatus | "all";
   leaveTypeId?: string;
+  employeeId?: string;
 };
 
 export type LeaveActionState =

@@ -1,6 +1,7 @@
 import "server-only";
 
 import { logActivity } from "@/features/activity/utils/activity-log";
+import { requireCurrentCompanyId } from "@/features/auth/services/current-company-context.service";
 import type {
   CompanyLocationFormValues,
   CompanyLocationListItem,
@@ -67,53 +68,70 @@ function validateLocation(values: CompanyLocationFormValues) {
 }
 
 async function getActiveCompanyId() {
-  const supabase = createSupabaseAdminClient();
-  const { data, error } = await supabase
-    .from("companies")
-    .select("id")
-    .eq("status", "active")
-    .order("created_at", { ascending: true })
-    .limit(1);
-
-  if (error) {
+  try {
+    return await requireCurrentCompanyId();
+  } catch (error) {
     console.error("[CompanyLocationService] Unable to load company.", error);
     throw new Error("Unable to load company information.");
   }
-
-  const companyId = data[0]?.id;
-
-  if (!companyId) {
-    throw new Error("Company was not found.");
-  }
-
-  return companyId;
 }
 
-async function syncAssignments(locationId: string, employeeIds: string[]) {
+async function syncAssignments(
+  companyId: string,
+  locationId: string,
+  employeeIds: string[],
+) {
   const supabase = createSupabaseAdminClient();
   const uniqueEmployeeIds = Array.from(new Set(employeeIds));
-  const { data: existing, error } = await supabase
-    .from("employee_location_access")
-    .select("id, employee_id")
-    .eq("location_id", locationId);
+  const [locationResult, existingResult, validEmployeesResult] = await Promise.all([
+    supabase
+      .from("company_locations")
+      .select("id")
+      .eq("id", locationId)
+      .eq("company_id", companyId)
+      .maybeSingle(),
+    supabase
+      .from("employee_location_access")
+      .select("id, employee_id")
+      .eq("location_id", locationId),
+    uniqueEmployeeIds.length > 0
+      ? supabase
+          .from("employees")
+          .select("id")
+          .eq("company_id", companyId)
+          .in("id", uniqueEmployeeIds)
+      : Promise.resolve({ data: [], error: null }),
+  ]);
 
-  if (error) {
+  if (!locationResult.data || locationResult.error) {
+    throw new Error("Unable to save employee assignments.");
+  }
+
+  if (existingResult.error || validEmployeesResult.error) {
     console.error(
       "[CompanyLocationService] Unable to load location assignments.",
-      error,
+      existingResult.error ?? validEmployeesResult.error,
     );
     throw new Error("Unable to save employee assignments.");
   }
 
+  const validEmployeeIds = new Set(
+    (validEmployeesResult.data ?? []).map((employee) => employee.id),
+  );
+  const scopedEmployeeIds = uniqueEmployeeIds.filter((employeeId) =>
+    validEmployeeIds.has(employeeId),
+  );
+
+  const existing = existingResult.data;
   const existingEmployeeIds = existing.map((item) => item.employee_id);
   const removedIds = existing
-    .filter((item) => !uniqueEmployeeIds.includes(item.employee_id))
+    .filter((item) => !scopedEmployeeIds.includes(item.employee_id))
     .map((item) => item.id);
-  const addedIds = uniqueEmployeeIds.filter(
+  const addedIds = scopedEmployeeIds.filter(
     (employeeId) => !existingEmployeeIds.includes(employeeId),
   );
   const reactivatedIds = existing
-    .filter((item) => uniqueEmployeeIds.includes(item.employee_id))
+    .filter((item) => scopedEmployeeIds.includes(item.employee_id))
     .map((item) => item.id);
 
   if (removedIds.length > 0) {
@@ -156,7 +174,7 @@ async function syncAssignments(locationId: string, employeeIds: string[]) {
 export async function getCompanyLocationsPageData(): Promise<CompanyLocationsPageData> {
   const supabase = createSupabaseAdminClient();
   const companyId = await getActiveCompanyId();
-  const [locationsResult, assignmentsResult, employeesResult] = await Promise.all([
+  const [locationsResult, employeesResult] = await Promise.all([
     supabase
       .from("company_locations")
       .select(
@@ -166,10 +184,6 @@ export async function getCompanyLocationsPageData(): Promise<CompanyLocationsPag
       .neq("status", "archived")
       .order("name", { ascending: true }),
     supabase
-      .from("employee_location_access")
-      .select("employee_id, location_id, status")
-      .eq("status", "active"),
-    supabase
       .from("employees")
       .select("id, employee_id, name")
       .eq("company_id", companyId)
@@ -177,11 +191,27 @@ export async function getCompanyLocationsPageData(): Promise<CompanyLocationsPag
       .order("name", { ascending: true }),
   ]);
 
-  if (locationsResult.error || assignmentsResult.error || employeesResult.error) {
+  if (locationsResult.error || employeesResult.error) {
     console.error("[CompanyLocationService] Unable to load locations.", {
       locationsError: locationsResult.error,
-      assignmentsError: assignmentsResult.error,
       employeesError: employeesResult.error,
+    });
+    throw new Error("Unable to load company locations.");
+  }
+
+  const locationIds = locationsResult.data.map((location) => location.id);
+  const assignmentsResult =
+    locationIds.length > 0
+      ? await supabase
+          .from("employee_location_access")
+          .select("employee_id, location_id, status")
+          .eq("status", "active")
+          .in("location_id", locationIds)
+      : { data: [], error: null };
+
+  if (assignmentsResult.error) {
+    console.error("[CompanyLocationService] Unable to load location assignments.", {
+      assignmentsError: assignmentsResult.error,
     });
     throw new Error("Unable to load company locations.");
   }
@@ -255,7 +285,7 @@ export async function createCompanyLocation(values: CompanyLocationFormValues) {
     throw new Error("Unable to create location.");
   }
 
-  await syncAssignments(data.id, values.assignedEmployeeIds);
+  await syncAssignments(companyId, data.id, values.assignedEmployeeIds);
   await logActivity({
     companyId,
     module: "future",
@@ -305,7 +335,7 @@ export async function updateCompanyLocation(
     throw new Error("Unable to update location.");
   }
 
-  await syncAssignments(id, values.assignedEmployeeIds);
+  await syncAssignments(companyId, id, values.assignedEmployeeIds);
   await logActivity({
     companyId,
     module: "future",

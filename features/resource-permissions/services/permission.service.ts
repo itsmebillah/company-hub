@@ -1,7 +1,7 @@
 import "server-only";
 
 import { logActivity } from "@/features/activity/utils/activity-log";
-import { requireCurrentCompanyId } from "@/features/auth/services/current-employee-context.service";
+import { requireCurrentCompanyId } from "@/features/auth/services/current-company-context.service";
 import { NotificationService } from "@/features/notifications/services/notification.service";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { PermissionValidationService } from "@/features/resource-permissions/services/permission-validation.service";

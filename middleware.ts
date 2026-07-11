@@ -31,12 +31,15 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/admin/:path*",
-    "/announcements",
-    "/dashboard",
+    "/announcements/:path*",
+    "/attendance/:path*",
+    "/calendar/:path*",
+    "/dashboard/:path*",
+    "/leave/:path*",
     "/login",
-    "/profile",
+    "/profile/:path*",
     "/register",
-    "/resources",
-    "/settings",
+    "/resources/:path*",
+    "/settings/:path*",
   ],
 };

@@ -9,6 +9,7 @@ import type {
   RoleListItem,
   RoleStatus,
 } from "@/features/roles/types/role.types";
+import { requireCurrentCompanyId } from "@/features/auth/services/current-company-context.service";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 const ALLOW_SYSTEM_ROLE_RENAME = false;
@@ -44,20 +45,12 @@ function validate(values: RoleFormValues) {
 }
 
 async function getActiveCompanyId() {
-  const supabase = createSupabaseAdminClient();
-  const { data, error } = await supabase
-    .from("companies")
-    .select("id")
-    .eq("status", "active")
-    .order("created_at", { ascending: true })
-    .limit(1);
-
-  if (error) {
+  try {
+    return await requireCurrentCompanyId();
+  } catch (error) {
     logRoleServiceError("Unable to load active company.", error);
     throw new Error("Unable to load company information.");
   }
-
-  return data[0]?.id ?? null;
 }
 
 async function requireActiveCompanyId() {

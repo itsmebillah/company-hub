@@ -1,6 +1,7 @@
 import "server-only";
 
 import { logActivity } from "@/features/activity/utils/activity-log";
+import { CurrentCompanyContextService } from "@/features/auth/services/current-company-context.service";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type {
   CompanyLanguage,
@@ -159,20 +160,7 @@ function validateSettings(values: CompanySettingsValues) {
 }
 
 async function getActiveCompany() {
-  const supabase = createSupabaseAdminClient();
-  const { data, error } = await supabase
-    .from("companies")
-    .select("id, name")
-    .eq("status", "active")
-    .order("created_at", { ascending: true })
-    .limit(1)
-    .single();
-
-  if (error || !data) {
-    throw new Error("Company was not found.");
-  }
-
-  return data;
+  return CurrentCompanyContextService.requireCurrentCompanyContext();
 }
 
 export async function getCompanySettings(): Promise<CompanySettingsValues> {
@@ -181,7 +169,9 @@ export async function getCompanySettings(): Promise<CompanySettingsValues> {
   const [{ data, error }, locationsResult] = await Promise.all([
     supabase
       .from("company_settings")
-      .select("*")
+      .select(
+        "company_name, short_name, company_logo, company_banner, favicon, primary_color, secondary_color, default_theme, support_email, support_phone, website, address, timezone, date_format, language, currency, working_days, office_start_time, office_end_time, notification_preferences, resource_preferences, security_preferences",
+      )
       .eq("company_id", company.id)
       .maybeSingle(),
     supabase

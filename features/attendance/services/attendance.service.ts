@@ -19,7 +19,8 @@ import type {
   TodayAttendance,
 } from "@/features/attendance/types/attendance.types";
 import { logActivity } from "@/features/activity/utils/activity-log";
-import { getCurrentAuthUser } from "@/features/auth/services/auth.service";
+import { requireCurrentEmployeeContext } from "@/features/auth/services/current-employee-context.service";
+import { requireCurrentCompanyId } from "@/features/auth/services/current-company-context.service";
 import { CalendarService } from "@/features/company-calendar/services/calendar.service";
 import { NotificationService } from "@/features/notifications/services/notification.service";
 import { getAppDateString, getAppDateTime } from "@/lib/datetime";
@@ -66,17 +67,14 @@ function getWorkingMinutes(checkIn: string, checkOut: string) {
 }
 
 async function getCurrentEmployee() {
-  const user = await getCurrentAuthUser();
-
-  if (!user) {
-    redirect("/login");
-  }
+  const context = await requireCurrentEmployeeContext();
 
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
     .from("employees")
     .select("id, employee_id, name, company_id, status")
-    .eq("auth_user_id", user.id)
+    .eq("id", context.id)
+    .eq("company_id", context.companyId)
     .single();
 
   if (error || !data || data.status !== "active") {
@@ -87,20 +85,12 @@ async function getCurrentEmployee() {
 }
 
 async function getActiveCompanyId() {
-  const supabase = createSupabaseAdminClient();
-  const { data, error } = await supabase
-    .from("companies")
-    .select("id")
-    .eq("status", "active")
-    .order("created_at", { ascending: true })
-    .limit(1);
-
-  if (error) {
-    console.error("[AttendanceService] Unable to load active company.", error);
+  try {
+    return await requireCurrentCompanyId();
+  } catch (error) {
+    console.error("[AttendanceService] Unable to load current company.", error);
     throw new Error("Unable to load company information.");
   }
-
-  return data[0]?.id ?? null;
 }
 
 export const AttendanceService = {
@@ -123,8 +113,8 @@ export const AttendanceService = {
     };
   },
 
-  async getAdminOverview(): Promise<AdminAttendanceOverview> {
-    const companyId = await getActiveCompanyId();
+  async getAdminOverview(companyIdOverride?: string): Promise<AdminAttendanceOverview> {
+    const companyId = companyIdOverride ?? (await getActiveCompanyId());
     const today = getTodayDate();
 
     if (!companyId) {
@@ -418,7 +408,8 @@ export const AttendanceService = {
   },
 
   async getAttendanceDetail(id: string) {
-    const record = await AttendanceRepository.findDetailById(id);
+    const companyId = await getActiveCompanyId();
+    const record = await AttendanceRepository.findDetailById(id, companyId);
 
     if (!record) {
       return null;

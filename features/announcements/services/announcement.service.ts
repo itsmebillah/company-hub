@@ -4,8 +4,8 @@ import { redirect } from "next/navigation";
 
 import {
   requireCurrentCompanyId,
-} from "@/features/auth/services/current-employee-context.service";
-import { getCurrentAuthUser } from "@/features/auth/services/auth.service";
+} from "@/features/auth/services/current-company-context.service";
+import { requireCurrentEmployeeContext } from "@/features/auth/services/current-employee-context.service";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getPriorityRank } from "@/features/announcements/constants/announcement-options";
 import { AnnouncementValidationService } from "@/features/announcements/services/announcement-validation.service";
@@ -31,17 +31,14 @@ async function requireActiveCompanyId() {
 }
 
 async function getCurrentEmployeeForAnnouncements() {
-  const user = await getCurrentAuthUser();
-
-  if (!user) {
-    redirect("/login");
-  }
+  const context = await requireCurrentEmployeeContext();
 
   const supabase = createSupabaseAdminClient();
   const { data: employee, error } = await supabase
     .from("employees")
     .select("id, company_id, role_id, status")
-    .eq("auth_user_id", user.id)
+    .eq("id", context.id)
+    .eq("company_id", context.companyId)
     .single();
 
   if (error || !employee || employee.status !== "active") {

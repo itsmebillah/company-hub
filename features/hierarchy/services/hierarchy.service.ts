@@ -1,6 +1,7 @@
 import "server-only";
 
 import { getAllowedManagerRole } from "@/features/employees/constants/employee-rules";
+import { requireCurrentCompanyId } from "@/features/auth/services/current-company-context.service";
 import type { EmployeeRoleName } from "@/features/employees/types/employee.types";
 import type {
   BulkReassignInput,
@@ -9,21 +10,8 @@ import type {
 } from "@/features/hierarchy/types/hierarchy.types";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
-const COMPANY_NAME = "Company Hub";
-
 async function getCompanyId() {
-  const supabase = createSupabaseAdminClient();
-  const { data, error } = await supabase
-    .from("companies")
-    .select("id")
-    .eq("name", COMPANY_NAME)
-    .single();
-
-  if (error || !data) {
-    throw new Error("Company was not found.");
-  }
-
-  return data.id;
+  return requireCurrentCompanyId();
 }
 
 export async function getHierarchyEmployees(): Promise<HierarchyEmployee[]> {

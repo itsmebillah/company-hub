@@ -374,7 +374,10 @@ export const AttendanceRepository = {
     });
   },
 
-  async findDetailById(id: string): Promise<AttendanceDetailRecord | null> {
+  async findDetailById(
+    id: string,
+    companyId: string,
+  ): Promise<AttendanceDetailRecord | null> {
     const supabase = createSupabaseAdminClient();
     const { data, error } = await supabase
       .from("attendance_records")
@@ -382,6 +385,7 @@ export const AttendanceRepository = {
         `${attendanceRecordSelect}, employees!inner(employee_id, name), check_in_location:company_locations!attendance_records_check_in_location_id_fkey(name), check_out_location:company_locations!attendance_records_check_out_location_id_fkey(name)`,
       )
       .eq("id", id)
+      .eq("company_id", companyId)
       .maybeSingle();
 
     if (error) {

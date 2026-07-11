@@ -1,6 +1,7 @@
 import "server-only";
 
 import { logActivity } from "@/features/activity/utils/activity-log";
+import { requireCurrentCompanyId } from "@/features/auth/services/current-company-context.service";
 import type {
   AdminCalendarPageData,
   CalendarDayInfo,
@@ -31,26 +32,51 @@ function assertHolidayType(value: string): asserts value is HolidayType {
 }
 
 async function getActiveCompanyId() {
-  const supabase = createSupabaseAdminClient();
-  const { data, error } = await supabase
-    .from("companies")
-    .select("id")
-    .eq("status", "active")
-    .order("created_at", { ascending: true })
-    .limit(1);
-
-  if (error) {
+  try {
+    return await requireCurrentCompanyId();
+  } catch (error) {
     console.error("[CalendarService] Unable to load company.", error);
     throw new Error("Unable to load company information.");
   }
+}
 
-  const companyId = data[0]?.id;
+async function assertCalendarBelongsToCompany(companyId: string, calendarId: string) {
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from("holiday_calendars")
+    .select("id")
+    .eq("id", calendarId)
+    .eq("company_id", companyId)
+    .neq("status", "archived")
+    .maybeSingle();
 
-  if (!companyId) {
-    throw new Error("Company was not found.");
+  if (error) {
+    console.error("[CalendarService] Unable to validate calendar ownership.", error);
+    throw new Error("Unable to validate holiday calendar.");
   }
 
-  return companyId;
+  if (!data) {
+    throw new Error("Holiday calendar was not found.");
+  }
+}
+
+async function assertEventBelongsToCompany(companyId: string, eventId: string) {
+  const supabase = createSupabaseAdminClient();
+  const { data, error } = await supabase
+    .from("holiday_events")
+    .select("id, holiday_calendars!inner(company_id)")
+    .eq("id", eventId)
+    .eq("holiday_calendars.company_id", companyId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("[CalendarService] Unable to validate event ownership.", error);
+    throw new Error("Unable to validate holiday.");
+  }
+
+  if (!data) {
+    throw new Error("Holiday was not found.");
+  }
 }
 
 function toCalendar(row: {
@@ -381,6 +407,7 @@ export const CalendarService = {
     validateEvent(values);
 
     const companyId = await getActiveCompanyId();
+    await assertCalendarBelongsToCompany(companyId, values.calendarId);
     const supabase = createSupabaseAdminClient();
     const { data, error } = await supabase
       .from("holiday_events")
@@ -414,6 +441,8 @@ export const CalendarService = {
     validateEvent(values);
 
     const companyId = await getActiveCompanyId();
+    await assertCalendarBelongsToCompany(companyId, values.calendarId);
+    await assertEventBelongsToCompany(companyId, id);
     const supabase = createSupabaseAdminClient();
     const { error } = await supabase
       .from("holiday_events")
@@ -445,6 +474,7 @@ export const CalendarService = {
 
   async archiveEvent(id: string) {
     const companyId = await getActiveCompanyId();
+    await assertEventBelongsToCompany(companyId, id);
     const supabase = createSupabaseAdminClient();
     const { error } = await supabase
       .from("holiday_events")

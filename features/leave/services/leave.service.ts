@@ -3,7 +3,8 @@ import "server-only";
 import { redirect } from "next/navigation";
 
 import { logActivity } from "@/features/activity/utils/activity-log";
-import { getCurrentAuthUser } from "@/features/auth/services/auth.service";
+import { requireCurrentCompanyId } from "@/features/auth/services/current-company-context.service";
+import { requireCurrentEmployeeContext } from "@/features/auth/services/current-employee-context.service";
 import { NotificationService } from "@/features/notifications/services/notification.service";
 import { CalendarService } from "@/features/company-calendar/services/calendar.service";
 import type {
@@ -17,6 +18,7 @@ import type {
   LeaveTypeItem,
 } from "@/features/leave/types/leave.types";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { getAppDateString } from "@/lib/datetime";
 
 const ALLOW_PAST_LEAVE_REQUESTS = false;
 
@@ -31,21 +33,18 @@ function normalizeCode(value: string) {
 }
 
 function getTodayDate() {
-  return new Date().toISOString().slice(0, 10);
+  return getAppDateString();
 }
 
 async function getCurrentEmployee() {
-  const user = await getCurrentAuthUser();
-
-  if (!user) {
-    redirect("/login");
-  }
+  const context = await requireCurrentEmployeeContext();
 
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
     .from("employees")
     .select("id, employee_id, name, company_id, manager_id, status")
-    .eq("auth_user_id", user.id)
+    .eq("id", context.id)
+    .eq("company_id", context.companyId)
     .single();
 
   if (error || !data || data.status !== "active") {
@@ -56,26 +55,12 @@ async function getCurrentEmployee() {
 }
 
 async function getActiveCompanyId() {
-  const supabase = createSupabaseAdminClient();
-  const { data, error } = await supabase
-    .from("companies")
-    .select("id")
-    .eq("status", "active")
-    .order("created_at", { ascending: true })
-    .limit(1);
-
-  if (error) {
+  try {
+    return await requireCurrentCompanyId();
+  } catch (error) {
     console.error("[LeaveService] Unable to load company.", error);
     throw new Error("Unable to load company information.");
   }
-
-  const companyId = data[0]?.id;
-
-  if (!companyId) {
-    throw new Error("Company was not found.");
-  }
-
-  return companyId;
 }
 
 function toLeaveType(row: {
@@ -270,6 +255,10 @@ async function listRequests(companyId: string, filters: LeaveAdminFilters = {}) 
     )
     .eq("company_id", companyId);
 
+  if (filters.employeeId) {
+    query = query.eq("employee_id", filters.employeeId);
+  }
+
   if (filters.status && filters.status !== "all") {
     query = query.eq("status", filters.status);
   }
@@ -297,9 +286,9 @@ async function listRequests(companyId: string, filters: LeaveAdminFilters = {}) 
 }
 
 async function listEmployeeRequests(companyId: string, employeeId: string) {
-  const requests = await listRequests(companyId);
-
-  return requests.filter((request) => request.employeeId === employeeId);
+  return listRequests(companyId, {
+    employeeId,
+  });
 }
 
 export const LeaveService = {

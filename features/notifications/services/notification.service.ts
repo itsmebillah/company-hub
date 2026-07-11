@@ -2,67 +2,36 @@ import "server-only";
 
 import { redirect } from "next/navigation";
 
-import { getCurrentAuthUser } from "@/features/auth/services/auth.service";
+import { getCurrentSessionProfile } from "@/features/auth/services/session.service";
+import { CurrentEmployeeContextService } from "@/features/auth/services/current-employee-context.service";
 import { NotificationRepository } from "@/features/notifications/repositories/notification.repository";
 import type {
   CreateNotificationInput,
   NotificationRecipient,
   NotificationSummary,
 } from "@/features/notifications/types/notification.types";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 async function getCurrentNotificationContext() {
-  const user = await getCurrentAuthUser();
+  const [employee, profile] = await Promise.all([
+    CurrentEmployeeContextService.getCurrentEmployeeContext(),
+    getCurrentSessionProfile(),
+  ]);
 
-  if (!user) {
+  if (!employee || employee.status !== "active" || !profile) {
     return null;
-  }
-
-  const supabase = createSupabaseAdminClient();
-  const { data: employee, error } = await supabase
-    .from("employees")
-    .select("id, company_id, role_id, status")
-    .eq("auth_user_id", user.id)
-    .single();
-
-  if (error || !employee || employee.status !== "active") {
-    return null;
-  }
-
-  const { data: role, error: roleError } = await supabase
-    .from("roles")
-    .select("name")
-    .eq("company_id", employee.company_id)
-    .eq("id", employee.role_id)
-    .maybeSingle();
-
-  if (roleError) {
-    console.error("[NotificationService] Unable to load role.", roleError);
   }
 
   return {
     employeeId: employee.id,
-    companyId: employee.company_id,
-    roleName: role?.name ?? "Employee",
+    companyId: employee.companyId,
+    roleName: profile.roleName,
   };
 }
 
 async function getActiveCompanyEmployees(
   companyId: string,
 ): Promise<NotificationRecipient[]> {
-  const supabase = createSupabaseAdminClient();
-  const { data, error } = await supabase
-    .from("employees")
-    .select("id")
-    .eq("company_id", companyId)
-    .eq("status", "active");
-
-  if (error) {
-    console.error("[NotificationService] Unable to load recipients.", error);
-    throw new Error("Unable to create notifications.");
-  }
-
-  return data;
+  return NotificationRepository.listActiveRecipientsForCompany(companyId);
 }
 
 export const NotificationService = {
