@@ -168,6 +168,9 @@ function LeaveRequestForm({
         <h2 className="text-xl font-semibold">New Leave Request</h2>
         <label className="space-y-2">
           <span className="text-sm font-medium">Leave Type</span>
+          <span className="block text-xs text-muted-foreground">
+            Select leave type
+          </span>
           <select
             value={values.leaveTypeId}
             onChange={(e) => onChange({ ...values, leaveTypeId: e.target.value })}
@@ -192,6 +195,9 @@ function LeaveRequestForm({
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="space-y-2">
             <span className="text-sm font-medium">From Date</span>
+            <span className="block text-xs text-muted-foreground">
+              Select start date
+            </span>
             <input
               type="date"
               value={values.startDate}
@@ -205,6 +211,9 @@ function LeaveRequestForm({
           </label>
           <label className="space-y-2">
             <span className="text-sm font-medium">To Date</span>
+            <span className="block text-xs text-muted-foreground">
+              Select end date
+            </span>
             <input
               type="date"
               value={values.endDate}
@@ -225,6 +234,9 @@ function LeaveRequestForm({
 
         <label className="space-y-2">
           <span className="text-sm font-medium">Reason</span>
+          <span className="block text-xs text-muted-foreground">
+            Enter reason
+          </span>
           <textarea
             value={values.reason}
             onChange={(e) => onChange({ ...values, reason: e.target.value })}

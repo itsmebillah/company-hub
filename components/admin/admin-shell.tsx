@@ -41,6 +41,9 @@ export function AdminShell({
 }: AdminShellProps) {
   const pathname = usePathname();
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  const shouldShowSchemaBanner =
+    schemaStatus.state === "pending" ||
+    (schemaStatus.state === "unknown" && process.env.NODE_ENV !== "production");
   const isPrimaryAdminRoute = primaryAdminNavigationItems.some(
     (item) => pathname === item.href || pathname.startsWith(`${item.href}/`),
   );
@@ -75,7 +78,7 @@ export function AdminShell({
           />
           <main className="flex-1 overflow-x-hidden px-4 pb-28 pt-4 sm:px-6 lg:px-8">
             <div className="min-w-0 space-y-5">
-              {schemaStatus.state !== "current" ? (
+              {shouldShowSchemaBanner ? (
                 <section className="app-card border-amber-300/70 bg-amber-50/90 px-4 py-3 text-sm text-amber-950 dark:bg-amber-950/35 dark:text-amber-100">
                   <p className="font-semibold">
                     {schemaStatus.message ?? "Database schema is outdated."}

@@ -18,6 +18,9 @@ import { getRenderableImageSrc } from "@/lib/media";
 type EmployeeResourceCardProps = {
   resource: EmployeePortalResource;
   categoryName: string;
+  primaryAction?: ReactNode;
+  footer?: ReactNode;
+  extraBadges?: ReactNode;
 };
 
 function getTarget(resource: EmployeePortalResource) {
@@ -55,6 +58,9 @@ function getUrlLabel(resource: EmployeePortalResource) {
 export function EmployeeResourceCard({
   resource,
   categoryName,
+  primaryAction,
+  footer,
+  extraBadges,
 }: EmployeeResourceCardProps) {
   const thumbnailSrc = getRenderableImageSrc(resource.thumbnail);
   const urlLabel = getUrlLabel(resource);
@@ -100,30 +106,36 @@ export function EmployeeResourceCard({
         <CompactBadge>{typeLabel}</CompactBadge>
         <CompactBadge>{openModeLabel}</CompactBadge>
         {thumbnailSrc ? <CompactBadge>Preview</CompactBadge> : null}
+        {extraBadges}
       </div>
 
-      <div className="mt-3">
-        {resource.url ? (
-          <Button asChild size="sm" className="h-8 w-full rounded-xl">
-            <a
-              href={resource.url}
-              target={getTarget(resource)}
-              rel={getRel(resource)}
-            >
-              <ExternalLink className="size-3.5" aria-hidden="true" />
-              Open Resource
-            </a>
-          </Button>
-        ) : (
-          <Button
-            type="button"
-            size="sm"
-            className="h-8 w-full rounded-xl"
-            disabled
-          >
-            Internal Resource
-          </Button>
+      <div className="mt-3 space-y-2">
+        {primaryAction ?? (
+          <>
+            {resource.url ? (
+              <Button asChild size="sm" className="h-8 w-full rounded-xl">
+                <a
+                  href={resource.url}
+                  target={getTarget(resource)}
+                  rel={getRel(resource)}
+                >
+                  <ExternalLink className="size-3.5" aria-hidden="true" />
+                  Open Resource
+                </a>
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                size="sm"
+                className="h-8 w-full rounded-xl"
+                disabled
+              >
+                Internal Resource
+              </Button>
+            )}
+          </>
         )}
+        {footer}
       </div>
     </PremiumCard>
   );
