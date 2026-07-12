@@ -7,6 +7,7 @@ import { MoreHorizontal } from "lucide-react";
 
 import { AdminHeader } from "@/components/admin/admin-header";
 import { AdminMobileDrawer } from "@/components/admin/admin-mobile-drawer";
+import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { MobileBottomNav } from "@/components/common/mobile-bottom-nav";
 import type { AuthSessionProfile } from "@/features/auth/types/auth.types";
 import { PermissionOnboarding } from "@/features/device-onboarding/components/permission-onboarding";
@@ -41,6 +42,7 @@ export function AdminShell({
 }: AdminShellProps) {
   const pathname = usePathname();
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const shouldShowSchemaBanner =
     schemaStatus.state === "pending" ||
     (schemaStatus.state === "unknown" && process.env.NODE_ENV !== "production");
@@ -69,6 +71,11 @@ export function AdminShell({
         onOpenChange={setIsMobileDrawerOpen}
       />
       <div className="flex min-h-svh max-w-full">
+        <AdminSidebar
+          pathname={pathname}
+          isCollapsed={isSidebarCollapsed}
+          onCollapsedChange={setIsSidebarCollapsed}
+        />
         <div className="flex min-w-0 flex-1 flex-col overflow-x-hidden">
           <AdminHeader
             profile={profile}
