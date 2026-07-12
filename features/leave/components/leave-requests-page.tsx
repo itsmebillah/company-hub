@@ -147,13 +147,13 @@ function RequestCard({ request, onView }: { request: LeaveRequestItem; onView: (
 
 function RequestDetail({ request, onClose }: { request: LeaveRequestItem; onClose: () => void }) {
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-background/80 p-4 backdrop-blur-sm">
-      <div className="mx-auto my-10 max-w-xl rounded-xl border bg-card p-5 shadow-lg">
-        <div className="flex items-start justify-between gap-3">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-background/80 p-3 pb-[calc(env(safe-area-inset-bottom)+5.75rem)] pt-[calc(env(safe-area-inset-top)+0.75rem)] backdrop-blur-sm sm:p-4">
+      <div className="mx-auto flex max-h-[calc(100svh-7rem)] max-w-xl flex-col overflow-hidden rounded-xl border bg-card shadow-lg sm:my-10 sm:block sm:max-h-none sm:overflow-visible sm:p-5">
+        <div className="flex items-start justify-between gap-3 p-5 pb-3 sm:p-0">
           <h2 className="text-xl font-semibold">Leave Request Details</h2>
           <Button type="button" variant="outline" onClick={onClose}>Close</Button>
         </div>
-        <dl className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
+        <dl className="mt-2 grid gap-3 overflow-y-auto px-5 pb-5 text-sm sm:mt-5 sm:grid-cols-2 sm:overflow-visible sm:p-0">
           <div><dt className="text-muted-foreground">Employee</dt><dd className="font-semibold">{request.employeeName}</dd></div>
           <div><dt className="text-muted-foreground">Type</dt><dd className="font-semibold">{request.leaveTypeName}</dd></div>
           <div><dt className="text-muted-foreground">Dates</dt><dd className="font-semibold">{request.startDate} to {request.endDate}</dd></div>
