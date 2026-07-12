@@ -18,7 +18,7 @@ import type {
   CelebrationSchedulerResult,
 } from "@/features/celebrations/types/celebration.types";
 
-const CELEBRATION_PROCESSING_HOUR = 9;
+const CELEBRATION_PROCESSING_HOUR = 0;
 const CELEBRATION_NOTIFICATION_PRIORITY = "high" as const;
 
 type CelebrationCompanySettingsRow = {
