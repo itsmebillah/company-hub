@@ -11,10 +11,11 @@ import { AttendanceService } from "@/features/attendance/services/attendance.ser
 import { getAdminEquivalentPath } from "@/features/auth/services/redirect.service";
 import { getCurrentSessionProfile } from "@/features/auth/services/session.service";
 import { TodaysCelebrationsCard } from "@/features/celebrations/components";
+import type { CelebrationDashboardData } from "@/features/celebrations/types/celebration.types";
 import { CelebrationService } from "@/features/celebrations/services/celebration.service";
 import { EmployeeResourceService } from "@/features/employee-resources/services/employee-resource.service";
 import { ROLE_NAMES } from "@/lib/auth/permissions";
-import { formatAppDate } from "@/lib/datetime";
+import { formatAppDate, getAppDateString } from "@/lib/datetime";
 
 export const dynamic = "force-dynamic";
 
@@ -23,9 +24,24 @@ const EMPTY_CELEBRATIONS = {
   workAnniversaries: [],
 };
 
+function filterCelebrationsForEmployee(
+  celebrations: CelebrationDashboardData,
+  employeeId: string,
+): CelebrationDashboardData {
+  return {
+    birthdays: celebrations.birthdays.filter(
+      (item) => item.employeeCode === employeeId,
+    ),
+    workAnniversaries: celebrations.workAnniversaries.filter(
+      (item) => item.employeeCode === employeeId,
+    ),
+  };
+}
+
 export default async function DashboardPage() {
   const sessionProfile = await getCurrentSessionProfile();
   const currentDate = formatAppDate(new Date());
+  const celebrationDateKey = getAppDateString();
 
   if (
     sessionProfile?.status === "active" &&
@@ -47,6 +63,13 @@ export default async function DashboardPage() {
       return EMPTY_CELEBRATIONS;
     }),
   ]);
+  const employeeCelebrations = filterCelebrationsForEmployee(
+    celebrations,
+    data.profile.employeeId,
+  );
+  const hasEmployeeCelebration =
+    employeeCelebrations.birthdays.length > 0 ||
+    employeeCelebrations.workAnniversaries.length > 0;
 
   return (
     <section className="space-y-4 md:space-y-5">
@@ -56,7 +79,12 @@ export default async function DashboardPage() {
       />
       <AnnouncementTicker announcements={announcements.announcements} />
       <AttendanceSummaryCard summary={attendanceSummary} />
-      <TodaysCelebrationsCard celebrations={celebrations} />
+      {hasEmployeeCelebration ? (
+        <TodaysCelebrationsCard
+          celebrations={employeeCelebrations}
+          dateKey={celebrationDateKey}
+        />
+      ) : null}
       <QuickResourceLinks categories={data.categories} />
     </section>
   );
