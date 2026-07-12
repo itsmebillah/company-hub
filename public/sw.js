@@ -134,6 +134,26 @@ self.addEventListener("sync", (event) => {
   );
 });
 
+function trackNotificationEvent(notificationId, eventName) {
+  if (!notificationId) {
+    return Promise.resolve();
+  }
+
+  return fetch("/api/notifications/track", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      notificationId,
+      event: eventName,
+    }),
+  }).catch((error) => {
+    console.error("[ServiceWorker] Unable to track notification event.", error);
+  });
+}
+
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
@@ -141,39 +161,42 @@ self.addEventListener("notificationclick", (event) => {
   const targetUrl = new URL(notificationData.url || "/", self.location.origin);
 
   event.waitUntil(
-    clients
-      .matchAll({
-        type: "window",
-        includeUncontrolled: true,
-      })
-      .then((clientList) => {
-        const samePageClient = clientList.find((client) => {
-          try {
-            return new URL(client.url).href === targetUrl.href;
-          } catch {
-            return false;
+    Promise.all([
+      trackNotificationEvent(notificationData.notificationId, "opened"),
+      clients
+        .matchAll({
+          type: "window",
+          includeUncontrolled: true,
+        })
+        .then((clientList) => {
+          const samePageClient = clientList.find((client) => {
+            try {
+              return new URL(client.url).href === targetUrl.href;
+            } catch {
+              return false;
+            }
+          });
+
+          if (samePageClient) {
+            return samePageClient.focus();
           }
-        });
 
-        if (samePageClient) {
-          return samePageClient.focus();
-        }
+          const companyHubClient = clientList.find((client) => {
+            try {
+              return new URL(client.url).origin === self.location.origin;
+            } catch {
+              return false;
+            }
+          });
 
-        const companyHubClient = clientList.find((client) => {
-          try {
-            return new URL(client.url).origin === self.location.origin;
-          } catch {
-            return false;
+          if (companyHubClient) {
+            return companyHubClient
+              .focus()
+              .then((client) => client.navigate(targetUrl.href));
           }
-        });
 
-        if (companyHubClient) {
-          return companyHubClient
-            .focus()
-            .then((client) => client.navigate(targetUrl.href));
-        }
-
-        return clients.openWindow(targetUrl.href);
-      }),
+          return clients.openWindow(targetUrl.href);
+        }),
+    ]),
   );
 });

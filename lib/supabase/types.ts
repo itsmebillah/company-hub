@@ -644,10 +644,15 @@ export type Database = {
           company_id: string;
           employee_id: string | null;
           type: Database["public"]["Enums"]["notification_type"];
+          priority: Database["public"]["Enums"]["notification_priority"];
           title: string;
           message: string;
           action_url: string | null;
           is_read: boolean;
+          delivery_status:
+            Database["public"]["Enums"]["notification_delivery_status"];
+          delivered_at: string | null;
+          opened_at: string | null;
           created_at: string;
           created_by: string | null;
         };
@@ -656,10 +661,15 @@ export type Database = {
           company_id: string;
           employee_id?: string | null;
           type: Database["public"]["Enums"]["notification_type"];
+          priority?: Database["public"]["Enums"]["notification_priority"];
           title: string;
           message: string;
           action_url?: string | null;
           is_read?: boolean;
+          delivery_status?:
+            Database["public"]["Enums"]["notification_delivery_status"];
+          delivered_at?: string | null;
+          opened_at?: string | null;
           created_at?: string;
           created_by?: string | null;
         };
@@ -668,10 +678,15 @@ export type Database = {
           company_id?: string;
           employee_id?: string | null;
           type?: Database["public"]["Enums"]["notification_type"];
+          priority?: Database["public"]["Enums"]["notification_priority"];
           title?: string;
           message?: string;
           action_url?: string | null;
           is_read?: boolean;
+          delivery_status?:
+            Database["public"]["Enums"]["notification_delivery_status"];
+          delivered_at?: string | null;
+          opened_at?: string | null;
           created_at?: string;
           created_by?: string | null;
         };
@@ -1249,6 +1264,8 @@ export type Database = {
         | "approval"
         | "document"
         | "system";
+      notification_priority: "normal" | "high" | "urgent";
+      notification_delivery_status: "queued" | "delivered" | "opened";
       permission_type: "public" | "role" | "employee";
       record_status: "active" | "inactive" | "archived";
       resource_open_mode: "same_tab" | "new_tab" | "external";

@@ -6,10 +6,12 @@ import { BellOff, X } from "lucide-react";
 import type {
   NotificationItem,
   NotificationSummary,
+  RealtimeNotificationScope,
 } from "@/features/notifications/types/notification.types";
 
 type NativeNotificationBridgeProps = {
   summary: NotificationSummary;
+  scope: RealtimeNotificationScope;
 };
 
 type NativeNotificationOptions = NotificationOptions & {
@@ -20,6 +22,7 @@ type NativeNotificationOptions = NotificationOptions & {
 const SHOWN_NOTIFICATIONS_KEY = "company-hub:native-notifications:shown";
 const APP_ICON = "/icon.svg";
 const APP_BADGE = "/icon.svg";
+const NOTIFICATION_TRACKING_ENDPOINT = "/api/notifications/track";
 
 function isNativeNotificationSupported() {
   return (
@@ -53,9 +56,58 @@ function storeShownIds(ids: Set<string>) {
 }
 
 function getNotificationBody(notification: NotificationItem) {
-  return notification.message
-    ? `${notification.title}: ${notification.message}`
-    : notification.title;
+  return notification.message || "Open Company Hub to view the latest update.";
+}
+
+function getNotificationVibration(notification: NotificationItem) {
+  if (notification.priority === "urgent") {
+    return [180, 80, 180, 80, 180];
+  }
+
+  if (notification.priority === "high") {
+    return [140, 70, 140];
+  }
+
+  return undefined;
+}
+
+function shouldRequireInteraction(notification: NotificationItem) {
+  return notification.priority === "urgent";
+}
+
+async function trackNotificationEvent(
+  notificationId: string,
+  event: "delivered" | "opened",
+) {
+  try {
+    const response = await fetch(NOTIFICATION_TRACKING_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "same-origin",
+      body: JSON.stringify({
+        notificationId,
+        event,
+      }),
+    });
+
+    if (!response.ok && response.status !== 204) {
+      console.error(
+        "[NativeNotificationBridge] Unable to persist notification event.",
+        {
+          notificationId,
+          event,
+          status: response.status,
+        },
+      );
+    }
+  } catch (error) {
+    console.error(
+      "[NativeNotificationBridge] Unable to persist notification event.",
+      error,
+    );
+  }
 }
 
 async function registerServiceWorker() {
@@ -89,17 +141,24 @@ async function showNativeNotification(
     data: {
       url: targetUrl,
       notificationId: notification.id,
+      priority: notification.priority,
     },
-    vibrate: [120, 60, 120],
+    vibrate: getNotificationVibration(notification),
+    requireInteraction: shouldRequireInteraction(notification),
   };
 
   if (registration?.showNotification) {
-    await registration.showNotification("Company Hub", options);
+    await registration.showNotification(notification.title, options);
+    await trackNotificationEvent(notification.id, "delivered");
     return;
   }
 
-  const browserNotification = new Notification("Company Hub", options);
+  const browserNotification = new Notification(notification.title, options);
+  browserNotification.onshow = () => {
+    void trackNotificationEvent(notification.id, "delivered");
+  };
   browserNotification.onclick = () => {
+    void trackNotificationEvent(notification.id, "opened");
     window.focus();
     window.location.assign(targetUrl);
     browserNotification.close();
@@ -108,6 +167,7 @@ async function showNativeNotification(
 
 export function NativeNotificationBridge({
   summary,
+  scope,
 }: NativeNotificationBridgeProps) {
   const [showDeniedHelper, setShowDeniedHelper] = useState(false);
   const unreadNotifications = useMemo(
@@ -116,6 +176,11 @@ export function NativeNotificationBridge({
   );
 
   useEffect(() => {
+    if (scope.type !== "employee") {
+      setShowDeniedHelper(false);
+      return;
+    }
+
     if (!isNativeNotificationSupported()) {
       return;
     }
@@ -133,6 +198,8 @@ export function NativeNotificationBridge({
         setShowDeniedHelper(true);
         return;
       }
+
+      setShowDeniedHelper(false);
 
       if (Notification.permission === "default") {
         return;
@@ -163,7 +230,7 @@ export function NativeNotificationBridge({
     return () => {
       isMounted = false;
     };
-  }, [unreadNotifications]);
+  }, [scope.type, unreadNotifications]);
 
   if (!showDeniedHelper) {
     return null;

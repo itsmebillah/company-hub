@@ -1,3 +1,5 @@
+import type { NotificationPriority } from "@/features/notifications/types/notification.types";
+
 export type PermissionType = "public" | "role" | "employee";
 
 export type PermissionResource = {
@@ -30,6 +32,11 @@ export type ResourcePermissionDraft = {
 
 export type ResourcePermissionState = ResourcePermissionDraft & {
   resourceId: string;
+};
+
+export type ResourcePermissionUpdateInput = {
+  draft: ResourcePermissionDraft;
+  notificationPriority: NotificationPriority;
 };
 
 export type ResourcePermissionManagementData = {

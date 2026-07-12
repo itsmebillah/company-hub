@@ -6,6 +6,7 @@ import { AlertCircle, ImagePlus, Loader2, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnnouncementImage } from "@/features/announcements/components/announcement-image";
 import { ANNOUNCEMENT_PRIORITIES } from "@/features/announcements/constants/announcement-options";
+import { NOTIFICATION_PRIORITY_OPTIONS } from "@/features/notifications/constants/notification-priority";
 import type {
   AnnouncementActionState,
   AnnouncementAudienceOptions,
@@ -28,6 +29,7 @@ const defaultValues: AnnouncementFormValues = {
   content: "",
   bannerUrl: "",
   priority: "normal",
+  notificationPriority: "normal",
   publishFrom: "",
   publishUntil: "",
   status: "active",
@@ -36,7 +38,9 @@ const defaultValues: AnnouncementFormValues = {
   employeeIds: [],
 };
 
-function toValues(announcement?: AnnouncementListItem | null) {
+function toValues(
+  announcement?: AnnouncementListItem | null,
+): AnnouncementFormValues {
   if (!announcement) {
     return defaultValues;
   }
@@ -47,6 +51,7 @@ function toValues(announcement?: AnnouncementListItem | null) {
     description: announcement.description,
     bannerUrl: announcement.bannerUrl,
     priority: announcement.priority,
+    notificationPriority: "normal",
     publishFrom: announcement.publishFrom
       ? announcement.publishFrom.slice(0, 16)
       : "",
@@ -279,6 +284,26 @@ export function AnnouncementForm({
               className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {ANNOUNCEMENT_PRIORITIES.map((priority) => (
+                <option key={priority.value} value={priority.value}>
+                  {priority.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="space-y-2">
+            <span className="text-sm font-medium">Notification Priority</span>
+            <select
+              value={values.notificationPriority}
+              onChange={(event) =>
+                updateValue(
+                  "notificationPriority",
+                  event.target.value as AnnouncementFormValues["notificationPriority"],
+                )
+              }
+              className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {NOTIFICATION_PRIORITY_OPTIONS.map((priority) => (
                 <option key={priority.value} value={priority.value}>
                   {priority.label}
                 </option>

@@ -1,4 +1,5 @@
 import type { Database } from "@/lib/supabase/types";
+import type { NotificationPriority } from "@/features/notifications/types/notification.types";
 
 export type AnnouncementStatus = Database["public"]["Enums"]["record_status"];
 export type AnnouncementPriority =
@@ -37,6 +38,7 @@ export type AnnouncementFormValues = {
   content: string;
   bannerUrl: string;
   priority: AnnouncementPriority;
+  notificationPriority: NotificationPriority;
   publishFrom: string;
   publishUntil: string;
   status: AnnouncementStatus;

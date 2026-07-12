@@ -512,6 +512,7 @@ export const AnnouncementService = {
           {
             companyId,
             type: "announcement",
+            priority: validated.notificationPriority,
             title: "New announcement",
             message: validated.title,
             actionUrl: "/announcements",

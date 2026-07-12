@@ -21,6 +21,7 @@ import {
 } from "@/features/notifications/actions/notification.actions";
 import type {
   NotificationItem,
+  NotificationPriority,
   NotificationSummary,
   NotificationType,
 } from "@/features/notifications/types/notification.types";
@@ -46,6 +47,24 @@ const notificationIcons: Record<NotificationType, typeof Megaphone> = {
   document: FileText,
   system: Settings,
 };
+
+const notificationPriorityStyles: Record<NotificationPriority, string> = {
+  normal: "border-border bg-muted text-muted-foreground",
+  high: "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+  urgent: "border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300",
+};
+
+function getPriorityLabel(priority: NotificationPriority) {
+  if (priority === "urgent") {
+    return "Urgent";
+  }
+
+  if (priority === "high") {
+    return "High";
+  }
+
+  return "Normal";
+}
 
 function formatUnreadCount(count: number) {
   if (count <= 0) {
@@ -173,6 +192,16 @@ function NotificationRow({
           >
             {notification.title}
           </p>
+          {notification.priority !== "normal" ? (
+            <span
+              className={cn(
+                "shrink-0 rounded-full border px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-wide",
+                notificationPriorityStyles[notification.priority],
+              )}
+            >
+              {getPriorityLabel(notification.priority)}
+            </span>
+          ) : null}
           <span
             className={cn(
               "size-2 shrink-0 rounded-full",

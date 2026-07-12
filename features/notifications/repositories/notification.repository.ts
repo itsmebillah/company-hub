@@ -3,6 +3,7 @@ import "server-only";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type {
   CreateNotificationInput,
+  NotificationDeliveryStatus,
   NotificationItem,
   NotificationRecipient,
 } from "@/features/notifications/types/notification.types";
@@ -11,22 +12,38 @@ import type { Database } from "@/lib/supabase/types";
 type NotificationInsert =
   Database["public"]["Tables"]["notifications"]["Insert"];
 
+type NotificationTrackingRow = {
+  id: string;
+  delivered_at: string | null;
+  opened_at: string | null;
+  delivery_status: NotificationDeliveryStatus;
+  is_read: boolean;
+};
+
 function toItem(row: {
   id: string;
   type: Database["public"]["Enums"]["notification_type"];
+  priority: Database["public"]["Enums"]["notification_priority"];
   title: string;
   message: string;
   action_url: string | null;
   is_read: boolean;
+  delivery_status: Database["public"]["Enums"]["notification_delivery_status"];
+  delivered_at: string | null;
+  opened_at: string | null;
   created_at: string;
 }): NotificationItem {
   return {
     id: row.id,
     type: row.type,
+    priority: row.priority,
     title: row.title,
     message: row.message,
     actionUrl: row.action_url,
     isRead: row.is_read,
+    deliveryStatus: row.delivery_status,
+    deliveredAt: row.delivered_at,
+    openedAt: row.opened_at,
     createdAt: row.created_at,
   };
 }
@@ -54,7 +71,9 @@ export const NotificationRepository = {
     const supabase = createSupabaseAdminClient();
     const { data, error } = await supabase
       .from("notifications")
-      .select("id, type, title, message, action_url, is_read, created_at")
+      .select(
+        "id, type, priority, title, message, action_url, is_read, delivery_status, delivered_at, opened_at, created_at",
+      )
       .eq("company_id", companyId)
       .eq("employee_id", employeeId)
       .order("created_at", { ascending: false })
@@ -72,7 +91,9 @@ export const NotificationRepository = {
     const supabase = createSupabaseAdminClient();
     const { data, error } = await supabase
       .from("notifications")
-      .select("id, type, title, message, action_url, is_read, created_at")
+      .select(
+        "id, type, priority, title, message, action_url, is_read, delivery_status, delivered_at, opened_at, created_at",
+      )
       .eq("company_id", companyId)
       .order("created_at", { ascending: false })
       .limit(limit);
@@ -133,6 +154,7 @@ export const NotificationRepository = {
       company_id: input.companyId,
       employee_id: input.employeeId ?? null,
       type: input.type,
+      priority: input.priority ?? "normal",
       title: input.title,
       message: input.message,
       action_url: input.actionUrl ?? null,
@@ -157,6 +179,7 @@ export const NotificationRepository = {
       company_id: input.companyId,
       employee_id: recipient.id,
       type: input.type,
+      priority: input.priority ?? "normal",
       title: input.title,
       message: input.message,
       action_url: input.actionUrl ?? null,
@@ -175,26 +198,17 @@ export const NotificationRepository = {
     }
   },
 
-  async markReadForEmployee(id: string, employeeId: string, companyId: string) {
-    const supabase = createSupabaseAdminClient();
-    const { error } = await supabase
-      .from("notifications")
-      .update({ is_read: true })
-      .eq("id", id)
-      .eq("company_id", companyId)
-      .eq("employee_id", employeeId);
-
-    if (error) {
-      console.error("[NotificationRepository] Unable to mark notification read.", error);
-      throw new Error("Unable to update notification.");
-    }
-  },
-
   async markAllReadForEmployee(employeeId: string, companyId: string) {
+    const now = new Date().toISOString();
     const supabase = createSupabaseAdminClient();
     const { error } = await supabase
       .from("notifications")
-      .update({ is_read: true })
+      .update({
+        is_read: true,
+        delivery_status: "opened",
+        delivered_at: now,
+        opened_at: now,
+      })
       .eq("company_id", companyId)
       .eq("employee_id", employeeId)
       .eq("is_read", false);
@@ -209,10 +223,16 @@ export const NotificationRepository = {
   },
 
   async markAllReadForCompany(companyId: string) {
+    const now = new Date().toISOString();
     const supabase = createSupabaseAdminClient();
     const { error } = await supabase
       .from("notifications")
-      .update({ is_read: true })
+      .update({
+        is_read: true,
+        delivery_status: "opened",
+        delivered_at: now,
+        opened_at: now,
+      })
       .eq("company_id", companyId)
       .eq("is_read", false);
 
@@ -222,6 +242,94 @@ export const NotificationRepository = {
         error,
       );
       throw new Error("Unable to update notifications.");
+    }
+  },
+
+  async getTrackingStateForEmployee(
+    id: string,
+    employeeId: string,
+    companyId: string,
+  ): Promise<NotificationTrackingRow | null> {
+    const supabase = createSupabaseAdminClient();
+    const { data, error } = await supabase
+      .from("notifications")
+      .select("id, delivered_at, opened_at, delivery_status, is_read")
+      .eq("id", id)
+      .eq("company_id", companyId)
+      .eq("employee_id", employeeId)
+      .maybeSingle();
+
+    if (error) {
+      console.error(
+        "[NotificationRepository] Unable to load notification tracking state.",
+        error,
+      );
+      throw new Error("Unable to update notification.");
+    }
+
+    return data;
+  },
+
+  async markDeliveredForEmployee(id: string, employeeId: string, companyId: string) {
+    const current = await this.getTrackingStateForEmployee(id, employeeId, companyId);
+
+    if (!current || current.delivery_status === "opened") {
+      return;
+    }
+
+    const supabase = createSupabaseAdminClient();
+    const now = new Date().toISOString();
+    const { error } = await supabase
+      .from("notifications")
+      .update({
+        delivery_status: "delivered",
+        delivered_at: current.delivered_at ?? now,
+      })
+      .eq("id", id)
+      .eq("company_id", companyId)
+      .eq("employee_id", employeeId)
+      .neq("delivery_status", "opened");
+
+    if (error) {
+      console.error(
+        "[NotificationRepository] Unable to mark notification delivered.",
+        error,
+      );
+      throw new Error("Unable to update notification.");
+    }
+  },
+
+  async markOpenedForEmployee(id: string, employeeId: string, companyId: string) {
+    const current = await this.getTrackingStateForEmployee(id, employeeId, companyId);
+
+    if (!current) {
+      return;
+    }
+
+    if (current.delivery_status === "opened" && current.is_read) {
+      return;
+    }
+
+    const supabase = createSupabaseAdminClient();
+    const now = new Date().toISOString();
+    const { error } = await supabase
+      .from("notifications")
+      .update({
+        is_read: true,
+        delivery_status: "opened",
+        delivered_at: current.delivered_at ?? now,
+        opened_at: current.opened_at ?? now,
+      })
+      .eq("id", id)
+      .eq("company_id", companyId)
+      .eq("employee_id", employeeId);
+
+    if (error) {
+      console.error(
+        "[NotificationRepository] Unable to mark notification opened.",
+        error,
+      );
+      throw new Error("Unable to update notification.");
     }
   },
 };

@@ -5,12 +5,14 @@ import { Search, ShieldCheck, UsersRound, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/common/empty-state";
+import { NOTIFICATION_PRIORITY_OPTIONS } from "@/features/notifications/constants/notification-priority";
 import type {
   PermissionEmployee,
   ResourcePermissionActionState,
   ResourcePermissionDraft,
   ResourcePermissionManagementData,
   ResourcePermissionState,
+  ResourcePermissionUpdateInput,
 } from "@/features/resource-permissions/types/resource-permission.types";
 import { cn } from "@/lib/utils";
 
@@ -18,7 +20,7 @@ type ResourcePermissionPageProps = {
   data: ResourcePermissionManagementData;
   onSave: (
     resourceId: string,
-    draft: ResourcePermissionDraft,
+    input: ResourcePermissionUpdateInput,
   ) => Promise<ResourcePermissionActionState>;
 };
 
@@ -68,6 +70,9 @@ export function ResourcePermissionPage({
       ),
   );
   const [message, setMessage] = useState("");
+  const [notificationPriority, setNotificationPriority] = useState<
+    ResourcePermissionUpdateInput["notificationPriority"]
+  >("normal");
   const [isPending, startTransition] = useTransition();
 
   const categories = useMemo(
@@ -171,7 +176,10 @@ export function ResourcePermissionPage({
 
     setMessage("");
     startTransition(async () => {
-      const result = await onSave(selectedResourceId, currentDraft);
+      const result = await onSave(selectedResourceId, {
+        draft: currentDraft,
+        notificationPriority,
+      });
       setMessage(result.message);
     });
   }
@@ -259,14 +267,36 @@ export function ResourcePermissionPage({
               {selectedResource?.categoryName}
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button type="button" variant="outline" onClick={resetDraft}>
-              Cancel
-            </Button>
-            <Button type="button" onClick={saveDraft} disabled={isPending}>
-              <ShieldCheck className="size-4" aria-hidden="true" />
-              Save
-            </Button>
+          <div className="flex flex-col gap-3 md:items-end">
+            <label className="space-y-1">
+              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Notification Priority
+              </span>
+              <select
+                value={notificationPriority}
+                onChange={(event) =>
+                  setNotificationPriority(
+                    event.target.value as ResourcePermissionUpdateInput["notificationPriority"],
+                  )
+                }
+                className="h-10 min-w-36 rounded-md border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {NOTIFICATION_PRIORITY_OPTIONS.map((priority) => (
+                  <option key={priority.value} value={priority.value}>
+                    {priority.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" onClick={resetDraft}>
+                Cancel
+              </Button>
+              <Button type="button" onClick={saveDraft} disabled={isPending}>
+                <ShieldCheck className="size-4" aria-hidden="true" />
+                Save
+              </Button>
+            </div>
           </div>
         </div>
 

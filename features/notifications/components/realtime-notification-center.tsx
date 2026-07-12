@@ -29,10 +29,14 @@ function toNotificationItem(row: NotificationRow): NotificationItem {
   return {
     id: row.id,
     type: row.type,
+    priority: row.priority,
     title: row.title,
     message: row.message,
     actionUrl: row.action_url,
     isRead: row.is_read,
+    deliveryStatus: row.delivery_status,
+    deliveredAt: row.delivered_at,
+    openedAt: row.opened_at,
     createdAt: row.created_at,
   };
 }
@@ -213,7 +217,7 @@ export function RealtimeNotificationCenter({
         onNotificationRead={handleNotificationRead}
         onAllNotificationsRead={handleAllNotificationsRead}
       />
-      <NativeNotificationBridge summary={summary} />
+      <NativeNotificationBridge summary={summary} scope={scope} />
     </>
   );
 }

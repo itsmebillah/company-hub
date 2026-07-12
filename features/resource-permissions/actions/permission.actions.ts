@@ -5,15 +5,15 @@ import { revalidatePath } from "next/cache";
 import { PermissionService } from "@/features/resource-permissions/services/permission.service";
 import type {
   ResourcePermissionActionState,
-  ResourcePermissionDraft,
+  ResourcePermissionUpdateInput,
 } from "@/features/resource-permissions/types/resource-permission.types";
 
 export async function replaceResourcePermissionsAction(
   resourceId: string,
-  draft: ResourcePermissionDraft,
+  input: ResourcePermissionUpdateInput,
 ): Promise<ResourcePermissionActionState> {
   try {
-    await PermissionService.replacePermissions(resourceId, draft);
+    await PermissionService.replacePermissions(resourceId, input);
     revalidatePath("/admin/resources/permissions");
     revalidatePath("/dashboard");
     revalidatePath("/resources");

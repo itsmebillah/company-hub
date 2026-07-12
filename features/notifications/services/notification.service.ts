@@ -9,6 +9,7 @@ import type {
   CreateNotificationInput,
   NotificationRecipient,
   NotificationSummary,
+  NotificationTrackingEvent,
 } from "@/features/notifications/types/notification.types";
 
 async function getCurrentNotificationContext() {
@@ -96,7 +97,7 @@ export const NotificationService = {
       redirect("/login");
     }
 
-    await NotificationRepository.markReadForEmployee(
+    await NotificationRepository.markOpenedForEmployee(
       id,
       context.employeeId,
       context.companyId,
@@ -116,6 +117,32 @@ export const NotificationService = {
     }
 
     await NotificationRepository.markAllReadForEmployee(
+      context.employeeId,
+      context.companyId,
+    );
+  },
+
+  async trackCurrentUserNotification(
+    id: string,
+    event: NotificationTrackingEvent,
+  ) {
+    const context = await getCurrentNotificationContext();
+
+    if (!context) {
+      return;
+    }
+
+    if (event === "opened") {
+      await NotificationRepository.markOpenedForEmployee(
+        id,
+        context.employeeId,
+        context.companyId,
+      );
+      return;
+    }
+
+    await NotificationRepository.markDeliveredForEmployee(
+      id,
       context.employeeId,
       context.companyId,
     );

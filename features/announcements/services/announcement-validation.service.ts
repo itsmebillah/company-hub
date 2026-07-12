@@ -1,6 +1,7 @@
 import "server-only";
 
 import { ANNOUNCEMENT_PRIORITIES } from "@/features/announcements/constants/announcement-options";
+import { isNotificationPriority } from "@/features/notifications/constants/notification-priority";
 import type {
   AnnouncementFormValues,
   AnnouncementPriority,
@@ -27,6 +28,10 @@ export const AnnouncementValidationService = {
 
     assertPriority(values.priority);
     assertStatus(values.status);
+
+    if (!isNotificationPriority(values.notificationPriority)) {
+      throw new Error("Notification priority is invalid.");
+    }
 
     if (values.publishFrom && values.publishUntil) {
       const publishFrom = new Date(values.publishFrom);
@@ -61,6 +66,7 @@ export const AnnouncementValidationService = {
         .join("\n\n"),
       bannerUrl: values.bannerUrl.trim(),
       priority: values.priority,
+      notificationPriority: values.notificationPriority,
       publishFrom: values.publishFrom || null,
       publishUntil: values.publishUntil || null,
       status: values.status,

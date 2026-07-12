@@ -2,15 +2,16 @@ import "server-only";
 
 import { logActivity } from "@/features/activity/utils/activity-log";
 import { requireCurrentCompanyId } from "@/features/auth/services/current-company-context.service";
+import { isNotificationPriority } from "@/features/notifications/constants/notification-priority";
 import { NotificationService } from "@/features/notifications/services/notification.service";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { PermissionValidationService } from "@/features/resource-permissions/services/permission-validation.service";
 import type { Database } from "@/lib/supabase/types";
 import type {
   PermissionEmployee,
-  ResourcePermissionDraft,
   ResourcePermissionManagementData,
   ResourcePermissionState,
+  ResourcePermissionUpdateInput,
 } from "@/features/resource-permissions/types/resource-permission.types";
 
 type ResourcePermissionInsert =
@@ -165,7 +166,16 @@ export const PermissionService = {
     };
   },
 
-  async replacePermissions(resourceId: string, draft: ResourcePermissionDraft) {
+  async replacePermissions(
+    resourceId: string,
+    input: ResourcePermissionUpdateInput,
+  ) {
+    const { draft, notificationPriority } = input;
+
+    if (!isNotificationPriority(notificationPriority)) {
+      throw new Error("Notification priority is invalid.");
+    }
+
     PermissionValidationService.validateDraft(draft);
 
     const supabase = createSupabaseAdminClient();
@@ -273,6 +283,7 @@ export const PermissionService = {
           {
             companyId,
             type: "resource",
+            priority: notificationPriority,
             title: "Resource available",
             message: resource.title,
             actionUrl: "/resources",
