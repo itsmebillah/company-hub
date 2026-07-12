@@ -181,11 +181,11 @@ function RequestDetail({
 
   return (
     <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
-      <div className="flex min-h-svh items-center justify-center px-3 pb-[calc(env(safe-area-inset-bottom)+5.75rem)] pt-[calc(env(safe-area-inset-top)+1rem)] sm:hidden">
-        <div className="flex max-h-[min(82svh,42rem)] w-full max-w-md flex-col overflow-hidden rounded-[1.5rem] border bg-card shadow-[var(--shadow-card)]">
-          <div className="flex shrink-0 items-center justify-between gap-3 border-b bg-card/95 px-4 py-3">
+      <div className="max-h-svh overflow-y-auto px-3 pb-[calc(env(safe-area-inset-bottom)+6.25rem)] pt-[calc(env(safe-area-inset-top)+5.75rem)] sm:hidden">
+        <div className="mx-auto w-full max-w-md overflow-hidden rounded-[1.5rem] border bg-card shadow-[var(--shadow-card)]">
+          <div className="flex items-center justify-between gap-3 border-b bg-card/95 px-4 py-3">
             <h2 className="min-w-0 text-lg font-semibold">
-              Leave Request Details
+              ← Leave Request Details
             </h2>
             <div className="flex shrink-0 items-center gap-2">
               <Button
@@ -204,7 +204,7 @@ function RequestDetail({
             </div>
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+          <div className="px-4 py-4">
             <div className="grid gap-3 text-sm">
               <DetailItem label="Employee" value={request.employeeName} />
               <DetailItem label="Type" value={request.leaveTypeName} />
@@ -292,7 +292,7 @@ function RequestDetail({
             </div>
           </div>
 
-          <div className="grid shrink-0 gap-2 border-t bg-card/95 px-4 py-3">
+          <div className="grid gap-2 border-t bg-card/95 px-4 py-3">
             <Button
               type="button"
               onClick={() => onApprove()}
