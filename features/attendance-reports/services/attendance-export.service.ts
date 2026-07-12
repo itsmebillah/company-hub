@@ -3,6 +3,7 @@ import "server-only";
 import { utils, write } from "xlsx";
 
 import { logActivity } from "@/features/activity/utils/activity-log";
+import { getEmployeeWorkModeLabel } from "@/features/employees/constants/employee-work-mode.config";
 import type {
   AttendanceReportDetailsResult,
   AttendanceReportExportFormat,
@@ -51,7 +52,7 @@ function buildEmployeeTable(pageData: AttendanceReportPageData) {
     "Employee ID": row.employeeCode,
     "Employee Name": row.employeeName,
     Role: row.roleName,
-    "Work Mode": row.workMode,
+    "Work Mode": getEmployeeWorkModeLabel(row.workMode),
     Department: row.departmentName ?? "",
     "Present Days": row.presentDays,
     "Absent Days": row.absentDays,
@@ -77,7 +78,9 @@ function buildDailyDetailsRows(detailsByEmployeeId: Map<string, AttendanceReport
       "Check-out": item.checkOut ?? "",
       "Working Hours": item.workingHoursLabel,
       Status: item.status,
-      "Attendance Type": item.attendanceType ?? "",
+      "Attendance Type": item.attendanceType
+        ? getEmployeeWorkModeLabel(item.attendanceType)
+        : "",
       Late: item.lateMinutes,
       Office: item.office,
       "Check-in Address": item.checkInAddress ?? "",

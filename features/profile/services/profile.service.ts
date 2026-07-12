@@ -53,7 +53,7 @@ async function getCurrentEmployee() {
   const { data: employee, error } = await supabase
     .from("employees")
     .select(
-      "id, employee_id, name, phone, email, date_of_birth, joining_date, photo_url, manager_id, company_id, role_id, status",
+      "id, employee_id, name, phone, email, date_of_birth, joining_date, photo_url, manager_id, company_id, role_id, work_mode, status",
     )
     .eq("id", context.id)
     .eq("company_id", context.companyId)
@@ -95,6 +95,7 @@ export const ProfileService = {
       reportsTo: managerResult.data
         ? `${managerResult.data.name} (${managerResult.data.employee_id})`
         : "None",
+      workMode: employee.work_mode,
       status: employee.status,
     };
   },

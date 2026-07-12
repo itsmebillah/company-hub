@@ -4,6 +4,7 @@ import { Download, FileSpreadsheet, FileText, Table2 } from "lucide-react";
 import { IconBadge } from "@/components/common/icon-badge";
 import { PageHeader } from "@/components/common/page-header";
 import { AttendanceReportTable } from "@/features/attendance-reports/components/attendance-report-table";
+import { EMPLOYEE_WORK_MODE_OPTIONS } from "@/features/employees/constants/employee-work-mode.config";
 import type { AttendanceReportPageData } from "@/features/attendance-reports/types/attendance-report.types";
 
 type AttendanceReportPageProps = {
@@ -23,6 +24,10 @@ function buildQueryString(data: AttendanceReportPageData) {
 
   if (data.filters.attendanceMode !== "all") {
     params.set("attendanceMode", data.filters.attendanceMode);
+  }
+
+  if (data.filters.workMode !== "all") {
+    params.set("workMode", data.filters.workMode);
   }
 
   if (data.filters.status !== "all") {
@@ -187,6 +192,24 @@ export function AttendanceReportPage({ data }: AttendanceReportPageProps) {
             <option value="office">Office-based</option>
             <option value="remote">Remote</option>
             <option value="hybrid">Hybrid source</option>
+          </select>
+        </label>
+
+        <label className="block">
+          <span className="text-xs font-medium text-muted-foreground">
+            Work Mode
+          </span>
+          <select
+            name="workMode"
+            defaultValue={data.filters.workMode}
+            className="mt-1 min-h-11 w-full rounded-lg border bg-background px-3 text-sm"
+          >
+            <option value="all">All work modes</option>
+            {EMPLOYEE_WORK_MODE_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.icon} {option.label}
+              </option>
+            ))}
           </select>
         </label>
 

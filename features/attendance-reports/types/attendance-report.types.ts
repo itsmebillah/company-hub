@@ -15,6 +15,9 @@ export type AttendanceReportModeFilter =
   | "office"
   | "remote"
   | "hybrid";
+export type AttendanceReportWorkModeFilter =
+  | "all"
+  | EmployeeWorkMode;
 
 export type AttendanceReportFilters = {
   companyId: string;
@@ -22,6 +25,7 @@ export type AttendanceReportFilters = {
   roleId: string;
   employeeId: string;
   attendanceMode: AttendanceReportModeFilter;
+  workMode: AttendanceReportWorkModeFilter;
   status: AttendanceReportStatusFilter;
   month: number;
   year: number;

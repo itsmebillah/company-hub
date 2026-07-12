@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { getAllowedManagerRole } from "@/features/employees/constants/employee-rules";
+import { EMPLOYEE_WORK_MODE_OPTIONS } from "@/features/employees/constants/employee-work-mode.config";
 import type {
   EmployeeActionState,
   EmployeeFormValues,
@@ -283,9 +284,11 @@ export function EmployeeForm({
             className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
             disabled={isSubmitting}
           >
-            <option value="office">Office - approved locations only</option>
-            <option value="field">Field - anywhere with GPS</option>
-            <option value="hybrid">Hybrid - office or field</option>
+            {EMPLOYEE_WORK_MODE_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.icon} {option.label} - {option.description}
+              </option>
+            ))}
           </select>
         </label>
 

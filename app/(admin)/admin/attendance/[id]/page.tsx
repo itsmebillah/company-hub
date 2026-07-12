@@ -4,6 +4,8 @@ import { ArrowLeft, ExternalLink, LocateFixed, Route } from "lucide-react";
 
 import { AttendanceStatusBadge } from "@/features/attendance/components";
 import { AttendanceService } from "@/features/attendance/services/attendance.service";
+import { EmployeeWorkModeBadge } from "@/features/employees/ui/employee-work-mode-badge";
+import { getEmployeeWorkModeConfig } from "@/features/employees/constants/employee-work-mode.config";
 import { formatAppDateTime } from "@/lib/datetime";
 
 export const dynamic = "force-dynamic";
@@ -122,14 +124,14 @@ export default async function AdminAttendanceDetailPage({
             </div>
             <div className="rounded-lg border bg-background p-3">
               <dt className="text-muted-foreground">Work Mode</dt>
-              <dd className="mt-1 font-semibold capitalize">
-                {record.employeeWorkMode}
+              <dd className="mt-1 font-semibold">
+                <EmployeeWorkModeBadge workMode={record.employeeWorkMode} />
               </dd>
             </div>
             <div className="rounded-lg border bg-background p-3">
               <dt className="text-muted-foreground">Attendance Type</dt>
               <dd className="mt-1 font-semibold capitalize">
-                {record.attendanceType}
+                {getEmployeeWorkModeConfig(record.attendanceType).label}
               </dd>
             </div>
           </dl>

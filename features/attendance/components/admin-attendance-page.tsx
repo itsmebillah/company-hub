@@ -14,6 +14,7 @@ import type {
   AttendanceListFilters,
   AttendanceListResult,
 } from "@/features/attendance/types/attendance.types";
+import { EmployeeWorkModeBadge } from "@/features/employees/ui/employee-work-mode-badge";
 import { formatAppDate, formatAppTime } from "@/lib/datetime";
 
 type AdminAttendancePageProps = {
@@ -198,6 +199,7 @@ export function AdminAttendancePage({
               <thead className="border-b bg-muted/50 text-xs uppercase text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 font-medium">Employee</th>
+                  <th className="px-4 py-3 font-medium">Work Mode</th>
                   <th className="px-4 py-3 font-medium">Date</th>
                   <th className="px-4 py-3 font-medium">Check-in</th>
                   <th className="px-4 py-3 font-medium">Check-out</th>
@@ -214,6 +216,9 @@ export function AdminAttendancePage({
                       <p className="text-xs text-muted-foreground">
                         {record.employeeCode}
                       </p>
+                    </td>
+                    <td className="px-4 py-3">
+                      <EmployeeWorkModeBadge workMode={record.employeeWorkMode} />
                     </td>
                     <td className="px-4 py-3">{formatDate(record.attendanceDate)}</td>
                     <td className="px-4 py-3">{formatTime(record.checkIn)}</td>
@@ -250,6 +255,7 @@ export function AdminAttendancePage({
                   </div>
                   <AttendanceStatusBadge status={record.status} />
                 </div>
+                <EmployeeWorkModeBadge workMode={record.employeeWorkMode} />
                 <dl className="grid grid-cols-3 gap-2 text-sm">
                   <div className="rounded-lg border bg-background p-2">
                     <dt className="text-xs text-muted-foreground">In</dt>

@@ -8,6 +8,7 @@ import type {
   AttendanceReportFilters,
   AttendanceReportRow,
 } from "@/features/attendance-reports/types/attendance-report.types";
+import { EmployeeWorkModeBadge } from "@/features/employees/ui/employee-work-mode-badge";
 import { cn } from "@/lib/utils";
 
 type AttendanceReportTableProps = {
@@ -28,6 +29,10 @@ function toQueryString(filters: AttendanceReportFilters, employeeId: string) {
 
   if (filters.attendanceMode !== "all") {
     params.set("attendanceMode", filters.attendanceMode);
+  }
+
+  if (filters.workMode !== "all") {
+    params.set("workMode", filters.workMode);
   }
 
   if (filters.status !== "all") {
@@ -151,7 +156,9 @@ export function AttendanceReportTable({
                       </p>
                     </td>
                     <td className="px-4 py-3">{row.roleName}</td>
-                    <td className="px-4 py-3 capitalize">{row.workMode}</td>
+                    <td className="px-4 py-3">
+                      <EmployeeWorkModeBadge workMode={row.workMode} />
+                    </td>
                     <td className="px-4 py-3">{row.presentDays}</td>
                     <td className="px-4 py-3">{row.absentDays}</td>
                     <td className="px-4 py-3">{row.lateDays}</td>

@@ -33,6 +33,8 @@ type EmployeeManagementPageProps = {
     roleId: string;
     status: string;
     managerId: string;
+    workMode: string;
+    sort: string;
   };
   loadError?: string;
   onCreate: (values: EmployeeFormValues) => Promise<EmployeeActionState>;
@@ -61,6 +63,21 @@ function toUiRecord(employee: EmployeeListResult["employees"][number]): Employee
   };
 }
 
+function buildExportHref(filters: EmployeeManagementPageProps["filters"]) {
+  const params = new URLSearchParams();
+
+  if (filters.search) params.set("search", filters.search);
+  if (filters.roleId) params.set("roleId", filters.roleId);
+  if (filters.status) params.set("status", filters.status);
+  if (filters.managerId) params.set("managerId", filters.managerId);
+  if (filters.workMode) params.set("workMode", filters.workMode);
+  if (filters.sort && filters.sort !== "newest") params.set("sort", filters.sort);
+
+  const query = params.toString();
+
+  return query ? `/admin/users/export?${query}` : "/admin/users/export";
+}
+
 export function EmployeeManagementPage({
   result,
   roles,
@@ -79,6 +96,7 @@ export function EmployeeManagementPage({
   const [editingEmployee, setEditingEmployee] = useState<EmployeeUiRecord | null>(null);
   const [actionMessage, setActionMessage] = useState("");
   const employees = result.employees.map(toUiRecord);
+  const exportHref = buildExportHref(filters);
 
   function updateFilters(nextFilters: Partial<EmployeeManagementPageProps["filters"]> & { page?: number; pageSize?: number }) {
     const params = new URLSearchParams();
@@ -88,6 +106,8 @@ export function EmployeeManagementPage({
     if (merged.roleId) params.set("roleId", merged.roleId);
     if (merged.status) params.set("status", merged.status);
     if (merged.managerId) params.set("managerId", merged.managerId);
+    if (merged.workMode) params.set("workMode", merged.workMode);
+    if (merged.sort && merged.sort !== "newest") params.set("sort", merged.sort);
     params.set("page", String(nextFilters.page ?? 1));
     params.set("pageSize", String(nextFilters.pageSize ?? result.pageSize));
 
@@ -136,9 +156,11 @@ export function EmployeeManagementPage({
               Import
             </Link>
           </Button>
-          <Button type="button" variant="outline" className="h-10">
-            <Download className="size-4" aria-hidden="true" />
-            Export Soon
+          <Button type="button" variant="outline" className="h-10" asChild>
+            <Link href={exportHref}>
+              <Download className="size-4" aria-hidden="true" />
+              Export
+            </Link>
           </Button>
         </div>
       </div>
@@ -150,10 +172,14 @@ export function EmployeeManagementPage({
         roleId={filters.roleId}
         status={filters.status}
         managerId={filters.managerId}
+        workMode={filters.workMode}
+        sort={filters.sort}
         onSearchChange={(value) => updateFilters({ search: value })}
         onRoleChange={(value) => updateFilters({ roleId: value })}
         onStatusChange={(value) => updateFilters({ status: value })}
         onReportsToChange={(value) => updateFilters({ managerId: value })}
+        onWorkModeChange={(value) => updateFilters({ workMode: value })}
+        onSortChange={(value) => updateFilters({ sort: value })}
         onReset={() => router.replace("/admin/users")}
       />
 

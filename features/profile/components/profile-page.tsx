@@ -2,6 +2,7 @@ import { CalendarDays, ShieldCheck } from "lucide-react";
 
 import { IconBadge } from "@/components/common/icon-badge";
 import { PageHeader } from "@/components/common/page-header";
+import { EmployeeWorkModeBadge } from "@/features/employees/ui/employee-work-mode-badge";
 import { PasswordSection } from "@/features/profile/components/password-section";
 import { PreferencesSection } from "@/features/profile/components/preferences-section";
 import { ProfileDetailsForm } from "@/features/profile/components/profile-details-form";
@@ -57,6 +58,15 @@ export function ProfilePage({
           <div>
             <p className="text-xs text-muted-foreground">Status</p>
             <p className="text-sm font-medium capitalize">{profile.status}</p>
+          </div>
+        </div>
+        <div className="app-card app-card-subtle flex items-center gap-3 px-4 py-4 sm:col-span-2">
+          <IconBadge icon={ShieldCheck} className="size-10 rounded-2xl" />
+          <div>
+            <p className="text-xs text-muted-foreground">Work Mode</p>
+            <div className="mt-1">
+              <EmployeeWorkModeBadge workMode={profile.workMode} />
+            </div>
           </div>
         </div>
       </div>

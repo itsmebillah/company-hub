@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { AlertCircle, CheckCircle2, Loader2, Save } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { EmployeeWorkModeBadge } from "@/features/employees/ui/employee-work-mode-badge";
 import { ProfilePhotoUploader } from "@/features/profile/components/profile-photo-uploader";
 import type {
   ProfileActionState,
@@ -140,7 +141,13 @@ export function ProfileDetailsForm({
               className="h-11 w-full rounded-md border bg-muted px-3 text-muted-foreground"
             />
           </label>
-          <label className="space-y-2 lg:col-span-2">
+          <div className="space-y-2">
+            <span className="text-sm font-medium">Work Mode</span>
+            <div className="flex h-11 items-center rounded-md border bg-muted px-3">
+              <EmployeeWorkModeBadge workMode={profile.workMode} />
+            </div>
+          </div>
+          <label className="space-y-2">
             <span className="text-sm font-medium">Status</span>
             <input
               value={profile.status}

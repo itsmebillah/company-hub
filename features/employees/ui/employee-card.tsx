@@ -3,6 +3,7 @@ import { MoreHorizontal, Pencil, Power } from "lucide-react";
 import { ProfilePhoto } from "@/components/common/profile-photo";
 import { Button } from "@/components/ui/button";
 import { EmployeeStatusBadge } from "@/features/employees/ui/employee-status-badge";
+import { EmployeeWorkModeBadge } from "@/features/employees/ui/employee-work-mode-badge";
 import type { EmployeeUiRecord } from "@/features/employees/ui/employee-management.types";
 import type { EmployeeActionState } from "@/features/employees/types/employee.types";
 import { RoleBadge } from "@/features/employees/ui/role-badge";
@@ -48,7 +49,7 @@ export function EmployeeCard({
         </div>
         <div className="flex items-center justify-between gap-3">
           <span className="text-muted-foreground">Work Mode</span>
-          <span className="capitalize">{employee.workMode}</span>
+          <EmployeeWorkModeBadge workMode={employee.workMode} />
         </div>
         <div className="flex items-center justify-between gap-3">
           <span className="text-muted-foreground">Phone</span>

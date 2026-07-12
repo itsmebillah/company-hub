@@ -21,6 +21,7 @@ import type {
   AttendanceGpsInput,
   TodayAttendance,
 } from "@/features/attendance/types/attendance.types";
+import { EmployeeWorkModeBadge } from "@/features/employees/ui/employee-work-mode-badge";
 import {
   createOfflineQueueId,
   enqueueOfflineItem,
@@ -459,7 +460,9 @@ export function EmployeeAttendanceCard({
                 Work Mode
               </p>
               <p className="mt-2 text-sm font-semibold capitalize">
-                {locationStatus?.workMode ?? attendance.workMode}
+                <EmployeeWorkModeBadge
+                  workMode={locationStatus?.workMode ?? attendance.workMode}
+                />
               </p>
             </div>
             <div className="rounded-2xl border border-white/20 bg-background/75 p-3">

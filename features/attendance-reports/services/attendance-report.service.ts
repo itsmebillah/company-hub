@@ -15,6 +15,7 @@ import type {
   AttendanceReportRow,
   AttendanceReportStatusFilter,
   AttendanceReportSummary,
+  AttendanceReportWorkModeFilter,
 } from "@/features/attendance-reports/types/attendance-report.types";
 import {
   formatAppDate,
@@ -73,6 +74,14 @@ function parseModeFilter(value: string | undefined): AttendanceReportModeFilter 
     value === "remote" ||
     value === "hybrid"
   ) {
+    return value;
+  }
+
+  return "all";
+}
+
+function parseWorkModeFilter(value: string | undefined): AttendanceReportWorkModeFilter {
+  if (value === "office" || value === "field" || value === "hybrid") {
     return value;
   }
 
@@ -216,6 +225,7 @@ function buildFilters(
     roleId: String(input.roleId ?? ""),
     employeeId: String(input.employeeId ?? ""),
     attendanceMode: parseModeFilter(String(input.attendanceMode ?? "")),
+    workMode: parseWorkModeFilter(String(input.workMode ?? "")),
     status: parseStatusFilter(String(input.status ?? "")),
     month,
     year,
@@ -291,6 +301,9 @@ async function buildDataset(
   const employees = context.employees
     .filter((employee) =>
       filters.roleId ? employee.role_id === filters.roleId : true,
+    )
+    .filter((employee) =>
+      filters.workMode !== "all" ? employee.work_mode === filters.workMode : true,
     )
     .filter((employee) =>
       options.employeeId || filters.employeeId

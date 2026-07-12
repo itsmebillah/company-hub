@@ -4,6 +4,7 @@ import { ArrowLeft, CheckCircle2, Pencil } from "lucide-react";
 import { ProfilePhoto } from "@/components/common/profile-photo";
 import { Button } from "@/components/ui/button";
 import { EmployeeStatusActions } from "@/features/employees/components/employee-status-actions";
+import { EmployeeWorkModeBadge } from "@/features/employees/ui/employee-work-mode-badge";
 import type { EmployeeActionState, EmployeeDetails as EmployeeDetailsType } from "@/features/employees/types/employee.types";
 
 type EmployeeDetailsProps = {
@@ -89,8 +90,8 @@ export function EmployeeDetails({
             </div>
             <div>
               <dt className="text-sm text-muted-foreground">Work Mode</dt>
-              <dd className="font-medium capitalize">
-                {employee.workMode}
+              <dd className="mt-1 font-medium">
+                <EmployeeWorkModeBadge workMode={employee.workMode} />
               </dd>
             </div>
             <div>

@@ -65,9 +65,17 @@ export type EmployeeListFilters = {
   status?: EmployeeStatus | "all";
   roleId?: string;
   managerId?: string;
+  workMode?: EmployeeWorkMode | "all";
+  sort?: EmployeeListSort;
   page?: number;
   pageSize?: number;
 };
+
+export type EmployeeListSort =
+  | "newest"
+  | "employee_id"
+  | "name"
+  | "work_mode";
 
 export type EmployeeListResult = {
   employees: EmployeeListItem[];

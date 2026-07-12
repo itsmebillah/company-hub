@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { EmployeeWorkModeBadge } from "@/features/employees/ui/employee-work-mode-badge";
 import { parseEmployeeImportFile } from "@/features/employee-import/services/employee-import-parser";
 import type {
   EmployeeImportActionState,
@@ -25,7 +26,6 @@ import type {
   EmployeeImportFailedRowExport,
   EmployeeImportFileMetadata,
   EmployeeImportFoundationData,
-  EmployeeImportPreviewResult,
   EmployeeImportUploadValues,
 } from "@/features/employee-import/types/employee-import.types";
 
@@ -581,7 +581,7 @@ export function EmployeeImportFoundationPage({
                               : ""
                           }`}
                         >
-                          {row.normalized.workMode}
+                          <EmployeeWorkModeBadge workMode={row.normalized.workMode} />
                         </td>
                         <td className="px-3 py-3">
                           {row.issues.length > 0 ? (

@@ -205,9 +205,25 @@ export async function listEmployees(
     query = query.eq("manager_id", filters.managerId);
   }
 
-  const { data, error, count } = await query
-    .order("created_at", { ascending: false })
-    .range(from, to);
+  if (filters.workMode && filters.workMode !== "all") {
+    query = query.eq("work_mode", filters.workMode);
+  }
+
+  const sort = filters.sort ?? "newest";
+
+  if (sort === "employee_id") {
+    query = query.order("employee_id", { ascending: true });
+  } else if (sort === "name") {
+    query = query.order("name", { ascending: true });
+  } else if (sort === "work_mode") {
+    query = query.order("work_mode", { ascending: true }).order("name", {
+      ascending: true,
+    });
+  } else {
+    query = query.order("created_at", { ascending: false });
+  }
+
+  const { data, error, count } = await query.range(from, to);
 
   if (error) {
     logEmployeeServiceError("Unable to load employees.", error);

@@ -4,6 +4,7 @@ import { ProfilePhoto } from "@/components/common/profile-photo";
 import { Button } from "@/components/ui/button";
 import { EmployeeCard } from "@/features/employees/ui/employee-card";
 import { EmployeeStatusBadge } from "@/features/employees/ui/employee-status-badge";
+import { EmployeeWorkModeBadge } from "@/features/employees/ui/employee-work-mode-badge";
 import type { EmployeeUiRecord } from "@/features/employees/ui/employee-management.types";
 import type { EmployeeActionState } from "@/features/employees/types/employee.types";
 import { RoleBadge } from "@/features/employees/ui/role-badge";
@@ -56,7 +57,9 @@ export function EmployeeTable({
                   <td className="px-4 py-3 font-medium">{employee.employeeId}</td>
                   <td className="px-4 py-3">{employee.name}</td>
                   <td className="px-4 py-3"><RoleBadge role={employee.role} /></td>
-                  <td className="px-4 py-3 capitalize">{employee.workMode}</td>
+                  <td className="px-4 py-3">
+                    <EmployeeWorkModeBadge workMode={employee.workMode} />
+                  </td>
                   <td className="px-4 py-3">{employee.reportsTo || "None"}</td>
                   <td className="px-4 py-3">{employee.phone}</td>
                   <td className="px-4 py-3">{employee.joiningDate}</td>

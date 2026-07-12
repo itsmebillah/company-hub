@@ -12,9 +12,11 @@ import {
 } from "@/features/employees/services/employee.service";
 import type {
   EmployeeListResult,
+  EmployeeListSort,
   EmployeeManagerOption,
   EmployeeRoleOption,
   EmployeeStatus,
+  EmployeeWorkMode,
 } from "@/features/employees/types/employee.types";
 
 export const dynamic = "force-dynamic";
@@ -25,6 +27,8 @@ type AdminUsersPageProps = {
     status?: string;
     roleId?: string;
     managerId?: string;
+    workMode?: string;
+    sort?: string;
     page?: string;
     pageSize?: string;
   }>;
@@ -36,6 +40,26 @@ function parseStatus(status: string | undefined): EmployeeStatus | "all" {
   }
 
   return "all";
+}
+
+function parseWorkMode(workMode: string | undefined): EmployeeWorkMode | "all" {
+  if (workMode === "office" || workMode === "field" || workMode === "hybrid") {
+    return workMode;
+  }
+
+  return "all";
+}
+
+function parseSort(sort: string | undefined): EmployeeListSort {
+  if (
+    sort === "employee_id" ||
+    sort === "name" ||
+    sort === "work_mode"
+  ) {
+    return sort;
+  }
+
+  return "newest";
 }
 
 function emptyEmployeeResult(
@@ -73,6 +97,8 @@ export default async function AdminUsersPage({
         status: parseStatus(params.status),
         roleId: params.roleId,
         managerId: params.managerId,
+        workMode: parseWorkMode(params.workMode),
+        sort: parseSort(params.sort),
         page: normalizedPage,
         pageSize: normalizedPageSize,
       }),
@@ -93,6 +119,8 @@ export default async function AdminUsersPage({
         roleId: params.roleId ?? "",
         status: params.status ?? "",
         managerId: params.managerId ?? "",
+        workMode: params.workMode ?? "",
+        sort: parseSort(params.sort),
       }}
       onCreate={createEmployeeAction}
       onUpdate={updateEmployeeAction}

@@ -1,6 +1,8 @@
 import type { Database } from "@/lib/supabase/types";
 
 export type ProfileStatus = Database["public"]["Enums"]["record_status"];
+export type ProfileWorkMode =
+  Database["public"]["Enums"]["employee_work_mode"];
 
 export type ProfileData = {
   id: string;
@@ -13,6 +15,7 @@ export type ProfileData = {
   photoUrl: string;
   roleName: string;
   reportsTo: string;
+  workMode: ProfileWorkMode;
   status: ProfileStatus;
 };
 

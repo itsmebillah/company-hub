@@ -3,6 +3,7 @@ import { CalendarDays, Phone, X } from "lucide-react";
 import { ProfilePhoto } from "@/components/common/profile-photo";
 import { Button } from "@/components/ui/button";
 import { EmployeeStatusBadge } from "@/features/employees/ui/employee-status-badge";
+import { EmployeeWorkModeBadge } from "@/features/employees/ui/employee-work-mode-badge";
 import type { EmployeeUiRecord } from "@/features/employees/ui/employee-management.types";
 import { RoleBadge } from "@/features/employees/ui/role-badge";
 
@@ -59,7 +60,9 @@ export function EmployeeDrawer({ employee, onClose }: EmployeeDrawerProps) {
             </div>
             <div className="flex items-center justify-between gap-4">
               <dt className="text-muted-foreground">Work Mode</dt>
-              <dd className="font-medium capitalize">{employee.workMode}</dd>
+              <dd className="font-medium">
+                <EmployeeWorkModeBadge workMode={employee.workMode} />
+              </dd>
             </div>
             <div className="flex items-center justify-between gap-4">
               <dt className="flex items-center gap-2 text-muted-foreground">
