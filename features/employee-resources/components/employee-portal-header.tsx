@@ -24,21 +24,16 @@ export function EmployeePortalHeader({
             iconClassName="size-7 text-primary-foreground"
           />
           <div className="min-w-0">
-            <p className="app-page-eyebrow">Employee Workspace</p>
+            <p className="whitespace-nowrap text-[0.7rem] font-semibold tracking-[0.24em] text-primary">
+              Employee Workspace
+            </p>
             <p className="mt-2 break-words text-sm font-semibold leading-5">
               Welcome, {profile.employeeName}
             </p>
             <p className="break-words text-xs text-muted-foreground">
               {profile.companyName}
             </p>
-            <p className="mt-1 break-words text-xs text-muted-foreground sm:hidden">
-              ID {profile.employeeId}
-            </p>
           </div>
-        </div>
-
-        <div className="hidden min-w-0 rounded-2xl border border-white/20 bg-background/75 px-3 py-2 text-xs text-muted-foreground sm:block">
-          <p className="break-words">ID {profile.employeeId}</p>
         </div>
 
         <div className="flex shrink-0 flex-col items-end gap-1 rounded-2xl border border-white/20 bg-background/75 px-3 py-2 text-xs shadow-[var(--shadow-soft)] sm:max-w-none">
@@ -48,6 +43,9 @@ export function EmployeePortalHeader({
           </div>
           <span className="break-words text-right font-medium text-foreground">
             {profile.roleName}
+          </span>
+          <span className="break-words text-right text-muted-foreground">
+            ID {profile.employeeId}
           </span>
         </div>
       </div>
