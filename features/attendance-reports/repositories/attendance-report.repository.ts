@@ -12,6 +12,8 @@ type AttendanceReportRecordRow = {
   status: Database["public"]["Enums"]["attendance_status"];
   working_minutes: number;
   late_minutes: number;
+  office_start_time_snapshot: string | null;
+  office_grace_period_minutes_snapshot: number | null;
   work_mode: Database["public"]["Enums"]["employee_work_mode"];
   attendance_type: Database["public"]["Enums"]["attendance_type"];
   check_in_address: string | null;
@@ -73,6 +75,8 @@ export type AttendanceReportAttendanceRecord = {
   status: Database["public"]["Enums"]["attendance_status"];
   workingMinutes: number;
   lateMinutes: number;
+  officeStartTimeSnapshot: string | null;
+  officeGracePeriodMinutesSnapshot: number | null;
   workMode: Database["public"]["Enums"]["employee_work_mode"];
   attendanceType: Database["public"]["Enums"]["attendance_type"];
   checkInAddress: string | null;
@@ -195,7 +199,7 @@ export const AttendanceReportRepository = {
     let query = supabase
       .from("attendance_records")
       .select(
-        "id, employee_id, attendance_date, check_in, check_out, status, working_minutes, late_minutes, work_mode, attendance_type, check_in_address, check_out_address, check_in_latitude, check_in_longitude, check_in_accuracy_meters, check_in_distance_meters, check_in_location_source, check_in_device_browser, check_in_device_platform, check_out_latitude, check_out_longitude, check_out_accuracy_meters, check_out_device_browser, check_out_device_platform, check_in_location:company_locations!attendance_records_check_in_location_id_fkey(name)",
+        "id, employee_id, attendance_date, check_in, check_out, status, working_minutes, late_minutes, office_start_time_snapshot, office_grace_period_minutes_snapshot, work_mode, attendance_type, check_in_address, check_out_address, check_in_latitude, check_in_longitude, check_in_accuracy_meters, check_in_distance_meters, check_in_location_source, check_in_device_browser, check_in_device_platform, check_out_latitude, check_out_longitude, check_out_accuracy_meters, check_out_device_browser, check_out_device_platform, check_in_location:company_locations!attendance_records_check_in_location_id_fkey(name)",
       )
       .eq("company_id", input.companyId)
       .gte("attendance_date", input.startDate)
@@ -226,6 +230,9 @@ export const AttendanceReportRepository = {
       status: row.status,
       workingMinutes: row.working_minutes,
       lateMinutes: row.late_minutes,
+      officeStartTimeSnapshot: row.office_start_time_snapshot,
+      officeGracePeriodMinutesSnapshot:
+        row.office_grace_period_minutes_snapshot,
       workMode: row.work_mode,
       attendanceType: row.attendance_type,
       checkInAddress: row.check_in_address,

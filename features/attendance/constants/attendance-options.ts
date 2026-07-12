@@ -21,7 +21,6 @@ export function getAttendanceStatusLabel(status: AttendanceStatus) {
 }
 
 export const ATTENDANCE_RULES = {
-  officeStartTime: "09:30",
   halfDayWorkingMinutes: 240,
   fullDayWorkingMinutes: 480,
 } as const;

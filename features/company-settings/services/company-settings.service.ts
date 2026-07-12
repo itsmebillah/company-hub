@@ -1,6 +1,10 @@
 import "server-only";
 
 import { logActivity } from "@/features/activity/utils/activity-log";
+import {
+  isValidTimeValue,
+  parseTimeValueToMinutes,
+} from "@/features/attendance/utils/working-hours";
 import { CurrentCompanyContextService } from "@/features/auth/services/current-company-context.service";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type {
@@ -120,12 +124,23 @@ function validateSettings(values: CompanySettingsValues) {
     throw new Error("Working days are invalid.");
   }
 
-  if (!/^\d{2}:\d{2}$/.test(values.officeStartTime)) {
+  if (!isValidTimeValue(values.officeStartTime)) {
     throw new Error("Office start time is invalid.");
   }
 
-  if (!/^\d{2}:\d{2}$/.test(values.officeEndTime)) {
+  if (!isValidTimeValue(values.officeEndTime)) {
     throw new Error("Office end time is invalid.");
+  }
+
+  const officeStartMinutes = parseTimeValueToMinutes(values.officeStartTime);
+  const officeEndMinutes = parseTimeValueToMinutes(values.officeEndTime);
+
+  if (
+    officeStartMinutes === null ||
+    officeEndMinutes === null ||
+    officeEndMinutes <= officeStartMinutes
+  ) {
+    throw new Error("Office end time must be after office start time.");
   }
 
   if (values.securityPreferences.sessionTimeoutMinutes <= 0) {

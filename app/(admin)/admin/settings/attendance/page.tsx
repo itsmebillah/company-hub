@@ -23,7 +23,8 @@ export default async function AdminAttendanceSettingsPage() {
         <div>
           <h1 className="text-2xl font-semibold">Attendance Settings</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Configure how GPS, location assignments, and remote attendance are validated.
+            Configure office working hours, grace periods, early check-in, and the
+            shared GPS attendance policy from one place.
           </p>
         </div>
       </div>

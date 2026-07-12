@@ -21,6 +21,8 @@ export type AttendanceRecord = {
   status: AttendanceStatus;
   workingMinutes: number;
   lateMinutes: number;
+  officeStartTimeSnapshot: string | null;
+  officeGracePeriodMinutesSnapshot: number | null;
   notes: string | null;
   checkInLatitude: number | null;
   checkInLongitude: number | null;
@@ -90,10 +92,14 @@ export type AttendanceAllowedLocation = {
 
 export type AttendancePolicySettings = {
   attendanceMode: AttendancePolicyMode;
+  officeStartTime: string;
+  officeEndTime: string;
+  officeGracePeriodMinutes: number;
   gpsAccuracyThresholdMeters: number;
   allowedRadiusMeters: number;
   allowEarlyCheckInMinutes: number;
   allowLateCheckOut: boolean;
+  weekendWorkingEnabled: boolean;
   requireGps: boolean;
   requireSelfie: boolean;
   requireHighAccuracy: boolean;

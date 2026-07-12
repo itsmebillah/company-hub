@@ -14,7 +14,8 @@ import type {
   AttendanceListFilters,
   AttendanceListResult,
   AttendanceRecord,
-  AttendanceStatus,
+  AttendanceSettingsValues,
+  AttendanceType,
   EmployeeAttendanceSummary,
   TodayAttendance,
 } from "@/features/attendance/types/attendance.types";
@@ -23,7 +24,7 @@ import { requireCurrentEmployeeContext } from "@/features/auth/services/current-
 import { requireCurrentCompanyId } from "@/features/auth/services/current-company-context.service";
 import { CalendarService } from "@/features/company-calendar/services/calendar.service";
 import { NotificationService } from "@/features/notifications/services/notification.service";
-import { getAppDateString, getAppDateTime } from "@/lib/datetime";
+import { formatAppTime, getAppDateString, getAppDateTime } from "@/lib/datetime";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 function getTodayDate() {
@@ -34,19 +35,82 @@ function getDateFromTimestamp(value: string) {
   return getAppDateString(value);
 }
 
-function getOfficeStart(date: string) {
-  return getAppDateTime(date, ATTENDANCE_RULES.officeStartTime);
+type CheckInPolicyResult = {
+  lateMinutes: number;
+  status: "present" | "late";
+  officeStartTimeSnapshot: string | null;
+  officeGracePeriodMinutesSnapshot: number | null;
+};
+
+function getOfficeStartDateTime(
+  attendanceDate: string,
+  settings: AttendanceSettingsValues,
+) {
+  return getAppDateTime(attendanceDate, settings.officeStartTime);
 }
 
-function getLateMinutes(checkIn: string, attendanceDate: string) {
-  const checkInTime = new Date(checkIn).getTime();
-  const officeStartTime = getOfficeStart(attendanceDate).getTime();
-
-  return Math.max(Math.floor((checkInTime - officeStartTime) / 60000), 0);
+function getEarlyCheckInDateTime(
+  attendanceDate: string,
+  settings: AttendanceSettingsValues,
+) {
+  return new Date(
+    getOfficeStartDateTime(attendanceDate, settings).getTime() -
+      settings.allowEarlyCheckInMinutes * 60000,
+  );
 }
 
-function getCheckInStatus(lateMinutes: number): AttendanceStatus {
-  return lateMinutes > 0 ? "late" : "present";
+function getLateThresholdDateTime(
+  attendanceDate: string,
+  settings: AttendanceSettingsValues,
+) {
+  return new Date(
+    getOfficeStartDateTime(attendanceDate, settings).getTime() +
+      settings.officeGracePeriodMinutes * 60000,
+  );
+}
+
+function evaluateCheckInPolicy(input: {
+  attendanceDate: string;
+  checkIn: string;
+  attendanceType: AttendanceType | null | undefined;
+  settings: AttendanceSettingsValues;
+}): CheckInPolicyResult {
+  if (input.attendanceType !== "office") {
+    return {
+      lateMinutes: 0,
+      status: "present",
+      officeStartTimeSnapshot: null,
+      officeGracePeriodMinutesSnapshot: null,
+    };
+  }
+
+  const checkInTime = new Date(input.checkIn).getTime();
+  const earlyCheckInOpensAt = getEarlyCheckInDateTime(
+    input.attendanceDate,
+    input.settings,
+  ).getTime();
+
+  if (checkInTime < earlyCheckInOpensAt) {
+    throw new Error(
+      `Office check-in opens at ${formatAppTime(getEarlyCheckInDateTime(input.attendanceDate, input.settings))}.`,
+    );
+  }
+
+  const lateThresholdTime = getLateThresholdDateTime(
+    input.attendanceDate,
+    input.settings,
+  ).getTime();
+  const lateMinutes = Math.max(
+    Math.floor((checkInTime - lateThresholdTime) / 60000),
+    0,
+  );
+
+  return {
+    lateMinutes,
+    status: lateMinutes > 0 ? "late" : "present",
+    officeStartTimeSnapshot: input.settings.officeStartTime,
+    officeGracePeriodMinutesSnapshot: input.settings.officeGracePeriodMinutes,
+  };
 }
 
 function getCheckOutStatus(record: AttendanceRecord, workingMinutes: number) {
@@ -195,12 +259,23 @@ export const AttendanceService = {
 
   async prepareCheckIn(_input: AttendanceCheckInput = {}) {
     const employee = await getCurrentEmployee();
+    const attendanceDate = getTodayDate();
+    const policySettings = await AttendancePolicyService.getSettings(
+      employee.company_id,
+    );
     const result = await AttendancePolicyService.validateForWorkMode(
       employee.company_id,
       employee.id,
       employee.work_mode,
       _input.gps,
+      policySettings,
     );
+    evaluateCheckInPolicy({
+      attendanceDate,
+      checkIn: new Date().toISOString(),
+      attendanceType: result.attendanceType,
+      settings: policySettings,
+    });
 
     return result;
   },
@@ -258,6 +333,13 @@ export const AttendanceService = {
       throw new Error("Attendance selfie is required before check-in.");
     }
 
+    const attendanceType = policyValidation.attendanceType ?? "office";
+    const checkInPolicy = evaluateCheckInPolicy({
+      attendanceDate,
+      checkIn: serverTimestamp,
+      attendanceType,
+      settings: policySettings,
+    });
     const reverseGeocode = policyValidation.gps
       ? await AttendanceReverseGeocodeService.reverseLookup({
           latitude: policyValidation.gps.latitude,
@@ -270,20 +352,22 @@ export const AttendanceService = {
           address: input.gps?.address ?? reverseGeocode.address ?? null,
         }
       : null;
-    const lateMinutes = getLateMinutes(serverTimestamp, attendanceDate);
     const record = await AttendanceRepository.createCheckIn({
       companyId: employee.company_id,
       employeeId: employee.id,
       attendanceDate,
       checkIn: serverTimestamp,
-      status: getCheckInStatus(lateMinutes),
-      lateMinutes,
+      status: checkInPolicy.status,
+      lateMinutes: checkInPolicy.lateMinutes,
+      officeStartTimeSnapshot: checkInPolicy.officeStartTimeSnapshot,
+      officeGracePeriodMinutesSnapshot:
+        checkInPolicy.officeGracePeriodMinutesSnapshot,
       notes: input.notes?.trim() || null,
       gps: gpsWithAddress,
       locationId: policyValidation.location?.id ?? null,
       distanceMeters: policyValidation.distanceMeters ?? null,
       workMode: employee.work_mode,
-      attendanceType: policyValidation.attendanceType ?? "office",
+      attendanceType,
       selfiePath: input.selfiePath ?? null,
       deviceInfo: input.deviceInfo ?? null,
     });
@@ -302,7 +386,12 @@ export const AttendanceService = {
         attendanceMode: getAttendancePolicyOption(policySettings.attendanceMode)
           .label,
         workMode: employee.work_mode,
-        attendanceType: policyValidation.attendanceType ?? "office",
+        attendanceType,
+        officeStartTimeSnapshot: checkInPolicy.officeStartTimeSnapshot,
+        officeGracePeriodMinutesSnapshot:
+          checkInPolicy.officeGracePeriodMinutesSnapshot,
+        lateMinutes: checkInPolicy.lateMinutes,
+        checkInStatus: checkInPolicy.status,
         gpsLocationName: policyValidation.location?.name ?? null,
         gpsAddress: gpsWithAddress?.address ?? null,
         selfiePath: input.selfiePath ?? null,

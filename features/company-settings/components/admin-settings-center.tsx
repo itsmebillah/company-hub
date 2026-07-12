@@ -23,6 +23,7 @@ import { updateCompanySettingsAction } from "@/features/company-settings/actions
 import type { AttendanceSettingsValues } from "@/features/attendance/types/attendance.types";
 import type { CompanySettingsValues } from "@/features/company-settings/types/company-settings.types";
 import { PwaInstallSettingsCard } from "@/features/pwa/components/pwa-install-settings-card";
+import { formatTimeValueLabel } from "@/features/attendance/utils/working-hours";
 import { cn } from "@/lib/utils";
 
 type SettingsNavItem = {
@@ -203,6 +204,16 @@ export function AdminSettingsCenter({
               description="Shared policy mode currently applied to check-in and check-out."
             />
             <MetricCard
+              label="Office Hours"
+              value={`${formatTimeValueLabel(attendanceSettings.officeStartTime)} - ${formatTimeValueLabel(attendanceSettings.officeEndTime)}`}
+              description="Office attendance follows the configured start, end, and grace policy."
+            />
+            <MetricCard
+              label="Grace Period"
+              value={`${attendanceSettings.officeGracePeriodMinutes} min`}
+              description="Late status begins after the configured grace window ends."
+            />
+            <MetricCard
               label="GPS Radius"
               value={`${attendanceSettings.allowedRadiusMeters} m`}
               description="Allowed distance from an approved attendance location."
@@ -231,6 +242,14 @@ export function AdminSettingsCenter({
               {
                 label: "Require Selfie",
                 enabled: attendanceSettings.requireSelfie,
+              },
+              {
+                label: "Weekend Working",
+                enabled: attendanceSettings.weekendWorkingEnabled,
+              },
+              {
+                label: "Allow Late Check-out",
+                enabled: attendanceSettings.allowLateCheckOut,
               },
             ].map((item) => (
               <div

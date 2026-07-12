@@ -42,6 +42,7 @@ export async function GET(request: NextRequest) {
           )
         : AttendanceExportService.buildPdf(
             dataset.pageData,
+            dataset.detailsByEmployeeId,
             dataset.companyLogo,
           );
 

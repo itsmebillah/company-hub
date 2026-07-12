@@ -5,10 +5,14 @@ import type { AttendanceSettingsValues } from "@/features/attendance/types/atten
 
 const DEFAULT_ATTENDANCE_SETTINGS: AttendanceSettingsValues = {
   attendanceMode: "company_location",
+  officeStartTime: "09:30",
+  officeEndTime: "18:00",
+  officeGracePeriodMinutes: 10,
   gpsAccuracyThresholdMeters: 50,
   allowedRadiusMeters: 100,
   allowEarlyCheckInMinutes: 0,
   allowLateCheckOut: false,
+  weekendWorkingEnabled: false,
   requireGps: true,
   requireSelfie: false,
   requireHighAccuracy: true,
@@ -41,6 +45,13 @@ export const AttendancePolicyRepository = {
     return {
       attendanceMode:
         data?.attendance_mode ?? DEFAULT_ATTENDANCE_SETTINGS.attendanceMode,
+      officeStartTime:
+        data?.office_start_time ?? DEFAULT_ATTENDANCE_SETTINGS.officeStartTime,
+      officeEndTime:
+        data?.office_end_time ?? DEFAULT_ATTENDANCE_SETTINGS.officeEndTime,
+      officeGracePeriodMinutes:
+        data?.office_grace_period_minutes ??
+        DEFAULT_ATTENDANCE_SETTINGS.officeGracePeriodMinutes,
       gpsAccuracyThresholdMeters:
         data?.gps_accuracy_threshold_meters ??
         DEFAULT_ATTENDANCE_SETTINGS.gpsAccuracyThresholdMeters,
@@ -53,6 +64,9 @@ export const AttendancePolicyRepository = {
       allowLateCheckOut:
         data?.allow_late_check_out ??
         DEFAULT_ATTENDANCE_SETTINGS.allowLateCheckOut,
+      weekendWorkingEnabled:
+        data?.weekend_working_enabled ??
+        DEFAULT_ATTENDANCE_SETTINGS.weekendWorkingEnabled,
       requireGps:
         data?.require_gps ?? DEFAULT_ATTENDANCE_SETTINGS.requireGps,
       requireSelfie:
@@ -88,10 +102,14 @@ export const AttendancePolicyRepository = {
           company_id: companyId,
           company_name: companyName,
           attendance_mode: values.attendanceMode,
+          office_start_time: values.officeStartTime,
+          office_end_time: values.officeEndTime,
+          office_grace_period_minutes: values.officeGracePeriodMinutes,
           gps_accuracy_threshold_meters: values.gpsAccuracyThresholdMeters,
           allowed_radius_meters: values.allowedRadiusMeters,
           allow_early_check_in_minutes: values.allowEarlyCheckInMinutes,
           allow_late_check_out: values.allowLateCheckOut,
+          weekend_working_enabled: values.weekendWorkingEnabled,
           require_gps: values.requireGps,
           require_selfie: values.requireSelfie,
           require_high_accuracy: values.requireHighAccuracy,

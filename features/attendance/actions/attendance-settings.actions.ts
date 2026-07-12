@@ -19,6 +19,7 @@ export async function updateAttendanceSettingsAction(
     revalidatePath("/dashboard");
     revalidatePath("/admin/dashboard");
     revalidatePath("/admin/attendance");
+    revalidatePath("/admin/attendance/reports");
 
     return {
       ok: true,

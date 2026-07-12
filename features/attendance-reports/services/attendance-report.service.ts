@@ -25,6 +25,7 @@ import {
   shiftAppDateString,
 } from "@/lib/datetime";
 import { ROLE_NAMES } from "@/lib/auth/permissions";
+import { formatTimeValueLabel } from "@/features/attendance/utils/working-hours";
 
 const REPORT_ACCESS_ROLES = [ROLE_NAMES.admin, "HR"] as const;
 
@@ -440,6 +441,7 @@ async function buildDataset(
         row.holidayDays += 1;
         dailyItems.push({
           date,
+          officeStartTime: null,
           checkIn: null,
           checkOut: null,
           workingHoursLabel: "--",
@@ -470,6 +472,7 @@ async function buildDataset(
         row.weekendDays += 1;
         dailyItems.push({
           date,
+          officeStartTime: null,
           checkIn: null,
           checkOut: null,
           workingHoursLabel: "--",
@@ -500,6 +503,7 @@ async function buildDataset(
         row.leaveDays += 1;
         dailyItems.push({
           date,
+          officeStartTime: null,
           checkIn: null,
           checkOut: null,
           workingHoursLabel: "--",
@@ -532,6 +536,7 @@ async function buildDataset(
         row.absentDays += 1;
         dailyItems.push({
           date,
+          officeStartTime: null,
           checkIn: null,
           checkOut: null,
           workingHoursLabel: "--",
@@ -599,6 +604,9 @@ async function buildDataset(
 
       dailyItems.push({
         date,
+        officeStartTime: record.officeStartTimeSnapshot
+          ? formatTimeValueLabel(record.officeStartTimeSnapshot)
+          : null,
         checkIn: record.checkIn ? formatAppTime(record.checkIn) : null,
         checkOut: record.checkOut ? formatAppTime(record.checkOut) : null,
         workingHoursLabel:

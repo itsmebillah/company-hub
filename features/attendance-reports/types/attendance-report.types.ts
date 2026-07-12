@@ -100,6 +100,7 @@ export type AttendanceReportRow = {
 
 export type AttendanceReportDailyDetail = {
   date: string;
+  officeStartTime: string | null;
   checkIn: string | null;
   checkOut: string | null;
   workingHoursLabel: string;

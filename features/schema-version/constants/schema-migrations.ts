@@ -20,4 +20,6 @@ export const SCHEMA_MIGRATION_MANIFEST = [
   "0019_admin_settings_center_refinement.sql",
   "0020_notifications_realtime.sql",
   "0021_employee_work_mode_attendance_type.sql",
+  "0022_attendance_work_mode_snapshot.sql",
+  "0023_attendance_working_hours_policy.sql",
 ] as const;

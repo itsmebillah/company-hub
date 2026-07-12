@@ -9,6 +9,10 @@ import type {
   AttendanceActionState,
   AttendanceSettingsValues,
 } from "@/features/attendance/types/attendance.types";
+import {
+  addMinutesToTimeValue,
+  formatTimeValueLabel,
+} from "@/features/attendance/utils/working-hours";
 import { cn } from "@/lib/utils";
 
 type AttendanceSettingsFormProps = {
@@ -24,6 +28,17 @@ export function AttendanceSettingsForm({
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<"idle" | "error" | "success">("idle");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const lateAfterTime =
+    addMinutesToTimeValue(
+      values.officeStartTime,
+      values.officeGracePeriodMinutes,
+    ) ?? values.officeStartTime;
+  const earlyCheckInOpensAt =
+    addMinutesToTimeValue(
+      values.officeStartTime,
+      -values.allowEarlyCheckInMinutes,
+    ) ?? values.officeStartTime;
 
   function updateValue<Key extends keyof AttendanceSettingsValues>(
     key: Key,
@@ -93,26 +108,176 @@ export function AttendanceSettingsForm({
       <section>
         <h2 className="text-base font-semibold">Employee Work Modes</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Each employee follows their own work mode while this page keeps the shared GPS policy.
+          Office employees follow the company working-hours policy. Field employees
+          keep the existing GPS-only flow. Hybrid employees use office hours only
+          when the attendance policy classifies the check-in as office attendance.
         </p>
         <div className="mt-4 grid gap-3 md:grid-cols-3">
           <div className="rounded-lg border bg-background p-4">
             <p className="text-sm font-semibold">Office</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Only approved office locations.
+              Office time, grace, and early check-in rules apply.
             </p>
           </div>
           <div className="rounded-lg border bg-background p-4">
             <p className="text-sm font-semibold">Field</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Anywhere with GPS captured.
+              No office start restriction and no late calculation.
             </p>
           </div>
           <div className="rounded-lg border bg-background p-4">
             <p className="text-sm font-semibold">Hybrid</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Office when inside radius, otherwise field attendance.
+              Office rules apply only when the check-in is matched to office attendance.
             </p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div>
+          <h2 className="text-base font-semibold">Working Hours</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            These settings control office start, grace, and early-arrival rules without
+            changing field attendance behavior.
+          </p>
+        </div>
+
+        <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <label className="space-y-2">
+            <span className="text-sm font-medium">Office Start Time</span>
+            <input
+              type="time"
+              value={values.officeStartTime}
+              onChange={(event) =>
+                updateValue("officeStartTime", event.target.value)
+              }
+              className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+          </label>
+
+          <label className="space-y-2">
+            <span className="text-sm font-medium">Office End Time</span>
+            <input
+              type="time"
+              value={values.officeEndTime}
+              onChange={(event) =>
+                updateValue("officeEndTime", event.target.value)
+              }
+              className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+          </label>
+
+          <label className="space-y-2">
+            <span className="text-sm font-medium">Grace Period (min)</span>
+            <input
+              type="number"
+              min={0}
+              max={120}
+              value={values.officeGracePeriodMinutes}
+              onChange={(event) =>
+                updateValue(
+                  "officeGracePeriodMinutes",
+                  Math.min(120, Math.max(0, Number(event.target.value) || 0)),
+                )
+              }
+              className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+          </label>
+
+          <label className="space-y-2">
+            <span className="text-sm font-medium">Allow Early Check-in (min)</span>
+            <input
+              type="number"
+              min={0}
+              max={180}
+              value={values.allowEarlyCheckInMinutes}
+              onChange={(event) =>
+                updateValue(
+                  "allowEarlyCheckInMinutes",
+                  Math.min(180, Math.max(0, Number(event.target.value) || 0)),
+                )
+              }
+              className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+          </label>
+        </div>
+
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <label className="flex items-start gap-3 rounded-lg border p-4">
+            <input
+              type="checkbox"
+              checked={values.allowLateCheckOut}
+              onChange={(event) =>
+                updateValue("allowLateCheckOut", event.target.checked)
+              }
+              className="mt-1 size-4"
+            />
+            <span>
+              <span className="block text-sm font-medium">Allow Late Check-out</span>
+              <span className="text-sm text-muted-foreground">
+                Keep the checkout policy flag configurable without changing the current
+                attendance engine.
+              </span>
+            </span>
+          </label>
+
+          <label className="flex items-start gap-3 rounded-lg border p-4">
+            <input
+              type="checkbox"
+              checked={values.weekendWorkingEnabled}
+              onChange={(event) =>
+                updateValue("weekendWorkingEnabled", event.target.checked)
+              }
+              className="mt-1 size-4"
+            />
+            <span>
+              <span className="block text-sm font-medium">Weekend Working</span>
+              <span className="text-sm text-muted-foreground">
+                Store the office weekend policy alongside the rest of the attendance
+                configuration for future scheduling control.
+              </span>
+            </span>
+          </label>
+        </div>
+
+        <div className="mt-4 rounded-xl border bg-background p-4">
+          <h3 className="text-sm font-semibold">Live Preview</h3>
+          <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <div className="rounded-lg border bg-card p-3">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Office Hours
+              </p>
+              <p className="mt-2 text-sm font-semibold">
+                {formatTimeValueLabel(values.officeStartTime)} -{" "}
+                {formatTimeValueLabel(values.officeEndTime)}
+              </p>
+            </div>
+            <div className="rounded-lg border bg-card p-3">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Grace Period
+              </p>
+              <p className="mt-2 text-sm font-semibold">
+                {values.officeGracePeriodMinutes} minute
+                {values.officeGracePeriodMinutes === 1 ? "" : "s"}
+              </p>
+            </div>
+            <div className="rounded-lg border bg-card p-3">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Late After
+              </p>
+              <p className="mt-2 text-sm font-semibold">
+                {formatTimeValueLabel(lateAfterTime)}
+              </p>
+            </div>
+            <div className="rounded-lg border bg-card p-3">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Early Check-in Opens
+              </p>
+              <p className="mt-2 text-sm font-semibold">
+                {formatTimeValueLabel(earlyCheckInOpensAt)}
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -145,21 +310,6 @@ export function AttendanceSettingsForm({
                 updateValue(
                   "allowedRadiusMeters",
                   Math.max(1, Number(event.target.value) || 0),
-                )
-              }
-              className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            />
-          </label>
-          <label className="space-y-2">
-            <span className="text-sm font-medium">Allow Early Check-in (min)</span>
-            <input
-              type="number"
-              min={0}
-              value={values.allowEarlyCheckInMinutes}
-              onChange={(event) =>
-                updateValue(
-                  "allowEarlyCheckInMinutes",
-                  Math.max(0, Number(event.target.value) || 0),
                 )
               }
               className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -230,22 +380,6 @@ export function AttendanceSettingsForm({
               <span className="block text-sm font-medium">Enable Geofence</span>
               <span className="text-sm text-muted-foreground">
                 Enforce branch radius validation for office-based attendance modes.
-              </span>
-            </span>
-          </label>
-          <label className="flex items-start gap-3 rounded-lg border p-4">
-            <input
-              type="checkbox"
-              checked={values.allowLateCheckOut}
-              onChange={(event) =>
-                updateValue("allowLateCheckOut", event.target.checked)
-              }
-              className="mt-1 size-4"
-            />
-            <span>
-              <span className="block text-sm font-medium">Allow Late Check-out</span>
-              <span className="text-sm text-muted-foreground">
-                Stores the policy flag now so later checkout windows can use the same setting.
               </span>
             </span>
           </label>

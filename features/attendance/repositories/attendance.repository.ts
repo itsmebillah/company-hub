@@ -17,7 +17,7 @@ import type {
 } from "@/features/attendance/types/attendance.types";
 
 const attendanceRecordSelect =
-  "id, company_id, employee_id, attendance_date, check_in, check_out, status, working_minutes, late_minutes, notes, check_in_latitude, check_in_longitude, check_in_accuracy_meters, check_in_address, check_in_location_source, check_in_selfie_path, check_in_device_browser, check_in_device_platform, check_in_location_id, check_in_distance_meters, work_mode, attendance_type, check_out_latitude, check_out_longitude, check_out_accuracy_meters, check_out_address, check_out_location_source, check_out_selfie_path, check_out_device_browser, check_out_device_platform, check_out_location_id, check_out_distance_meters, created_at, updated_at";
+  "id, company_id, employee_id, attendance_date, check_in, check_out, status, working_minutes, late_minutes, office_start_time_snapshot, office_grace_period_minutes_snapshot, notes, check_in_latitude, check_in_longitude, check_in_accuracy_meters, check_in_address, check_in_location_source, check_in_selfie_path, check_in_device_browser, check_in_device_platform, check_in_location_id, check_in_distance_meters, work_mode, attendance_type, check_out_latitude, check_out_longitude, check_out_accuracy_meters, check_out_address, check_out_location_source, check_out_selfie_path, check_out_device_browser, check_out_device_platform, check_out_location_id, check_out_distance_meters, created_at, updated_at";
 
 function toRecord(row: {
   id: string;
@@ -29,6 +29,8 @@ function toRecord(row: {
   status: AttendanceStatus;
   working_minutes: number;
   late_minutes: number;
+  office_start_time_snapshot: string | null;
+  office_grace_period_minutes_snapshot: number | null;
   notes: string | null;
   check_in_latitude: number | null;
   check_in_longitude: number | null;
@@ -65,6 +67,9 @@ function toRecord(row: {
     status: row.status,
     workingMinutes: row.working_minutes,
     lateMinutes: row.late_minutes,
+    officeStartTimeSnapshot: row.office_start_time_snapshot,
+    officeGracePeriodMinutesSnapshot:
+      row.office_grace_period_minutes_snapshot,
     notes: row.notes,
     checkInLatitude: row.check_in_latitude,
     checkInLongitude: row.check_in_longitude,
@@ -183,6 +188,8 @@ export const AttendanceRepository = {
     checkIn: string;
     status: AttendanceStatus;
     lateMinutes: number;
+    officeStartTimeSnapshot?: string | null;
+    officeGracePeriodMinutesSnapshot?: number | null;
     notes?: string | null;
     gps?: AttendanceGpsInput | null;
     locationId?: string | null;
@@ -205,6 +212,9 @@ export const AttendanceRepository = {
         check_in: input.checkIn,
         status: input.status,
         late_minutes: input.lateMinutes,
+        office_start_time_snapshot: input.officeStartTimeSnapshot ?? null,
+        office_grace_period_minutes_snapshot:
+          input.officeGracePeriodMinutesSnapshot ?? null,
         notes: input.notes ?? null,
         check_in_latitude: input.gps?.latitude ?? null,
         check_in_longitude: input.gps?.longitude ?? null,

@@ -201,6 +201,7 @@ export function AttendanceReportTable({
                               <thead className="border-b bg-muted/50 uppercase text-muted-foreground">
                                 <tr>
                                   <th className="px-3 py-2 font-medium">Date</th>
+                                  <th className="px-3 py-2 font-medium">Office Start</th>
                                   <th className="px-3 py-2 font-medium">Check-in</th>
                                   <th className="px-3 py-2 font-medium">Check-out</th>
                                   <th className="px-3 py-2 font-medium">Working Hours</th>
@@ -218,6 +219,7 @@ export function AttendanceReportTable({
                                 {detail.dailyItems.map((item) => (
                                   <tr key={`${detail.employeeId}-${item.date}`}>
                                     <td className="px-3 py-2">{item.date}</td>
+                                    <td className="px-3 py-2">{item.officeStartTime ?? "--"}</td>
                                     <td className="px-3 py-2">{item.checkIn ?? "--"}</td>
                                     <td className="px-3 py-2">{item.checkOut ?? "--"}</td>
                                     <td className="px-3 py-2">{item.workingHoursLabel}</td>

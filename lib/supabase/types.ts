@@ -60,6 +60,7 @@ export type Database = {
           working_days: string[];
           office_start_time: string;
           office_end_time: string;
+          office_grace_period_minutes: number;
           notification_preferences: Json;
           resource_preferences: Json;
           security_preferences: Json;
@@ -69,6 +70,7 @@ export type Database = {
           allowed_radius_meters: number;
           allow_early_check_in_minutes: number;
           allow_late_check_out: boolean;
+          weekend_working_enabled: boolean;
           require_gps: boolean;
           require_selfie: boolean;
           require_high_accuracy: boolean;
@@ -100,6 +102,7 @@ export type Database = {
           working_days?: string[];
           office_start_time?: string;
           office_end_time?: string;
+          office_grace_period_minutes?: number;
           notification_preferences?: Json;
           resource_preferences?: Json;
           security_preferences?: Json;
@@ -109,6 +112,7 @@ export type Database = {
           allowed_radius_meters?: number;
           allow_early_check_in_minutes?: number;
           allow_late_check_out?: boolean;
+          weekend_working_enabled?: boolean;
           require_gps?: boolean;
           require_selfie?: boolean;
           require_high_accuracy?: boolean;
@@ -140,6 +144,7 @@ export type Database = {
           working_days?: string[];
           office_start_time?: string;
           office_end_time?: string;
+          office_grace_period_minutes?: number;
           notification_preferences?: Json;
           resource_preferences?: Json;
           security_preferences?: Json;
@@ -149,6 +154,7 @@ export type Database = {
           allowed_radius_meters?: number;
           allow_early_check_in_minutes?: number;
           allow_late_check_out?: boolean;
+          weekend_working_enabled?: boolean;
           require_gps?: boolean;
           require_selfie?: boolean;
           require_high_accuracy?: boolean;
@@ -753,6 +759,8 @@ export type Database = {
           status: Database["public"]["Enums"]["attendance_status"];
           working_minutes: number;
           late_minutes: number;
+          office_start_time_snapshot: string | null;
+          office_grace_period_minutes_snapshot: number | null;
           notes: string | null;
           created_at: string;
           updated_at: string;
@@ -793,6 +801,8 @@ export type Database = {
           status?: Database["public"]["Enums"]["attendance_status"];
           working_minutes?: number;
           late_minutes?: number;
+          office_start_time_snapshot?: string | null;
+          office_grace_period_minutes_snapshot?: number | null;
           notes?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -833,6 +843,8 @@ export type Database = {
           status?: Database["public"]["Enums"]["attendance_status"];
           working_minutes?: number;
           late_minutes?: number;
+          office_start_time_snapshot?: string | null;
+          office_grace_period_minutes_snapshot?: number | null;
           notes?: string | null;
           created_at?: string;
           updated_at?: string;
