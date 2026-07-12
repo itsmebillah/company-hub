@@ -74,6 +74,15 @@ export function LeaveTypesPage({
     });
   }
 
+  function toggleStatus(type: LeaveTypeItem) {
+    run(() =>
+      onUpdate(type.id, {
+        ...formFromType(type),
+        status: type.status === "active" ? "inactive" : "active",
+      }),
+    );
+  }
+
   return (
     <section className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -83,9 +92,9 @@ export function LeaveTypesPage({
             Configure paid/unpaid leave types and annual limits.
           </p>
         </div>
-        <Button type="button" onClick={() => setForm(emptyForm())}>
+        <Button type="button" size="sm" onClick={() => setForm(emptyForm())}>
           <Plus className="size-4" aria-hidden="true" />
-          New Leave Type
+          Add Leave Type
         </Button>
       </div>
 
@@ -99,52 +108,74 @@ export function LeaveTypesPage({
           className="bg-card shadow-sm"
         />
       ) : (
-        <div className="grid gap-4 lg:grid-cols-2">
-          {leaveTypes.map((type) => (
-            <article key={type.id} className="rounded-xl border bg-card p-5 shadow-sm">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="size-3 rounded-full"
-                      style={{ backgroundColor: type.color ?? "#64748b" }}
-                    />
-                    <h2 className="font-semibold">{type.name}</h2>
+        <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
+          <div className="hidden grid-cols-[minmax(0,1.4fr)_140px_120px_auto] gap-4 border-b bg-muted/40 px-4 py-3 text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground md:grid">
+            <span>Name</span>
+            <span>Paid/Unpaid</span>
+            <span>Status</span>
+            <span className="text-right">Actions</span>
+          </div>
+          <div className="divide-y">
+            {leaveTypes.map((type) => (
+              <article key={type.id} className="px-4 py-4">
+                <div className="grid gap-3 md:grid-cols-[minmax(0,1.4fr)_140px_120px_auto] md:items-center">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="size-3 shrink-0 rounded-full"
+                        style={{ backgroundColor: type.color ?? "#64748b" }}
+                      />
+                      <h2 className="truncate font-semibold">{type.name}</h2>
+                    </div>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {type.code} - Limit: {type.annualLimit ?? "No limit"}
+                    </p>
                   </div>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {type.code} - {type.isPaid ? "Paid" : "Unpaid"} - Limit:{" "}
-                    {type.annualLimit ?? "No limit"}
-                  </p>
+                  <div>
+                    <span className="inline-flex rounded-full border px-2.5 py-1 text-xs font-medium">
+                      {type.isPaid ? "Paid" : "Unpaid"}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="inline-flex rounded-full border px-2.5 py-1 text-xs font-medium capitalize">
+                      {type.status}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2 md:justify-end">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setEditing(type);
+                        setForm(formFromType(type));
+                      }}
+                    >
+                      <Pencil className="size-4" aria-hidden="true" />
+                      Edit
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => toggleStatus(type)}
+                    >
+                      {type.status === "active" ? "Disable" : "Enable"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => run(() => onArchive(type.id))}
+                    >
+                      <Archive className="size-4" aria-hidden="true" />
+                      Archive
+                    </Button>
+                  </div>
                 </div>
-                <span className="rounded-full border px-2.5 py-1 text-xs capitalize">
-                  {type.status}
-                </span>
-              </div>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setEditing(type);
-                    setForm(formFromType(type));
-                  }}
-                >
-                  <Pencil className="size-4" aria-hidden="true" />
-                  Edit
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => run(() => onArchive(type.id))}
-                >
-                  <Archive className="size-4" aria-hidden="true" />
-                  Archive
-                </Button>
-              </div>
-            </article>
-          ))}
+              </article>
+            ))}
+          </div>
         </div>
       )}
 

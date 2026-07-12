@@ -15,6 +15,7 @@ import type {
   LeaveRequestItem,
   LeaveTypeItem,
 } from "@/features/leave/types/leave.types";
+import { cn } from "@/lib/utils";
 
 type EmployeeLeavePageProps = {
   leaveTypes: LeaveTypeItem[];
@@ -37,6 +38,7 @@ export function EmployeeLeavePage({
   onCancelRequest,
 }: EmployeeLeavePageProps) {
   const router = useRouter();
+  const hasNoLeaveTypes = leaveTypes.length === 0;
   const [form, setForm] = useState<LeaveRequestFormValues | null>(null);
   const [message, setMessage] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -59,7 +61,11 @@ export function EmployeeLeavePage({
         title="Leave"
         description="Request leave and review your leave history without leaving the employee workspace."
         actions={
-          <Button type="button" onClick={() => setForm(emptyRequest)}>
+          <Button
+            type="button"
+            onClick={() => setForm(emptyRequest)}
+            disabled={hasNoLeaveTypes}
+          >
             <Plus className="size-4" /> New Request
           </Button>
         }
@@ -70,6 +76,14 @@ export function EmployeeLeavePage({
         <p className="text-sm text-muted-foreground">Remaining Balance</p>
         <p className="mt-2 text-2xl font-semibold">--</p>
       </div>
+
+      {hasNoLeaveTypes ? (
+        <EmptyState
+          title="No leave types available."
+          description="Please contact an administrator before submitting a leave request."
+          className="bg-card shadow-sm"
+        />
+      ) : null}
 
       {message ? <p className="text-sm text-muted-foreground">{message}</p> : null}
       {isPending ? <p className="text-sm text-muted-foreground">Working...</p> : null}
@@ -124,8 +138,27 @@ function LeaveRequestForm({
   onClose: () => void;
   onSubmit: () => void;
 }) {
+  const [error, setError] = useState("");
+  const noLeaveTypes = leaveTypes.length === 0;
+  const dateError =
+    values.startDate && values.endDate && values.endDate < values.startDate
+      ? "To Date cannot be before From Date."
+      : "";
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (noLeaveTypes) {
+      setError("No leave types available.");
+      return;
+    }
+
+    if (dateError) {
+      setError(dateError);
+      return;
+    }
+
+    setError("");
     onSubmit();
   }
 
@@ -133,18 +166,76 @@ function LeaveRequestForm({
     <div className="fixed inset-0 z-50 overflow-y-auto bg-background/80 p-4 backdrop-blur-sm">
       <form onSubmit={handleSubmit} className="app-card mx-auto my-10 max-w-xl space-y-4 p-5">
         <h2 className="text-xl font-semibold">New Leave Request</h2>
-        <select value={values.leaveTypeId} onChange={(e) => onChange({ ...values, leaveTypeId: e.target.value })} className="h-11 w-full rounded-md border bg-background px-3">
-          <option value="">Select leave type</option>
-          {leaveTypes.map((type) => <option key={type.id} value={type.id}>{type.name}</option>)}
-        </select>
+        <label className="space-y-2">
+          <span className="text-sm font-medium">Leave Type</span>
+          <select
+            value={values.leaveTypeId}
+            onChange={(e) => onChange({ ...values, leaveTypeId: e.target.value })}
+            className="h-11 w-full rounded-md border bg-background px-3"
+            disabled={noLeaveTypes}
+          >
+            <option value="">Select leave type</option>
+            {leaveTypes.map((type) => (
+              <option key={type.id} value={type.id}>
+                {type.name} - {type.isPaid ? "Paid" : "Unpaid"}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {noLeaveTypes ? (
+          <div className="rounded-xl border border-dashed bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
+            No leave types available.
+          </div>
+        ) : null}
+
         <div className="grid gap-4 sm:grid-cols-2">
-          <input type="date" value={values.startDate} onChange={(e) => onChange({ ...values, startDate: e.target.value })} className="h-11 rounded-md border bg-background px-3" />
-          <input type="date" value={values.endDate} onChange={(e) => onChange({ ...values, endDate: e.target.value })} className="h-11 rounded-md border bg-background px-3" />
+          <label className="space-y-2">
+            <span className="text-sm font-medium">From Date</span>
+            <input
+              type="date"
+              value={values.startDate}
+              placeholder="Select start date"
+              onChange={(e) => onChange({ ...values, startDate: e.target.value })}
+              className={cn(
+                "h-11 rounded-md border bg-background px-3",
+                dateError ? "border-destructive" : undefined,
+              )}
+            />
+          </label>
+          <label className="space-y-2">
+            <span className="text-sm font-medium">To Date</span>
+            <input
+              type="date"
+              value={values.endDate}
+              min={values.startDate || undefined}
+              placeholder="Select end date"
+              onChange={(e) => onChange({ ...values, endDate: e.target.value })}
+              className={cn(
+                "h-11 rounded-md border bg-background px-3",
+                dateError ? "border-destructive" : undefined,
+              )}
+            />
+          </label>
         </div>
-        <textarea value={values.reason} onChange={(e) => onChange({ ...values, reason: e.target.value })} rows={4} placeholder="Reason" className="w-full rounded-md border bg-background p-3" />
+
+        {dateError || error ? (
+          <p className="text-sm text-destructive">{dateError || error}</p>
+        ) : null}
+
+        <label className="space-y-2">
+          <span className="text-sm font-medium">Reason</span>
+          <textarea
+            value={values.reason}
+            onChange={(e) => onChange({ ...values, reason: e.target.value })}
+            rows={4}
+            placeholder="Enter reason"
+            className="w-full rounded-md border bg-background p-3"
+          />
+        </label>
         <div className="flex justify-end gap-2 border-t pt-4">
           <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-          <Button type="submit">Submit Request</Button>
+          <Button type="submit" disabled={noLeaveTypes}>Submit Request</Button>
         </div>
       </form>
     </div>

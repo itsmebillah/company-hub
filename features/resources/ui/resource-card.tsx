@@ -1,5 +1,6 @@
 import { Archive, Copy, Eye, Pencil, RotateCcw } from "lucide-react";
 
+import { PremiumCard } from "@/components/common/premium-card";
 import { Button } from "@/components/ui/button";
 import { ResourceIcon } from "@/features/resources/ui/resource-icon";
 import {
@@ -38,7 +39,7 @@ export function ResourceCard({
         : "border-slate-200 bg-slate-100 text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300";
 
   return (
-    <article className="overflow-hidden rounded-2xl border bg-card p-3 shadow-sm">
+    <PremiumCard tone="cyan" className="overflow-hidden p-3">
       <div className="flex items-start gap-3">
         <ResourceIcon icon={resource.icon} title={resource.title} />
         <div className="min-w-0 flex-1">
@@ -137,6 +138,6 @@ export function ResourceCard({
           {resource.status === "archived" ? "Restore" : "Archive"}
         </Button>
       </div>
-    </article>
+    </PremiumCard>
   );
 }
