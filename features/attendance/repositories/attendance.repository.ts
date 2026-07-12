@@ -13,10 +13,11 @@ import type {
   AttendanceStatus,
   AttendanceType,
   CompanyLocation,
+  EmployeeWorkMode,
 } from "@/features/attendance/types/attendance.types";
 
 const attendanceRecordSelect =
-  "id, company_id, employee_id, attendance_date, check_in, check_out, status, working_minutes, late_minutes, notes, check_in_latitude, check_in_longitude, check_in_accuracy_meters, check_in_address, check_in_location_source, check_in_selfie_path, check_in_device_browser, check_in_device_platform, check_in_location_id, check_in_distance_meters, attendance_type, check_out_latitude, check_out_longitude, check_out_accuracy_meters, check_out_address, check_out_location_source, check_out_selfie_path, check_out_device_browser, check_out_device_platform, check_out_location_id, check_out_distance_meters, created_at, updated_at";
+  "id, company_id, employee_id, attendance_date, check_in, check_out, status, working_minutes, late_minutes, notes, check_in_latitude, check_in_longitude, check_in_accuracy_meters, check_in_address, check_in_location_source, check_in_selfie_path, check_in_device_browser, check_in_device_platform, check_in_location_id, check_in_distance_meters, work_mode, attendance_type, check_out_latitude, check_out_longitude, check_out_accuracy_meters, check_out_address, check_out_location_source, check_out_selfie_path, check_out_device_browser, check_out_device_platform, check_out_location_id, check_out_distance_meters, created_at, updated_at";
 
 function toRecord(row: {
   id: string;
@@ -39,6 +40,7 @@ function toRecord(row: {
   check_in_device_platform: string | null;
   check_in_location_id: string | null;
   check_in_distance_meters: number | null;
+  work_mode: EmployeeWorkMode;
   attendance_type: AttendanceType;
   check_out_latitude: number | null;
   check_out_longitude: number | null;
@@ -74,6 +76,7 @@ function toRecord(row: {
     checkInDevicePlatform: row.check_in_device_platform,
     checkInLocationId: row.check_in_location_id,
     checkInDistanceMeters: row.check_in_distance_meters,
+    workMode: row.work_mode,
     attendanceType: row.attendance_type,
     checkOutLatitude: row.check_out_latitude,
     checkOutLongitude: row.check_out_longitude,
@@ -185,6 +188,7 @@ export const AttendanceRepository = {
     locationId?: string | null;
     distanceMeters?: number | null;
     attendanceType: AttendanceType;
+    workMode: EmployeeWorkMode;
     selfiePath?: string | null;
     deviceInfo?: {
       browser: string;
@@ -212,6 +216,7 @@ export const AttendanceRepository = {
         check_in_device_platform: input.deviceInfo?.platform ?? null,
         check_in_location_id: input.locationId ?? null,
         check_in_distance_meters: input.distanceMeters ?? null,
+        work_mode: input.workMode,
         attendance_type: input.attendanceType,
         updated_at: input.checkIn,
       })
@@ -235,6 +240,7 @@ export const AttendanceRepository = {
     locationId?: string | null;
     distanceMeters?: number | null;
     attendanceType?: AttendanceType;
+    workMode?: EmployeeWorkMode;
     selfiePath?: string | null;
     deviceInfo?: {
       browser: string;
@@ -258,6 +264,7 @@ export const AttendanceRepository = {
         check_out_device_platform: input.deviceInfo?.platform ?? null,
         check_out_location_id: input.locationId ?? null,
         check_out_distance_meters: input.distanceMeters ?? null,
+        ...(input.workMode ? { work_mode: input.workMode } : {}),
         ...(input.attendanceType ? { attendance_type: input.attendanceType } : {}),
         updated_at: input.checkOut,
       })
@@ -342,6 +349,10 @@ export const AttendanceRepository = {
       query = query.eq("status", filters.status);
     }
 
+    if (filters.workMode && filters.workMode !== "all") {
+      query = query.eq("work_mode", filters.workMode);
+    }
+
     if (filters.search?.trim()) {
       const search = filters.search.trim();
       query = query.or(
@@ -378,7 +389,7 @@ export const AttendanceRepository = {
         ...record,
         employeeCode: employee?.employee_id ?? "Unknown",
         employeeName: employee?.name ?? "Unknown",
-        employeeWorkMode: employee?.work_mode ?? "office",
+        employeeWorkMode: record.workMode ?? employee?.work_mode ?? "office",
         checkInLocationName: checkInLocation?.name ?? null,
         checkOutLocationName: checkOutLocation?.name ?? null,
       };
@@ -427,7 +438,7 @@ export const AttendanceRepository = {
       ...record,
       employeeCode: employee?.employee_id ?? "Unknown",
       employeeName: employee?.name ?? "Unknown",
-      employeeWorkMode: employee?.work_mode ?? "office",
+      employeeWorkMode: record.workMode ?? employee?.work_mode ?? "office",
       checkInLocationName: checkInLocation?.name ?? null,
       checkOutLocationName: checkOutLocation?.name ?? null,
     };

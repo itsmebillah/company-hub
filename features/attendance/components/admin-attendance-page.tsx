@@ -14,6 +14,7 @@ import type {
   AttendanceListFilters,
   AttendanceListResult,
 } from "@/features/attendance/types/attendance.types";
+import { EMPLOYEE_WORK_MODE_OPTIONS } from "@/features/employees/constants/employee-work-mode.config";
 import { EmployeeWorkModeBadge } from "@/features/employees/ui/employee-work-mode-badge";
 import { formatAppDate, formatAppTime } from "@/lib/datetime";
 
@@ -114,7 +115,7 @@ export function AdminAttendancePage({
         </div>
       </div>
 
-      <form className="app-card grid gap-3 p-4 md:grid-cols-[minmax(0,1fr)_170px_170px_170px_auto]">
+      <form className="app-card grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_160px_160px_160px_160px_auto]">
         <label className="block">
           <span className="text-xs font-medium text-muted-foreground">
             Search
@@ -171,6 +172,24 @@ export function AdminAttendancePage({
             {ATTENDANCE_STATUS_OPTIONS.map((status) => (
               <option key={status.value} value={status.value}>
                 {status.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="block">
+          <span className="text-xs font-medium text-muted-foreground">
+            Work Mode
+          </span>
+          <select
+            name="workMode"
+            defaultValue={filters.workMode ?? "all"}
+            className="mt-1 min-h-11 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+          >
+            <option value="all">All work modes</option>
+            {EMPLOYEE_WORK_MODE_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.icon} {option.label}
               </option>
             ))}
           </select>

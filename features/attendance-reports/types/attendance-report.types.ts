@@ -104,6 +104,7 @@ export type AttendanceReportDailyDetail = {
   checkOut: string | null;
   workingHoursLabel: string;
   status: AttendanceStatus | "absent";
+  workMode: EmployeeWorkMode;
   lateMinutes: number;
   office: string;
   attendanceType: AttendanceType | null;
@@ -111,6 +112,14 @@ export type AttendanceReportDailyDetail = {
   checkOutAddress: string | null;
   checkInLatitude: number | null;
   checkInLongitude: number | null;
+  checkInAccuracyMeters: number | null;
+  checkInDeviceBrowser: string | null;
+  checkInDevicePlatform: string | null;
+  checkOutLatitude: number | null;
+  checkOutLongitude: number | null;
+  checkOutAccuracyMeters: number | null;
+  checkOutDeviceBrowser: string | null;
+  checkOutDevicePlatform: string | null;
   distanceLabel: string;
   locationSource: AttendanceLocationSource | null;
 };

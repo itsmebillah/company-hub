@@ -736,6 +736,7 @@ export type Database = {
           check_in_device_platform: string | null;
           check_in_location_id: string | null;
           check_in_distance_meters: number | null;
+          work_mode: Database["public"]["Enums"]["employee_work_mode"];
           attendance_type: Database["public"]["Enums"]["attendance_type"];
           check_out_latitude: number | null;
           check_out_longitude: number | null;
@@ -775,6 +776,7 @@ export type Database = {
           check_in_device_platform?: string | null;
           check_in_location_id?: string | null;
           check_in_distance_meters?: number | null;
+          work_mode?: Database["public"]["Enums"]["employee_work_mode"];
           attendance_type?: Database["public"]["Enums"]["attendance_type"];
           check_out_latitude?: number | null;
           check_out_longitude?: number | null;
@@ -814,6 +816,7 @@ export type Database = {
           check_in_device_platform?: string | null;
           check_in_location_id?: string | null;
           check_in_distance_meters?: number | null;
+          work_mode?: Database["public"]["Enums"]["employee_work_mode"];
           attendance_type?: Database["public"]["Enums"]["attendance_type"];
           check_out_latitude?: number | null;
           check_out_longitude?: number | null;

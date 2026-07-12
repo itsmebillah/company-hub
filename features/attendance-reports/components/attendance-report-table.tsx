@@ -205,6 +205,7 @@ export function AttendanceReportTable({
                                   <th className="px-3 py-2 font-medium">Check-out</th>
                                   <th className="px-3 py-2 font-medium">Working Hours</th>
                                   <th className="px-3 py-2 font-medium">Status</th>
+                                  <th className="px-3 py-2 font-medium">Work Mode</th>
                                   <th className="px-3 py-2 font-medium">Type</th>
                                   <th className="px-3 py-2 font-medium">Late</th>
                                   <th className="px-3 py-2 font-medium">Office</th>
@@ -222,6 +223,9 @@ export function AttendanceReportTable({
                                     <td className="px-3 py-2">{item.workingHoursLabel}</td>
                                     <td className="px-3 py-2 capitalize">
                                       {item.status.replaceAll("_", " ")}
+                                    </td>
+                                    <td className="px-3 py-2">
+                                      <EmployeeWorkModeBadge workMode={item.workMode} />
                                     </td>
                                     <td className="px-3 py-2 capitalize">
                                       {item.attendanceType?.replaceAll("_", " ") ?? "--"}

@@ -32,6 +32,7 @@ export type AttendanceRecord = {
   checkInDevicePlatform: string | null;
   checkInLocationId: string | null;
   checkInDistanceMeters: number | null;
+  workMode: EmployeeWorkMode;
   attendanceType: AttendanceType;
   checkOutLatitude: number | null;
   checkOutLongitude: number | null;
@@ -138,6 +139,7 @@ export type AttendanceListFilters = {
   employeeId?: string;
   search?: string;
   status?: AttendanceStatus | "all";
+  workMode?: EmployeeWorkMode | "all";
 };
 
 export type AttendanceListResult = {

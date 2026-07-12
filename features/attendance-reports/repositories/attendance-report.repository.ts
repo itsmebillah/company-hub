@@ -12,13 +12,22 @@ type AttendanceReportRecordRow = {
   status: Database["public"]["Enums"]["attendance_status"];
   working_minutes: number;
   late_minutes: number;
+  work_mode: Database["public"]["Enums"]["employee_work_mode"];
   attendance_type: Database["public"]["Enums"]["attendance_type"];
   check_in_address: string | null;
   check_out_address: string | null;
   check_in_latitude: number | null;
   check_in_longitude: number | null;
+  check_in_accuracy_meters: number | null;
   check_in_distance_meters: number | null;
   check_in_location_source: Database["public"]["Enums"]["attendance_location_source"] | null;
+  check_in_device_browser: string | null;
+  check_in_device_platform: string | null;
+  check_out_latitude: number | null;
+  check_out_longitude: number | null;
+  check_out_accuracy_meters: number | null;
+  check_out_device_browser: string | null;
+  check_out_device_platform: string | null;
   check_in_location:
     | {
         name: string;
@@ -64,15 +73,24 @@ export type AttendanceReportAttendanceRecord = {
   status: Database["public"]["Enums"]["attendance_status"];
   workingMinutes: number;
   lateMinutes: number;
+  workMode: Database["public"]["Enums"]["employee_work_mode"];
   attendanceType: Database["public"]["Enums"]["attendance_type"];
   checkInAddress: string | null;
   checkOutAddress: string | null;
   checkInLatitude: number | null;
   checkInLongitude: number | null;
+  checkInAccuracyMeters: number | null;
   checkInDistanceMeters: number | null;
   checkInLocationSource:
     | Database["public"]["Enums"]["attendance_location_source"]
     | null;
+  checkInDeviceBrowser: string | null;
+  checkInDevicePlatform: string | null;
+  checkOutLatitude: number | null;
+  checkOutLongitude: number | null;
+  checkOutAccuracyMeters: number | null;
+  checkOutDeviceBrowser: string | null;
+  checkOutDevicePlatform: string | null;
   checkInLocationName: string | null;
 };
 
@@ -177,7 +195,7 @@ export const AttendanceReportRepository = {
     let query = supabase
       .from("attendance_records")
       .select(
-        "id, employee_id, attendance_date, check_in, check_out, status, working_minutes, late_minutes, attendance_type, check_in_address, check_out_address, check_in_latitude, check_in_longitude, check_in_distance_meters, check_in_location_source, check_in_location:company_locations!attendance_records_check_in_location_id_fkey(name)",
+        "id, employee_id, attendance_date, check_in, check_out, status, working_minutes, late_minutes, work_mode, attendance_type, check_in_address, check_out_address, check_in_latitude, check_in_longitude, check_in_accuracy_meters, check_in_distance_meters, check_in_location_source, check_in_device_browser, check_in_device_platform, check_out_latitude, check_out_longitude, check_out_accuracy_meters, check_out_device_browser, check_out_device_platform, check_in_location:company_locations!attendance_records_check_in_location_id_fkey(name)",
       )
       .eq("company_id", input.companyId)
       .gte("attendance_date", input.startDate)
@@ -208,13 +226,22 @@ export const AttendanceReportRepository = {
       status: row.status,
       workingMinutes: row.working_minutes,
       lateMinutes: row.late_minutes,
+      workMode: row.work_mode,
       attendanceType: row.attendance_type,
       checkInAddress: row.check_in_address,
       checkOutAddress: row.check_out_address,
       checkInLatitude: row.check_in_latitude,
       checkInLongitude: row.check_in_longitude,
+      checkInAccuracyMeters: row.check_in_accuracy_meters,
       checkInDistanceMeters: row.check_in_distance_meters,
       checkInLocationSource: row.check_in_location_source,
+      checkInDeviceBrowser: row.check_in_device_browser,
+      checkInDevicePlatform: row.check_in_device_platform,
+      checkOutLatitude: row.check_out_latitude,
+      checkOutLongitude: row.check_out_longitude,
+      checkOutAccuracyMeters: row.check_out_accuracy_meters,
+      checkOutDeviceBrowser: row.check_out_device_browser,
+      checkOutDevicePlatform: row.check_out_device_platform,
       checkInLocationName: getLocationName(row.check_in_location),
     }));
   },
