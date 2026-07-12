@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Check, Eye, X } from "lucide-react";
+import { Check, Eye, Pencil, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/common/empty-state";
 import { LeaveStatusBadge } from "@/features/leave/components/leave-status-badge";
 import type {
   LeaveActionState,
+  LeaveRequestFormValues,
   LeaveRequestItem,
   LeaveTypeItem,
 } from "@/features/leave/types/leave.types";
@@ -17,7 +18,10 @@ type LeaveRequestsPageProps = {
   requests: LeaveRequestItem[];
   leaveTypes: LeaveTypeItem[];
   filters: { search: string; status: string; leaveTypeId: string };
-  onApprove: (id: string) => Promise<LeaveActionState>;
+  onApprove: (
+    id: string,
+    values?: LeaveRequestFormValues,
+  ) => Promise<LeaveActionState>;
   onReject: (id: string, reason: string) => Promise<LeaveActionState>;
 };
 
@@ -115,7 +119,15 @@ export function LeaveRequestsPage({
         </div>
       )}
 
-      {selected ? <RequestDetail request={selected} onClose={() => setSelected(null)} /> : null}
+      {selected ? (
+        <RequestDetail
+          request={selected}
+          onClose={() => setSelected(null)}
+          onApprove={(values) => run(() => onApprove(selected.id, values))}
+          onReject={() => setRejecting(selected)}
+          isPending={isPending}
+        />
+      ) : null}
       {rejecting ? (
         <div className="fixed inset-0 z-50 bg-background/80 p-4 backdrop-blur-sm">
           <div className="mx-auto mt-20 max-w-md rounded-xl border bg-card p-5 shadow-lg">
@@ -145,15 +157,178 @@ function RequestCard({ request, onView }: { request: LeaveRequestItem; onView: (
   );
 }
 
-function RequestDetail({ request, onClose }: { request: LeaveRequestItem; onClose: () => void }) {
+function RequestDetail({
+  request,
+  onClose,
+  onApprove,
+  onReject,
+  isPending,
+}: {
+  request: LeaveRequestItem;
+  onClose: () => void;
+  onApprove: (values?: LeaveRequestFormValues) => void;
+  onReject: () => void;
+  isPending: boolean;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValues, setEditValues] = useState<LeaveRequestFormValues>({
+    leaveTypeId: request.leaveTypeId,
+    startDate: request.startDate,
+    endDate: request.endDate,
+    reason: request.reason ?? "",
+  });
+  const canAct = request.status === "pending";
+
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-background/80 p-3 pb-[calc(env(safe-area-inset-bottom)+5.75rem)] pt-[calc(env(safe-area-inset-top)+0.75rem)] backdrop-blur-sm sm:p-4">
-      <div className="mx-auto flex max-h-[calc(100svh-7rem)] max-w-xl flex-col overflow-hidden rounded-xl border bg-card shadow-lg sm:my-10 sm:block sm:max-h-none sm:overflow-visible sm:p-5">
-        <div className="flex items-start justify-between gap-3 p-5 pb-3 sm:p-0">
+    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
+      <div className="flex min-h-svh items-center justify-center px-3 pb-[calc(env(safe-area-inset-bottom)+5.75rem)] pt-[calc(env(safe-area-inset-top)+1rem)] sm:hidden">
+        <div className="flex max-h-[min(82svh,42rem)] w-full max-w-md flex-col overflow-hidden rounded-[1.5rem] border bg-card shadow-[var(--shadow-card)]">
+          <div className="flex shrink-0 items-center justify-between gap-3 border-b bg-card/95 px-4 py-3">
+            <h2 className="min-w-0 text-lg font-semibold">
+              Leave Request Details
+            </h2>
+            <div className="flex shrink-0 items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditing((current) => !current)}
+                disabled={!canAct || isPending}
+              >
+                <Pencil className="size-4" aria-hidden="true" />
+                Edit
+              </Button>
+              <Button type="button" variant="outline" size="sm" onClick={onClose}>
+                Close
+              </Button>
+            </div>
+          </div>
+
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+            <div className="grid gap-3 text-sm">
+              <DetailItem label="Employee" value={request.employeeName} />
+              <DetailItem label="Type" value={request.leaveTypeName} />
+              {isEditing ? (
+                <div className="grid gap-3 rounded-2xl border bg-background/75 p-3">
+                  <label className="block">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      Start Date
+                    </span>
+                    <input
+                      type="date"
+                      value={editValues.startDate}
+                      onChange={(event) =>
+                        setEditValues((current) => ({
+                          ...current,
+                          startDate: event.target.value,
+                        }))
+                      }
+                      className="mt-1 min-h-10 rounded-xl border bg-background px-3 text-sm"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      End Date
+                    </span>
+                    <input
+                      type="date"
+                      value={editValues.endDate}
+                      onChange={(event) =>
+                        setEditValues((current) => ({
+                          ...current,
+                          endDate: event.target.value,
+                        }))
+                      }
+                      className="mt-1 min-h-10 rounded-xl border bg-background px-3 text-sm"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      Reason
+                    </span>
+                    <textarea
+                      value={editValues.reason}
+                      onChange={(event) =>
+                        setEditValues((current) => ({
+                          ...current,
+                          reason: event.target.value,
+                        }))
+                      }
+                      rows={3}
+                      className="mt-1 rounded-xl border bg-background px-3 py-2 text-sm"
+                    />
+                  </label>
+                </div>
+              ) : (
+                <>
+                  <DetailItem
+                    label="Dates"
+                    value={`${request.startDate} to ${request.endDate}`}
+                  />
+                  <div>
+                    <dt className="text-muted-foreground">Status</dt>
+                    <dd className="mt-1">
+                      <LeaveStatusBadge status={request.status} />
+                    </dd>
+                  </div>
+                  <DetailItem label="Reason" value={request.reason ?? "--"} />
+                </>
+              )}
+              <DetailItem
+                label="Applied On"
+                value={new Date(request.createdAt).toLocaleDateString()}
+              />
+              {request.rejectionReason ? (
+                <DetailItem
+                  label="Rejection Reason"
+                  value={request.rejectionReason}
+                />
+              ) : null}
+            </div>
+
+            <div className="mt-4 rounded-2xl border border-primary/15 bg-primary/8 p-3 text-sm text-muted-foreground">
+              You can update the leave dates and approve for a different
+              duration if needed.
+            </div>
+          </div>
+
+          <div className="grid shrink-0 gap-2 border-t bg-card/95 px-4 py-3">
+            <Button
+              type="button"
+              onClick={() => onApprove()}
+              disabled={!canAct || isPending}
+            >
+              <Check className="size-4" aria-hidden="true" />
+              Approve
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onApprove(editValues)}
+              disabled={!canAct || isPending}
+            >
+              Approve with Different Dates
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onReject}
+              disabled={!canAct || isPending}
+            >
+              <X className="size-4" aria-hidden="true" />
+              Reject
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="hidden overflow-y-auto p-4 sm:block">
+        <div className="mx-auto my-10 max-w-xl rounded-xl border bg-card p-5 shadow-lg">
+          <div className="flex items-start justify-between gap-3">
           <h2 className="text-xl font-semibold">Leave Request Details</h2>
           <Button type="button" variant="outline" onClick={onClose}>Close</Button>
         </div>
-        <dl className="mt-2 grid gap-3 overflow-y-auto px-5 pb-5 text-sm sm:mt-5 sm:grid-cols-2 sm:overflow-visible sm:p-0">
+        <dl className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
           <div><dt className="text-muted-foreground">Employee</dt><dd className="font-semibold">{request.employeeName}</dd></div>
           <div><dt className="text-muted-foreground">Type</dt><dd className="font-semibold">{request.leaveTypeName}</dd></div>
           <div><dt className="text-muted-foreground">Dates</dt><dd className="font-semibold">{request.startDate} to {request.endDate}</dd></div>
@@ -161,7 +336,17 @@ function RequestDetail({ request, onClose }: { request: LeaveRequestItem; onClos
           <div className="sm:col-span-2"><dt className="text-muted-foreground">Reason</dt><dd>{request.reason ?? "--"}</dd></div>
           {request.rejectionReason ? <div className="sm:col-span-2"><dt className="text-muted-foreground">Rejection Reason</dt><dd>{request.rejectionReason}</dd></div> : null}
         </dl>
+        </div>
       </div>
+    </div>
+  );
+}
+
+function DetailItem({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="mt-1 font-semibold">{value}</dd>
     </div>
   );
 }

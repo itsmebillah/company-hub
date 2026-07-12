@@ -435,12 +435,12 @@ export const LeaveService = {
     }
   },
 
-  async approveLeaveRequest(id: string) {
+  async approveLeaveRequest(id: string, values?: LeaveRequestFormValues) {
     const approver = await getCurrentEmployee();
     const supabase = createSupabaseAdminClient();
     const { data: request, error: requestError } = await supabase
       .from("leave_requests")
-      .select("id, employee_id, company_id, status")
+      .select("id, employee_id, company_id, leave_type_id, start_date, end_date, reason, status")
       .eq("id", id)
       .eq("company_id", approver.company_id)
       .single();
@@ -449,14 +449,54 @@ export const LeaveService = {
       throw new Error("Leave request cannot be approved.");
     }
 
+    const nextValues = values
+      ? {
+          leaveTypeId: values.leaveTypeId || request.leave_type_id,
+          startDate: values.startDate || request.start_date,
+          endDate: values.endDate || request.end_date,
+          reason: values.reason,
+        }
+      : null;
+    let totalDays: number | undefined;
+
+    if (nextValues) {
+      await validateLeaveRequest(
+        nextValues,
+        approver.company_id,
+        request.employee_id,
+        id,
+      );
+
+      totalDays = await CalendarService.countWorkingDays(
+        approver.company_id,
+        nextValues.startDate,
+        nextValues.endDate,
+      );
+
+      if (totalDays <= 0) {
+        throw new Error("Selected dates do not include any working days.");
+      }
+    }
+
+    const updateValues = {
+      ...(nextValues && totalDays !== undefined
+        ? {
+            leave_type_id: nextValues.leaveTypeId,
+            start_date: nextValues.startDate,
+            end_date: nextValues.endDate,
+            total_days: totalDays,
+            reason: normalizeOptional(nextValues.reason),
+          }
+        : {}),
+      status: "approved" as const,
+      approved_by: approver.id,
+      approved_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
     const { error } = await supabase
       .from("leave_requests")
-      .update({
-        status: "approved",
-        approved_by: approver.id,
-        approved_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateValues)
       .eq("id", id);
 
     if (error) {
@@ -474,10 +514,12 @@ export const LeaveService = {
     await logActivity({
       companyId: approver.company_id,
       module: "leave",
-      action: "approved",
+      action: nextValues ? "updated" : "approved",
       entityType: "leave_requests",
       entityId: id,
-      description: `${approver.name} approved a leave request`,
+      description: nextValues
+        ? `${approver.name} updated and approved a leave request`
+        : `${approver.name} approved a leave request`,
     });
   },
 

@@ -68,9 +68,10 @@ export async function submitLeaveRequestAction(
 
 export async function approveLeaveRequestAction(
   id: string,
+  values?: LeaveRequestFormValues,
 ): Promise<LeaveActionState> {
   try {
-    await LeaveService.approveLeaveRequest(id);
+    await LeaveService.approveLeaveRequest(id, values);
     revalidatePath("/admin/leave/requests");
     return { ok: true, message: "Leave request approved." };
   } catch (error) {
