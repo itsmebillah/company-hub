@@ -33,8 +33,8 @@ export function ResourceFilters({
   onReset,
 }: ResourceFiltersProps) {
   return (
-    <div className="rounded-xl border bg-card p-4 shadow-sm">
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
+    <div className="rounded-2xl border bg-card p-3 shadow-sm">
+      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-6">
         <label className="relative xl:col-span-2">
           <span className="sr-only">Search resources</span>
           <Search
@@ -44,15 +44,15 @@ export function ResourceFilters({
           <input
             value={search}
             onChange={(event) => onChange({ search: event.target.value })}
-            placeholder="Search title or description"
-            className="h-11 w-full rounded-md border bg-background pl-9 pr-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            placeholder="Search resources"
+            className="h-9 w-full rounded-xl border bg-background pl-9 pr-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
         </label>
 
         <select
           value={categoryId}
           onChange={(event) => onChange({ categoryId: event.target.value })}
-          className="h-11 rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="h-9 rounded-xl border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
           aria-label="Filter by category"
         >
           <option value="">All Categories</option>
@@ -66,7 +66,7 @@ export function ResourceFilters({
         <select
           value={resourceType}
           onChange={(event) => onChange({ resourceType: event.target.value })}
-          className="h-11 rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="h-9 rounded-xl border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
           aria-label="Filter by type"
         >
           <option value="">All Types</option>
@@ -80,7 +80,7 @@ export function ResourceFilters({
         <select
           value={status}
           onChange={(event) => onChange({ status: event.target.value })}
-          className="h-11 rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="h-9 rounded-xl border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
           aria-label="Filter by status"
         >
           <option value="">All Statuses</option>
@@ -89,11 +89,11 @@ export function ResourceFilters({
           <option value="archived">Archived</option>
         </select>
 
-        <div className="grid grid-cols-[1fr_auto] gap-3">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
           <select
             value={featured}
             onChange={(event) => onChange({ featured: event.target.value })}
-            className="h-11 rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="h-9 rounded-xl border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Filter by featured"
           >
             <option value="">All</option>
@@ -102,9 +102,9 @@ export function ResourceFilters({
           </select>
           <Button
             type="button"
-            size="icon"
+            size="sm"
             variant="outline"
-            className="size-11"
+            className="h-9 w-9 rounded-xl px-0"
             onClick={onReset}
             aria-label="Reset filters"
             title="Reset filters"
@@ -114,12 +114,14 @@ export function ResourceFilters({
         </div>
       </div>
 
-      <div className="mt-3 flex items-center gap-2 text-sm">
-        <span className="text-muted-foreground">Sort</span>
+      <div className="mt-2 flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-2">
+        <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+          Sort
+        </span>
         <select
           value={sort}
           onChange={(event) => onChange({ sort: event.target.value })}
-          className="h-9 rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="h-9 rounded-xl border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-auto"
           aria-label="Sort resources"
         >
           {RESOURCE_SORTS.map((item) => (

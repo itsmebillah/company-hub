@@ -28,7 +28,7 @@ export default async function ResourcesPage() {
   const data = await EmployeeResourceService.getPortalData();
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-4 md:space-y-5">
       <EmployeePortalHeader
         profile={data.profile}
         currentDate={currentDate}

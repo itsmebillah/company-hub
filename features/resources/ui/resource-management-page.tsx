@@ -95,7 +95,7 @@ export function ResourceManagementPage({
   }
 
   return (
-    <section className="space-y-5">
+    <section className="space-y-4">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Resources</h1>
@@ -103,14 +103,14 @@ export function ResourceManagementPage({
             Manage employee links, reports, documents, and internal tools
           </p>
         </div>
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <Button asChild variant="outline" className="h-10">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-row">
+          <Button asChild size="sm" variant="outline" className="h-9">
             <Link href="/admin/resources/categories">
               <Tags className="size-4" aria-hidden="true" />
               Categories
             </Link>
           </Button>
-          <Button asChild variant="outline" className="h-10">
+          <Button asChild size="sm" variant="outline" className="h-9">
             <Link href="/admin/resources/permissions">
               <ShieldCheck className="size-4" aria-hidden="true" />
               Permissions
@@ -118,7 +118,8 @@ export function ResourceManagementPage({
           </Button>
           <Button
             type="button"
-            className="h-10"
+            size="sm"
+            className="col-span-2 h-9 sm:col-span-1"
             onClick={() => setIsCreating(true)}
             disabled={categories.length === 0}
           >
@@ -169,7 +170,7 @@ export function ResourceManagementPage({
             onArchive={(id) => runStatusAction(onArchive, id)}
             onRestore={(id) => runStatusAction(onRestore, id)}
           />
-          <div className="grid gap-3 lg:hidden">
+          <div className="grid gap-2.5 lg:hidden">
             {result.resources.map((resource) => (
               <ResourceCard
                 key={resource.id}
