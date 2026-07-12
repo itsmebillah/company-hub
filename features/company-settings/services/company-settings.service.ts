@@ -40,6 +40,15 @@ const DEFAULT_SETTINGS: Omit<CompanySettingsValues, "companyName"> = {
     leave: true,
     approvals: true,
     system: true,
+    celebrations: {
+      enableBirthdays: true,
+      enableWorkAnniversaries: true,
+      notifyCompany: false,
+      notifyEmployee: true,
+      enableBrowserNotification: true,
+      enableRealtimeNotification: true,
+      enableNativeNotification: true,
+    },
   },
   resourcePreferences: {
     openMode: "new_tab",
@@ -85,6 +94,14 @@ function normalizeTheme(value: string | null): CompanyTheme {
   }
 
   return "auto";
+}
+
+function toJsonObject(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return {};
+  }
+
+  return value as Record<string, unknown>;
 }
 
 function validateSettings(values: CompanySettingsValues) {
@@ -207,6 +224,13 @@ export async function getCompanySettings(): Promise<CompanySettingsValues> {
     throw new Error("Unable to load company settings.");
   }
 
+  const notificationPreferences = toJsonObject(data?.notification_preferences);
+  const celebrationPreferences = toJsonObject(
+    notificationPreferences.celebrations,
+  );
+  const resourcePreferences = toJsonObject(data?.resource_preferences);
+  const securityPreferences = toJsonObject(data?.security_preferences);
+
   return {
     companyName: data?.company_name ?? company.name,
     shortName: data?.short_name ?? DEFAULT_SETTINGS.shortName,
@@ -233,24 +257,19 @@ export async function getCompanySettings(): Promise<CompanySettingsValues> {
     officeEndTime: data?.office_end_time ?? DEFAULT_SETTINGS.officeEndTime,
     notificationPreferences: {
       ...DEFAULT_SETTINGS.notificationPreferences,
-      ...(typeof data?.notification_preferences === "object" &&
-      data.notification_preferences
-        ? data.notification_preferences
-        : {}),
+      ...notificationPreferences,
+      celebrations: {
+        ...DEFAULT_SETTINGS.notificationPreferences.celebrations,
+        ...celebrationPreferences,
+      },
     },
     resourcePreferences: {
       ...DEFAULT_SETTINGS.resourcePreferences,
-      ...(typeof data?.resource_preferences === "object" &&
-      data.resource_preferences
-        ? data.resource_preferences
-        : {}),
+      ...resourcePreferences,
     },
     securityPreferences: {
       ...DEFAULT_SETTINGS.securityPreferences,
-      ...(typeof data?.security_preferences === "object" &&
-      data.security_preferences
-        ? data.security_preferences
-        : {}),
+      ...securityPreferences,
     },
     locations:
       locationsResult.data?.map(

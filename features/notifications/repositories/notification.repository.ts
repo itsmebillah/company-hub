@@ -28,6 +28,9 @@ function toItem(row: {
   message: string;
   action_url: string | null;
   is_read: boolean;
+  browser_enabled: boolean;
+  realtime_enabled: boolean;
+  native_enabled: boolean;
   delivery_status: Database["public"]["Enums"]["notification_delivery_status"];
   delivered_at: string | null;
   opened_at: string | null;
@@ -41,6 +44,9 @@ function toItem(row: {
     message: row.message,
     actionUrl: row.action_url,
     isRead: row.is_read,
+    browserEnabled: row.browser_enabled,
+    realtimeEnabled: row.realtime_enabled,
+    nativeEnabled: row.native_enabled,
     deliveryStatus: row.delivery_status,
     deliveredAt: row.delivered_at,
     openedAt: row.opened_at,
@@ -72,7 +78,7 @@ export const NotificationRepository = {
     const { data, error } = await supabase
       .from("notifications")
       .select(
-        "id, type, priority, title, message, action_url, is_read, delivery_status, delivered_at, opened_at, created_at",
+        "id, type, priority, title, message, action_url, is_read, browser_enabled, realtime_enabled, native_enabled, delivery_status, delivered_at, opened_at, created_at",
       )
       .eq("company_id", companyId)
       .eq("employee_id", employeeId)
@@ -92,7 +98,7 @@ export const NotificationRepository = {
     const { data, error } = await supabase
       .from("notifications")
       .select(
-        "id, type, priority, title, message, action_url, is_read, delivery_status, delivered_at, opened_at, created_at",
+        "id, type, priority, title, message, action_url, is_read, browser_enabled, realtime_enabled, native_enabled, delivery_status, delivered_at, opened_at, created_at",
       )
       .eq("company_id", companyId)
       .order("created_at", { ascending: false })
@@ -158,6 +164,9 @@ export const NotificationRepository = {
       title: input.title,
       message: input.message,
       action_url: input.actionUrl ?? null,
+      browser_enabled: input.browserEnabled ?? true,
+      realtime_enabled: input.realtimeEnabled ?? true,
+      native_enabled: input.nativeEnabled ?? true,
       created_by: input.createdBy ?? null,
     });
 
@@ -183,6 +192,9 @@ export const NotificationRepository = {
       title: input.title,
       message: input.message,
       action_url: input.actionUrl ?? null,
+      browser_enabled: input.browserEnabled ?? true,
+      realtime_enabled: input.realtimeEnabled ?? true,
+      native_enabled: input.nativeEnabled ?? true,
       created_by: input.createdBy ?? null,
     }));
 

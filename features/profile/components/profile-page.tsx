@@ -1,4 +1,4 @@
-import { CalendarDays, ShieldCheck } from "lucide-react";
+import { Cake, CalendarDays, PartyPopper, ShieldCheck } from "lucide-react";
 
 import { IconBadge } from "@/components/common/icon-badge";
 import { PageHeader } from "@/components/common/page-header";
@@ -12,6 +12,7 @@ import type {
   ProfileData,
   ProfileFormValues,
 } from "@/features/profile/types/profile.types";
+import { formatAppDate, getAppDateString } from "@/lib/datetime";
 
 type ProfilePageProps = {
   profile: ProfileData;
@@ -24,11 +25,50 @@ function formatDate(value: string) {
     return "Not set";
   }
 
-  return new Intl.DateTimeFormat("en", {
+  return formatAppDate(value, {
     year: "numeric",
     month: "short",
     day: "numeric",
-  }).format(new Date(value));
+  });
+}
+
+function formatWorkAnniversary(value: string) {
+  if (!value) {
+    return "Not set";
+  }
+
+  const today = getAppDateString();
+  const [currentYear, currentMonth, currentDay] = today.split("-").map(Number);
+  const [joiningYear, joiningMonth, joiningDay] = value.split("-").map(Number);
+
+  if (
+    [currentYear, currentMonth, currentDay, joiningYear, joiningMonth, joiningDay].some(
+      (part) => Number.isNaN(part),
+    )
+  ) {
+    return "Not set";
+  }
+
+  let yearsCompleted = currentYear - joiningYear;
+
+  if (
+    currentMonth < joiningMonth ||
+    (currentMonth === joiningMonth && currentDay < joiningDay)
+  ) {
+    yearsCompleted -= 1;
+  }
+
+  if (yearsCompleted <= 0) {
+    return "First anniversary upcoming";
+  }
+
+  const yearsLabel = `${yearsCompleted} year${yearsCompleted === 1 ? "" : "s"}`;
+
+  if (currentMonth === joiningMonth && currentDay === joiningDay) {
+    return `Celebrating ${yearsLabel} today`;
+  }
+
+  return `${yearsLabel} completed`;
 }
 
 export function ProfilePage({
@@ -41,16 +81,32 @@ export function ProfilePage({
       <PageHeader
         eyebrow="My Workspace"
         title={profile.fullName}
-        description={`${profile.employeeId} · ${profile.roleName}`}
+        description={`${profile.employeeId} - ${profile.roleName}`}
         aside={<IconBadge icon={ShieldCheck} className="mx-auto lg:mx-0" />}
       />
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="app-card app-card-subtle flex items-center gap-3 px-4 py-4">
+          <IconBadge icon={Cake} className="size-10 rounded-2xl" />
+          <div>
+            <p className="text-xs text-muted-foreground">Birthday</p>
+            <p className="text-sm font-medium">{formatDate(profile.dateOfBirth)}</p>
+          </div>
+        </div>
+        <div className="app-card app-card-subtle flex items-center gap-3 px-4 py-4">
           <IconBadge icon={CalendarDays} className="size-10 rounded-2xl" />
           <div>
             <p className="text-xs text-muted-foreground">Joined</p>
             <p className="text-sm font-medium">{formatDate(profile.joiningDate)}</p>
+          </div>
+        </div>
+        <div className="app-card app-card-subtle flex items-center gap-3 px-4 py-4">
+          <IconBadge icon={PartyPopper} className="size-10 rounded-2xl" />
+          <div>
+            <p className="text-xs text-muted-foreground">Work Anniversary</p>
+            <p className="text-sm font-medium">
+              {formatWorkAnniversary(profile.joiningDate)}
+            </p>
           </div>
         </div>
         <div className="app-card app-card-subtle flex items-center gap-3 px-4 py-4">

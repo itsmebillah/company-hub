@@ -23,4 +23,5 @@ export const SCHEMA_MIGRATION_MANIFEST = [
   "0022_attendance_work_mode_snapshot.sql",
   "0023_attendance_working_hours_policy.sql",
   "0024_notification_delivery_foundation.sql",
+  "0025_employee_celebration_engine.sql",
 ] as const;

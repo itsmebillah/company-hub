@@ -11,8 +11,16 @@ function getParts(
   value: string | Date,
   options: DateTimeFormatterOptions,
 ) {
+  return getPartsForTimeZone(value, APP_TIME_ZONE, options);
+}
+
+function getPartsForTimeZone(
+  value: string | Date,
+  timeZone: string,
+  options: DateTimeFormatterOptions,
+) {
   return new Intl.DateTimeFormat("en-CA", {
-    timeZone: APP_TIME_ZONE,
+    timeZone,
     ...options,
   }).formatToParts(toDate(value));
 }
@@ -26,6 +34,19 @@ function getPart(
 
 export function getAppTimeZone() {
   return APP_TIME_ZONE;
+}
+
+export function normalizeTimeZone(value: string | null | undefined) {
+  if (!value?.trim()) {
+    return APP_TIME_ZONE;
+  }
+
+  try {
+    new Intl.DateTimeFormat("en", { timeZone: value.trim() }).format(new Date());
+    return value.trim();
+  } catch {
+    return APP_TIME_ZONE;
+  }
 }
 
 export function getAppDateTime(dateString: string, timeString: string) {
@@ -44,6 +65,31 @@ export function getAppDateString(value: string | Date = new Date()) {
   });
 
   return `${getPart(parts, "year")}-${getPart(parts, "month")}-${getPart(parts, "day")}`;
+}
+
+export function getTimeZoneDateString(
+  timeZone: string,
+  value: string | Date = new Date(),
+) {
+  const parts = getPartsForTimeZone(value, normalizeTimeZone(timeZone), {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+
+  return `${getPart(parts, "year")}-${getPart(parts, "month")}-${getPart(parts, "day")}`;
+}
+
+export function getTimeZoneHour(
+  timeZone: string,
+  value: string | Date = new Date(),
+) {
+  const parts = getPartsForTimeZone(value, normalizeTimeZone(timeZone), {
+    hour: "2-digit",
+    hour12: false,
+  });
+
+  return Number(getPart(parts, "hour") || "0");
 }
 
 export function shiftAppDateString(dateString: string, days: number) {

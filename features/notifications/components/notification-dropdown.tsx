@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import {
   Bell,
   BellRing,
+  Cake,
   CalendarCheck,
   CheckCheck,
   ClipboardCheck,
@@ -46,6 +47,7 @@ const notificationIcons: Record<NotificationType, typeof Megaphone> = {
   approval: ClipboardCheck,
   document: FileText,
   system: Settings,
+  celebration: Cake,
 };
 
 const notificationPriorityStyles: Record<NotificationPriority, string> = {

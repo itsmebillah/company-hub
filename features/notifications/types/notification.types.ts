@@ -14,6 +14,9 @@ export type NotificationItem = {
   message: string;
   actionUrl: string | null;
   isRead: boolean;
+  browserEnabled: boolean;
+  realtimeEnabled: boolean;
+  nativeEnabled: boolean;
   deliveryStatus: NotificationDeliveryStatus;
   deliveredAt: string | null;
   openedAt: string | null;
@@ -33,6 +36,9 @@ export type CreateNotificationInput = {
   title: string;
   message: string;
   actionUrl?: string | null;
+  browserEnabled?: boolean;
+  realtimeEnabled?: boolean;
+  nativeEnabled?: boolean;
   createdBy?: string | null;
 };
 

@@ -9,6 +9,8 @@ import {
   getPendingWorkItems,
 } from "@/features/admin-dashboard/constants/mobile-dashboard-config";
 import { DashboardService } from "@/features/admin-dashboard/services/dashboard.service";
+import { AdminCelebrationOverview } from "@/features/celebrations/components";
+import { CelebrationService } from "@/features/celebrations/services/celebration.service";
 import {
   AnnouncementTicker,
   QuickResourceLinks,
@@ -17,8 +19,23 @@ import { formatAppDate } from "@/lib/datetime";
 
 export const dynamic = "force-dynamic";
 
+const EMPTY_CELEBRATIONS = {
+  birthdays: [],
+  workAnniversaries: [],
+};
+
 export default async function AdminDashboardPage() {
-  const dashboard = await DashboardService.getAdminDashboardData();
+  const [dashboard, celebrations] = await Promise.all([
+    DashboardService.getAdminDashboardData(),
+    CelebrationService.getAdminDashboardCelebrations().catch((error) => {
+      console.error(
+        "[AdminDashboardPage] Unable to load company celebrations.",
+        error,
+      );
+
+      return EMPTY_CELEBRATIONS;
+    }),
+  ]);
   const currentDate = formatAppDate(new Date());
   const companySnapshot = getCompanySnapshotItems(dashboard.counts);
   const pendingItems = getPendingWorkItems(dashboard.counts);
@@ -36,6 +53,7 @@ export default async function AdminDashboardPage() {
       />
 
       <AnnouncementTicker announcements={dashboard.liveAnnouncements} />
+      <AdminCelebrationOverview celebrations={celebrations} />
 
       <QuickResourceLinks categories={dashboard.quickResourceCategories} />
 

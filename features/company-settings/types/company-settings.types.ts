@@ -16,6 +16,17 @@ export type NotificationPreferenceValues = {
   leave: boolean;
   approvals: boolean;
   system: boolean;
+  celebrations: CelebrationPreferenceValues;
+};
+
+export type CelebrationPreferenceValues = {
+  enableBirthdays: boolean;
+  enableWorkAnniversaries: boolean;
+  notifyCompany: boolean;
+  notifyEmployee: boolean;
+  enableBrowserNotification: boolean;
+  enableRealtimeNotification: boolean;
+  enableNativeNotification: boolean;
 };
 
 export type ResourcePreferenceValues = {

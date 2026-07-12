@@ -362,6 +362,54 @@ export type Database = {
           },
         ];
       };
+      employee_celebration_events: {
+        Row: {
+          id: string;
+          company_id: string;
+          employee_id: string;
+          event_type: Database["public"]["Enums"]["celebration_event_type"];
+          event_year: number;
+          celebration_date: string;
+          notification_count: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          company_id: string;
+          employee_id: string;
+          event_type: Database["public"]["Enums"]["celebration_event_type"];
+          event_year: number;
+          celebration_date: string;
+          notification_count?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          company_id?: string;
+          employee_id?: string;
+          event_type?: Database["public"]["Enums"]["celebration_event_type"];
+          event_year?: number;
+          celebration_date?: string;
+          notification_count?: number;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "employee_celebration_events_company_id_fkey";
+            columns: ["company_id"];
+            isOneToOne: false;
+            referencedRelation: "companies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "employee_celebration_events_employee_id_fkey";
+            columns: ["employee_id"];
+            isOneToOne: false;
+            referencedRelation: "employees";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       roles: {
         Row: {
           id: string;
@@ -649,6 +697,9 @@ export type Database = {
           message: string;
           action_url: string | null;
           is_read: boolean;
+          browser_enabled: boolean;
+          realtime_enabled: boolean;
+          native_enabled: boolean;
           delivery_status:
             Database["public"]["Enums"]["notification_delivery_status"];
           delivered_at: string | null;
@@ -666,6 +717,9 @@ export type Database = {
           message: string;
           action_url?: string | null;
           is_read?: boolean;
+          browser_enabled?: boolean;
+          realtime_enabled?: boolean;
+          native_enabled?: boolean;
           delivery_status?:
             Database["public"]["Enums"]["notification_delivery_status"];
           delivered_at?: string | null;
@@ -683,6 +737,9 @@ export type Database = {
           message?: string;
           action_url?: string | null;
           is_read?: boolean;
+          browser_enabled?: boolean;
+          realtime_enabled?: boolean;
+          native_enabled?: boolean;
           delivery_status?:
             Database["public"]["Enums"]["notification_delivery_status"];
           delivered_at?: string | null;
@@ -865,6 +922,20 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "attendance_records_company_id_fkey";
+            columns: ["company_id"];
+            isOneToOne: false;
+            referencedRelation: "companies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "attendance_records_employee_id_fkey";
+            columns: ["employee_id"];
+            isOneToOne: false;
+            referencedRelation: "employees";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "attendance_records_check_in_location_id_fkey";
             columns: ["check_in_location_id"];
@@ -1205,9 +1276,26 @@ export type Database = {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      get_company_celebrants: {
+        Args: {
+          target_company_id: string;
+          target_date: string;
+        };
+        Returns: {
+          employee_uuid: string;
+          employee_code: string;
+          employee_name: string;
+          company_uuid: string;
+          event_type: Database["public"]["Enums"]["celebration_event_type"];
+          source_date: string;
+          years_completed: number | null;
+        }[];
+      };
+    };
     Enums: {
       announcement_priority: "low" | "normal" | "high" | "urgent";
+      celebration_event_type: "birthday" | "work_anniversary";
       attendance_type: "office" | "field" | "hybrid";
       attendance_location_source: "gps" | "network" | "hybrid";
       attendance_policy_mode:
@@ -1263,7 +1351,8 @@ export type Database = {
         | "leave"
         | "approval"
         | "document"
-        | "system";
+        | "system"
+        | "celebration";
       notification_priority: "normal" | "high" | "urgent";
       notification_delivery_status: "queued" | "delivered" | "opened";
       permission_type: "public" | "role" | "employee";

@@ -10,11 +10,18 @@ import { AttendanceSummaryCard } from "@/features/attendance/components";
 import { AttendanceService } from "@/features/attendance/services/attendance.service";
 import { getAdminEquivalentPath } from "@/features/auth/services/redirect.service";
 import { getCurrentSessionProfile } from "@/features/auth/services/session.service";
+import { TodaysCelebrationsCard } from "@/features/celebrations/components";
+import { CelebrationService } from "@/features/celebrations/services/celebration.service";
 import { EmployeeResourceService } from "@/features/employee-resources/services/employee-resource.service";
 import { ROLE_NAMES } from "@/lib/auth/permissions";
 import { formatAppDate } from "@/lib/datetime";
 
 export const dynamic = "force-dynamic";
+
+const EMPTY_CELEBRATIONS = {
+  birthdays: [],
+  workAnniversaries: [],
+};
 
 export default async function DashboardPage() {
   const sessionProfile = await getCurrentSessionProfile();
@@ -27,10 +34,18 @@ export default async function DashboardPage() {
     redirect(getAdminEquivalentPath("/dashboard"));
   }
 
-  const [data, announcements, attendanceSummary] = await Promise.all([
+  const [data, announcements, attendanceSummary, celebrations] = await Promise.all([
     EmployeeResourceService.getPortalData(),
     AnnouncementService.listForEmployee(),
     AttendanceService.getEmployeeDashboardSummary(),
+    CelebrationService.getEmployeeDashboardCelebrations().catch((error) => {
+      console.error(
+        "[DashboardPage] Unable to load employee celebrations.",
+        error,
+      );
+
+      return EMPTY_CELEBRATIONS;
+    }),
   ]);
 
   return (
@@ -41,6 +56,7 @@ export default async function DashboardPage() {
       />
       <AnnouncementTicker announcements={announcements.announcements} />
       <AttendanceSummaryCard summary={attendanceSummary} />
+      <TodaysCelebrationsCard celebrations={celebrations} />
       <QuickResourceLinks categories={data.categories} />
     </section>
   );

@@ -500,6 +500,53 @@ export function CompanySettingsForm({
               </label>
             ))}
           </div>
+          <div className="mt-5 space-y-3">
+            <div>
+              <h3 className="text-sm font-semibold">Celebration Settings</h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Configure automatic birthday and work anniversary greetings.
+              </p>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
+              {(
+                [
+                  ["enableBirthdays", "Enable Birthday Wishes"],
+                  ["enableWorkAnniversaries", "Enable Work Anniversary Wishes"],
+                  ["notifyCompany", "Notify Company"],
+                  ["notifyEmployee", "Notify Employee"],
+                  ["enableBrowserNotification", "Enable Browser Notification"],
+                  ["enableRealtimeNotification", "Enable Realtime Notification"],
+                  ["enableNativeNotification", "Enable Native Notification"],
+                ] as const
+              ).map(([key, label]) => (
+                <label
+                  key={key}
+                  className="flex items-start gap-3 rounded-lg border p-4"
+                >
+                  <input
+                    type="checkbox"
+                    checked={values.notificationPreferences.celebrations[key]}
+                    onChange={(event) =>
+                      updateValue("notificationPreferences", {
+                        ...values.notificationPreferences,
+                        celebrations: {
+                          ...values.notificationPreferences.celebrations,
+                          [key]: event.target.checked,
+                        },
+                      })
+                    }
+                    className="mt-1 size-4"
+                  />
+                  <span>
+                    <span className="block text-sm font-medium">{label}</span>
+                    <span className="text-sm text-muted-foreground">
+                      Apply this rule to scheduled birthday and work anniversary greetings.
+                    </span>
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
         </section>
 
         <section id="security" className="scroll-mt-24">

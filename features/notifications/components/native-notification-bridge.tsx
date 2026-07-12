@@ -171,7 +171,12 @@ export function NativeNotificationBridge({
 }: NativeNotificationBridgeProps) {
   const [showDeniedHelper, setShowDeniedHelper] = useState(false);
   const unreadNotifications = useMemo(
-    () => summary.latest.filter((notification) => !notification.isRead),
+    () =>
+      summary.latest.filter(
+        (notification) =>
+          !notification.isRead &&
+          (notification.browserEnabled || notification.nativeEnabled),
+      ),
     [summary.latest],
   );
 

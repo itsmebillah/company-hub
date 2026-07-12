@@ -34,6 +34,9 @@ function toNotificationItem(row: NotificationRow): NotificationItem {
     message: row.message,
     actionUrl: row.action_url,
     isRead: row.is_read,
+    browserEnabled: row.browser_enabled,
+    realtimeEnabled: row.realtime_enabled,
+    nativeEnabled: row.native_enabled,
     deliveryStatus: row.delivery_status,
     deliveredAt: row.delivered_at,
     openedAt: row.opened_at,
@@ -122,6 +125,10 @@ export function RealtimeNotificationCenter({
       const row = payload.new;
 
       if (!isNotificationRow(row)) {
+        return;
+      }
+
+      if (!row.realtime_enabled) {
         return;
       }
 
