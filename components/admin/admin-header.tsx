@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { Menu, Settings, UserCircle } from "lucide-react";
+import { Settings, UserCircle } from "lucide-react";
 
 import { AdminBreadcrumb } from "@/components/admin/admin-breadcrumb";
 import { ProfilePhoto } from "@/components/common/profile-photo";
@@ -25,7 +25,6 @@ type AdminHeaderProps = {
   notificationSummary: NotificationSummary;
   notificationScope: RealtimeNotificationScope;
   pathname: string;
-  onMenuClick: () => void;
 };
 
 function getPageTitle(pathname: string) {
@@ -45,7 +44,6 @@ export function AdminHeader({
   notificationSummary,
   notificationScope,
   pathname,
-  onMenuClick,
 }: AdminHeaderProps) {
   const title = getPageTitle(pathname);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -80,16 +78,6 @@ export function AdminHeader({
     <header className="sticky top-0 z-30 px-4 pt-3 sm:px-6 sm:pt-4">
       <div className="app-card app-card-subtle flex min-h-[4.5rem] flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-5">
         <div className="flex min-w-0 items-center gap-3">
-          <Button
-            type="button"
-            size="icon"
-            variant="outline"
-            className="size-10 border-white/30 bg-background/70 shadow-none md:hidden"
-            onClick={onMenuClick}
-            aria-label="Open navigation"
-          >
-            <Menu className="size-5" aria-hidden="true" />
-          </Button>
           <div className="min-w-0">
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-primary">
               Admin Workspace

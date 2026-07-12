@@ -84,6 +84,17 @@ export const adminNavigationItems: AdminNavigationItem[] = [
   },
 ];
 
+export const primaryAdminNavigationItems: AdminNavigationItem[] = [
+  adminNavigationItems[0],
+  adminNavigationItems[1],
+  adminNavigationItems[5],
+  {
+    ...adminNavigationItems[4],
+    title: "Notice",
+  },
+  adminNavigationItems[3],
+];
+
 export const adminNavigationFallback = {
   title: "Admin",
   href: "/admin/dashboard",

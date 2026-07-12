@@ -3,10 +3,11 @@
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { MoreHorizontal } from "lucide-react";
 
 import { AdminHeader } from "@/components/admin/admin-header";
 import { AdminMobileDrawer } from "@/components/admin/admin-mobile-drawer";
-import { AdminSidebar } from "@/components/admin/admin-sidebar";
+import { MobileBottomNav } from "@/components/common/mobile-bottom-nav";
 import type { AuthSessionProfile } from "@/features/auth/types/auth.types";
 import { PermissionOnboarding } from "@/features/device-onboarding/components/permission-onboarding";
 import type {
@@ -17,6 +18,7 @@ import { OfflineStatusIndicator } from "@/features/offline/components/offline-st
 import { OfflineSyncProvider } from "@/features/offline/components/offline-sync-provider";
 import { PwaInstallCard } from "@/features/pwa/components/pwa-install-card";
 import type { SchemaVersionStatus } from "@/features/schema-version/services/schema-version.service";
+import { primaryAdminNavigationItems } from "@/lib/navigation/admin-navigation";
 
 type AdminShellProps = {
   children: ReactNode;
@@ -38,8 +40,19 @@ export function AdminShell({
   schemaStatus,
 }: AdminShellProps) {
   const pathname = usePathname();
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  const isPrimaryAdminRoute = primaryAdminNavigationItems.some(
+    (item) => pathname === item.href || pathname.startsWith(`${item.href}/`),
+  );
+  const adminBottomNavigationItems = [
+    ...primaryAdminNavigationItems,
+    {
+      title: "More",
+      icon: MoreHorizontal,
+      onClick: () => setIsMobileDrawerOpen(true),
+      isActive: !isPrimaryAdminRoute,
+    },
+  ];
 
   useEffect(() => {
     setIsMobileDrawerOpen(false);
@@ -53,20 +66,14 @@ export function AdminShell({
         onOpenChange={setIsMobileDrawerOpen}
       />
       <div className="flex min-h-svh max-w-full">
-        <AdminSidebar
-          pathname={pathname}
-          isCollapsed={isSidebarCollapsed}
-          onCollapsedChange={setIsSidebarCollapsed}
-        />
         <div className="flex min-w-0 flex-1 flex-col overflow-x-hidden">
           <AdminHeader
             profile={profile}
             notificationSummary={notificationSummary}
             notificationScope={notificationScope}
             pathname={pathname}
-            onMenuClick={() => setIsMobileDrawerOpen(true)}
           />
-          <main className="flex-1 overflow-x-hidden px-4 pb-8 pt-4 sm:px-6 lg:px-8">
+          <main className="flex-1 overflow-x-hidden px-4 pb-28 pt-4 sm:px-6 lg:px-8">
             <div className="min-w-0 space-y-5">
               {schemaStatus.state !== "current" ? (
                 <section className="app-card border-amber-300/70 bg-amber-50/90 px-4 py-3 text-sm text-amber-950 dark:bg-amber-950/35 dark:text-amber-100">
@@ -85,6 +92,11 @@ export function AdminShell({
           </main>
         </div>
       </div>
+      <MobileBottomNav
+        items={adminBottomNavigationItems}
+        ariaLabel="Primary admin navigation"
+        className="mx-auto max-w-3xl"
+      />
       <PermissionOnboarding
         companyId={profile.companyId}
         version={onboardingVersion}

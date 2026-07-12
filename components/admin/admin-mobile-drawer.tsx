@@ -43,7 +43,7 @@ export function AdminMobileDrawer({
   }
 
   return (
-    <div className="fixed inset-0 z-50 md:hidden">
+    <div className="fixed inset-0 z-50">
       <button
         type="button"
         className="absolute inset-0 bg-background/82 backdrop-blur-md"
