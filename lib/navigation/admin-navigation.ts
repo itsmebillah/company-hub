@@ -8,6 +8,7 @@ import {
   FileSpreadsheet,
   FolderKanban,
   LayoutDashboard,
+  ListChecks,
   MapPin,
   ShieldCheck,
   Settings,
@@ -66,6 +67,11 @@ export const adminNavigationItems: AdminNavigationItem[] = [
     title: "Leave",
     href: "/admin/leave/requests",
     icon: ClipboardList,
+  },
+  {
+    title: "Leave Types",
+    href: "/admin/leave/types",
+    icon: ListChecks,
   },
   {
     title: "Company",
