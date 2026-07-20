@@ -23,6 +23,8 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+/.codex-dev.log
+/.codex-dev-error.log
 
 # local env files
 .env*.local
@@ -30,6 +32,9 @@ yarn-error.log*
 
 # vercel
 .vercel
+
+# local Supabase CLI state and health-check artifacts
+/supabase/.temp/
 
 # typescript
 *.tsbuildinfo

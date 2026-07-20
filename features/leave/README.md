@@ -13,7 +13,7 @@ Leave type management, employee leave requests, request history, approval action
 
 ## Flow
 
-Employees submit leave requests. Admins approve/reject. Services validate dates, overlaps, and status transitions.
+Employees submit leave requests. Admins approve or reject them. During approval, an Admin may revise the leave type, dates, and reason; the service revalidates the request and recalculates working days before committing the approval. Services validate dates, overlaps, and status transitions.
 
 ## Dependencies
 

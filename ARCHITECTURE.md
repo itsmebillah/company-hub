@@ -1,127 +1,112 @@
-# Company Hub Architecture
+# Architecture
 
-Company Hub is a Next.js App Router application backed by Supabase. The codebase is organized around feature modules so future work can be scoped quickly and safely.
+## System context
 
-## Top-Level Structure
-
-- `app/`: route groups, pages, layouts, route handlers, loading and error boundaries.
-- `components/`: shared UI, app shell, admin shell, layout primitives, common visual components.
-- `features/`: business modules with their actions, components, services, repositories, constants, and types.
-- `lib/`: cross-cutting infrastructure such as Supabase clients, environment parsing, dates, media helpers, and navigation.
-- `docs/`: project specifications and architecture references.
-- `supabase/`: schema migrations and seed files.
-
-## Feature Architecture
-
-Feature modules follow this shape when needed:
+Company Hub is a server-first Next.js App Router application backed by Supabase PostgreSQL, Auth, Storage, and Realtime. Vercel is the intended web/cron host. Browsers interact with Next.js routes and server actions; privileged data access remains on the server.
 
 ```text
-features/<feature>/
-  actions/
-  components/
-  constants/
-  repositories/
-  services/
-  types/
-  ui/
-  utils/
-  README.md
+Browser / installed PWA
+  ├─ Next.js pages and client components
+  ├─ Supabase Auth session cookies
+  ├─ approved Storage uploads
+  └─ scoped Realtime notification channel
+           │
+           ▼
+Next.js App Router on Vercel
+  ├─ middleware route protection
+  ├─ server components
+  ├─ server actions
+  ├─ HTTP route handlers / cron
+  └─ server-only services and repositories
+           │
+           ▼
+Supabase
+  ├─ PostgreSQL + RLS
+  ├─ Auth
+  ├─ Storage
+  └─ Realtime
 ```
 
-Keep files focused. Components should primarily render UI. Server actions should validate request boundaries and call services. Services own business flow. Repositories own direct Supabase access when the feature has a repository layer.
+## Repository topology
 
-## Dependency Direction
+- `app/`: route groups, pages, layouts, route handlers, metadata, loading and error boundaries.
+- `components/`: shared shells, navigation, primitives, theme and common presentation.
+- `features/`: domain modules with actions, services, repositories, components, types, constants, and local README files.
+- `lib/`: Supabase clients, environment access, auth/navigation helpers, date/media utilities.
+- `hooks/`, `services/`, `types/`, `utils/`: small cross-cutting modules retained where feature ownership is not appropriate.
+- `supabase/migrations/`: canonical database history.
+- `public/`: PWA icons and service worker.
 
-Preferred dependency flow:
+## Route groups
+
+- `app/(auth)`: login, setup, and currently-placeholder registration.
+- `app/(admin)`: Admin-only pages. The layout validates an active Admin session and loads shared settings, schema status, attendance configuration, and notifications.
+- `app/(app)`: active employee workspace routes.
+- `app/api`: celebration cron and notification tracking.
+
+Middleware refreshes Supabase Auth state, redirects unauthenticated protected routes, and marks protected/auth responses as non-cacheable. Role enforcement is completed in server layouts/services, not middleware alone.
+
+## Layering and dependency direction
+
+The preferred feature flow is:
 
 ```text
-Page
-  -> Action
-  -> Service
-  -> Repository
-  -> Supabase
+route/page
+  → server action or read service
+  → domain service / validation service
+  → repository (where present)
+  → Supabase client
 ```
 
-Pages may call read-only services for server-rendered data. Client components may call server actions but must not contain privileged Supabase logic.
+Pages compose data and presentation. Actions validate transport-shaped input, call services, convert failures into friendly action state, and revalidate paths. Services own authorization, business invariants, orchestration, rollback, notifications, and audit logging. Repositories own direct table operations in larger domains.
 
-## Authentication Flow
+Client components do not import the service-role client. The browser client is used for session-aware Auth, profile storage upload, notification realtime, and other explicitly policy-protected operations.
 
-Users sign in with Employee ID and password. The server resolves the Employee ID to the internal Supabase Auth email, verifies employee status, signs in through Supabase Auth, loads role context, and redirects by role.
+## Supabase clients
 
-Rules:
+- `lib/supabase/client.ts`: browser client using URL and anonymous key.
+- `lib/supabase/server.ts`: cookie-backed server client for the current user.
+- `lib/supabase/middleware.ts`: request/response cookie refresh.
+- `lib/supabase/admin.ts`: server-only service-role client for authorized business operations.
 
-- Never expose `internal_auth_email`.
-- Never expose `auth_user_id`.
-- Inactive employees cannot sign in.
-- Admin users land in `/admin/dashboard`.
-- Non-admin employees land in `/dashboard`.
+Because most business CRUD uses service role, every service must establish application-level employee/company/role authorization before querying or mutating. RLS is a defense-in-depth default-deny boundary for direct API access, not a replacement for service authorization.
 
-## Authorization Flow
+## Major business flows
 
-Authorization is role-aware and company-aware. Services should resolve the current employee or company context through shared auth helpers rather than selecting the first active company.
+### Authentication
 
-Resource visibility is server-side:
+Employee ID is normalized and resolved server-side to `internal_auth_email`; Supabase Auth verifies the password and issues the session. Session profile joins the Auth user to an active employee and role. Admins land at `/admin/dashboard`; other roles land at `/dashboard`.
 
-```text
-employee -> company_id + role_id -> active categories/resources -> active permissions
-```
+### Employee creation/import
 
-Announcements are server-side:
+Validation → Auth user creation → employee insertion → activity/notification side effects. Failures remove partial Auth/database records. Bulk imports stage parsed rows and process bounded batches.
 
-```text
-employee -> company_id + role_id -> active announcements -> publish window -> target audience
-```
+### Attendance
 
-## Dashboard Flow
+Current employee/company context → policy and work-mode resolution → server-time/GPS/geofence validation → optional selfie storage → attendance insert/update → activity/notification. Office-time and work-mode snapshots preserve historical interpretation. Offline actions are queued in browser local storage and replayed online.
 
-Admin dashboard data is loaded through `DashboardService`. The page composes presentation components only. Dashboard UI config lives in dashboard constants so the route stays small and searchable.
+### Resource/announcement visibility
 
-Employee dashboard data is loaded from employee-resource and announcement services. It must only display resources and announcements the employee can access.
+Employee context drives server-side filtering by company, lifecycle status, publication window, role/employee targeting, and active permissions. Client filtering is only presentation.
 
-## Attendance Flow
+### Notifications
 
-Attendance uses server timestamps and attendance services. GPS validation is handled server-side using assigned company locations. UI should call actions, not repositories.
+Server services create rows and track state. `notifications` is in `supabase_realtime`; an authenticated SELECT policy exposes only the current employee's rows or the Admin's company scope. Browser components merge insert events and resynchronize summaries after updates.
 
-## Leave Flow
+## Cross-cutting concerns
 
-Leave requests are created by employees, reviewed by admins/managers, and logged through notifications and activity logs. Leave balance remains foundation-level unless a sprint explicitly extends it.
+- **Audit:** domain services call non-blocking activity logging after successful mutations.
+- **Errors:** technical details are logged server-side; UI receives bounded messages.
+- **Caching:** protected/auth routes are `no-store`; actions use `revalidatePath`.
+- **Media:** database fields store object paths; shared helpers build public URLs.
+- **Time:** attendance uses server timestamps; company settings carry timezone/date-format preferences.
+- **PWA:** manifest, service worker, install prompt, permission onboarding, and offline attendance queue.
 
-## Announcement Flow
+## Architectural risks
 
-Admin creates or updates announcements with a target audience. Targeting supports company, roles, and employees. Employee pages and tickers consume the same filtered service.
+- Service-role-heavy data access makes service authorization correctness critical.
+- No automated test suite or CI currently protects architectural boundaries.
+- Browser-local offline state has limited durability and recovery UX.
+- Several oversized service/component files should be split only with behavior-preserving tests.
 
-## Resource Flow
-
-Admins create categories, resources, and permissions. Employee portals load active resources grouped by active category and filtered by active permissions.
-
-## Employee Flow
-
-Admins create employees. Employee ID is immutable after creation. Creation generates internal auth email, creates Supabase Auth user, stores `auth_user_id`, and uses Employee ID as initial password.
-
-## Media Flow
-
-Components should use shared media helpers for rendering object paths. Upload logic should be centralized in storage services when media architecture is expanded. Database columns should store object keys, not public URLs.
-
-## Coding Conventions
-
-- Prefer feature-local code over global utilities unless shared by multiple features.
-- Keep services focused and split large services by responsibility.
-- Keep route files as composition layers.
-- Prefer barrel exports for feature public APIs.
-- Add comments only for non-obvious business rules.
-- Preserve business behavior during refactor-only sprints.
-
-## Dependency Rules
-
-- Do not call service-role Supabase clients from client components.
-- Do not bypass services for mutations.
-- Do not hardcode company IDs.
-- Do not duplicate permission filtering in UI.
-- Do not change database schema in refactor-only sprints.
-
-## AI Navigation Tips
-
-- Start with this file and `docs/MASTER_SPEC.md`.
-- Then open the feature `README.md`.
-- Then inspect that feature's action, service, repository, and component folders.
-- Use constants files for labels, routes, and display config before editing UI strings.
+See [DECISIONS.md](DECISIONS.md), [SECURITY.md](SECURITY.md), and [DATABASE.md](DATABASE.md).

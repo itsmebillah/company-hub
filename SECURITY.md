@@ -1,0 +1,82 @@
+# Security
+
+## Security model
+
+Company Hub uses defense in depth: authenticated sessions, server-side role/company authorization, RLS on all public tables, scoped storage policies, and server-only service-role operations. The service-role key bypasses RLS and is therefore the highest-risk application credential.
+
+## Secrets
+
+Required secrets are `SUPABASE_SERVICE_ROLE_KEY` and `CRON_SECRET`; the Supabase anonymous key is public by design but should still be environment-configured. `.env.local` is ignored. `.env.example` must contain safe placeholders only.
+
+Current critical action: `.env.example` contains populated secret-like values. Sanitize it and rotate any service-role key that may have entered Git history. Rotation must include local machines and Vercel environments.
+
+Never place secrets in:
+
+- `NEXT_PUBLIC_*` values unless intentionally public.
+- client components or browser logs.
+- Markdown, screenshots, issues, CI output, or migration SQL.
+- command output included in support tickets.
+
+## Database access
+
+- All 22 public tables have RLS enabled.
+- Direct browser access is default-deny except scoped notification SELECT.
+- Storage policies require an active employee and owner/Admin relationship as appropriate.
+- Notification RLS derives identity from `auth.uid()` through a constrained security-definer helper.
+- Anonymous execution is revoked for storage helpers; `can_receive_notification` remains anonymously executable and is tracked for remediation.
+- Service-role services must call current-context/role checks before accessing data.
+
+Current critical gap: many Admin-facing service-role operations check only active employee/company context, and some ID mutations omit a current-company predicate. Add service-boundary role checks and cross-company denial tests before production.
+
+New tables require RLS, grants/policies, indexes, and security-advisor review in the same change.
+
+## Storage
+
+- Public buckets expose object bytes by URL; do not store confidential content there.
+- Private employee documents and leave attachments require owner/Admin policies.
+- Attendance selfies are private and uploaded through server service role.
+- Object paths must be normalized and scoped; validate MIME type and size before production hardening.
+- Database rows store paths, not long-lived signed URLs.
+
+## HTTP and browser controls
+
+- Protected/auth routes are no-store.
+- Celebration cron requires constant secret equality through the Bearer header in production.
+- Notification tracking validates event names and current-user ownership in the service.
+- Raw Supabase errors are replaced with bounded messages.
+- React rendering supplies default output escaping; any future rich HTML requires sanitization.
+- Browser permissions are requested in a user-visible onboarding flow.
+
+Production gaps include rate limiting, CSP/security headers beyond removing `X-Powered-By`, centralized audit monitoring, and automated dependency scanning.
+
+The service worker currently caches authenticated page HTML. Remove those routes from Cache Storage and purge legacy page caches before production to prevent cross-session offline disclosure.
+
+## Logging and privacy
+
+Approximately 120 explicit console statements exist, mainly server-side error paths. Before production, route logs through structured redaction and monitoring. Never log credentials, session cookies, precise location beyond operational necessity, private storage URLs, import source rows, or notification content without a retention decision.
+
+Sensitive data includes contact details, date of birth, attendance/GPS/selfies, leave reasons, reporting hierarchy, notification content, and activity metadata. Define retention and least-privilege access for each.
+
+## Security verification
+
+```powershell
+./node_modules/.bin/supabase.cmd db lint --linked --level warning
+./node_modules/.bin/supabase.cmd db advisors --linked --type security
+npm audit
+npm run lint
+npm run typecheck
+npm run build
+```
+
+Previous disposable-user checks verified Auth login, RLS isolation, employee notification visibility, realtime delivery, storage policy upload/download, service-role attendance storage, and cleanup. The latest read-only health check found four advisor warnings and confirmed anonymous RPC execution of `can_receive_notification` returns `false`; anonymous execution still needs to be revoked.
+
+## Incident response minimum
+
+1. Contain: disable affected endpoint/deployment and revoke leaked keys.
+2. Preserve evidence without copying secrets into tickets.
+3. Assess Supabase Auth, database logs, storage access, and Vercel logs.
+4. Rotate secrets and invalidate sessions when relevant.
+5. Repair through reviewed migration/code changes.
+6. Document timeline, scope, customer impact, and prevention actions.
+
+Report vulnerabilities privately to the repository owner; do not open a public issue containing exploit details or credentials.

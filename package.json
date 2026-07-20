@@ -38,6 +38,8 @@
     "postcss": "^8.4.49",
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.9",
-    "typescript": "^5.7.2"
+    "supabase": "^2.109.1",
+    "typescript": "^5.7.2",
+    "vercel": "^56.3.2"
   }
 }
