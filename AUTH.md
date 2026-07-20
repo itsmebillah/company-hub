@@ -9,6 +9,7 @@ Employee ID + password
   → normalize Employee ID
   → service-role lookup of active employee identity
   → internal auth email
+  → internally left-pad Employee-ID-derived passwords to six characters when shorter
   → Supabase password sign-in
   → cookie-backed session
   → employee + role + company session profile
@@ -45,7 +46,8 @@ Most CRUD uses service role, so layer 2 is mandatory. Never assume service role 
 ## Employee account lifecycle
 
 - Creation generates internal email, creates Auth user, then employee row.
-- Default employee password is currently Employee ID and is displayed to the creating Admin. There is no forced first-login change; this is a critical release blocker, not an acceptable production onboarding flow.
+- The canonical default password is the employee's original Employee ID. Users never enter leading zeroes. Server code left-pads Employee-ID-derived credentials shorter than six characters immediately before Supabase Auth calls so provider minimums are satisfied without changing the UI.
+- The shared `toSupabaseEmployeePassword` utility is used by login, employee creation, bulk import, registration, reset-to-initial, and migration synchronization. The transformed value must never be logged, returned, or stored in application tables.
 - Deactivation prevents active session profile use but is a soft database change.
 - Import and bootstrap flows roll back orphan Auth users/database rows when possible.
 - Password updates use the current user session; administrative reset service exists but public UX is incomplete.
@@ -62,7 +64,7 @@ Most CRUD uses service role, so layer 2 is mandatory. Never assume service role 
 - Phone provider is disabled.
 - The new project contains 17 recreated Auth identities whose email, metadata, confirmation state, and employee linkage match the verified backup.
 - Migrated Admin and employee password login, session cookies, dashboards, and role redirect were verified with temporary credentials.
-- Source password hashes were unavailable and Auth UUIDs were remapped; every migrated user requires password reset/activation.
+- Source password hashes were unavailable and Auth UUIDs were remapped. All 17 migrated users have since been synchronized to the canonical Employee-ID-derived credential and individually login-verified.
 
 Because public signup is enabled while `/register` is incomplete, production owners should decide whether to disable signup or implement a controlled registration flow.
 

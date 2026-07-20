@@ -3,6 +3,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 
 import { getCurrentAuthUser } from "@/features/auth/services/auth.service";
+import { toSupabaseEmployeePassword } from "@/features/auth/utils/employee-password";
 import type { PasswordFormValues } from "@/features/profile/types/profile.types";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -60,7 +61,7 @@ export const PasswordService = {
     const supabase = await createSupabaseServerClient();
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email: employee.internalAuthEmail,
-      password: values.currentPassword,
+      password: toSupabaseEmployeePassword(values.currentPassword),
     });
 
     if (signInError) {

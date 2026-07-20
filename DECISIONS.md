@@ -74,6 +74,12 @@ Never rewrite applied migrations. Correct defects through subsequent migrations 
 
 Run daily celebration generation through an authenticated GET route scheduled by `vercel.json`. The route is dynamic and requires `CRON_SECRET` in production.
 
+## ADR-013 — Employee ID as the canonical default password
+
+**Status:** Accepted business rule
+
+Employees enter their original Employee ID as both username and default password. Existing internal Auth emails remain the Supabase identity bridge. Because Supabase requires six-character passwords, server code internally left-pads Employee-ID-derived credentials shorter than six characters before Auth calls. Padding is never exposed or entered by users. All provisioning, import, login, reset-to-initial, registration, and migration workflows must use the shared transformation in `features/auth/utils/employee-password.ts`.
+
 ## Open decisions
 
 - Registration/invitation model and whether public Supabase signup stays enabled.

@@ -1,6 +1,7 @@
 import "server-only";
 
 import { requireCurrentEmployeeContext } from "@/features/auth/services/current-employee-context.service";
+import { toSupabaseEmployeePassword } from "@/features/auth/utils/employee-password";
 import { logActivity } from "@/features/activity/utils/activity-log";
 import { NotificationService } from "@/features/notifications/services/notification.service";
 import { EmployeeImportRepository } from "@/features/employee-import/repositories/employee-import.repository";
@@ -543,7 +544,7 @@ export async function processEmployeeImportBatch(
       const internalAuthEmail = buildInternalAuthEmail(employeeId);
       const { data: authData, error: authError } = await supabase.auth.admin.createUser({
         email: internalAuthEmail,
-        password: employeeId,
+        password: toSupabaseEmployeePassword(employeeId),
         email_confirm: true,
         user_metadata: {
           employee_id: employeeId,

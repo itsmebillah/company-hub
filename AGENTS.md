@@ -21,7 +21,8 @@ This file applies to the entire repository. Treat implementation, migrations, an
 
 ## Invariants
 
-- Users sign in with Employee ID; internal auth email stays server-side.
+- Users sign in with Employee ID and enter that same original ID as the default password; internal auth email stays server-side.
+- Before Supabase Auth receives an Employee-ID-derived password, use `toSupabaseEmployeePassword`: IDs shorter than six characters are left-padded with zeroes to six. Never expose or ask users for the padded value.
 - Never expose `internal_auth_email`, `auth_user_id`, service-role keys, or raw provider errors.
 - Employee ID is normalized and immutable after creation.
 - An employee has one role; hierarchy uses `employees.manager_id`.

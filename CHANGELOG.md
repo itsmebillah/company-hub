@@ -7,6 +7,9 @@ This project follows a Keep-a-Changelog-style record. Versioning is not yet form
 ### Changed
 
 - Documented the Admin leave-approval workflow, including approval-time changes to leave type, dates, and reason with working-day recalculation.
+- Centralized the canonical Employee-ID-derived Auth password transformation across login, creation, import, registration, reset-to-initial, and migrated-user synchronization.
+- Synchronized and individually verified all 17 migrated Auth users without changing emails or creating duplicate users.
+- Verified Admin and employee sessions, dashboards, unauthenticated middleware redirect, and non-Admin authorization redirect using the canonical credential flow.
 - Restored the verified cross-account Supabase backup into project `jjfktbgfwvekhlvyjlww`: 1,748 rows across 22 tables, 17 Auth identities, nine Storage buckets, and four checksum-verified objects.
 - Preserved all application IDs and remapped the 17 Auth UUID references because the supported Admin API cannot assign source Auth UUIDs or import password hashes.
 - Reverified migration parity, constraints, RLS, Storage policies, Realtime, Auth configuration, Admin/employee login, local runtime, lint, typecheck, and production build after migration.

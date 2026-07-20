@@ -3,6 +3,7 @@ import "server-only";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { resolveEmployeeAuthIdentity } from "@/features/auth/services/auth.service";
 import type { RegistrationInput } from "@/features/auth/types/auth.types";
+import { toSupabaseEmployeePassword } from "@/features/auth/utils/employee-password";
 
 export async function registerExistingEmployee(input: RegistrationInput) {
   const employee = await resolveEmployeeAuthIdentity(input.employeeId);
@@ -22,7 +23,7 @@ export async function registerExistingEmployee(input: RegistrationInput) {
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase.auth.admin.createUser({
     email: employee.internalAuthEmail,
-    password: input.password,
+    password: toSupabaseEmployeePassword(input.password),
     email_confirm: true,
     user_metadata: {
       employee_id: employee.employeeId,

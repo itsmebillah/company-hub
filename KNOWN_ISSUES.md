@@ -6,10 +6,6 @@
 
 Most Admin-facing actions/services establish only active employee/current company context before using the service-role client. Route-group layout checks do not authorize direct server-action or route-handler invocation, and several ID-based mutations are not company-scoped. Treat this as a release blocker for wrong-role and cross-company access.
 
-### Employee ID is used as the initial password
-
-Employee creation and import create confirmed Auth users with the normalized Employee ID as the password. There is no mandatory first-login rotation. Replace this with random activation/reset credentials before real employee accounts are created.
-
 ### The service worker caches authenticated HTML
 
 `public/sw.js` caches personalized employee and Admin pages. Browser Cache Storage can survive logout/account switching, creating offline cross-session disclosure risk. Cache only immutable public assets and purge the legacy page cache.
@@ -30,9 +26,9 @@ The latest `npm install` reports 33 findings: 1 low, 14 moderate, and 18 high. D
 
 ## Medium
 
-### Migrated Auth users require password resets
+### Admin schema-status check cannot access migration history through PostgREST
 
-The supported Supabase Admin API does not expose source password hashes or allow caller-assigned Auth UUIDs. All 17 identities were recreated with remapped Auth UUIDs and cryptographically random migration credentials, while employee links were updated. Users cannot retain their old passwords and must complete a controlled password reset/activation process; Admin recovery ownership must be validated before launch.
+`SchemaVersionService` queries `supabase_migrations.schema_migrations` through the service-role REST client, but the managed project exposes only `public` and `graphql_public`. The Admin dashboard catches the resulting `PGRST106` error and still renders, while CLI migration parity remains healthy. Replace this runtime check with a supported server-side mechanism instead of exposing the migration schema through PostgREST.
 
 ### Visible placeholders remain
 

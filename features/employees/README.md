@@ -14,7 +14,7 @@ Admin employee management, employee records, hierarchy references, status change
 
 ## Flow
 
-Admin creates employee. Service validates role/manager, creates Supabase Auth user, inserts employee, and rolls back on failure.
+Admin creates employee. Service validates role/manager, derives the provider credential through the shared Employee-ID password utility, creates the Supabase Auth user, inserts the employee, and rolls back on failure.
 
 ## Dependencies
 

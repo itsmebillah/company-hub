@@ -13,7 +13,7 @@ Employee ID login, session context, bootstrap setup, logout, and current employe
 
 ## Flow
 
-Employee ID resolves to internal auth email server-side. Supabase Auth creates session. Role controls redirect.
+Employee ID resolves to internal auth email server-side. The user enters the original Employee ID as the default password; IDs shorter than six characters are internally left-padded through the shared Auth utility before Supabase receives them. Supabase Auth creates the session and role controls redirect.
 
 ## Dependencies
 
@@ -21,4 +21,4 @@ Supabase Auth, employees, roles, companies, company settings.
 
 ## Rules
 
-Never expose internal auth email, service-role keys, or `auth_user_id` to users.
+Never expose internal auth email, service-role keys, `auth_user_id`, or the internally transformed password to users.

@@ -2,6 +2,7 @@ import "server-only";
 
 import { logActivity } from "@/features/activity/utils/activity-log";
 import { requireCurrentCompanyId } from "@/features/auth/services/current-company-context.service";
+import { toSupabaseEmployeePassword } from "@/features/auth/utils/employee-password";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getAllowedManagerRole } from "@/features/employees/constants/employee-rules";
 import type {
@@ -451,7 +452,7 @@ export async function createEmployee(values: EmployeeFormValues) {
   const { data: authUser, error: authError } =
     await supabase.auth.admin.createUser({
       email: internalAuthEmail,
-      password: employeeId,
+      password: toSupabaseEmployeePassword(employeeId),
       email_confirm: true,
       user_metadata: {
         employee_id: employeeId,

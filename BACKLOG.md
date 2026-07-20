@@ -5,11 +5,8 @@ This backlog is ordered by risk and production value. Items require an owner and
 ## P0 — Release blockers
 
 - **AUTHZ-001:** Add throwing Admin/permission guards to every privileged server action, route handler, and service. Add company predicates to all service-role ID reads/mutations and verify wrong-role/cross-company denial.
-- **AUTH-003:** Replace Employee-ID initial passwords with random activation/reset credentials and enforce first-login password rotation for created/imported employees.
 - **PWA-001:** Remove authenticated page HTML from service-worker caches, purge legacy page caches, and verify account switching/offline behavior cannot reveal a prior session.
 - **SEC-001:** Replace populated values in `.env.example` with safe placeholders and rotate any affected Supabase keys.
-- **OPS-001:** Link the authenticated Vercel CLI to the intended project; configure Preview and Production variables.
-- **AUTH-001:** Create the real first Admin and verify recovery/password ownership.
 - **TEST-001:** Add a test runner and critical Auth/authorization/attendance/import tests.
 - **CI-001:** Add pull-request checks for format, lint, typecheck, tests, and build.
 - **DEP-001:** Triage 33 npm audit findings and upgrade or accept each risk.

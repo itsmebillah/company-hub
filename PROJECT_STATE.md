@@ -6,7 +6,7 @@ Last verified: 2026-07-20
 
 Company Hub is a functional Next.js/Supabase operations portal with substantial admin and employee workflows. The application installs, compiles, builds, and starts successfully against the new Supabase project. The verified old-project backup has been restored into the new project, including application data, Auth identities and metadata, Storage objects, RLS/storage policies, and Realtime configuration.
 
-The project is suitable for continued staging use, but production release remains gated by migrated-user password resets, secret hygiene, automated testing, CI, and resolution or acceptance of dependency/security warnings.
+The project is suitable for continued staging use, but production release remains gated by secret hygiene, automated testing, CI, and resolution or acceptance of dependency/security warnings.
 
 ## Verified baseline
 
@@ -18,7 +18,7 @@ The project is suitable for continued staging use, but production release remain
 - 22 public application tables with RLS enabled.
 - Exact restored content parity for 1,748 application rows across all 22 tables; all application IDs and hierarchy references were preserved.
 - Nine storage buckets, 11 storage-object policies, four checksum-verified objects, and notification realtime publication.
-- 17 Auth identities recreated with matching email, metadata, confirmation state, and employee linkage. Supabase does not expose source password hashes or support assigning UUIDs through the Admin API, so all Auth UUIDs were mapped and all users require password resets.
+- 17 Auth identities recreated with matching email, metadata, confirmation state, and employee linkage. All 17 passwords are synchronized to the canonical Employee-ID-derived policy and individually verified; no Auth emails changed and no duplicate users were created.
 - `npm install`, lint, typecheck, and production build pass.
 - Local production runtime boots cleanly with Supabase network access. `/`, `/setup`, and `/login` return 200; unauthenticated protected routes redirect to login; migrated Admin and employee sessions render their dashboards; non-Admin access to the Admin dashboard is redirected.
 
@@ -41,25 +41,24 @@ The project is suitable for continued staging use, but production release remain
 - Production build: successful.
 - Prettier check: failed; 353 files currently differ from configured formatting.
 - Database lint: no schema errors.
+- Admin dashboard runtime logs retain a non-fatal `PGRST106` warning because `SchemaVersionService` cannot query the unexposed `supabase_migrations` schema through PostgREST; CLI migration parity passes.
 - Supabase Security Advisor: no RLS-disabled errors; four warnings for externally executable `SECURITY DEFINER` functions. Anonymous execution of `can_receive_notification` is confirmed, although its caller-derived predicate returned `false` anonymously.
 - npm audit: 33 findings (1 low, 14 moderate, 18 high).
 - Automated tests: none committed.
 - CI/CD workflow: none committed.
 - Vercel CLI: authenticated and linked to `company-hub`; all five required environment variable names are present for Production and Preview. Values were not printed during verification.
-- Authenticated Admin/employee runtime: login, dashboard rendering, and role denial passed with temporary migration credentials. Full browser-based feature regression remains manual because the in-app browser was unavailable during migration verification.
+- Authenticated Admin/employee runtime: canonical-password login, session creation, dashboard rendering, unauthenticated middleware denial, and non-Admin role denial passed. Full browser-based feature regression remains manual because the in-app browser was unavailable during migration verification.
 
 ## Release blockers
 
 See [KNOWN_ISSUES.md](KNOWN_ISSUES.md) for details. The highest-priority blockers are:
 
 1. Enforce Admin authorization inside every privileged server action, route handler, and service; tenant-scope every service-role ID operation.
-2. Replace Employee-ID initial passwords with random activation/reset credentials and require first-login rotation.
-3. Stop caching authenticated HTML in the service worker and purge per-session page caches.
-4. Sanitize `.env.example` and rotate any credential ever committed there.
-5. Complete password reset/activation for every migrated Auth user and validate recovery ownership for the Admin account.
-6. Add automated tests and CI for Auth, authorization, RLS/storage, attendance, imports, and critical APIs.
-7. Run a post-password-activation production smoke test against the linked Vercel deployment.
-8. Review npm audit findings, the four security-advisor warnings, and the formatting baseline.
+2. Stop caching authenticated HTML in the service worker and purge per-session page caches.
+3. Sanitize `.env.example` and rotate any credential ever committed there.
+4. Add automated tests and CI for Auth, authorization, RLS/storage, attendance, imports, and critical APIs.
+5. Run a production smoke test against the linked Vercel deployment.
+6. Review npm audit findings, the four security-advisor warnings, and the formatting baseline.
 
 ## Canonical references
 

@@ -3,6 +3,7 @@ import "server-only";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getAuthEmailForEmployee } from "@/features/auth/services/auth.service";
 import type { LoginCredentials } from "@/features/auth/types/auth.types";
+import { toSupabaseEmployeePassword } from "@/features/auth/utils/employee-password";
 
 export async function loginWithEmployeeId(credentials: LoginCredentials) {
   const email = await getAuthEmailForEmployee(credentials.employeeId);
@@ -12,7 +13,7 @@ export async function loginWithEmployeeId(credentials: LoginCredentials) {
 
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
-    password: credentials.password,
+    password: toSupabaseEmployeePassword(credentials.password),
   });
 
   if (error) {
