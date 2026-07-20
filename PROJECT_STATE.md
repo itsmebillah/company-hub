@@ -47,6 +47,7 @@ The project is suitable for continued staging use, but production release remain
 - Automated tests: none committed.
 - CI/CD workflow: none committed.
 - Vercel CLI: authenticated and linked to `company-hub`; all five required environment variable names are present for Production and Preview. Values were not printed during verification.
+- Production deployment for the canonical password flow is Ready at `company-hub-zeta.vercel.app`; public pages return 200 and protected routes redirect to login.
 - Authenticated Admin/employee runtime: canonical-password login, session creation, dashboard rendering, unauthenticated middleware denial, and non-Admin role denial passed. Full browser-based feature regression remains manual because the in-app browser was unavailable during migration verification.
 
 ## Release blockers
@@ -57,8 +58,7 @@ See [KNOWN_ISSUES.md](KNOWN_ISSUES.md) for details. The highest-priority blocker
 2. Stop caching authenticated HTML in the service worker and purge per-session page caches.
 3. Sanitize `.env.example` and rotate any credential ever committed there.
 4. Add automated tests and CI for Auth, authorization, RLS/storage, attendance, imports, and critical APIs.
-5. Run a production smoke test against the linked Vercel deployment.
-6. Review npm audit findings, the four security-advisor warnings, and the formatting baseline.
+5. Review npm audit findings, the four security-advisor warnings, and the formatting baseline.
 
 ## Canonical references
 
