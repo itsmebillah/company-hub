@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { AnnouncementService } from "@/features/announcements/services/announcement.service";
+import { requireAdmin } from "@/features/auth/services/authorization.service";
 import type {
   AnnouncementActionState,
   AnnouncementFormValues,
@@ -14,6 +15,7 @@ export async function createAnnouncementAction(
   values: AnnouncementFormValues,
 ): Promise<AnnouncementActionState> {
   try {
+    await requireAdmin();
     await AnnouncementService.create(values);
     revalidatePath(ADMIN_ANNOUNCEMENTS_PATH);
     revalidatePath("/announcements");
@@ -35,6 +37,7 @@ export async function updateAnnouncementAction(
   values: AnnouncementFormValues,
 ): Promise<AnnouncementActionState> {
   try {
+    await requireAdmin();
     await AnnouncementService.update(id, values);
     revalidatePath(ADMIN_ANNOUNCEMENTS_PATH);
     revalidatePath("/announcements");
@@ -55,6 +58,7 @@ export async function archiveAnnouncementAction(
   id: string,
 ): Promise<AnnouncementActionState> {
   try {
+    await requireAdmin();
     await AnnouncementService.setStatus(id, "archived");
     revalidatePath(ADMIN_ANNOUNCEMENTS_PATH);
     revalidatePath("/announcements");
@@ -69,6 +73,7 @@ export async function restoreAnnouncementAction(
   id: string,
 ): Promise<AnnouncementActionState> {
   try {
+    await requireAdmin();
     await AnnouncementService.setStatus(id, "active");
     revalidatePath(ADMIN_ANNOUNCEMENTS_PATH);
     revalidatePath("/announcements");

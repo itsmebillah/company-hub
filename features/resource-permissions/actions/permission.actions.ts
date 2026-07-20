@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { PermissionService } from "@/features/resource-permissions/services/permission.service";
+import { requireAdmin } from "@/features/auth/services/authorization.service";
 import type {
   ResourcePermissionActionState,
   ResourcePermissionUpdateInput,
@@ -13,6 +14,7 @@ export async function replaceResourcePermissionsAction(
   input: ResourcePermissionUpdateInput,
 ): Promise<ResourcePermissionActionState> {
   try {
+    await requireAdmin();
     await PermissionService.replacePermissions(resourceId, input);
     revalidatePath("/admin/resources/permissions");
     revalidatePath("/dashboard");

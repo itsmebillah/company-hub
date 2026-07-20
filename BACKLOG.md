@@ -4,12 +4,9 @@ This backlog is ordered by risk and production value. Items require an owner and
 
 ## P0 — Release blockers
 
-- **AUTHZ-001:** Add throwing Admin/permission guards to every privileged server action, route handler, and service. Add company predicates to all service-role ID reads/mutations and verify wrong-role/cross-company denial.
-- **PWA-001:** Remove authenticated page HTML from service-worker caches, purge legacy page caches, and verify account switching/offline behavior cannot reveal a prior session.
-- **SEC-001:** Replace populated values in `.env.example` with safe placeholders and rotate any affected Supabase keys.
-- **TEST-001:** Add a test runner and critical Auth/authorization/attendance/import tests.
+- **SEC-001:** Rotate any Supabase credential that may have appeared in repository history; safe placeholders are now committed.
 - **CI-001:** Add pull-request checks for format, lint, typecheck, tests, and build.
-- **DEP-001:** Triage 33 npm audit findings and upgrade or accept each risk.
+- **DEP-001:** Replace or formally accept the production `xlsx` high advisory and Next.js/PostCSS moderate advisories.
 
 ## P1 — Reliability and security
 
@@ -18,7 +15,6 @@ This backlog is ordered by risk and production value. Items require an owner and
 - **SEC-002:** Review whether storage authorization helpers should move to a non-exposed schema to eliminate remaining advisor warnings.
 - **SEC-004:** Revoke anonymous execution of `can_receive_notification`, review all three exposed `SECURITY DEFINER` helpers, and reduce the current four advisor warnings without breaking storage/realtime policies.
 - **SEC-003:** Add rate limiting/abuse protection for login, registration, notification tracking, and cron endpoints.
-- **API-001:** Return an explicit authentication failure from notification tracking instead of `204` when no current employee context exists.
 - **DB-001:** Add automated migration drift and security-advisor checks.
 - **OPS-002:** Document and test backup restoration and disaster recovery.
 - **DATA-001:** Define retention for activity logs, notification events, import staging, and storage objects.
@@ -27,7 +23,7 @@ This backlog is ordered by risk and production value. Items require an owner and
 
 - **UI-001:** Replace admin dashboard activity/system-status placeholders.
 - **UI-002:** Remove or implement settings and attendance “future” panels.
-- **TEST-002:** Add Playwright smoke tests for login, bootstrap, admin navigation, attendance, leave, and resources.
+- **TEST-002:** Extend Playwright with destructive-flow coverage using isolated fixtures: bootstrap, employee creation/import, attendance submission, leave approval, and targeted announcements.
 - **A11Y-001:** Run axe/manual keyboard and screen-reader audits.
 - **QA-001:** Establish and enforce a scoped Prettier baseline; the current repository-wide check reports 353 files.
 - **PERF-001:** Add pagination/cursor limits to large exports and operational lists.

@@ -2,7 +2,7 @@
 
 ## Current state
 
-No automated test files, test runner, browser-test configuration, or CI workflow are committed. Lint, strict typecheck, build, database lint, and manual/disposable integration checks currently provide the only repeatable confidence. This is a production blocker, not an acceptable long-term strategy.
+Playwright is committed under `tests/e2e/` with Chrome and Edge projects. The 38-check production-build suite verifies public routes, signed-out redirects/API denial, Admin and Employee login/session/logout, role routing, major route rendering, 320/360/375/390/414/768/1024px layouts, attendance file selection and limits, a temporary Storage upload/read/delete lifecycle, exports, PWA caching, Realtime, and axe WCAG A/AA scans. CI and unit/service integration suites remain absent.
 
 ## Existing verification commands
 
@@ -11,6 +11,7 @@ npm.cmd run lint
 npm.cmd run typecheck
 npm.cmd run format:check
 npm.cmd run build
+npm.cmd run test:e2e
 ./node_modules/.bin/supabase.cmd db lint --linked --level warning
 ./node_modules/.bin/supabase.cmd db advisors --linked --type security
 ```
@@ -47,7 +48,7 @@ All integration fixtures must be uniquely named and removed in `finally` cleanup
 
 ### End-to-end tests
 
-Recommended Playwright smoke paths:
+Committed smoke coverage handles non-destructive runtime paths. Remaining paths requiring isolated fixtures are:
 
 1. Fresh-project bootstrap → Admin dashboard.
 2. Admin creates employee → employee login → password change.

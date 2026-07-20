@@ -4,6 +4,25 @@ This project follows a Keep-a-Changelog-style record. Versioning is not yet form
 
 ## Unreleased
 
+### Fixed
+
+- Raised the Server Action request limit to safely carry validated 5 MB attendance selfies, added immediate client-size feedback, and preserved HEIC/HEIF filename/MIME consistency.
+- Removed authenticated HTML from service-worker caching and purged legacy page-cache generations on activation.
+- Removed the broken `/notifications` navigation target.
+- Made notification tracking return an explicit `401` for signed-out callers.
+- Replaced the unsupported `supabase_migrations` PostgREST query with migration `0029` and the restricted `get_app_schema_version()` runtime contract.
+- Removed expected attendance-policy validation from error logs and reduced lint warnings from 13 to 7.
+
+### Security
+
+- Added throwing Admin guards to privileged server mutations and explicit role checks to employee export/template route handlers.
+- Replaced committed example credentials with safe placeholders; historical credential rotation remains an operational follow-up.
+- Verified all 17 migrated credentials without exposing Employee IDs/passwords, private attendance bucket behavior, Realtime, middleware, and wrong-role redirects.
+
+### Added
+
+- Added Playwright and axe configuration with 38 production-build checks across Chrome, Edge, Admin/Employee sessions, major routes, all required responsive widths, attendance media, Storage cleanup, exports, API denial, PWA behavior, Realtime, and WCAG A/AA.
+
 ### Changed
 
 - Documented the Admin leave-approval workflow, including approval-time changes to leave type, dates, and reason with working-day recalculation.

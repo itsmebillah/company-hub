@@ -17,6 +17,10 @@ export async function loginWithEmployeeId(credentials: LoginCredentials) {
   });
 
   if (error) {
+    console.error("[LoginService] Supabase sign-in failed.", {
+      code: error.code,
+      status: error.status,
+    });
     throw new Error("Invalid employee ID or password.");
   }
 

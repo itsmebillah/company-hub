@@ -515,10 +515,12 @@ export async function createEmployee(values: EmployeeFormValues) {
 
 export async function updateEmployee(id: string, values: EmployeeFormValues) {
   const supabase = createSupabaseAdminClient();
+  const companyId = await requireCurrentCompanyId();
   const { data: existingEmployee, error: existingEmployeeError } = await supabase
     .from("employees")
     .select("employee_id, company_id")
     .eq("id", id)
+    .eq("company_id", companyId)
     .single();
 
   if (existingEmployeeError || !existingEmployee) {
@@ -546,14 +548,15 @@ export async function updateEmployee(id: string, values: EmployeeFormValues) {
       work_mode: values.workMode,
       status: values.status,
     })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("company_id", companyId);
 
   if (error) {
     throw new Error("Unable to update employee.");
   }
 
   await logActivity({
-    companyId: existingEmployee.company_id,
+    companyId,
     module: "employee",
     action: "updated",
     entityType: "employees",
@@ -569,7 +572,12 @@ export async function updateEmployee(id: string, values: EmployeeFormValues) {
 
 export async function setEmployeeStatus(id: string, status: Extract<EmployeeStatus, "active" | "inactive">) {
   const supabase = createSupabaseAdminClient();
-  const { error } = await supabase.from("employees").update({ status }).eq("id", id);
+  const companyId = await requireCurrentCompanyId();
+  const { error } = await supabase
+    .from("employees")
+    .update({ status })
+    .eq("id", id)
+    .eq("company_id", companyId);
 
   if (error) {
     throw new Error("Unable to update employee status.");

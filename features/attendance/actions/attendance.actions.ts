@@ -14,14 +14,10 @@ export async function prepareCheckInAction(
   try {
     return await AttendanceService.prepareCheckIn(input);
   } catch (error) {
-    console.error("[AttendanceAction] Prepare check-in failed.", error);
-
     return {
       ok: false,
       message:
-        error instanceof Error
-          ? error.message
-          : "Unable to prepare check-in.",
+        error instanceof Error ? error.message : "Unable to prepare check-in.",
     };
   }
 }
@@ -32,14 +28,10 @@ export async function prepareCheckOutAction(
   try {
     return await AttendanceService.prepareCheckOut(input);
   } catch (error) {
-    console.error("[AttendanceAction] Prepare check-out failed.", error);
-
     return {
       ok: false,
       message:
-        error instanceof Error
-          ? error.message
-          : "Unable to prepare check-out.",
+        error instanceof Error ? error.message : "Unable to prepare check-out.",
     };
   }
 }

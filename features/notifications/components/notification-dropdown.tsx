@@ -197,7 +197,7 @@ function NotificationRow({
           {notification.priority !== "normal" ? (
             <span
               className={cn(
-                "shrink-0 rounded-full border px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-wide",
+                "shrink-0 rounded-full border px-2 py-0.5 text-[0.6rem] font-semibold tracking-wide uppercase",
                 notificationPriorityStyles[notification.priority],
               )}
             >
@@ -222,7 +222,7 @@ function NotificationRow({
         >
           {notification.message}
         </p>
-        <p className="mt-1 text-[0.68rem] text-muted-foreground">
+        <p className="text-muted-foreground mt-1 text-[0.68rem]">
           {formatRelativeTime(notification.createdAt)}
         </p>
       </div>
@@ -234,7 +234,7 @@ function NotificationRow({
       <a
         href={notification.actionUrl}
         className={cn(
-          "block rounded-lg px-3 py-2.5 outline-none transition hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring",
+          "hover:bg-accent focus-visible:ring-ring block rounded-lg px-3 py-2.5 transition outline-none focus-visible:ring-2",
           notification.isRead ? "opacity-75" : "bg-accent/40",
         )}
         onClick={() => {
@@ -255,7 +255,7 @@ function NotificationRow({
     <button
       type="button"
       className={cn(
-        "block w-full rounded-lg px-3 py-2.5 text-left outline-none transition hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring",
+        "hover:bg-accent focus-visible:ring-ring block w-full rounded-lg px-3 py-2.5 text-left transition outline-none focus-visible:ring-2",
         notification.isRead ? "opacity-75" : "bg-accent/40",
       )}
       onClick={() => {
@@ -331,7 +331,7 @@ export function NotificationDropdown({
           <Bell className="size-4" aria-hidden="true" />
         )}
         {unreadLabel ? (
-          <span className="absolute -right-1 -top-1 min-w-5 rounded-full bg-destructive px-1.5 py-0.5 text-[0.62rem] font-semibold leading-none text-destructive-foreground">
+          <span className="bg-destructive text-destructive-foreground absolute -top-1 -right-1 min-w-5 rounded-full px-1.5 py-0.5 text-[0.62rem] leading-none font-semibold">
             {unreadLabel}
           </span>
         ) : null}
@@ -339,13 +339,13 @@ export function NotificationDropdown({
 
       {isOpen ? (
         <div
-          className="fixed inset-x-2 top-16 z-50 overflow-hidden rounded-xl border bg-popover shadow-soft sm:absolute sm:right-0 sm:left-auto sm:top-11 sm:w-[min(24rem,calc(100vw-1rem))]"
+          className="bg-popover shadow-soft fixed inset-x-2 top-16 z-50 overflow-hidden rounded-xl border sm:absolute sm:top-11 sm:right-0 sm:left-auto sm:w-[min(24rem,calc(100vw-1rem))]"
           role="menu"
         >
           <div className="flex items-start justify-between gap-3 border-b px-4 py-3">
             <div>
               <p className="text-sm font-semibold">Notifications</p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 {summary.unreadCount > 0
                   ? `${summary.unreadCount} unread update${
                       summary.unreadCount === 1 ? "" : "s"
@@ -374,11 +374,11 @@ export function NotificationDropdown({
           <div className="max-h-[calc(100dvh-5.5rem)] overflow-y-auto p-2 sm:max-h-[min(28rem,70vh)]">
             {sections.length === 0 ? (
               <div className="flex flex-col items-center px-3 py-10 text-center">
-                <span className="flex size-12 items-center justify-center rounded-full bg-secondary text-secondary-foreground">
+                <span className="bg-secondary text-secondary-foreground flex size-12 items-center justify-center rounded-full">
                   <Bell className="size-5" aria-hidden="true" />
                 </span>
                 <p className="mt-3 text-sm font-medium">No notifications yet</p>
-                <p className="mt-1 max-w-56 text-xs text-muted-foreground">
+                <p className="text-muted-foreground mt-1 max-w-56 text-xs">
                   Updates from announcements, resources, and future modules will
                   appear here.
                 </p>
@@ -386,7 +386,7 @@ export function NotificationDropdown({
             ) : (
               sections.map((section) => (
                 <section key={section.title} className="py-1">
-                  <h3 className="px-3 py-2 text-[0.68rem] font-semibold uppercase tracking-wide text-muted-foreground">
+                  <h3 className="text-muted-foreground px-3 py-2 text-[0.68rem] font-semibold tracking-wide uppercase">
                     {section.title}
                   </h3>
                   <div className="space-y-1">
@@ -401,16 +401,6 @@ export function NotificationDropdown({
                 </section>
               ))
             )}
-          </div>
-
-          <div className="border-t p-2">
-            <a
-              href="/notifications"
-              className="flex h-9 items-center justify-center rounded-md text-xs font-medium text-muted-foreground transition hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              title="Full notification center coming later"
-            >
-              View all
-            </a>
           </div>
         </div>
       ) : null}

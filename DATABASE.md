@@ -2,7 +2,7 @@
 
 ## Source of truth
 
-`supabase/migrations/` is the canonical schema history. Migrations `0001`–`0028` are applied to project `jjfktbgfwvekhlvyjlww`. Never edit an applied migration; add the next ordered migration.
+`supabase/migrations/` is the canonical schema history. Migrations `0001`–`0029` are applied to project `jjfktbgfwvekhlvyjlww`. Never edit an applied migration; add the next ordered migration. Migration `0029` adds the restricted `get_app_schema_version()` RPC because Supabase correctly does not expose its internal migration schema through PostgREST.
 
 The live verified catalog contains 22 public tables, 137 indexes, 133 constraints, 53 foreign keys, 34 check constraints, and 24 unique constraints. No public views or triggers are currently defined. The cross-account restore contains 1,748 application rows and matches the verified source backup exactly after reversing the required Auth UUID mapping.
 

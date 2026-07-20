@@ -48,7 +48,10 @@ npm.cmd run format:check
 npm.cmd run format
 npm.cmd run build
 npm.cmd run start
+npm.cmd run test:e2e
 ```
+
+The Playwright suite uses installed Chrome and Edge channels. Set `EDGE_EXECUTABLE_PATH` only when Edge is installed outside its standard channel location. Set `PLAYWRIGHT_USE_PRODUCTION=1` after `npm.cmd run build` to test the production server instead of the development server.
 
 ## Supabase workflow
 

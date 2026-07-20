@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { requireRole } from "@/features/auth/services/authorization.service";
 import { getEmployeeWorkModeLabel } from "@/features/employees/constants/employee-work-mode.config";
 import { listEmployees } from "@/features/employees/services/employee.service";
 import type {
@@ -25,11 +26,7 @@ function parseWorkMode(workMode: string | null): EmployeeWorkMode | "all" {
 }
 
 function parseSort(sort: string | null): EmployeeListSort {
-  if (
-    sort === "employee_id" ||
-    sort === "name" ||
-    sort === "work_mode"
-  ) {
+  if (sort === "employee_id" || sort === "name" || sort === "work_mode") {
     return sort;
   }
 
@@ -51,6 +48,12 @@ function escapeCsv(value: string | number | null) {
 }
 
 export async function GET(request: Request) {
+  const profile = await requireRole(["Admin"]);
+
+  if (!profile) {
+    return NextResponse.json({ message: "Access denied." }, { status: 403 });
+  }
+
   const url = new URL(request.url);
   const result = await listEmployees({
     search: url.searchParams.get("search") ?? undefined,

@@ -31,10 +31,14 @@ export async function POST(request: Request) {
       );
     }
 
-    await NotificationService.trackCurrentUserNotification(
+    const tracked = await NotificationService.trackCurrentUserNotification(
       payload.notificationId,
       payload.event,
     );
+
+    if (!tracked) {
+      return NextResponse.json({ message: "Unauthorized." }, { status: 401 });
+    }
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {

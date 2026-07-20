@@ -21,3 +21,13 @@ export async function isAdmin() {
 
   return Boolean(profile);
 }
+
+export async function requireAdmin() {
+  const profile = await requireRole(["Admin"]);
+
+  if (!profile) {
+    throw new Error("Administrator access is required.");
+  }
+
+  return profile;
+}

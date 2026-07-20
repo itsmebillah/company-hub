@@ -15,7 +15,6 @@ import type {
   ResourceFormValues,
   ResourceListItem,
 } from "@/features/resources/types/resource.types";
-import { cn } from "@/lib/utils";
 
 type ResourceFormProps = {
   resource?: ResourceListItem | null;
@@ -98,14 +97,14 @@ export function ResourceForm({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 px-4 py-6 backdrop-blur-sm">
-      <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl border bg-card shadow-soft">
+    <div className="bg-background/80 fixed inset-0 z-50 flex items-center justify-center px-4 py-6 backdrop-blur-sm">
+      <div className="bg-card shadow-soft max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl border">
         <div className="flex items-center justify-between border-b px-5 py-4">
           <div>
             <h2 className="text-lg font-semibold">
               {isEdit ? "Edit Resource" : "Create Resource"}
             </h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Configure the resource employees can open from Company Hub.
             </p>
           </div>
@@ -125,8 +124,10 @@ export function ResourceForm({
             <span className="text-sm font-medium">Category</span>
             <select
               value={values.categoryId}
-              onChange={(event) => updateValue("categoryId", event.target.value)}
-              className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              onChange={(event) =>
+                updateValue("categoryId", event.target.value)
+              }
+              className="bg-background focus-visible:ring-ring h-11 w-full rounded-md border px-3 outline-none focus-visible:ring-2"
               disabled={isSubmitting}
             >
               <option value="">Select category</option>
@@ -143,7 +144,7 @@ export function ResourceForm({
             <input
               value={values.title}
               onChange={(event) => updateValue("title", event.target.value)}
-              className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="bg-background focus-visible:ring-ring h-11 w-full rounded-md border px-3 outline-none focus-visible:ring-2"
               disabled={isSubmitting}
             />
           </label>
@@ -155,7 +156,7 @@ export function ResourceForm({
               onChange={(event) =>
                 updateValue("description", event.target.value)
               }
-              className="min-h-24 w-full rounded-md border bg-background px-3 py-2 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="bg-background focus-visible:ring-ring min-h-24 w-full rounded-md border px-3 py-2 outline-none focus-visible:ring-2"
               disabled={isSubmitting}
             />
           </label>
@@ -170,7 +171,7 @@ export function ResourceForm({
                   event.target.value as ResourceFormValues["resourceType"],
                 )
               }
-              className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="bg-background focus-visible:ring-ring h-11 w-full rounded-md border px-3 outline-none focus-visible:ring-2"
               disabled={isSubmitting}
             >
               <option value="">Select type</option>
@@ -187,7 +188,7 @@ export function ResourceForm({
             <input
               value={values.url}
               onChange={(event) => updateValue("url", event.target.value)}
-              className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="bg-background focus-visible:ring-ring h-11 w-full rounded-md border px-3 outline-none focus-visible:ring-2"
               placeholder={
                 values.resourceType === "internal"
                   ? "Optional for internal resources"
@@ -202,7 +203,7 @@ export function ResourceForm({
             <input
               value={values.icon}
               onChange={(event) => updateValue("icon", event.target.value)}
-              className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="bg-background focus-visible:ring-ring h-11 w-full rounded-md border px-3 outline-none focus-visible:ring-2"
               placeholder="URL, initials, or short label"
               disabled={isSubmitting}
             />
@@ -213,7 +214,7 @@ export function ResourceForm({
             <input
               value={values.thumbnail}
               onChange={(event) => updateValue("thumbnail", event.target.value)}
-              className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="bg-background focus-visible:ring-ring h-11 w-full rounded-md border px-3 outline-none focus-visible:ring-2"
               placeholder="Optional thumbnail URL"
               disabled={isSubmitting}
             />
@@ -228,7 +229,7 @@ export function ResourceForm({
               onChange={(event) =>
                 updateValue("displayOrder", event.target.value)
               }
-              className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="bg-background focus-visible:ring-ring h-11 w-full rounded-md border px-3 outline-none focus-visible:ring-2"
               disabled={isSubmitting}
             />
           </label>
@@ -243,7 +244,7 @@ export function ResourceForm({
                   event.target.value as ResourceFormValues["openMode"],
                 )
               }
-              className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="bg-background focus-visible:ring-ring h-11 w-full rounded-md border px-3 outline-none focus-visible:ring-2"
               disabled={isSubmitting}
             >
               {OPEN_MODES.map((mode) => (
@@ -264,7 +265,7 @@ export function ResourceForm({
                   event.target.value as ResourceFormValues["status"],
                 )
               }
-              className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="bg-background focus-visible:ring-ring h-11 w-full rounded-md border px-3 outline-none focus-visible:ring-2"
               disabled={isSubmitting}
             >
               <option value="active">Active</option>
@@ -273,7 +274,7 @@ export function ResourceForm({
             </select>
           </label>
 
-          <label className="flex items-center gap-3 rounded-md border bg-background px-3 py-3 md:col-span-2">
+          <label className="bg-background flex items-center gap-3 rounded-md border px-3 py-3 md:col-span-2">
             <input
               type="checkbox"
               checked={values.isFeatured}
@@ -287,8 +288,11 @@ export function ResourceForm({
           </label>
 
           {message ? (
-            <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive md:col-span-2">
-              <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+            <div className="border-destructive/30 bg-destructive/10 text-destructive flex items-start gap-2 rounded-md border p-3 text-sm md:col-span-2">
+              <AlertCircle
+                className="mt-0.5 size-4 shrink-0"
+                aria-hidden="true"
+              />
               <p>{message}</p>
             </div>
           ) : null}
@@ -297,7 +301,10 @@ export function ResourceForm({
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting || categories.length === 0}>
+            <Button
+              type="submit"
+              disabled={isSubmitting || categories.length === 0}
+            >
               {isSubmitting ? (
                 <Loader2 className="size-4 animate-spin" aria-hidden="true" />
               ) : null}
@@ -307,8 +314,10 @@ export function ResourceForm({
         </form>
 
         {categories.length === 0 ? (
-          <div className="flex flex-col gap-3 border-t px-5 py-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-            <p>No categories found. Create a category before adding resources.</p>
+          <div className="text-muted-foreground flex flex-col gap-3 border-t px-5 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+            <p>
+              No categories found. Create a category before adding resources.
+            </p>
             <Button asChild size="sm" variant="outline">
               <Link href="/admin/resources/categories">Create Category</Link>
             </Button>

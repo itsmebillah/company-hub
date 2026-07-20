@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { RoleService } from "@/features/roles/services/role.service";
+import { requireAdmin } from "@/features/auth/services/authorization.service";
 import type {
   RoleActionState,
   RoleFormValues,
@@ -15,6 +16,7 @@ export async function createRoleAction(
   values: RoleFormValues,
 ): Promise<RoleActionState> {
   try {
+    await requireAdmin();
     await RoleService.create(values);
     revalidatePath(ROLES_PATH);
     revalidatePath(EMPLOYEES_PATH);
@@ -23,7 +25,8 @@ export async function createRoleAction(
   } catch (error) {
     return {
       ok: false,
-      message: error instanceof Error ? error.message : "Unable to create role.",
+      message:
+        error instanceof Error ? error.message : "Unable to create role.",
     };
   }
 }
@@ -33,6 +36,7 @@ export async function updateRoleAction(
   values: RoleFormValues,
 ): Promise<RoleActionState> {
   try {
+    await requireAdmin();
     await RoleService.update(id, values);
     revalidatePath(ROLES_PATH);
     revalidatePath(EMPLOYEES_PATH);
@@ -41,13 +45,15 @@ export async function updateRoleAction(
   } catch (error) {
     return {
       ok: false,
-      message: error instanceof Error ? error.message : "Unable to update role.",
+      message:
+        error instanceof Error ? error.message : "Unable to update role.",
     };
   }
 }
 
 export async function activateRoleAction(id: string): Promise<RoleActionState> {
   try {
+    await requireAdmin();
     await RoleService.setStatus(id, "active");
     revalidatePath(ROLES_PATH);
     revalidatePath(EMPLOYEES_PATH);
@@ -58,8 +64,11 @@ export async function activateRoleAction(id: string): Promise<RoleActionState> {
   }
 }
 
-export async function deactivateRoleAction(id: string): Promise<RoleActionState> {
+export async function deactivateRoleAction(
+  id: string,
+): Promise<RoleActionState> {
   try {
+    await requireAdmin();
     await RoleService.setStatus(id, "inactive");
     revalidatePath(ROLES_PATH);
     revalidatePath(EMPLOYEES_PATH);

@@ -115,10 +115,12 @@ export async function changeEmployeeManager(input: ChangeManagerInput) {
   await validateManagerChange(input);
 
   const supabase = createSupabaseAdminClient();
+  const companyId = await getCompanyId();
   const { error } = await supabase
     .from("employees")
     .update({ manager_id: input.managerId || null })
-    .eq("id", input.employeeId);
+    .eq("id", input.employeeId)
+    .eq("company_id", companyId);
 
   if (error) {
     throw new Error("Unable to update manager.");
@@ -147,10 +149,12 @@ export async function bulkReassignEmployees(input: BulkReassignInput) {
   }
 
   const supabase = createSupabaseAdminClient();
+  const companyId = await getCompanyId();
   const { error } = await supabase
     .from("employees")
     .update({ manager_id: input.managerId })
-    .in("id", input.employeeIds);
+    .in("id", input.employeeIds)
+    .eq("company_id", companyId);
 
   if (error) {
     throw new Error("Unable to bulk reassign employees.");

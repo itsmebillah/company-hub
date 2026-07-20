@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { ResourceCategoryService } from "@/features/resource-categories/services/resource-category.service";
+import { requireAdmin } from "@/features/auth/services/authorization.service";
 import type {
   ResourceCategoryActionState,
   ResourceCategoryFormValues,
@@ -14,6 +15,7 @@ export async function createResourceCategoryAction(
   values: ResourceCategoryFormValues,
 ): Promise<ResourceCategoryActionState> {
   try {
+    await requireAdmin();
     await ResourceCategoryService.create(values);
     revalidatePath(CATEGORIES_PATH);
     revalidatePath("/admin/resources");
@@ -35,6 +37,7 @@ export async function updateResourceCategoryAction(
   values: ResourceCategoryFormValues,
 ): Promise<ResourceCategoryActionState> {
   try {
+    await requireAdmin();
     await ResourceCategoryService.update(id, values);
     revalidatePath(CATEGORIES_PATH);
     revalidatePath("/admin/resources");
@@ -55,6 +58,7 @@ export async function archiveResourceCategoryAction(
   id: string,
 ): Promise<ResourceCategoryActionState> {
   try {
+    await requireAdmin();
     await ResourceCategoryService.setStatus(id, "archived");
     revalidatePath(CATEGORIES_PATH);
     revalidatePath("/admin/resources");
@@ -71,6 +75,7 @@ export async function restoreResourceCategoryAction(
   id: string,
 ): Promise<ResourceCategoryActionState> {
   try {
+    await requireAdmin();
     await ResourceCategoryService.setStatus(id, "active");
     revalidatePath(CATEGORIES_PATH);
     revalidatePath("/admin/resources");

@@ -8,6 +8,7 @@ import {
   setDefaultCompanyLocation,
   updateCompanyLocation,
 } from "@/features/company-locations/services/company-location.service";
+import { requireAdmin } from "@/features/auth/services/authorization.service";
 import type {
   CompanyLocationActionState,
   CompanyLocationFormValues,
@@ -19,6 +20,7 @@ export async function createCompanyLocationAction(
   values: CompanyLocationFormValues,
 ): Promise<CompanyLocationActionState> {
   try {
+    await requireAdmin();
     await createCompanyLocation(values);
     revalidatePath(LOCATIONS_PATH);
 
@@ -37,6 +39,7 @@ export async function updateCompanyLocationAction(
   values: CompanyLocationFormValues,
 ): Promise<CompanyLocationActionState> {
   try {
+    await requireAdmin();
     await updateCompanyLocation(id, values);
     revalidatePath(LOCATIONS_PATH);
 
@@ -54,6 +57,7 @@ export async function archiveCompanyLocationAction(
   id: string,
 ): Promise<CompanyLocationActionState> {
   try {
+    await requireAdmin();
     await archiveCompanyLocation(id);
     revalidatePath(LOCATIONS_PATH);
 
@@ -67,6 +71,7 @@ export async function setDefaultCompanyLocationAction(
   id: string,
 ): Promise<CompanyLocationActionState> {
   try {
+    await requireAdmin();
     await setDefaultCompanyLocation(id);
     revalidatePath(LOCATIONS_PATH);
 

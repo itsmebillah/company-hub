@@ -9,12 +9,16 @@ export const metadata: Metadata = {
     default: "Company Hub",
     template: "%s | Company Hub",
   },
-  description: "Production-ready project foundation for Company Hub.",
+  description: "Secure employee and company operations workspace.",
   applicationName: "Company Hub",
   manifest: "/manifest.webmanifest",
   icons: {
     icon: "/icon.svg",
     apple: "/apple-icon.svg",
+  },
+  robots: {
+    index: false,
+    follow: false,
   },
 };
 

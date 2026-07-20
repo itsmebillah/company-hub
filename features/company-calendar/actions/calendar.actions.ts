@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { CalendarService } from "@/features/company-calendar/services/calendar.service";
+import { requireAdmin } from "@/features/auth/services/authorization.service";
 import type {
   CalendarActionState,
   HolidayCalendarFormValues,
@@ -22,6 +23,7 @@ export async function createHolidayCalendarAction(
   values: HolidayCalendarFormValues,
 ): Promise<CalendarActionState> {
   try {
+    await requireAdmin();
     await CalendarService.createCalendar(values);
     revalidatePath(ADMIN_CALENDAR_PATH);
     return { ok: true, message: "Calendar created." };
@@ -35,6 +37,7 @@ export async function updateHolidayCalendarAction(
   values: HolidayCalendarFormValues,
 ): Promise<CalendarActionState> {
   try {
+    await requireAdmin();
     await CalendarService.updateCalendar(id, values);
     revalidatePath(ADMIN_CALENDAR_PATH);
     return { ok: true, message: "Calendar updated." };
@@ -47,6 +50,7 @@ export async function archiveHolidayCalendarAction(
   id: string,
 ): Promise<CalendarActionState> {
   try {
+    await requireAdmin();
     await CalendarService.archiveCalendar(id);
     revalidatePath(ADMIN_CALENDAR_PATH);
     return { ok: true, message: "Calendar archived." };
@@ -59,6 +63,7 @@ export async function setDefaultHolidayCalendarAction(
   id: string,
 ): Promise<CalendarActionState> {
   try {
+    await requireAdmin();
     await CalendarService.setDefaultCalendar(id);
     revalidatePath(ADMIN_CALENDAR_PATH);
     return { ok: true, message: "Default calendar updated." };
@@ -71,6 +76,7 @@ export async function createHolidayEventAction(
   values: HolidayEventFormValues,
 ): Promise<CalendarActionState> {
   try {
+    await requireAdmin();
     await CalendarService.createEvent(values);
     revalidatePath(ADMIN_CALENDAR_PATH);
     revalidatePath("/calendar");
@@ -85,6 +91,7 @@ export async function updateHolidayEventAction(
   values: HolidayEventFormValues,
 ): Promise<CalendarActionState> {
   try {
+    await requireAdmin();
     await CalendarService.updateEvent(id, values);
     revalidatePath(ADMIN_CALENDAR_PATH);
     revalidatePath("/calendar");
@@ -98,6 +105,7 @@ export async function archiveHolidayEventAction(
   id: string,
 ): Promise<CalendarActionState> {
   try {
+    await requireAdmin();
     await CalendarService.archiveEvent(id);
     revalidatePath(ADMIN_CALENDAR_PATH);
     revalidatePath("/calendar");

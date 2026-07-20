@@ -1,5 +1,7 @@
 # UI/UX Guidelines
 
+The shared light-theme primary token is intentionally dark enough to maintain WCAG AA contrast with `primary-foreground`. Do not lighten the token or introduce branded button colors without rerunning the committed axe checks in Chrome and Edge.
+
 ## Product character
 
 Company Hub uses a clean, compact, Microsoft-365-inspired operational aesthetic: clear hierarchy, rounded cards, restrained gradients, soft shadows, and large touch targets. The interface must prioritize scanning and task completion over decorative density.

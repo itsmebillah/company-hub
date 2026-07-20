@@ -13,7 +13,10 @@ const MAX_SELFIE_SIZE_BYTES = 5 * 1024 * 1024;
 function getImageExtension(fileName: string, mimeType: string) {
   const fromName = fileName.split(".").pop()?.toLowerCase();
 
-  if (fromName && ["jpg", "jpeg", "png", "webp"].includes(fromName)) {
+  if (
+    fromName &&
+    ["jpg", "jpeg", "png", "webp", "heic", "heif"].includes(fromName)
+  ) {
     return fromName === "jpeg" ? "jpg" : fromName;
   }
 
@@ -23,6 +26,10 @@ function getImageExtension(fileName: string, mimeType: string) {
 
   if (mimeType === "image/webp") {
     return "webp";
+  }
+
+  if (mimeType === "image/heic" || mimeType === "image/heif") {
+    return mimeType.slice("image/".length);
   }
 
   return "jpg";
@@ -63,7 +70,10 @@ export const AttendanceSelfieService = {
       });
 
     if (error) {
-      console.error("[AttendanceSelfieService] Unable to upload selfie.", error);
+      console.error(
+        "[AttendanceSelfieService] Unable to upload selfie.",
+        error,
+      );
       throw new Error("Unable to upload attendance selfie.");
     }
 
@@ -93,7 +103,10 @@ export const AttendanceSelfieService = {
       .createSignedUrl(path, 60 * 10);
 
     if (error) {
-      console.error("[AttendanceSelfieService] Unable to sign selfie URL.", error);
+      console.error(
+        "[AttendanceSelfieService] Unable to sign selfie URL.",
+        error,
+      );
       return null;
     }
 

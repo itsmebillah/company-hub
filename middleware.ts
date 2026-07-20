@@ -1,10 +1,12 @@
 import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
 
 import { AUTH_REDIRECTS } from "@/features/auth/constants/auth-redirects";
 import { createSupabaseMiddlewareClient } from "@/lib/supabase/middleware";
 import { redirectToPath } from "@/lib/auth/redirects";
-import { isProtectedRoute, isPublicAuthRoute } from "@/lib/auth/route-protection";
+import {
+  isProtectedRoute,
+  isPublicAuthRoute,
+} from "@/lib/auth/route-protection";
 
 export async function middleware(request: NextRequest) {
   const middlewareClient = createSupabaseMiddlewareClient(request);

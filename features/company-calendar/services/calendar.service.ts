@@ -40,7 +40,10 @@ async function getActiveCompanyId() {
   }
 }
 
-async function assertCalendarBelongsToCompany(companyId: string, calendarId: string) {
+async function assertCalendarBelongsToCompany(
+  companyId: string,
+  calendarId: string,
+) {
   const supabase = createSupabaseAdminClient();
   const { data, error } = await supabase
     .from("holiday_calendars")
@@ -51,7 +54,10 @@ async function assertCalendarBelongsToCompany(companyId: string, calendarId: str
     .maybeSingle();
 
   if (error) {
-    console.error("[CalendarService] Unable to validate calendar ownership.", error);
+    console.error(
+      "[CalendarService] Unable to validate calendar ownership.",
+      error,
+    );
     throw new Error("Unable to validate holiday calendar.");
   }
 
@@ -70,7 +76,10 @@ async function assertEventBelongsToCompany(companyId: string, eventId: string) {
     .maybeSingle();
 
   if (error) {
-    console.error("[CalendarService] Unable to validate event ownership.", error);
+    console.error(
+      "[CalendarService] Unable to validate event ownership.",
+      error,
+    );
     throw new Error("Unable to validate holiday.");
   }
 
@@ -244,10 +253,7 @@ export const CalendarService = {
     return { today: todayInfo, upcomingEvents, events };
   },
 
-  async getDateInfo(
-    companyId: string,
-    date: string,
-  ): Promise<CalendarDayInfo> {
+  async getDateInfo(companyId: string, date: string): Promise<CalendarDayInfo> {
     const calendar = await getDefaultCalendar(companyId);
 
     if (!calendar) {
@@ -495,7 +501,8 @@ export const CalendarService = {
     });
   },
 
-  async prepareHolidayReminder(_eventId: string) {
+  async prepareHolidayReminder(eventId: string) {
+    void eventId;
     return {
       ready: true,
       scheduled: false,

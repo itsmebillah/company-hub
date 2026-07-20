@@ -105,7 +105,7 @@ Server services create rows and track state. `notifications` is in `supabase_rea
 ## Architectural risks
 
 - Service-role-heavy data access makes service authorization correctness critical.
-- No automated test suite or CI currently protects architectural boundaries.
+- Playwright protects critical runtime, role, route, responsive, Storage, Realtime, attendance, export, and PWA boundaries in Chrome and Edge. CI and lower-level unit/service integration coverage remain open.
 - Browser-local offline state has limited durability and recovery UX.
 - Several oversized service/component files should be split only with behavior-preserving tests.
 

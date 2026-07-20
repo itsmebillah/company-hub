@@ -2,33 +2,19 @@
 
 ## Critical
 
-### Privileged services do not consistently enforce Admin authorization
-
-Most Admin-facing actions/services establish only active employee/current company context before using the service-role client. Route-group layout checks do not authorize direct server-action or route-handler invocation, and several ID-based mutations are not company-scoped. Treat this as a release blocker for wrong-role and cross-company access.
-
-### The service worker caches authenticated HTML
-
-`public/sw.js` caches personalized employee and Admin pages. Browser Cache Storage can survive logout/account switching, creating offline cross-session disclosure risk. Cache only immutable public assets and purge the legacy page cache.
-
-### `.env.example` contains populated secret-like values
-
-The example environment file has populated Supabase key fields rather than safe placeholders. Treat any service-role credential ever committed there as compromised: sanitize the file, rotate the key in Supabase, update local/Vercel secrets, and review repository history. Never paste key values into issues or logs.
+No unresolved application-critical defect was reproduced in the 2026-07-20 hardening verification. Historical secret rotation remains an operational action because repository history cannot prove whether prior example values were revoked.
 
 ## High
 
-### No automated tests or CI
+### Automated coverage has no CI gate
 
-There are no committed unit, integration, or end-to-end tests and no CI workflow. Current confidence comes from lint, typecheck, build, database catalog checks, and manual/disposable integration verification.
+Playwright end-to-end coverage is committed and passes in Chrome and Edge, but no CI workflow executes it. Unit tests and isolated service/database integration tests are still absent.
 
 ### Dependency audit findings
 
-The latest `npm install` reports 33 findings: 1 low, 14 moderate, and 18 high. Do not run `npm audit fix --force` without reviewing framework and CLI compatibility.
+The latest audit reports 33 total findings. Production scope contains 2 moderate advisories through Next.js/PostCSS and 1 high advisory in `xlsx`; npm currently reports no safe in-range fix for `xlsx` and suggests an invalid framework downgrade for the transitive PostCSS advisory. Do not run `npm audit fix --force`.
 
 ## Medium
-
-### Admin schema-status check cannot access migration history through PostgREST
-
-`SchemaVersionService` queries `supabase_migrations.schema_migrations` through the service-role REST client, but the managed project exposes only `public` and `graphql_public`. The Admin dashboard catches the resulting `PGRST106` error and still renders, while CLI migration parity remains healthy. Replace this runtime check with a supported server-side mechanism instead of exposing the migration schema through PostgREST.
 
 ### Visible placeholders remain
 
@@ -43,10 +29,6 @@ These should be completed, removed, or explicitly accepted before production.
 
 `is_active_employee`, `is_admin_user`, and `can_receive_notification` are externally executable `SECURITY DEFINER` functions in `public`. The advisor reports three authenticated warnings plus an anonymous-execution warning for `can_receive_notification`. Anonymous RPC execution returned `false` because its predicate derives identity from `auth.uid()`, but the unnecessary grant/exposure should still be removed or relocated.
 
-### Unauthenticated notification tracking returns success
-
-`POST /api/notifications/track` returns `204` when no current employee exists because the service silently returns. No row is mutated, but the API contract hides authentication failure and weakens monitoring.
-
 ### Repository-wide formatting check fails
 
 Prettier reports 353 files. A scoped formatting baseline is required; bulk formatting should not be mixed with behavior changes.
@@ -59,7 +41,7 @@ The Supabase CLI is installed, but schema dump/local stack commands requiring Do
 
 ### Lint warnings
 
-Lint passes with 13 warnings, primarily raw `<img>` usage and unused variables/imports.
+Lint passes with 7 raw `<img>` optimization warnings for dynamic/user-provided media. Unused variable/import warnings are resolved.
 
 ### PowerShell npm shim
 

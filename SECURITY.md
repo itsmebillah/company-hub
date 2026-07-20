@@ -8,7 +8,7 @@ Company Hub uses defense in depth: authenticated sessions, server-side role/comp
 
 Required secrets are `SUPABASE_SERVICE_ROLE_KEY` and `CRON_SECRET`; the Supabase anonymous key is public by design but should still be environment-configured. `.env.local` is ignored. `.env.example` must contain safe placeholders only.
 
-Current critical action: `.env.example` contains populated secret-like values. Sanitize it and rotate any service-role key that may have entered Git history. Rotation must include local machines and Vercel environments.
+`.env.example` contains safe placeholders. Any service-role key that may have entered Git history must still be treated as compromised until rotation is independently confirmed across local machines and Vercel.
 
 Never place secrets in:
 
@@ -49,7 +49,7 @@ New tables require RLS, grants/policies, indexes, and security-advisor review in
 
 Production gaps include rate limiting, CSP/security headers beyond removing `X-Powered-By`, centralized audit monitoring, and automated dependency scanning.
 
-The service worker currently caches authenticated page HTML. Remove those routes from Cache Storage and purge legacy page caches before production to prevent cross-session offline disclosure.
+The service worker caches only immutable public assets. Activation removes legacy page-cache generations so authenticated HTML cannot survive logout/account switching in Cache Storage.
 
 ## Logging and privacy
 

@@ -497,7 +497,9 @@ export const LeaveService = {
     const { error } = await supabase
       .from("leave_requests")
       .update(updateValues)
-      .eq("id", id);
+      .eq("id", id)
+      .eq("company_id", approver.company_id)
+      .eq("status", "pending");
 
     if (error) {
       throw new Error("Unable to approve leave request.");
@@ -550,7 +552,9 @@ export const LeaveService = {
         rejection_reason: reason.trim(),
         updated_at: new Date().toISOString(),
       })
-      .eq("id", id);
+      .eq("id", id)
+      .eq("company_id", approver.company_id)
+      .eq("status", "pending");
 
     if (error) {
       throw new Error("Unable to reject leave request.");

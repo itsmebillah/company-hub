@@ -32,7 +32,7 @@ function toManifestEntry(fileName: string) {
   };
 }
 
-async function getAppliedMigrationVersions() {
+async function getLiveSchemaVersion() {
   const { url, serviceRoleKey } = getSupabaseAdminEnv();
   const supabase = createClient(url, serviceRoleKey, {
     auth: {
@@ -41,26 +41,20 @@ async function getAppliedMigrationVersions() {
     },
   });
 
-  const { data, error } = await supabase
-    .schema("supabase_migrations")
-    .from("schema_migrations")
-    .select("version")
-    .order("version", { ascending: true });
+  const { data, error } = await supabase.rpc("get_app_schema_version");
 
   if (error) {
     throw error;
   }
 
-  return new Set(
-    (data ?? []).map((row) =>
-      normalizeVersion(String((row as { version: string | number }).version)),
-    ),
-  );
+  return normalizeVersion(String(data));
 }
 
 const getCachedSchemaVersionStatus = unstable_cache(
   async (): Promise<SchemaVersionStatus> => {
-    const manifestMigrations = SCHEMA_MIGRATION_MANIFEST.map(toManifestEntry).filter(
+    const manifestMigrations = SCHEMA_MIGRATION_MANIFEST.map(
+      toManifestEntry,
+    ).filter(
       (entry): entry is NonNullable<ReturnType<typeof toManifestEntry>> =>
         entry !== null,
     );
@@ -80,16 +74,21 @@ const getCachedSchemaVersionStatus = unstable_cache(
     }
 
     try {
-      const appliedVersions = await getAppliedMigrationVersions();
+      const liveVersion = await getLiveSchemaVersion();
       const pendingMigrations = manifestMigrations
-        .filter((migration) => !appliedVersions.has(migration.normalizedVersion))
+        .filter(
+          (migration) =>
+            Number(migration.normalizedVersion) > Number(liveVersion),
+        )
         .map((migration) => migration.fileName);
-      const appliedManifestMigrations = manifestMigrations.filter((migration) =>
-        appliedVersions.has(migration.normalizedVersion),
+      const appliedManifestMigrations = manifestMigrations.filter(
+        (migration) =>
+          Number(migration.normalizedVersion) <= Number(liveVersion),
       );
       const currentVersion =
         appliedManifestMigrations.length > 0
-          ? appliedManifestMigrations[appliedManifestMigrations.length - 1].version
+          ? appliedManifestMigrations[appliedManifestMigrations.length - 1]
+              .version
           : null;
 
       if (pendingMigrations.length === 0) {
@@ -110,10 +109,9 @@ const getCachedSchemaVersionStatus = unstable_cache(
         message: "Database schema is outdated.",
       };
     } catch (error) {
-      console.error(
-        "[SchemaVersionService] Unable to verify database schema.",
-        error,
-      );
+      console.error("[SchemaVersionService] Schema verification failed.", {
+        name: error instanceof Error ? error.name : "UnknownError",
+      });
 
       return {
         state: "unknown",

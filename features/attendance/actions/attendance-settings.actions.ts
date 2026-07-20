@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { AttendanceSettingsService } from "@/features/attendance/services/attendance-settings.service";
+import { requireAdmin } from "@/features/auth/services/authorization.service";
 import type {
   AttendanceActionState,
   AttendanceSettingsValues,
@@ -12,6 +13,7 @@ export async function updateAttendanceSettingsAction(
   values: AttendanceSettingsValues,
 ): Promise<AttendanceActionState> {
   try {
+    await requireAdmin();
     await AttendanceSettingsService.updateSettings(values);
     revalidatePath("/admin/settings");
     revalidatePath("/admin/settings/attendance");

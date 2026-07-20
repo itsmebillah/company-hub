@@ -32,6 +32,8 @@ import {
 import { formatAppDate, formatAppTime } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
 
+const MAX_SELFIE_SIZE_BYTES = 5 * 1024 * 1024;
+
 type EmployeeAttendanceCardProps = {
   attendance: TodayAttendance;
   onCheckIn: (input?: AttendanceCheckInput) => Promise<AttendanceActionState>;
@@ -147,8 +149,10 @@ export function EmployeeAttendanceCard({
     locationStatus?.allowedLocations?.map((location) => location.name) ??
     attendance.policy.allowedLocations.map((location) => location.name);
   const canCheckIn = !hasCheckedIn && !isPending && hasValidLocation;
-  const canCheckOut = hasCheckedIn && !hasCheckedOut && !isPending && hasValidLocation;
-  const requiresSelfie = locationStatus?.requiresSelfie ?? attendance.policy.requireSelfie;
+  const canCheckOut =
+    hasCheckedIn && !hasCheckedOut && !isPending && hasValidLocation;
+  const requiresSelfie =
+    locationStatus?.requiresSelfie ?? attendance.policy.requireSelfie;
   const workingMinutes = useMemo(() => {
     if (!record?.checkIn) {
       return 0;
@@ -246,7 +250,7 @@ export function EmployeeAttendanceCard({
         setGps(nextGps);
         validateAttendance(nextGps);
       },
-      (error) => {
+      () => {
         setGps(null);
         validateAttendance();
       },
@@ -268,7 +272,8 @@ export function EmployeeAttendanceCard({
       setPendingSyncItems(
         listOfflineQueue().filter(
           (item): item is OfflineAttendanceQueueItem =>
-            item.type === "attendance" && item.attendanceDate === attendance.date,
+            item.type === "attendance" &&
+            item.attendanceDate === attendance.date,
         ),
       );
     }
@@ -297,6 +302,13 @@ export function EmployeeAttendanceCard({
       setSelfieFile(null);
       setSelfiePreviewUrl("");
       setSelfieError("Please capture a valid selfie image.");
+      return;
+    }
+
+    if (file.size > MAX_SELFIE_SIZE_BYTES) {
+      setSelfieFile(null);
+      setSelfiePreviewUrl("");
+      setSelfieError("Selfie image must be 5 MB or smaller.");
       return;
     }
 
@@ -376,8 +388,9 @@ export function EmployeeAttendanceCard({
         return;
       }
 
-      const selfiePath =
-        selfieFile ? await uploadSelfie(action === "check-in" ? "checkin" : "checkout") : "";
+      const selfiePath = selfieFile
+        ? await uploadSelfie(action === "check-in" ? "checkin" : "checkout")
+        : "";
 
       if (requiresSelfie && action === "check-in" && !selfiePath) {
         setMessage({
@@ -411,7 +424,7 @@ export function EmployeeAttendanceCard({
       <div className="app-card p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               {attendance.employeeCode}
             </p>
             <h2 className="mt-1 text-lg font-semibold">
@@ -421,29 +434,33 @@ export function EmployeeAttendanceCard({
           {record ? (
             <AttendanceStatusBadge status={record.status} />
           ) : (
-            <span className="inline-flex rounded-full border px-2.5 py-1 text-xs font-medium text-muted-foreground">
+            <span className="text-muted-foreground inline-flex rounded-full border px-2.5 py-1 text-xs font-medium">
               Not started
             </span>
           )}
         </div>
 
         <div className="mt-5 grid gap-3 sm:grid-cols-3">
-          <div className="rounded-2xl border border-white/20 bg-background/75 p-4">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="bg-background/75 rounded-2xl border border-white/20 p-4">
+            <div className="text-muted-foreground flex items-center gap-2 text-sm">
               <LogIn className="size-4" aria-hidden="true" />
               Check-in
             </div>
-            <p className="mt-2 font-semibold">{formatTime(record?.checkIn ?? null)}</p>
+            <p className="mt-2 font-semibold">
+              {formatTime(record?.checkIn ?? null)}
+            </p>
           </div>
-          <div className="rounded-2xl border border-white/20 bg-background/75 p-4">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="bg-background/75 rounded-2xl border border-white/20 p-4">
+            <div className="text-muted-foreground flex items-center gap-2 text-sm">
               <LogOut className="size-4" aria-hidden="true" />
               Check-out
             </div>
-            <p className="mt-2 font-semibold">{formatTime(record?.checkOut ?? null)}</p>
+            <p className="mt-2 font-semibold">
+              {formatTime(record?.checkOut ?? null)}
+            </p>
           </div>
-          <div className="rounded-2xl border border-white/20 bg-background/75 p-4">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="bg-background/75 rounded-2xl border border-white/20 p-4">
+            <div className="text-muted-foreground flex items-center gap-2 text-sm">
               <Clock className="size-4" aria-hidden="true" />
               Working time
             </div>
@@ -453,10 +470,10 @@ export function EmployeeAttendanceCard({
           </div>
         </div>
 
-        <div className="mt-5 rounded-[1.6rem] border border-white/20 bg-muted/35 p-4">
+        <div className="bg-muted/35 mt-5 rounded-[1.6rem] border border-white/20 p-4">
           <div className="grid gap-3 border-b pb-4 sm:grid-cols-2 xl:grid-cols-6">
-            <div className="rounded-2xl border border-white/20 bg-background/75 p-3">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <div className="bg-background/75 rounded-2xl border border-white/20 p-3">
+              <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
                 Work Mode
               </p>
               <p className="mt-2 text-sm font-semibold capitalize">
@@ -465,40 +482,40 @@ export function EmployeeAttendanceCard({
                 />
               </p>
             </div>
-            <div className="rounded-2xl border border-white/20 bg-background/75 p-3">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <div className="bg-background/75 rounded-2xl border border-white/20 p-3">
+              <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
                 Attendance Mode
               </p>
               <p className="mt-2 text-sm font-semibold">
                 {locationStatus?.modeLabel ?? attendance.policy.modeLabel}
               </p>
             </div>
-            <div className="rounded-2xl border border-white/20 bg-background/75 p-3">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <div className="bg-background/75 rounded-2xl border border-white/20 p-3">
+              <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
                 Allowed Office
               </p>
               <p className="mt-2 text-sm font-semibold">
                 {summarizeAllowedLocations(allowedLocationNames)}
               </p>
             </div>
-            <div className="rounded-2xl border border-white/20 bg-background/75 p-3">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <div className="bg-background/75 rounded-2xl border border-white/20 p-3">
+              <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
                 GPS Status
               </p>
               <p className="mt-2 text-sm font-semibold">
                 {gps ? `${gps.source ?? "gps"}`.toUpperCase() : "Pending"}
               </p>
             </div>
-            <div className="rounded-2xl border border-white/20 bg-background/75 p-3">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <div className="bg-background/75 rounded-2xl border border-white/20 p-3">
+              <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
                 Current Accuracy
               </p>
               <p className="mt-2 text-sm font-semibold">
                 {gps ? `${Math.round(gps.accuracy)}m` : "--"}
               </p>
             </div>
-            <div className="rounded-2xl border border-white/20 bg-background/75 p-3">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <div className="bg-background/75 rounded-2xl border border-white/20 p-3">
+              <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
                 Current Distance
               </p>
               <p className="mt-2 text-sm font-semibold">
@@ -533,11 +550,11 @@ export function EmployeeAttendanceCard({
                 >
                   {isLocating
                     ? "Checking your office location..."
-                    : locationStatus?.message ??
-                      "Allow location access to validate attendance."}
+                    : (locationStatus?.message ??
+                      "Allow location access to validate attendance.")}
                 </p>
                 {gps ? (
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="text-muted-foreground mt-1 text-xs">
                     {locationStatus?.locationName
                       ? `Matched Location: ${locationStatus.locationName} - `
                       : ""}
@@ -547,7 +564,7 @@ export function EmployeeAttendanceCard({
                     Accuracy: {Math.round(gps.accuracy)}m
                   </p>
                 ) : null}
-                <p className="mt-2 text-xs text-muted-foreground">
+                <p className="text-muted-foreground mt-2 text-xs">
                   {attendance.policy.modeDescription}
                 </p>
                 {requiresSelfie ? (
@@ -561,7 +578,7 @@ export function EmployeeAttendanceCard({
               type="button"
               onClick={readCurrentLocation}
               disabled={isLocating || isPending}
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-2xl border border-white/20 bg-background/75 px-3 py-2 text-sm font-semibold transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60"
+              className="bg-background/75 hover:bg-muted focus-visible:ring-ring inline-flex min-h-10 items-center justify-center gap-2 rounded-2xl border border-white/20 px-3 py-2 text-sm font-semibold transition focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60"
             >
               <RefreshCw
                 className={cn("size-4", isLocating && "animate-spin")}
@@ -583,13 +600,13 @@ export function EmployeeAttendanceCard({
               onChange={(event) => setNotes(event.target.value)}
               disabled={hasCheckedOut || isPending}
               rows={4}
-              className="mt-2 min-h-28 w-full rounded-2xl border border-white/20 bg-background/75 px-3 py-2 text-sm outline-none transition focus:border-ring focus:ring-2 focus:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-70"
+              className="bg-background/75 focus:border-ring focus:ring-ring/20 mt-2 min-h-28 w-full rounded-2xl border border-white/20 px-3 py-2 text-sm transition outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-70"
               placeholder="Optional attendance note"
             />
           </label>
 
-          <div className="space-y-3 rounded-[1.6rem] border border-white/20 bg-muted/35 p-4">
-            <div className="flex items-start gap-2 text-sm text-muted-foreground">
+          <div className="bg-muted/35 space-y-3 rounded-[1.6rem] border border-white/20 p-4">
+            <div className="text-muted-foreground flex items-start gap-2 text-sm">
               <CalendarDays
                 className="mt-0.5 size-4 shrink-0"
                 aria-hidden="true"
@@ -605,7 +622,7 @@ export function EmployeeAttendanceCard({
                 <Camera className="size-4" aria-hidden="true" />
                 Attendance Selfie
               </span>
-              <div className="rounded-2xl border border-white/20 bg-background/75 p-3">
+              <div className="bg-background/75 rounded-2xl border border-white/20 p-3">
                 <div className="flex flex-col gap-3">
                   {selfiePreviewUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -615,7 +632,7 @@ export function EmployeeAttendanceCard({
                       className="h-32 w-32 rounded-2xl object-cover"
                     />
                   ) : (
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-muted-foreground text-xs">
                       {requiresSelfie
                         ? "Capture a selfie before checking in."
                         : "Optional for checkout and future attendance verification."}
@@ -651,7 +668,7 @@ export function EmployeeAttendanceCard({
                 onClick={() => submit("check-in")}
                 disabled={!canCheckIn}
                 className={cn(
-                  "inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60",
+                  "bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold transition focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60",
                 )}
               >
                 <LogIn className="size-4" aria-hidden="true" />
@@ -661,7 +678,7 @@ export function EmployeeAttendanceCard({
                 type="button"
                 onClick={() => submit("check-out")}
                 disabled={!canCheckOut}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-white/20 bg-background/75 px-4 py-2 text-sm font-semibold transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60"
+                className="bg-background/75 hover:bg-muted focus-visible:ring-ring inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-white/20 px-4 py-2 text-sm font-semibold transition focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <LogOut className="size-4" aria-hidden="true" />
                 {isPending && canCheckOut ? "Checking out..." : "Check out"}

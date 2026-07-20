@@ -246,7 +246,8 @@ export async function updateResource(id: string, values: ResourceFormValues) {
       is_featured: values.isFeatured,
       status: validated.status,
     })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("company_id", companyId);
 
   if (error) {
     throw new Error("Unable to update resource.");

@@ -43,7 +43,11 @@ function buildPermissionStates(
       current.employeeIds = [];
     }
 
-    if (!current.isPublic && permission.permission_type === "role" && permission.role_id) {
+    if (
+      !current.isPublic &&
+      permission.permission_type === "role" &&
+      permission.role_id
+    ) {
       current.roleIds.push(permission.role_id);
     }
 
@@ -66,56 +70,73 @@ export const PermissionService = {
     const supabase = createSupabaseAdminClient();
     const companyId = await requireCurrentCompanyId();
 
-    const [categoriesResult, resourcesResult, rolesResult, employeesResult, permissionsResult] =
-      await Promise.all([
-        supabase
-          .from("resource_categories")
-          .select("id, name, display_order")
-          .eq("company_id", companyId)
-          .eq("status", "active")
-          .order("display_order", { ascending: true }),
-        supabase
-          .from("resources")
-          .select("id, title, category_id, display_order")
-          .eq("company_id", companyId)
-          .eq("status", "active")
-          .order("display_order", { ascending: true }),
-        supabase
-          .from("roles")
-          .select("id, name, display_order")
-          .eq("company_id", companyId)
-          .eq("status", "active")
-          .order("display_order", { ascending: true }),
-        supabase
-          .from("employees")
-          .select("id, employee_id, name, role_id")
-          .eq("company_id", companyId)
-          .eq("status", "active")
-          .order("name", { ascending: true }),
-        supabase
-          .from("resource_permissions")
-          .select("resource_id, permission_type, role_id, employee_id")
-          .eq("company_id", companyId)
-          .eq("status", "active"),
-      ]);
+    const [
+      categoriesResult,
+      resourcesResult,
+      rolesResult,
+      employeesResult,
+      permissionsResult,
+    ] = await Promise.all([
+      supabase
+        .from("resource_categories")
+        .select("id, name, display_order")
+        .eq("company_id", companyId)
+        .eq("status", "active")
+        .order("display_order", { ascending: true }),
+      supabase
+        .from("resources")
+        .select("id, title, category_id, display_order")
+        .eq("company_id", companyId)
+        .eq("status", "active")
+        .order("display_order", { ascending: true }),
+      supabase
+        .from("roles")
+        .select("id, name, display_order")
+        .eq("company_id", companyId)
+        .eq("status", "active")
+        .order("display_order", { ascending: true }),
+      supabase
+        .from("employees")
+        .select("id, employee_id, name, role_id")
+        .eq("company_id", companyId)
+        .eq("status", "active")
+        .order("name", { ascending: true }),
+      supabase
+        .from("resource_permissions")
+        .select("resource_id, permission_type, role_id, employee_id")
+        .eq("company_id", companyId)
+        .eq("status", "active"),
+    ]);
 
     if (categoriesResult.error) {
-      console.error("[PermissionService] Unable to load categories.", categoriesResult.error);
+      console.error(
+        "[PermissionService] Unable to load categories.",
+        categoriesResult.error,
+      );
       throw new Error("Unable to load resource categories.");
     }
 
     if (resourcesResult.error) {
-      console.error("[PermissionService] Unable to load resources.", resourcesResult.error);
+      console.error(
+        "[PermissionService] Unable to load resources.",
+        resourcesResult.error,
+      );
       throw new Error("Unable to load resources.");
     }
 
     if (rolesResult.error) {
-      console.error("[PermissionService] Unable to load roles.", rolesResult.error);
+      console.error(
+        "[PermissionService] Unable to load roles.",
+        rolesResult.error,
+      );
       throw new Error("Unable to load roles.");
     }
 
     if (employeesResult.error) {
-      console.error("[PermissionService] Unable to load employees.", employeesResult.error);
+      console.error(
+        "[PermissionService] Unable to load employees.",
+        employeesResult.error,
+      );
       throw new Error("Unable to load employees.");
     }
 
@@ -138,30 +159,33 @@ export const PermissionService = {
           id: resource.id,
           title: resource.title,
           categoryId: resource.category_id,
-          categoryName: categoryById.get(resource.category_id)?.name ?? "Unknown",
+          categoryName:
+            categoryById.get(resource.category_id)?.name ?? "Unknown",
           displayOrder: resource.display_order,
-          categoryOrder: categoryById.get(resource.category_id)?.display_order ?? 9999,
+          categoryOrder:
+            categoryById.get(resource.category_id)?.display_order ?? 9999,
         }))
         .sort((first, second) =>
           first.categoryOrder === second.categoryOrder
             ? first.displayOrder - second.displayOrder
             : first.categoryOrder - second.categoryOrder,
         )
-        .map(({ categoryOrder: _categoryOrder, ...resource }) => resource),
+        .map(({ categoryOrder, ...resource }) => {
+          void categoryOrder;
+          return resource;
+        }),
       roles: rolesResult.data.map((role) => ({
         id: role.id,
         name: role.name,
         displayOrder: role.display_order,
       })),
-      employees: employeesResult.data.map(
-        (employee): PermissionEmployee => ({
-          id: employee.id,
-          employeeId: employee.employee_id,
-          name: employee.name,
-          roleId: employee.role_id,
-          roleName: roleById.get(employee.role_id)?.name ?? "Unknown",
-        }),
-      ),
+      employees: employeesResult.data.map((employee): PermissionEmployee => ({
+        id: employee.id,
+        employeeId: employee.employee_id,
+        name: employee.name,
+        roleId: employee.role_id,
+        roleName: roleById.get(employee.role_id)?.name ?? "Unknown",
+      })),
       permissions: buildPermissionStates(permissionsResult.data),
     };
   },

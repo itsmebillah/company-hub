@@ -1,13 +1,9 @@
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
-      .open("company-hub-static-v1")
+      .open("company-hub-static-v2")
       .then((cache) =>
-        cache.addAll([
-          "/manifest.webmanifest",
-          "/icon.svg",
-          "/apple-icon.svg",
-        ]),
+        cache.addAll(["/manifest.webmanifest", "/icon.svg", "/apple-icon.svg"]),
       )
       .then(() => self.skipWaiting()),
   );
@@ -20,7 +16,7 @@ self.addEventListener("activate", (event) => {
       .then((keys) =>
         Promise.all(
           keys
-            .filter((key) => !["company-hub-static-v1", "company-hub-pages-v1"].includes(key))
+            .filter((key) => key !== "company-hub-static-v2")
             .map((key) => caches.delete(key)),
         ),
       )
@@ -39,26 +35,8 @@ function isStaticAsset(requestUrl) {
   );
 }
 
-function isCacheablePage(requestUrl) {
-  const cacheablePaths = [
-    "/dashboard",
-    "/resources",
-    "/announcements",
-    "/attendance",
-    "/profile",
-    "/settings",
-    "/admin/dashboard",
-    "/admin/settings",
-  ];
-
-  return (
-    requestUrl.origin === self.location.origin &&
-    cacheablePaths.includes(requestUrl.pathname)
-  );
-}
-
 async function cacheFirst(request) {
-  const cache = await caches.open("company-hub-static-v1");
+  const cache = await caches.open("company-hub-static-v2");
   const cachedResponse = await cache.match(request);
 
   if (cachedResponse) {
@@ -74,28 +52,6 @@ async function cacheFirst(request) {
   return response;
 }
 
-async function networkFirstPage(request) {
-  const cache = await caches.open("company-hub-pages-v1");
-
-  try {
-    const response = await fetch(request);
-
-    if (response.ok) {
-      cache.put(request, response.clone());
-    }
-
-    return response;
-  } catch {
-    const cachedResponse = await cache.match(request);
-
-    if (cachedResponse) {
-      return cachedResponse;
-    }
-
-    throw new Error("Offline page is not cached.");
-  }
-}
-
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") {
     return;
@@ -106,10 +62,6 @@ self.addEventListener("fetch", (event) => {
   if (isStaticAsset(requestUrl)) {
     event.respondWith(cacheFirst(event.request));
     return;
-  }
-
-  if (event.request.mode === "navigate" && isCacheablePage(requestUrl)) {
-    event.respondWith(networkFirstPage(event.request));
   }
 });
 

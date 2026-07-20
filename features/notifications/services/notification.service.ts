@@ -129,7 +129,7 @@ export const NotificationService = {
     const context = await getCurrentNotificationContext();
 
     if (!context) {
-      return;
+      return false;
     }
 
     if (event === "opened") {
@@ -138,7 +138,7 @@ export const NotificationService = {
         context.employeeId,
         context.companyId,
       );
-      return;
+      return true;
     }
 
     await NotificationRepository.markDeliveredForEmployee(
@@ -146,6 +146,7 @@ export const NotificationService = {
       context.employeeId,
       context.companyId,
     );
+    return true;
   },
 
   async create(input: CreateNotificationInput) {

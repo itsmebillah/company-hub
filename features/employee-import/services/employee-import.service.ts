@@ -16,7 +16,6 @@ import type {
   EmployeeImportFileType,
   EmployeeImportFoundationData,
   EmployeeImportFoundationHooks,
-  EmployeeImportRoleReference,
   EmployeeImportUploadValues,
   EmployeeImportValidationCatalog,
   EmployeeImportWizardStep,
@@ -51,7 +50,8 @@ const EMPLOYEE_IMPORT_TEMPLATE_COLUMNS = [
     key: "role_name",
     label: "Role",
     required: true,
-    description: "Must match an active role already configured for the company.",
+    description:
+      "Must match an active role already configured for the company.",
     example: "SR",
   },
   {
@@ -79,7 +79,8 @@ const EMPLOYEE_IMPORT_TEMPLATE_COLUMNS = [
     key: "work_mode",
     label: "Work Mode",
     required: false,
-    description: "Allowed values are Office, Field, or Hybrid. Blank defaults to Office.",
+    description:
+      "Allowed values are Office, Field, or Hybrid. Blank defaults to Office.",
     example: "Field",
   },
   {
@@ -134,7 +135,8 @@ const EMPLOYEE_IMPORT_WIZARD_STEPS: EmployeeImportWizardStep[] = [
   {
     key: "import",
     label: "Import",
-    description: "Create auth users and employee records in controlled batches.",
+    description:
+      "Create auth users and employee records in controlled batches.",
   },
   {
     key: "summary",
@@ -218,11 +220,15 @@ async function buildValidationCatalog(
       employees.map((employee) => employee.employee_id.toUpperCase()),
     ),
     existingPhones: new Set(
-      employees.map((employee) => (employee.phone ?? "").trim()).filter(Boolean),
+      employees
+        .map((employee) => (employee.phone ?? "").trim())
+        .filter(Boolean),
     ),
     existingInternalAuthEmails: new Set(
       employees
-        .map((employee) => (employee.internal_auth_email ?? "").trim().toLowerCase())
+        .map((employee) =>
+          (employee.internal_auth_email ?? "").trim().toLowerCase(),
+        )
         .filter(Boolean),
     ),
   };
@@ -246,7 +252,9 @@ async function notifyImportCompletion(input: {
   });
 }
 
-function toFailedReasonMessages(errors: Array<{ field?: string; message?: string }>) {
+function toFailedReasonMessages(
+  errors: Array<{ field?: string; message?: string }>,
+) {
   return errors.map((issue) => ({
     field: issue.field ?? "import",
     message: issue.message ?? "Import failed.",
@@ -278,7 +286,9 @@ function buildTemplateColumns() {
 
 export async function getEmployeeImportFoundationData(): Promise<EmployeeImportFoundationData> {
   const actor = await requireCurrentEmployeeContext();
-  const company = await EmployeeImportRepository.getCompanyById(actor.companyId);
+  const company = await EmployeeImportRepository.getCompanyById(
+    actor.companyId,
+  );
 
   if (!company) {
     throw new Error("Company was not found.");
@@ -306,7 +316,9 @@ export async function getEmployeeImportFoundationData(): Promise<EmployeeImportF
 
 export function buildEmployeeImportTemplateCsv() {
   const headers = EMPLOYEE_IMPORT_TEMPLATE_COLUMNS.map((column) => column.key);
-  const sampleRow = EMPLOYEE_IMPORT_TEMPLATE_COLUMNS.map((column) => column.example);
+  const sampleRow = EMPLOYEE_IMPORT_TEMPLATE_COLUMNS.map(
+    (column) => column.example,
+  );
 
   return [headers, sampleRow]
     .map((row) => row.map((value) => escapeCsvValue(value)).join(","))
@@ -316,7 +328,9 @@ export function buildEmployeeImportTemplateCsv() {
 export async function previewEmployeeImport(
   values: EmployeeImportUploadValues,
 ): Promise<EmployeeImportActionState> {
-  const fileIssues = EmployeeImportValidator.validateFoundationFile(values.file);
+  const fileIssues = EmployeeImportValidator.validateFoundationFile(
+    values.file,
+  );
 
   if (fileIssues.length > 0) {
     return {
@@ -330,18 +344,27 @@ export async function previewEmployeeImport(
     return {
       ok: false,
       message: "The selected file does not contain any employee rows.",
-      issues: [{ field: "file", message: "The selected file does not contain any employee rows." }],
+      issues: [
+        {
+          field: "file",
+          message: "The selected file does not contain any employee rows.",
+        },
+      ],
     };
   }
 
   const actor = await requireCurrentEmployeeContext();
   const catalog = await buildValidationCatalog(actor.companyId);
-  const previewRows = EmployeeImportValidator.buildPreviewRows(values.rows, catalog);
+  const previewRows = EmployeeImportValidator.buildPreviewRows(
+    values.rows,
+    catalog,
+  );
   const summary = {
     totalRows: previewRows.length,
     validRows: previewRows.filter((row) => row.status === "valid").length,
     invalidRows: previewRows.filter((row) => row.status === "invalid").length,
-    duplicateRows: previewRows.filter((row) => row.duplicateFields.length > 0).length,
+    duplicateRows: previewRows.filter((row) => row.duplicateFields.length > 0)
+      .length,
   };
   const fileType: EmployeeImportFileType = values.file.name
     .trim()
@@ -481,18 +504,29 @@ export async function processEmployeeImportBatch(
     };
   }
 
-  const roleCatalog = await EmployeeImportRepository.listRoleReferences(actor.companyId);
-  const managerCatalog = await EmployeeImportRepository.listManagerReferences(actor.companyId);
-  const roleByName = new Map(roleCatalog.map((role) => [role.name.toLowerCase(), role]));
+  const roleCatalog = await EmployeeImportRepository.listRoleReferences(
+    actor.companyId,
+  );
+  const managerCatalog = await EmployeeImportRepository.listManagerReferences(
+    actor.companyId,
+  );
+  const roleByName = new Map(
+    roleCatalog.map((role) => [role.name.toLowerCase(), role]),
+  );
   const managerByEmployeeId = new Map(
-    managerCatalog.map((manager) => [manager.employeeId.toUpperCase(), manager] as const),
+    managerCatalog.map(
+      (manager) => [manager.employeeId.toUpperCase(), manager] as const,
+    ),
   );
   const rowResults: EmployeeImportBatchRowResult[] = [];
   const createdAuthUserIds: string[] = [];
-  const employeeRows: Database["public"]["Tables"]["employees"]["Insert"][] = [];
+  const employeeRows: Database["public"]["Tables"]["employees"]["Insert"][] =
+    [];
   const pendingContext = pendingRows.map((row) => {
     const normalized =
-      row.normalized_data && typeof row.normalized_data === "object" && !Array.isArray(row.normalized_data)
+      row.normalized_data &&
+      typeof row.normalized_data === "object" &&
+      !Array.isArray(row.normalized_data)
         ? (row.normalized_data as Record<string, unknown>)
         : {};
 
@@ -522,7 +556,9 @@ export async function processEmployeeImportBatch(
       }
 
       let managerId: string | null = null;
-      const managerEmployeeId = String(row.normalized.managerEmployeeId ?? "").toUpperCase();
+      const managerEmployeeId = String(
+        row.normalized.managerEmployeeId ?? "",
+      ).toUpperCase();
 
       if (managerEmployeeId) {
         const manager = managerByEmployeeId.get(managerEmployeeId);
@@ -542,15 +578,16 @@ export async function processEmployeeImportBatch(
       }
 
       const internalAuthEmail = buildInternalAuthEmail(employeeId);
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: internalAuthEmail,
-        password: toSupabaseEmployeePassword(employeeId),
-        email_confirm: true,
-        user_metadata: {
-          employee_id: employeeId,
-          company_id: actor.companyId,
-        },
-      });
+      const { data: authData, error: authError } =
+        await supabase.auth.admin.createUser({
+          email: internalAuthEmail,
+          password: toSupabaseEmployeePassword(employeeId),
+          email_confirm: true,
+          user_metadata: {
+            employee_id: employeeId,
+            company_id: actor.companyId,
+          },
+        });
 
       if (authError || !authData.user) {
         rowResults.push({
@@ -570,15 +607,21 @@ export async function processEmployeeImportBatch(
         phone: normalizeOptional(String(row.normalized.phone ?? "")),
         email: normalizeOptional(String(row.normalized.email ?? "")),
         photo_url: normalizeOptional(String(row.normalized.photoUrl ?? "")),
-        date_of_birth: normalizeOptional(String(row.normalized.dateOfBirth ?? "")),
+        date_of_birth: normalizeOptional(
+          String(row.normalized.dateOfBirth ?? ""),
+        ),
         joining_date: String(row.normalized.joiningDate ?? ""),
         company_id: actor.companyId,
         role_id: role.id,
         manager_id: managerId,
-        work_mode: String(row.normalized.workMode ?? "office") as Database["public"]["Enums"]["employee_work_mode"],
+        work_mode: String(
+          row.normalized.workMode ?? "office",
+        ) as Database["public"]["Enums"]["employee_work_mode"],
         auth_user_id: authData.user.id,
         internal_auth_email: internalAuthEmail,
-        status: String(row.normalized.status ?? "active") as Database["public"]["Enums"]["record_status"],
+        status: String(
+          row.normalized.status ?? "active",
+        ) as Database["public"]["Enums"]["record_status"],
       });
       rowResults.push({
         rowNumber: row.rowNumber,
@@ -589,7 +632,9 @@ export async function processEmployeeImportBatch(
       });
     }
 
-    const successfulCandidates = rowResults.filter((row) => row.status === "imported");
+    const successfulCandidates = rowResults.filter(
+      (row) => row.status === "imported",
+    );
 
     if (employeeRows.length > 0) {
       try {
@@ -598,7 +643,9 @@ export async function processEmployeeImportBatch(
         await rollbackCreatedAuthUsers(createdAuthUserIds);
 
         const rollbackReason =
-          error instanceof Error ? error.message : "Unable to create imported employees.";
+          error instanceof Error
+            ? error.message
+            : "Unable to create imported employees.";
         const failedRows = rowResults.map((row) => ({
           ...row,
           status: "failed" as const,
@@ -642,7 +689,9 @@ export async function processEmployeeImportBatch(
     }
 
     const rowStatusUpdates = pendingContext.map((row) => {
-      const rowResult = rowResults.find((item) => item.rowNumber === row.rowNumber);
+      const rowResult = rowResults.find(
+        (item) => item.rowNumber === row.rowNumber,
+      );
       const isImported = rowResult?.status === "imported";
 
       return {
@@ -651,7 +700,10 @@ export async function processEmployeeImportBatch(
         validationErrors: isImported
           ? []
           : toFailedReasonMessages([
-              { field: "import", message: rowResult?.reason ?? "Import failed." },
+              {
+                field: "import",
+                message: rowResult?.reason ?? "Import failed.",
+              },
             ]),
       };
     });
@@ -695,7 +747,9 @@ export async function processEmployeeImportBatch(
           {
             field: "import",
             message:
-              error instanceof Error ? error.message : "Import batch failed unexpectedly.",
+              error instanceof Error
+                ? error.message
+                : "Import batch failed unexpectedly.",
           },
         ]),
       })),
@@ -728,7 +782,9 @@ export async function processEmployeeImportBatch(
         name: String(row.normalized.name ?? ""),
         status: "failed",
         reason:
-          error instanceof Error ? error.message : "Import batch failed unexpectedly.",
+          error instanceof Error
+            ? error.message
+            : "Import batch failed unexpectedly.",
       })),
     };
   }

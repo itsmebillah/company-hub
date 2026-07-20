@@ -7,6 +7,7 @@ import {
   setEmployeeStatus,
   updateEmployee,
 } from "@/features/employees/services/employee.service";
+import { requireAdmin } from "@/features/auth/services/authorization.service";
 import type {
   EmployeeActionState,
   EmployeeFormValues,
@@ -16,6 +17,7 @@ export async function createEmployeeAction(
   values: EmployeeFormValues,
 ): Promise<EmployeeActionState> {
   try {
+    await requireAdmin();
     const employee = await createEmployee(values);
 
     revalidatePath("/admin/users");
@@ -28,7 +30,8 @@ export async function createEmployeeAction(
   } catch (error) {
     return {
       ok: false,
-      message: error instanceof Error ? error.message : "Unable to create employee.",
+      message:
+        error instanceof Error ? error.message : "Unable to create employee.",
     };
   }
 }
@@ -38,6 +41,7 @@ export async function updateEmployeeAction(
   values: EmployeeFormValues,
 ): Promise<EmployeeActionState> {
   try {
+    await requireAdmin();
     await updateEmployee(id, values);
 
     revalidatePath("/admin/users");
@@ -51,13 +55,17 @@ export async function updateEmployeeAction(
   } catch (error) {
     return {
       ok: false,
-      message: error instanceof Error ? error.message : "Unable to update employee.",
+      message:
+        error instanceof Error ? error.message : "Unable to update employee.",
     };
   }
 }
 
-export async function activateEmployeeAction(id: string): Promise<EmployeeActionState> {
+export async function activateEmployeeAction(
+  id: string,
+): Promise<EmployeeActionState> {
   try {
+    await requireAdmin();
     await setEmployeeStatus(id, "active");
 
     revalidatePath("/admin/users");
@@ -69,8 +77,11 @@ export async function activateEmployeeAction(id: string): Promise<EmployeeAction
   }
 }
 
-export async function deactivateEmployeeAction(id: string): Promise<EmployeeActionState> {
+export async function deactivateEmployeeAction(
+  id: string,
+): Promise<EmployeeActionState> {
   try {
+    await requireAdmin();
     await setEmployeeStatus(id, "inactive");
 
     revalidatePath("/admin/users");

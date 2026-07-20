@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { LeaveService } from "@/features/leave/services/leave.service";
+import { requireAdmin } from "@/features/auth/services/authorization.service";
 import type {
   LeaveActionState,
   LeaveRequestFormValues,
@@ -20,6 +21,7 @@ export async function createLeaveTypeAction(
   values: LeaveTypeFormValues,
 ): Promise<LeaveActionState> {
   try {
+    await requireAdmin();
     await LeaveService.createLeaveType(values);
     revalidatePath("/admin/leave/types");
     return { ok: true, message: "Leave type created." };
@@ -33,6 +35,7 @@ export async function updateLeaveTypeAction(
   values: LeaveTypeFormValues,
 ): Promise<LeaveActionState> {
   try {
+    await requireAdmin();
     await LeaveService.updateLeaveType(id, values);
     revalidatePath("/admin/leave/types");
     return { ok: true, message: "Leave type updated." };
@@ -45,6 +48,7 @@ export async function archiveLeaveTypeAction(
   id: string,
 ): Promise<LeaveActionState> {
   try {
+    await requireAdmin();
     await LeaveService.archiveLeaveType(id);
     revalidatePath("/admin/leave/types");
     return { ok: true, message: "Leave type archived." };
@@ -71,6 +75,7 @@ export async function approveLeaveRequestAction(
   values?: LeaveRequestFormValues,
 ): Promise<LeaveActionState> {
   try {
+    await requireAdmin();
     await LeaveService.approveLeaveRequest(id, values);
     revalidatePath("/admin/leave/requests");
     return { ok: true, message: "Leave request approved." };
@@ -84,6 +89,7 @@ export async function rejectLeaveRequestAction(
   reason: string,
 ): Promise<LeaveActionState> {
   try {
+    await requireAdmin();
     await LeaveService.rejectLeaveRequest(id, reason);
     revalidatePath("/admin/leave/requests");
     return { ok: true, message: "Leave request rejected." };
