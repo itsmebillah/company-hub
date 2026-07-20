@@ -4,7 +4,7 @@
 
 `supabase/migrations/` is the canonical schema history. Migrations `0001`–`0028` are applied to project `jjfktbgfwvekhlvyjlww`. Never edit an applied migration; add the next ordered migration.
 
-The live verified catalog contains 22 public tables, 137 indexes, 133 constraints, 53 foreign keys, 34 check constraints, and 24 unique constraints. No public views or triggers are currently defined.
+The live verified catalog contains 22 public tables, 137 indexes, 133 constraints, 53 foreign keys, 34 check constraints, and 24 unique constraints. No public views or triggers are currently defined. The cross-account restore contains 1,748 application rows and matches the verified source backup exactly after reversing the required Auth UUID mapping.
 
 ## Domain tables
 
@@ -88,13 +88,13 @@ Any new table must enable RLS in its creation migration and document whether bro
 | `leave-attachments`   | Private    | Foundation; owner/Admin policies                     |
 | `attendance-selfies`  | Private    | Server/service-role attendance uploads               |
 
-Eleven policies on `storage.objects` cover active-employee reads, Admin shared-object mutation, profile ownership, and private owner/Admin access. Attendance selfies intentionally use server-only service role.
+Eleven policies on `storage.objects` cover active-employee reads, Admin shared-object mutation, profile ownership, and private owner/Admin access. Attendance selfies intentionally use server-only service role. The restored Storage state contains nine matching bucket definitions and four objects whose downloaded bytes match the source SHA-256 checksums.
 
 ## Seed data
 
 Migration `0003_seed_data.sql` creates the fixed Company Hub company UUID, five system roles (Admin, Sales Head, RSM, TSO, SR), and company settings. `supabase/seed/` contains no additional seed script.
 
-Seed data does not create a persistent Auth user or employee. Use `/setup` once to create the first Admin.
+Seed data does not create a persistent Auth user or employee. The live target is no longer seed-only: it contains the verified migrated company dataset and 17 employee/Auth links. `/setup` remains the empty-project bootstrap path, not a migration step.
 
 ## Migration workflow
 

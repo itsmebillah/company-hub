@@ -4,7 +4,7 @@
 
 The intended topology is Vercel for Next.js and scheduled cron, with Supabase providing PostgreSQL, Auth, Storage, and Realtime. `vercel.json` schedules the celebrations endpoint daily at `0 18 * * *` UTC.
 
-The Vercel CLI is installed and authenticated locally, but project linking is incomplete. Deployment capability is not yet a PASS because `.vercel/project.json` is absent and remote environment parity has not been checked.
+The Vercel CLI is installed and authenticated locally, and the repository is linked to the existing `company-hub` project. The five required environment variable names are present for both Production and Preview; values remain encrypted and must never be printed. The Supabase data migration did not require an application redeployment.
 
 ## Environment setup
 
@@ -17,7 +17,7 @@ Configure separate Vercel Preview and Production values:
 
 Never upload `.env.local`. Verify no service-role value is present in client bundles or repository history.
 
-## First-time Vercel link
+## Verify or repair the Vercel link
 
 ```powershell
 ./node_modules/.bin/vercel.cmd login

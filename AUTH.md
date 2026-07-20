@@ -28,7 +28,7 @@ Employee ID + password
 
 The root route checks for an active Admin employee. If none exists, it redirects to `/setup`; otherwise unauthenticated users go to `/login`. Bootstrap creates company/admin records and a Supabase Auth user, cleans partial records on failure, signs in, and redirects to the Admin dashboard. Once an active Admin exists, setup redirects away.
 
-The database seed supplies a company and Admin role but no Auth user/employee, so the new project still requires this operational bootstrap.
+The database seed supplies a company and Admin role but no Auth user/employee. The migrated target now contains the source company, employees, and Admin identity, so `/setup` is no longer the normal initialization path for this project.
 
 ## Role authorization
 
@@ -60,7 +60,9 @@ Most CRUD uses service role, so layer 2 is mandatory. Never assume service role 
 - Email/password provider is enabled.
 - Public signup is currently enabled at the Supabase project level.
 - Phone provider is disabled.
-- Disposable confirmed-user creation and password login passed; the user was removed.
+- The new project contains 17 recreated Auth identities whose email, metadata, confirmation state, and employee linkage match the verified backup.
+- Migrated Admin and employee password login, session cookies, dashboards, and role redirect were verified with temporary credentials.
+- Source password hashes were unavailable and Auth UUIDs were remapped; every migrated user requires password reset/activation.
 
 Because public signup is enabled while `/register` is incomplete, production owners should decide whether to disable signup or implement a controlled registration flow.
 

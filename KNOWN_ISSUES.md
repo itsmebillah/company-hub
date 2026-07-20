@@ -28,15 +28,11 @@ There are no committed unit, integration, or end-to-end tests and no CI workflow
 
 The latest `npm install` reports 33 findings: 1 low, 14 moderate, and 18 high. Do not run `npm audit fix --force` without reviewing framework and CLI compatibility.
 
-### Vercel is authenticated but not linked locally
-
-The CLI is installed and authenticated, but `.vercel/project.json` is absent. Deployment target, environment parity, and deployment capability are therefore not verified.
-
 ## Medium
 
-### No persistent administrator exists in the new Supabase project
+### Migrated Auth users require password resets
 
-Auth was verified using a disposable user that was removed. A real initial Admin must be created and recovery ownership established before launch.
+The supported Supabase Admin API does not expose source password hashes or allow caller-assigned Auth UUIDs. All 17 identities were recreated with remapped Auth UUIDs and cryptographically random migration credentials, while employee links were updated. Users cannot retain their old passwords and must complete a controlled password reset/activation process; Admin recovery ownership must be validated before launch.
 
 ### Visible placeholders remain
 
