@@ -14,9 +14,9 @@ Status values: **Implemented** means a routed workflow and supporting service ex
 | Company settings             | Implemented | Branding, contact, locale, notification/resource/security preferences                                  |
 | Company locations            | Implemented | Location CRUD, default location, employee access foundation                                            |
 | Resource categories          | Implemented | CRUD/status/order                                                                                      |
-| Resources                    | Implemented | CRUD, duplicate, archive/restore, type/open-mode behavior                                              |
+| Resources                    | Implemented | CRUD, duplicate, archive/restore, type/open-mode behavior, validated icon-image upload and cleanup     |
 | Resource permissions         | Implemented | Public, role, and employee targeting with server filtering                                             |
-| Employee resource portal     | Implemented | Grouped allowed resources, announcement ticker, quick access                                           |
+| Employee resource portal     | Implemented | Grouped resources, announcements, and visual Quick Links with custom image/favicon/icon fallback       |
 | Announcements                | Implemented | Create/update/archive, publish windows, company/role/employee targeting                                |
 | Notifications                | Implemented | Recipient generation, unread summaries, delivery/open tracking, realtime updates                       |
 | Browser/native notifications | Foundation  | Permission onboarding, browser notification bridge; no external push provider                          |

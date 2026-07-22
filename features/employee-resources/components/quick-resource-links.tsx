@@ -1,16 +1,14 @@
 "use client";
 
-import { Link2, Star } from "lucide-react";
+import { Star } from "lucide-react";
 
-import {
-  getPremiumCardClassName,
-  PremiumIconContainer,
-} from "@/components/common/premium-card";
+import { getPremiumCardClassName } from "@/components/common/premium-card";
 import type {
   EmployeePortalCategory,
   EmployeePortalResource,
 } from "@/features/employee-resources/types/employee-resource.types";
 import { cn } from "@/lib/utils";
+import { ResourceVisual } from "@/features/resources/ui/resource-visual";
 
 type QuickResourceLinksProps = {
   categories: EmployeePortalCategory[];
@@ -34,8 +32,9 @@ function flattenResources(categories: EmployeePortalCategory[]) {
 }
 
 export function QuickResourceLinks({ categories }: QuickResourceLinksProps) {
-  const resources = flattenResources(categories)
-    .sort((first, second) => Number(second.isFeatured) - Number(first.isFeatured));
+  const resources = flattenResources(categories).sort(
+    (first, second) => Number(second.isFeatured) - Number(first.isFeatured),
+  );
 
   if (resources.length === 0) {
     return null;
@@ -43,7 +42,7 @@ export function QuickResourceLinks({ categories }: QuickResourceLinksProps) {
 
   return (
     <section
-      className="rounded-[1.45rem] border bg-card/95 p-3 shadow-[var(--shadow-card)] sm:p-4"
+      className="bg-card/95 rounded-[1.45rem] border p-3 shadow-[var(--shadow-card)] sm:p-4"
       aria-labelledby="quick-resource-links-title"
     >
       <div className="mb-3 flex items-end justify-between gap-3">
@@ -57,7 +56,7 @@ export function QuickResourceLinks({ categories }: QuickResourceLinksProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 md:grid-cols-4 xl:[grid-template-columns:repeat(auto-fit,minmax(7.75rem,1fr))]">
+      <div className="grid grid-cols-2 gap-3 min-[360px]:grid-cols-3 md:grid-cols-4 xl:[grid-template-columns:repeat(auto-fit,minmax(8.5rem,1fr))]">
         {resources.map((resource) => (
           <QuickResourceCard key={resource.id} resource={resource} />
         ))}
@@ -69,13 +68,13 @@ export function QuickResourceLinks({ categories }: QuickResourceLinksProps) {
 function QuickResourceCard({ resource }: { resource: EmployeePortalResource }) {
   const className = getPremiumCardClassName(
     "cyan",
-    "group relative flex aspect-square min-w-0 flex-col items-center justify-center gap-2 rounded-[1.35rem] p-2 text-center transition duration-200 hover:-translate-y-0.5 hover:border-primary/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:p-3",
+    "group relative flex min-h-32 min-w-0 flex-col items-center justify-center gap-3 rounded-[1.35rem] p-3 text-center transition duration-200 hover:-translate-y-1 hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:translate-y-0 sm:aspect-square sm:min-h-0 sm:p-4",
   );
   const content = (
     <>
       {resource.isFeatured ? (
         <span
-          className="absolute right-2 top-2 inline-flex size-5 items-center justify-center rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
+          className="absolute top-2 right-2 inline-flex size-5 items-center justify-center rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
           aria-label="Featured"
           title="Featured"
         >
@@ -83,17 +82,15 @@ function QuickResourceCard({ resource }: { resource: EmployeePortalResource }) {
         </span>
       ) : null}
 
-      <PremiumIconContainer className="size-9 sm:size-10">
-        {resource.icon ? (
-          <span className="text-xs font-semibold sm:text-sm">
-            {resource.icon.slice(0, 2).toUpperCase()}
-          </span>
-        ) : (
-          <Link2 className="size-4 sm:size-5" aria-hidden="true" />
-        )}
-      </PremiumIconContainer>
+      <ResourceVisual
+        icon={resource.icon}
+        customImage={resource.thumbnail}
+        url={resource.url}
+        title={resource.title}
+        className="size-14 transition duration-200 group-hover:scale-105 sm:size-16"
+      />
 
-      <h3 className="line-clamp-2 min-h-8 w-full text-[0.72rem] font-semibold leading-4 sm:text-xs">
+      <h3 className="line-clamp-2 min-h-8 w-full text-xs leading-4 font-semibold sm:text-sm">
         {resource.title}
       </h3>
     </>

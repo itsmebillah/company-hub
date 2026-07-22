@@ -6,7 +6,7 @@ Employee-facing portal for allowed resources and live announcements.
 
 ## Structure
 
-- `components/`: employee portal, ticker, quick resource grid, cards.
+- `components/`: employee portal, ticker, responsive visual Quick Link grid, cards.
 - `services/`: server-side portal data and permission filtering.
 - `types/`: portal profile, category, and resource shapes.
 
@@ -21,3 +21,5 @@ Employees, roles, resources, resource permissions, announcements, company settin
 ## Rules
 
 Permission filtering must stay server-side. UI must never reveal unauthorized resources.
+
+Quick Link visual priority is custom image, website-origin favicon, selected built-in icon, then the Company Hub placeholder. Favicon and image requests are lazy, do not block page rendering, and fall through on load failure. The complete card—including its visual—is the link target.

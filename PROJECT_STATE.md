@@ -1,6 +1,6 @@
 # Project State
 
-Last verified: 2026-07-20
+Last verified: 2026-07-22
 
 ## Summary
 
@@ -20,14 +20,14 @@ The quality-hardening baseline is deployable: privileged mutation boundaries, pr
 - Nine storage buckets, 11 storage-object policies, four checksum-verified objects, and notification realtime publication.
 - 17 Auth identities recreated with matching email, metadata, confirmation state, and employee linkage. All 17 passwords are synchronized to the canonical Employee-ID-derived policy and individually verified; no Auth emails changed and no duplicate users were created.
 - `npm install`, lint, typecheck, and production build pass.
-- Playwright: 38 production-build checks pass in Chrome and Edge, including Admin/Employee login, session restore, logout, role redirects, major routes, PWA assets, private Storage, Realtime, attendance attachments, exports, signed-out API denial, responsive widths from 320px through 1024px, and WCAG A/AA scans.
+- Playwright: 42 production-build checks are defined across Chrome and Edge, including Admin/Employee login, session restore, logout, role redirects, major routes, Quick Link visual priority and image lifecycle, PWA assets, private Storage, Realtime, attendance attachments, exports, signed-out API denial, responsive widths from 320px through 1024px, and WCAG A/AA scans. The 2026-07-22 build passes all 21 Chrome checks; Edge execution is currently blocked because Edge is not installed and its installer requires workstation elevation. The preceding foundation build passed both projects.
 - Local production runtime boots cleanly with Supabase network access. `/`, `/setup`, and `/login` return 200; unauthenticated protected routes redirect to login; migrated Admin and employee sessions render their dashboards; non-Admin access to the Admin dashboard is redirected.
 
 ## Implemented product areas
 
 - Employee ID login, first-admin bootstrap, session and role routing.
 - Employee, role, hierarchy, bulk import, profile, and password management.
-- Resource categories, resources, audience permissions, employee resource portal.
+- Resource categories, resources, audience permissions, and an employee portal with visual Quick Links. Quick Links support uploaded PNG/JPG/SVG/WebP artwork, non-blocking origin favicons, named built-in icons, and a default fallback without changing existing resource records.
 - Targeted announcements, notification summaries/tracking, browser/native notifications, realtime delivery.
 - GPS-aware attendance, locations, work modes, attendance policy/settings, offline queue, selfies, admin attendance, reports, CSV/XLSX/PDF exports.
 - Leave types, employee requests, approval/rejection/cancellation.
@@ -37,14 +37,14 @@ The quality-hardening baseline is deployable: privileged mutation boundaries, pr
 
 ## Current quality signals
 
-- Lint: zero errors, 7 raw-image optimization warnings; all unused-code warnings were removed.
+- Lint: zero errors, 5 raw-image optimization warnings; all unused-code warnings were removed.
 - Typecheck: zero errors.
 - Production build: successful.
 - Prettier check: failed; 353 files currently differ from configured formatting.
 - Database lint: no schema errors.
 - Runtime schema status uses the least-privilege `get_app_schema_version()` contract from migration `0029`; the invalid `supabase_migrations` PostgREST request and `PGRST106` log are removed.
 - Supabase Security Advisor: no RLS-disabled errors; four warnings for externally executable `SECURITY DEFINER` functions. Anonymous execution of `can_receive_notification` is confirmed, although its caller-derived predicate returned `false` anonymously.
-- npm audit: 33 total findings; production scope contains 3 findings (2 moderate through Next.js/PostCSS and 1 high in `xlsx`) with no safe registry fix currently reported.
+- npm audit: 35 total findings. Production scope contains 4 affected packages (1 moderate and 3 high) through Next.js/PostCSS/Sharp and `xlsx`; npm reports no safe in-range fix and suggests an invalid Next.js downgrade. Do not force-fix.
 - Automated tests: Playwright route, Auth, authorization, mobile, PWA, Storage, attendance, export, and Realtime coverage is committed. Unit/service integration coverage is still absent.
 - CI/CD workflow: none committed.
 - Vercel CLI: authenticated and linked to `company-hub`; all five required environment variable names are present for Production and Preview. Values were not printed during verification.

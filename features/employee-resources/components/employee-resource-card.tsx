@@ -1,19 +1,16 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { ExternalLink, Link2 } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  PremiumCard,
-  PremiumIconContainer,
-} from "@/components/common/premium-card";
+import { PremiumCard } from "@/components/common/premium-card";
 import type { EmployeePortalResource } from "@/features/employee-resources/types/employee-resource.types";
 import {
   getOpenModeLabel,
   getResourceTypeLabel,
 } from "@/features/resources/constants/resource-options";
-import { getRenderableImageSrc } from "@/lib/media";
+import { ResourceVisual } from "@/features/resources/ui/resource-visual";
 
 type EmployeeResourceCardProps = {
   resource: EmployeePortalResource;
@@ -43,7 +40,7 @@ function CompactBadge({
       className={
         tone === "accent"
           ? "inline-flex rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-300"
-          : "inline-flex rounded-full border border-border/60 bg-background/80 px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
+          : "border-border/60 bg-background/80 text-muted-foreground inline-flex rounded-full border px-2 py-0.5 text-[10px] font-medium"
       }
     >
       {children}
@@ -62,7 +59,6 @@ export function EmployeeResourceCard({
   footer,
   extraBadges,
 }: EmployeeResourceCardProps) {
-  const thumbnailSrc = getRenderableImageSrc(resource.thumbnail);
   const urlLabel = getUrlLabel(resource);
   const typeLabel = getResourceTypeLabel(resource.resourceType);
   const openModeLabel = getOpenModeLabel(resource.openMode);
@@ -71,20 +67,20 @@ export function EmployeeResourceCard({
     <PremiumCard tone="cyan" className="overflow-hidden p-3">
       <div className="flex items-start gap-3">
         <div className="flex min-w-0 flex-1 items-start gap-3">
-          {resource.icon ? (
-            <PremiumIconContainer className="size-9 text-xs font-semibold">
-              {resource.icon.slice(0, 2).toUpperCase()}
-            </PremiumIconContainer>
-          ) : (
-            <PremiumIconContainer icon={Link2} className="size-9" />
-          )}
+          <ResourceVisual
+            icon={resource.icon}
+            customImage={resource.thumbnail}
+            url={resource.url}
+            title={resource.title}
+            className="size-11"
+          />
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0 flex-1">
-                <h3 className="truncate text-sm font-semibold leading-5">
+                <h3 className="truncate text-sm leading-5 font-semibold">
                   {resource.title}
                 </h3>
-                <p className="truncate text-[11px] text-muted-foreground">
+                <p className="text-muted-foreground truncate text-[11px]">
                   {categoryName}
                 </p>
               </div>
@@ -93,7 +89,7 @@ export function EmployeeResourceCard({
               ) : null}
             </div>
             <p
-              className="mt-1 truncate text-[11px] text-muted-foreground"
+              className="text-muted-foreground mt-1 truncate text-[11px]"
               title={urlLabel}
             >
               {urlLabel}
@@ -105,7 +101,7 @@ export function EmployeeResourceCard({
       <div className="mt-2.5 flex flex-wrap gap-1.5">
         <CompactBadge>{typeLabel}</CompactBadge>
         <CompactBadge>{openModeLabel}</CompactBadge>
-        {thumbnailSrc ? <CompactBadge>Preview</CompactBadge> : null}
+        {resource.thumbnail ? <CompactBadge>Custom image</CompactBadge> : null}
         {extraBadges}
       </div>
 

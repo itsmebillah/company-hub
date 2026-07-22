@@ -40,6 +40,7 @@ The Vercel cron schedule calls `/api/cron/celebrations` at `0 18 * * *` UTC, cor
 
 - Resource category create/update/archive/restore.
 - Resource create/update/duplicate/archive/restore.
+- Quick Link image upload and cancellation cleanup; authenticated Admin only, validated PNG/JPG/SVG/WebP up to 2 MB.
 - `replaceResourcePermissionsAction`.
 - Announcement create/update/archive/restore.
 

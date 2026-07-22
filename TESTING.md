@@ -2,7 +2,7 @@
 
 ## Current state
 
-Playwright is committed under `tests/e2e/` with Chrome and Edge projects. The 38-check production-build suite verifies public routes, signed-out redirects/API denial, Admin and Employee login/session/logout, role routing, major route rendering, 320/360/375/390/414/768/1024px layouts, attendance file selection and limits, a temporary Storage upload/read/delete lifecycle, exports, PWA caching, Realtime, and axe WCAG A/AA scans. CI and unit/service integration suites remain absent.
+Playwright is committed under `tests/e2e/` with Chrome and Edge projects. The 42-check production-build suite verifies public routes, signed-out redirects/API denial, Admin and Employee login/session/logout, role routing, major route rendering, Quick Link custom-image/favicon/built-in/default fallback priority, card navigation, validated image upload and cleanup, 320/360/375/390/414/768/1024px layouts, attendance file selection and limits, temporary Storage lifecycles, exports, PWA caching, Realtime, and axe WCAG A/AA scans. CI and unit/service integration suites remain absent.
 
 ## Existing verification commands
 

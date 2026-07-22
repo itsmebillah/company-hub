@@ -12,7 +12,7 @@ Playwright end-to-end coverage is committed and passes in Chrome and Edge, but n
 
 ### Dependency audit findings
 
-The latest audit reports 33 total findings. Production scope contains 2 moderate advisories through Next.js/PostCSS and 1 high advisory in `xlsx`; npm currently reports no safe in-range fix for `xlsx` and suggests an invalid framework downgrade for the transitive PostCSS advisory. Do not run `npm audit fix --force`.
+The latest audit reports 35 total findings. Production scope contains 4 affected packages: moderate PostCSS plus high Next.js/Sharp and `xlsx` findings. npm currently reports no safe in-range fix for `xlsx` or the bundled Next.js dependencies and suggests an invalid framework downgrade. Do not run `npm audit fix --force`.
 
 ## Medium
 
@@ -41,7 +41,11 @@ The Supabase CLI is installed, but schema dump/local stack commands requiring Do
 
 ### Lint warnings
 
-Lint passes with 7 raw `<img>` optimization warnings for dynamic/user-provided media. Unused variable/import warnings are resolved.
+Lint passes with 5 raw `<img>` optimization warnings for dynamic/user-provided media. Unused variable/import warnings are resolved.
+
+### Edge browser unavailable on the current workstation
+
+The 42-check Playwright suite retains its Edge project and the preceding foundation build passed it, but Edge is no longer installed on this workstation. `playwright install msedge` was attempted on 2026-07-22 and requires elevated installer privileges. All 21 Chrome production-build checks pass; rerun the Edge project after workstation installation.
 
 ### PowerShell npm shim
 

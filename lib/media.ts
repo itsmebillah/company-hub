@@ -21,6 +21,7 @@ export function getRenderableImageSrc(value: string | null | undefined) {
 export const PROFILE_PHOTOS_BUCKET = "profile-photos";
 export const ANNOUNCEMENT_IMAGES_BUCKET = "announcement-images";
 export const ATTENDANCE_SELFIES_BUCKET = "attendance-selfies";
+export const RESOURCE_ICONS_BUCKET = "resource-icons";
 
 function encodeStoragePath(path: string) {
   return path

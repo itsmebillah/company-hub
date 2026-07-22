@@ -6,6 +6,8 @@ This project follows a Keep-a-Changelog-style record. Versioning is not yet form
 
 ### Fixed
 
+- Rendered each dashboard Quick Link’s configured visual instead of reducing the stored icon to text initials, with graceful broken-image and favicon fallback.
+- Portaled the resource form outside the page stacking context so its controls remain clickable above the sticky admin header.
 - Raised the Server Action request limit to safely carry validated 5 MB attendance selfies, added immediate client-size feedback, and preserved HEIC/HEIF filename/MIME consistency.
 - Removed authenticated HTML from service-worker caching and purged legacy page-cache generations on activation.
 - Removed the broken `/notifications` navigation target.
@@ -21,10 +23,13 @@ This project follows a Keep-a-Changelog-style record. Versioning is not yet form
 
 ### Added
 
-- Added Playwright and axe configuration with 38 production-build checks across Chrome, Edge, Admin/Employee sessions, major routes, all required responsive widths, attendance media, Storage cleanup, exports, API denial, PWA behavior, Realtime, and WCAG A/AA.
+- Added responsive Quick Link visuals with uploaded PNG/JPG/SVG/WebP artwork, memoized website-origin favicons, named Lucide icons, and a permanent Company Hub placeholder fallback.
+- Added authenticated, company-scoped `resource-icons` uploads with size, MIME/signature, SVG-content, retrieval, replacement, cancellation, and unreferenced-object cleanup controls.
+- Expanded Playwright and axe configuration to 42 production-build checks across Chrome, Edge, Admin/Employee sessions, Quick Link visual priority and image lifecycle, major routes, all required responsive widths, attendance media, Storage cleanup, exports, API denial, PWA behavior, Realtime, and WCAG A/AA.
 
 ### Changed
 
+- Redesigned dashboard Quick Link cards around a centered square visual, touch-friendly spacing, responsive columns, and subtle hover/active motion while reusing existing `icon`, `thumbnail`, and Storage data.
 - Documented the Admin leave-approval workflow, including approval-time changes to leave type, dates, and reason with working-day recalculation.
 - Centralized the canonical Employee-ID-derived Auth password transformation across login, creation, import, registration, reset-to-initial, and migrated-user synchronization.
 - Synchronized and individually verified all 17 migrated Auth users without changing emails or creating duplicate users.

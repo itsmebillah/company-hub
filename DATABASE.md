@@ -81,7 +81,7 @@ Any new table must enable RLS in its creation migration and document whether bro
 | `profile-photos`      | Public     | Employee profile photos; owner/Admin mutation policy |
 | `announcement-images` | Public     | Announcement media; Admin mutation policy            |
 | `company-assets`      | Public     | Branding assets; Admin mutation policy               |
-| `resource-icons`      | Public     | Resource imagery; Admin mutation policy              |
+| `resource-icons`      | Public     | Resource Quick Link imagery; Admin mutation policy   |
 | `category-icons`      | Public     | Category imagery; Admin mutation policy              |
 | `system-assets`       | Public     | Shared system assets; Admin mutation policy          |
 | `employee-documents`  | Private    | Foundation; owner/Admin policies                     |
@@ -89,6 +89,8 @@ Any new table must enable RLS in its creation migration and document whether bro
 | `attendance-selfies`  | Private    | Server/service-role attendance uploads               |
 
 Eleven policies on `storage.objects` cover active-employee reads, Admin shared-object mutation, profile ownership, and private owner/Admin access. Attendance selfies intentionally use server-only service role. The restored Storage state contains nine matching bucket definitions and four objects whose downloaded bytes match the source SHA-256 checksums.
+
+Quick Link custom images use the existing `resources.thumbnail` object-path field and `resource-icons` bucket, so existing `resources.icon` names remain compatible and no schema migration is required. New uploads are company-scoped under `<company-id>/resources/`; replaced, canceled, and failed-save uploads are removed only when no resource still references the object.
 
 ## Seed data
 

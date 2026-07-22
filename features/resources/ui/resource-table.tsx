@@ -7,9 +7,7 @@ import {
   ResourceTypeBadge,
 } from "@/features/resources/ui/resource-badges";
 import { ResourceIcon } from "@/features/resources/ui/resource-icon";
-import type {
-  ResourceListItem,
-} from "@/features/resources/types/resource.types";
+import type { ResourceListItem } from "@/features/resources/types/resource.types";
 
 type ResourceTableProps = {
   resources: ResourceListItem[];
@@ -36,10 +34,10 @@ export function ResourceTable({
   }
 
   return (
-    <div className="hidden overflow-hidden rounded-xl border bg-card shadow-sm lg:block">
+    <div className="bg-card hidden overflow-hidden rounded-xl border shadow-sm lg:block">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[980px] text-left text-sm">
-          <thead className="border-b bg-muted/50 text-muted-foreground">
+          <thead className="bg-muted/50 text-muted-foreground border-b">
             <tr>
               <th className="px-4 py-3 font-medium">Icon</th>
               <th className="px-4 py-3 font-medium">Title</th>
@@ -55,11 +53,16 @@ export function ResourceTable({
             {resources.map((resource) => (
               <tr key={resource.id} className="border-b last:border-0">
                 <td className="px-4 py-3">
-                  <ResourceIcon icon={resource.icon} title={resource.title} />
+                  <ResourceIcon
+                    icon={resource.icon}
+                    customImage={resource.thumbnail}
+                    url={resource.url}
+                    title={resource.title}
+                  />
                 </td>
                 <td className="max-w-72 px-4 py-3">
                   <p className="font-medium">{resource.title}</p>
-                  <p className="truncate text-xs text-muted-foreground">
+                  <p className="text-muted-foreground truncate text-xs">
                     {resource.description || resource.url || "No description"}
                   </p>
                 </td>
@@ -73,7 +76,7 @@ export function ResourceTable({
                 <td className="px-4 py-3">
                   <ResourceStatusBadge status={resource.status} />
                 </td>
-                <td className="px-4 py-3 text-muted-foreground">
+                <td className="text-muted-foreground px-4 py-3">
                   {formatDate(resource.updatedAt)}
                 </td>
                 <td className="px-4 py-3">

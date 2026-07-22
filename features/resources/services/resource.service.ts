@@ -3,10 +3,9 @@ import "server-only";
 import { logActivity } from "@/features/activity/utils/activity-log";
 import { requireCurrentCompanyId } from "@/features/auth/services/current-company-context.service";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import {
-  RESOURCE_SORTS,
-} from "@/features/resources/constants/resource-options";
+import { RESOURCE_SORTS } from "@/features/resources/constants/resource-options";
 import { ResourceValidationService } from "@/features/resources/services/resource-validation.service";
+import { ResourceImageService } from "@/features/resources/services/resource-image.service";
 import type {
   ResourceCategoryOption,
   ResourceFilters,
@@ -45,7 +44,10 @@ export async function getResourceCategories(): Promise<
     .order("display_order", { ascending: true });
 
   if (error) {
-    console.error("[ResourceService] Unable to load resource categories.", error);
+    console.error(
+      "[ResourceService] Unable to load resource categories.",
+      error,
+    );
     throw new Error("Unable to load resource categories.");
   }
 
@@ -107,24 +109,22 @@ export async function listResources(
   );
 
   return {
-    resources: data.map(
-      (resource): ResourceListItem => ({
-        id: resource.id,
-        categoryId: resource.category_id,
-        categoryName: categoryById.get(resource.category_id) ?? "Unknown",
-        title: resource.title,
-        description: resource.description ?? "",
-        resourceType: resource.resource_type,
-        url: resource.url ?? "",
-        icon: resource.icon ?? "",
-        thumbnail: resource.thumbnail ?? "",
-        displayOrder: resource.display_order,
-        openMode: resource.open_mode,
-        isFeatured: resource.is_featured,
-        status: resource.status,
-        updatedAt: resource.updated_at,
-      }),
-    ),
+    resources: data.map((resource): ResourceListItem => ({
+      id: resource.id,
+      categoryId: resource.category_id,
+      categoryName: categoryById.get(resource.category_id) ?? "Unknown",
+      title: resource.title,
+      description: resource.description ?? "",
+      resourceType: resource.resource_type,
+      url: resource.url ?? "",
+      icon: resource.icon ?? "",
+      thumbnail: resource.thumbnail ?? "",
+      displayOrder: resource.display_order,
+      openMode: resource.open_mode,
+      isFeatured: resource.is_featured,
+      status: resource.status,
+      updatedAt: resource.updated_at,
+    })),
   };
 }
 
@@ -171,7 +171,10 @@ async function getNextDisplayOrder(categoryId: string) {
     .limit(1);
 
   if (error) {
-    console.error("[ResourceService] Unable to calculate display order.", error);
+    console.error(
+      "[ResourceService] Unable to calculate display order.",
+      error,
+    );
     throw new Error("Unable to calculate display order.");
   }
 
@@ -205,6 +208,7 @@ export async function createResource(values: ResourceFormValues) {
     .single();
 
   if (error || !data) {
+    await ResourceImageService.cleanupReplaced(companyId, values.thumbnail);
     console.error("[ResourceService] Unable to create resource.", error);
     throw new Error("Unable to create resource.");
   }
@@ -229,7 +233,22 @@ export async function updateResource(id: string, values: ResourceFormValues) {
   const supabase = createSupabaseAdminClient();
   const companyId = await requireCurrentCompanyId();
 
-  await assertDisplayOrderAvailable(values.categoryId, validated.displayOrder, id);
+  const { data: currentResource, error: loadError } = await supabase
+    .from("resources")
+    .select("thumbnail")
+    .eq("id", id)
+    .eq("company_id", companyId)
+    .single();
+
+  if (loadError || !currentResource) {
+    throw new Error("Resource was not found.");
+  }
+
+  await assertDisplayOrderAvailable(
+    values.categoryId,
+    validated.displayOrder,
+    id,
+  );
 
   const { error } = await supabase
     .from("resources")
@@ -251,6 +270,17 @@ export async function updateResource(id: string, values: ResourceFormValues) {
 
   if (error) {
     throw new Error("Unable to update resource.");
+  }
+
+  if (
+    currentResource.thumbnail &&
+    currentResource.thumbnail !== normalizeOptional(values.thumbnail)
+  ) {
+    await ResourceImageService.cleanupReplaced(
+      companyId,
+      currentResource.thumbnail,
+      id,
+    );
   }
 
   await logActivity({

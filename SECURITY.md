@@ -32,6 +32,8 @@ New tables require RLS, grants/policies, indexes, and security-advisor review in
 
 ## Storage
 
+Quick Link media uploads are Admin-only and company-scoped. The server validates allowed MIME types, binary signatures, size, and potentially active SVG content before writing unique immutable object paths. Cleanup removes only unreferenced objects inside the authenticated company’s resource prefix.
+
 - Public buckets expose object bytes by URL; do not store confidential content there.
 - Private employee documents and leave attachments require owner/Admin policies.
 - Attendance selfies are private and uploaded through server service role.

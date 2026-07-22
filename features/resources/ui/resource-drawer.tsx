@@ -21,14 +21,14 @@ export function ResourceDrawer({ resource, onClose }: ResourceDrawerProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-background/80 backdrop-blur-sm">
+    <div className="bg-background/80 fixed inset-0 z-50 flex justify-end backdrop-blur-sm">
       <button
         type="button"
         className="absolute inset-0"
         aria-label="Close resource details"
         onClick={onClose}
       />
-      <aside className="relative h-full w-full max-w-md overflow-y-auto border-l bg-background shadow-soft">
+      <aside className="bg-background shadow-soft relative h-full w-full max-w-md overflow-y-auto border-l">
         <div className="flex h-14 items-center justify-between border-b px-5">
           <h2 className="font-semibold">Resource Details</h2>
           <Button
@@ -43,25 +43,22 @@ export function ResourceDrawer({ resource, onClose }: ResourceDrawerProps) {
         </div>
 
         <div className="p-5">
-          {resource.thumbnail ? (
-            <img
-              src={resource.thumbnail}
-              alt=""
-              className="mb-5 aspect-video w-full rounded-xl border object-cover"
-            />
-          ) : null}
-
-          <div className="rounded-xl border bg-card p-5">
+          <div className="bg-card rounded-xl border p-5">
             <div className="flex items-start gap-4">
-              <ResourceIcon icon={resource.icon} title={resource.title} />
+              <ResourceIcon
+                icon={resource.icon}
+                customImage={resource.thumbnail}
+                url={resource.url}
+                title={resource.title}
+              />
               <div className="min-w-0 flex-1">
                 <h3 className="text-lg font-semibold">{resource.title}</h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   {resource.categoryName}
                 </p>
               </div>
             </div>
-            <p className="mt-4 text-sm text-muted-foreground">
+            <p className="text-muted-foreground mt-4 text-sm">
               {resource.description || "No description provided."}
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -72,7 +69,7 @@ export function ResourceDrawer({ resource, onClose }: ResourceDrawerProps) {
             </div>
           </div>
 
-          <dl className="mt-5 space-y-3 rounded-xl border bg-card p-5 text-sm">
+          <dl className="bg-card mt-5 space-y-3 rounded-xl border p-5 text-sm">
             <div className="flex justify-between gap-4">
               <dt className="text-muted-foreground">Display Order</dt>
               <dd className="font-medium">{resource.displayOrder}</dd>
@@ -88,7 +85,7 @@ export function ResourceDrawer({ resource, onClose }: ResourceDrawerProps) {
             </div>
             <div className="grid gap-1">
               <dt className="text-muted-foreground">URL</dt>
-              <dd className="break-all font-medium">
+              <dd className="font-medium break-all">
                 {resource.url || "Internal resource"}
               </dd>
             </div>
@@ -98,9 +95,7 @@ export function ResourceDrawer({ resource, onClose }: ResourceDrawerProps) {
             <Button asChild className="mt-5 w-full">
               <a
                 href={resource.url}
-                target={
-                  resource.openMode === "same_tab" ? undefined : "_blank"
-                }
+                target={resource.openMode === "same_tab" ? undefined : "_blank"}
                 rel={
                   resource.openMode === "same_tab"
                     ? undefined
