@@ -28,6 +28,7 @@ const routeFeatureMap: Array<[string, FeatureKey]> = [
   ["/admin/roles", "role_management"],
   ["/admin/company", "company_settings"],
   ["/admin/settings", "company_settings"],
+  ["/admin/profile", "profile"],
   ["/attendance", "attendance"],
   ["/resources", "resources"],
   ["/announcements", "announcements"],

@@ -349,7 +349,7 @@ export function AdminSettingsCenter({
             <MetricCard
               label="Total Buckets"
               value={String(storageOverview.totalBuckets)}
-              description={`${storageOverview.publicBuckets} public and ${storageOverview.privateBuckets} private buckets are configured.`}
+              description={`${storageOverview.publicBuckets} company-media buckets are configured; object totals are restricted to this company.`}
             />
             <MetricCard
               label="Stored Objects"

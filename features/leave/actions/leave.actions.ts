@@ -3,12 +3,13 @@
 import { revalidatePath } from "next/cache";
 
 import { LeaveService } from "@/features/leave/services/leave.service";
-import { requireAdmin } from "@/features/auth/services/authorization.service";
+import { requireCompanyAdmin } from "@/features/auth/services/authorization.service";
 import type {
   LeaveActionState,
   LeaveRequestFormValues,
   LeaveTypeFormValues,
 } from "@/features/leave/types/leave.types";
+import { FeatureAccessService } from "@/features/platform-control/services/feature-access.service";
 
 function actionError(error: unknown, fallback: string): LeaveActionState {
   return {
@@ -21,7 +22,7 @@ export async function createLeaveTypeAction(
   values: LeaveTypeFormValues,
 ): Promise<LeaveActionState> {
   try {
-    await requireAdmin();
+    await requireCompanyAdmin("leave");
     await LeaveService.createLeaveType(values);
     revalidatePath("/admin/leave/types");
     return { ok: true, message: "Leave type created." };
@@ -35,7 +36,7 @@ export async function updateLeaveTypeAction(
   values: LeaveTypeFormValues,
 ): Promise<LeaveActionState> {
   try {
-    await requireAdmin();
+    await requireCompanyAdmin("leave");
     await LeaveService.updateLeaveType(id, values);
     revalidatePath("/admin/leave/types");
     return { ok: true, message: "Leave type updated." };
@@ -48,7 +49,7 @@ export async function archiveLeaveTypeAction(
   id: string,
 ): Promise<LeaveActionState> {
   try {
-    await requireAdmin();
+    await requireCompanyAdmin("leave");
     await LeaveService.archiveLeaveType(id);
     revalidatePath("/admin/leave/types");
     return { ok: true, message: "Leave type archived." };
@@ -61,6 +62,7 @@ export async function submitLeaveRequestAction(
   values: LeaveRequestFormValues,
 ): Promise<LeaveActionState> {
   try {
+    await FeatureAccessService.requireForCurrentCompany("leave");
     await LeaveService.submitLeaveRequest(values);
     revalidatePath("/leave");
     revalidatePath("/admin/leave/requests");
@@ -75,7 +77,7 @@ export async function approveLeaveRequestAction(
   values?: LeaveRequestFormValues,
 ): Promise<LeaveActionState> {
   try {
-    await requireAdmin();
+    await requireCompanyAdmin("leave");
     await LeaveService.approveLeaveRequest(id, values);
     revalidatePath("/admin/leave/requests");
     return { ok: true, message: "Leave request approved." };
@@ -89,7 +91,7 @@ export async function rejectLeaveRequestAction(
   reason: string,
 ): Promise<LeaveActionState> {
   try {
-    await requireAdmin();
+    await requireCompanyAdmin("leave");
     await LeaveService.rejectLeaveRequest(id, reason);
     revalidatePath("/admin/leave/requests");
     return { ok: true, message: "Leave request rejected." };
@@ -102,6 +104,7 @@ export async function cancelLeaveRequestAction(
   id: string,
 ): Promise<LeaveActionState> {
   try {
+    await FeatureAccessService.requireForCurrentCompany("leave");
     await LeaveService.cancelLeaveRequest(id);
     revalidatePath("/leave");
     return { ok: true, message: "Leave request cancelled." };

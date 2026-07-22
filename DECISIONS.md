@@ -1,5 +1,9 @@
 # Architecture Decision Log
 
+## ADR-013 â€” Company Admin is the canonical tenant authority
+
+The historical tenant role `Admin` is migrated in place to `Company Admin`; stable `/admin/*` URLs and internal component names remain compatibility details. Company Admin authorization requires an active employee, active role, active company, matching company scope on service-role operations, and an enabled effective feature for feature-owned mutations. System Admin remains exclusively represented by `platform_admins`. Tenant role creation reserves platform authority names, and shared Storage media uses company-ID path prefixes.
+
 ## ADR-010 — System Admin is explicit and feature gates fail closed
 
 Company `Admin` remains tenant-scoped. Global access requires an active `platform_admins` row and is never seeded or inferred. Feature availability resolves in order: active company, enabled platform feature, then optional company override. Missing overrides inherit enabled to preserve existing tenants; future global states are treated as disabled until their semantics exist. Company removal is a reversible lifecycle state, not destructive deletion.

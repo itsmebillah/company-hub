@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 
-import { requireRole } from "@/features/auth/services/authorization.service";
+import { requireCompanyAdmin } from "@/features/auth/services/authorization.service";
 import { EmployeeImportService } from "@/features/employee-import/services/employee-import.service";
 
 export async function GET() {
-  const profile = await requireRole(["Admin"]);
+  const profile = await requireCompanyAdmin("employee_directory").catch(
+    () => null,
+  );
 
   if (!profile) {
     return NextResponse.json({ message: "Access denied." }, { status: 403 });

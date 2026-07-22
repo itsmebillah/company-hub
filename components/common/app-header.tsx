@@ -43,6 +43,8 @@ export function AppHeader({
         (item) => !item.featureKey || enabledFeatureSet.has(item.featureKey),
       )
     : appNavigationItems;
+  const notificationsEnabled =
+    !enabledFeatureSet || enabledFeatureSet.has("notifications");
 
   return (
     <header className="sticky top-0 z-30 px-0 pt-3 sm:pt-4">
@@ -63,12 +65,12 @@ export function AppHeader({
 
             <div className="flex items-center gap-2">
               {actions}
-              {notificationSummary && notificationScope ? (
+              {notificationsEnabled && notificationSummary && notificationScope ? (
                 <RealtimeNotificationCenter
                   initialSummary={notificationSummary}
                   scope={notificationScope}
                 />
-              ) : notificationSummary ? (
+              ) : notificationsEnabled && notificationSummary ? (
                 <NotificationDropdown summary={notificationSummary} />
               ) : null}
               <ThemeToggle />

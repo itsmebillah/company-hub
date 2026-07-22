@@ -7,17 +7,18 @@ import {
   setEmployeeStatus,
   updateEmployee,
 } from "@/features/employees/services/employee.service";
-import { requireAdmin } from "@/features/auth/services/authorization.service";
+import { requireCompanyAdmin } from "@/features/auth/services/authorization.service";
 import type {
   EmployeeActionState,
   EmployeeFormValues,
 } from "@/features/employees/types/employee.types";
+import { resetCompanyEmployeePasswordToInitial } from "@/features/auth/services/password-reset.service";
 
 export async function createEmployeeAction(
   values: EmployeeFormValues,
 ): Promise<EmployeeActionState> {
   try {
-    await requireAdmin();
+    await requireCompanyAdmin("employee_directory");
     const employee = await createEmployee(values);
 
     revalidatePath("/admin/users");
@@ -41,7 +42,7 @@ export async function updateEmployeeAction(
   values: EmployeeFormValues,
 ): Promise<EmployeeActionState> {
   try {
-    await requireAdmin();
+    await requireCompanyAdmin("employee_directory");
     await updateEmployee(id, values);
 
     revalidatePath("/admin/users");
@@ -65,7 +66,7 @@ export async function activateEmployeeAction(
   id: string,
 ): Promise<EmployeeActionState> {
   try {
-    await requireAdmin();
+    await requireCompanyAdmin("employee_directory");
     await setEmployeeStatus(id, "active");
 
     revalidatePath("/admin/users");
@@ -81,7 +82,7 @@ export async function deactivateEmployeeAction(
   id: string,
 ): Promise<EmployeeActionState> {
   try {
-    await requireAdmin();
+    await requireCompanyAdmin("employee_directory");
     await setEmployeeStatus(id, "inactive");
 
     revalidatePath("/admin/users");
@@ -90,5 +91,22 @@ export async function deactivateEmployeeAction(
     return { ok: true, message: "Employee deactivated." };
   } catch {
     return { ok: false, message: "Unable to deactivate employee." };
+  }
+}
+
+export async function resetEmployeePasswordAction(
+  id: string,
+  confirmation: string,
+): Promise<EmployeeActionState> {
+  try {
+    await resetCompanyEmployeePasswordToInitial(id, confirmation);
+
+    return { ok: true, message: "Employee password reset successfully." };
+  } catch (error) {
+    return {
+      ok: false,
+      message:
+        error instanceof Error ? error.message : "Unable to reset password.",
+    };
   }
 }

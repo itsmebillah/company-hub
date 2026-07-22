@@ -8,10 +8,12 @@ type TestAccounts = {
   adminEmployeeId: string;
   adminAuthUserId: string;
   employeeEmployeeId: string;
+  employeeRowId: string;
   companyId: string;
 };
 
 type EmployeeCredentialRow = {
+  id: string;
   employee_id: string;
   role_id: string;
   company_id: string;
@@ -66,6 +68,10 @@ async function signIn(page: Page, employeeId: string) {
   await dismissOnboarding(page);
 }
 
+function toSupabaseEmployeePassword(employeeId: string) {
+  return employeeId.length < 6 ? employeeId.padStart(6, "0") : employeeId;
+}
+
 async function dismissOnboarding(page: Page) {
   const closeOnboarding = page.getByRole("button", {
     name: "Close permission onboarding",
@@ -94,7 +100,7 @@ test.beforeAll(async () => {
   ] = await Promise.all([
     supabase
       .from("employees")
-      .select("employee_id, role_id, company_id, auth_user_id")
+      .select("id, employee_id, role_id, company_id, auth_user_id")
       .eq("status", "active")
       .not("auth_user_id", "is", null),
     supabase.from("roles").select("id, name").eq("status", "active"),
@@ -107,20 +113,21 @@ test.beforeAll(async () => {
   const rows = (employees ?? []) as EmployeeCredentialRow[];
   const adminRoleIds = new Set(
     (roles ?? [])
-      .filter((role) => role.name === "Admin")
+      .filter((role) => role.name === "Company Admin")
       .map((role) => role.id),
   );
   const admin = rows.find((row) => adminRoleIds.has(row.role_id));
   const employee = rows.find((row) => !adminRoleIds.has(row.role_id));
 
   if (!admin || !employee) {
-    throw new Error("Admin and employee QA accounts are required.");
+    throw new Error("Company Admin and employee QA accounts are required.");
   }
 
   accounts = {
     adminEmployeeId: admin.employee_id,
     adminAuthUserId: admin.auth_user_id,
     employeeEmployeeId: employee.employee_id,
+    employeeRowId: employee.id,
     companyId: employee.company_id,
   };
 });
@@ -420,7 +427,7 @@ test("Quick Links render custom images, favicons, built-in icons, and clickable 
   }
 });
 
-test("Admin Quick Link image upload is retrievable and canceled uploads are cleaned", async ({
+test("Company Admin Quick Link image upload is retrievable and canceled uploads are cleaned", async ({
   page,
 }) => {
   const png = Buffer.from(
@@ -482,7 +489,7 @@ test("Admin Quick Link image upload is retrievable and canceled uploads are clea
   }
 });
 
-test("admin login, session restore, routes, and authorization work", async ({
+test("Company Admin login, tenant scope, password reset, routes, and authorization work", async ({
   page,
 }) => {
   await signIn(page, accounts.adminEmployeeId);
@@ -519,6 +526,107 @@ test("admin login, session restore, routes, and authorization work", async ({
   });
   expect(exportStatus.status).toBe(200);
   expect(exportStatus.contentType).toContain("text/csv");
+
+  const testStartedAt = new Date().toISOString();
+  await page.goto(`/admin/users/${accounts.employeeRowId}`);
+  await page
+    .getByLabel("Confirm Employee ID")
+    .fill(accounts.employeeEmployeeId);
+  await page.getByRole("button", { name: "Reset initial password" }).click();
+  await expect(page.getByText("Employee password reset successfully.")).toBeVisible();
+  const { count: resetAuditCount, error: resetAuditError } = await supabase
+    .from("platform_audit_logs")
+    .select("id", { count: "exact", head: true })
+    .eq("company_id", accounts.companyId)
+    .eq("entity_id", accounts.employeeRowId)
+    .eq("action", "password_reset")
+    .gte("created_at", testStartedAt);
+  expect(resetAuditError).toBeNull();
+  expect(resetAuditCount).toBeGreaterThan(0);
+
+  const suffix = crypto.randomUUID().slice(0, 8);
+  const { data: foreignCompany, error: foreignCompanyError } = await supabase
+    .from("companies")
+    .insert({ name: `Tenant Isolation QA ${suffix}` })
+    .select("id")
+    .single();
+  expect(foreignCompanyError).toBeNull();
+  expect(foreignCompany).toBeTruthy();
+
+  let ownStoragePath = "";
+  try {
+    const { data: foreignRole, error: foreignRoleError } = await supabase
+      .from("roles")
+      .insert({
+        company_id: foreignCompany!.id,
+        name: "SR",
+        display_order: 1,
+      })
+      .select("id")
+      .single();
+    expect(foreignRoleError).toBeNull();
+    const { data: foreignEmployee, error: foreignEmployeeError } =
+      await supabase
+        .from("employees")
+        .insert({
+          company_id: foreignCompany!.id,
+          role_id: foreignRole!.id,
+          employee_id: `ISO-${suffix}`,
+          name: "Foreign Tenant Employee",
+        })
+        .select("id")
+        .single();
+    expect(foreignEmployeeError).toBeNull();
+
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    expect(anonKey).toBeTruthy();
+    expect(supabaseUrl).toBeTruthy();
+    const { data: adminAuth, error: adminAuthError } =
+      await supabase.auth.admin.getUserById(accounts.adminAuthUserId);
+    expect(adminAuthError).toBeNull();
+    const adminEmail = adminAuth.user?.email;
+    expect(adminEmail).toBeTruthy();
+    if (!adminEmail) throw new Error("Company Admin Auth email is unavailable.");
+
+    const tenantClient = createClient(supabaseUrl!, anonKey!, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+    const { error: tenantSignInError } =
+      await tenantClient.auth.signInWithPassword({
+        email: adminEmail,
+        password: toSupabaseEmployeePassword(accounts.adminEmployeeId),
+      });
+    expect(tenantSignInError).toBeNull();
+
+    const objectId = crypto.randomUUID();
+    const imageBytes = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
+    const { error: crossTenantUploadError } = await tenantClient.storage
+      .from("announcement-images")
+      .upload(`${foreignCompany!.id}/qa/${objectId}.png`, imageBytes, {
+        contentType: "image/png",
+      });
+    expect(crossTenantUploadError).not.toBeNull();
+
+    ownStoragePath = `${accounts.companyId}/qa/${objectId}.png`;
+    const { error: ownTenantUploadError } = await tenantClient.storage
+      .from("announcement-images")
+      .upload(ownStoragePath, imageBytes, { contentType: "image/png" });
+    expect(ownTenantUploadError).toBeNull();
+
+    await page.goto(`/admin/users/${foreignEmployee!.id}`, {
+      waitUntil: "domcontentloaded",
+    });
+    await expect(page.getByRole("heading", { name: "Page unavailable" })).toBeVisible();
+    await expect(page.getByText("Foreign Tenant Employee")).toHaveCount(0);
+  } finally {
+    if (ownStoragePath) {
+      await supabase.storage
+        .from("announcement-images")
+        .remove([ownStoragePath]);
+    }
+    await supabase.from("companies").delete().eq("id", foreignCompany!.id);
+  }
 });
 
 test("employee login, session restore, routes, and authorization work", async ({
@@ -567,6 +675,17 @@ test("company feature disable hides navigation and rejects direct access", async
     );
     expect(error).toBeNull();
 
+    await signIn(page, accounts.adminEmployeeId);
+    await page.goto("/admin/dashboard", { waitUntil: "networkidle" });
+    await expect(
+      page.getByRole("link", { name: "Attendance", exact: true }),
+    ).toHaveCount(0);
+    const adminResponse = await page.goto("/admin/attendance", {
+      waitUntil: "domcontentloaded",
+    });
+    expect(adminResponse?.status()).toBe(404);
+
+    await page.context().clearCookies();
     await signIn(page, accounts.employeeEmployeeId);
     await page.goto("/dashboard", { waitUntil: "networkidle" });
     await expect(
@@ -596,7 +715,7 @@ test("company feature disable hides navigation and rejects direct access", async
   }
 });
 
-test("admin and employee layouts do not overflow at supported widths", async ({
+test("Company Admin and employee layouts do not overflow at supported widths", async ({
   browser,
 }) => {
   const adminContext = await browser.newContext();

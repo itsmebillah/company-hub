@@ -6,7 +6,7 @@ System Admin is an explicit global authorization in `platform_admins`; it is the
 
 System Admin password reset is server-only and requires an exact Employee ID confirmation. It restores the canonical Employee-ID-derived initial password through the Supabase Admin API without revealing Auth email mappings or the internally padded value, and records a centralized security audit event.
 
-Company Admins remain restricted to their company and may use `/admin/settings/features` and `/admin/audit`. Employees cannot access either admin surface. Provisioning requires a deliberate trusted operation using the approved Auth user UUID and display name.
+Company Admins are represented by the tenant role `Company Admin` and remain restricted to one company. Middleware, Server Actions, services, APIs, notification policies, and Storage policies independently enforce that boundary. Company Admin password resets require the exact target Employee ID, preserve the internal Auth email, reuse the canonical initial-password transform, and create a company-scoped security audit event.
 
 ## Identity model
 
@@ -35,13 +35,13 @@ Employee ID + password
 
 ## Bootstrap
 
-The root route checks for an active Admin employee. If none exists, it redirects to `/setup`; otherwise unauthenticated users go to `/login`. Bootstrap creates company/admin records and a Supabase Auth user, cleans partial records on failure, signs in, and redirects to the Admin dashboard. Once an active Admin exists, setup redirects away.
+The root route checks for an active Company Admin employee. If none exists, it redirects to `/setup`; otherwise unauthenticated users go to `/login`. Bootstrap creates company/Company Admin records and a Supabase Auth user, cleans partial records on failure, signs in, and redirects to the Company Admin dashboard. Once an active Company Admin exists, setup redirects away.
 
-The database seed supplies a company and Admin role but no Auth user/employee. The migrated target now contains the source company, employees, and Admin identity, so `/setup` is no longer the normal initialization path for this project.
+The database seed is migrated forward to supply a company and Company Admin role but no Auth user/employee. The migrated target now contains the source company, employees, and Company Admin identity, so `/setup` is no longer the normal initialization path for this project.
 
 ## Role authorization
 
-System roles are Admin, Sales Head, RSM, TSO, and SR. The Admin route layout requires an active session profile with role name `Admin`; non-admin users are redirected to the employee dashboard. Employee routes require Auth through middleware and obtain current context in services/layouts.
+Tenant system roles are Company Admin, Sales Head, RSM, TSO, and SR. Custom future company roles remain supported, but `System Admin` and `Platform Admin` are reserved and cannot be created in `roles`. Company Admin cannot rename or deactivate its protected authority role. The Company Admin route layer requires an active session profile with role name `Company Admin`; other users are redirected to the employee dashboard.
 
 Authorization has three layers:
 
@@ -71,7 +71,7 @@ Most CRUD uses service role, so layer 2 is mandatory. Never assume service role 
 - Public signup is currently enabled at the Supabase project level.
 - Phone provider is disabled.
 - The new project contains 17 recreated Auth identities whose email, metadata, confirmation state, and employee linkage match the verified backup.
-- Migrated Admin and employee password login, session cookies, dashboards, and role redirect were verified with temporary credentials.
+- Migrated Company Admin and employee password login, session cookies, dashboards, and role redirect are covered by production-mode browser verification.
 - Source password hashes were unavailable and Auth UUIDs were remapped. All 17 migrated users have since been synchronized to the canonical Employee-ID-derived credential and individually login-verified.
 
 Because public signup is enabled while `/register` is incomplete, production owners should decide whether to disable signup or implement a controlled registration flow.
@@ -83,5 +83,5 @@ Because public signup is enabled while `/register` is incomplete, production own
 - Normalize Employee ID before lookup and use generic credential errors.
 - Require active employee context after Auth; Auth user existence alone is insufficient.
 - Validate company ownership for every service-role query/mutation.
-- Enforce Admin/permission checks inside privileged actions, handlers, and services; route layout placement is not authorization.
+- Enforce Company Admin/permission and effective-feature checks inside privileged actions, handlers, and services; route layout placement is not authorization.
 - Add rate limiting and monitoring before production exposure.

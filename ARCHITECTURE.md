@@ -2,7 +2,11 @@
 
 ## Platform control plane
 
-`app/(platform)/platform` is a separate System Admin route group. Its server pages call `features/platform-control`, which revalidates the explicit platform identity before privileged Supabase access. System Admin is represented by `platform_admins`, not by a company role: this keeps global authority above and outside the tenant hierarchy while preserving the existing Employee-ID login flow. The control plane owns cross-company people, company lifecycle, global settings/branding, features, health, and audit. Tenant Admin feature and audit pages reuse that boundary but always resolve the authenticated company. Middleware independently enforces company lifecycle and feature availability; navigation and dashboard filtering mirror, but do not replace, authorization.
+`app/(platform)/platform` is a separate System Admin route group. Its server pages call `features/platform-control`, which revalidates the explicit platform identity before privileged Supabase access. System Admin is represented by `platform_admins`, not by a company role: this keeps global authority above and outside the tenant hierarchy while preserving the existing Employee-ID login flow. The control plane owns cross-company people, company lifecycle, global settings/branding, features, health, and audit. Company Admin feature and audit pages reuse platform-control services only through authenticated company scope. Middleware independently enforces company lifecycle, Company Admin membership, and feature availability; navigation and dashboard filtering mirror, but do not replace, authorization.
+
+## Company administration plane
+
+`app/(admin)` is the tenant control plane. The canonical tenant authority is the `Company Admin` role; `/admin/*` URLs remain stable for backward-compatible links. Middleware calls the caller-derived `can_access_company_admin()` predicate before route rendering, while every privileged Server Action rechecks Company Admin status and the relevant effective feature state. Service-role reads and writes resolve the authenticated company first and include `company_id` in entity queries. Company Admins cannot create companies, access `/platform`, create platform roles, read global analytics, or manage another tenant.
 
 ## System context
 
@@ -44,7 +48,7 @@ Supabase
 ## Route groups
 
 - `app/(auth)`: login, setup, and currently-placeholder registration.
-- `app/(admin)`: Admin-only pages. The layout validates an active Admin session and loads shared settings, schema status, attendance configuration, and notifications.
+- `app/(admin)`: Company Admin-only pages. The layout validates an active Company Admin session and loads company settings, schema status, attendance configuration, and enabled notifications.
 - `app/(app)`: active employee workspace routes.
 - `app/api`: celebration cron and notification tracking.
 
@@ -95,7 +99,7 @@ Employee context drives server-side filtering by company, lifecycle status, publ
 
 ### Notifications
 
-Server services create rows and track state. `notifications` is in `supabase_realtime`; an authenticated SELECT policy exposes only the current employee's rows or the Admin's company scope. Browser components merge insert events and resynchronize summaries after updates.
+Server services create rows and track state. `notifications` is in `supabase_realtime`; an authenticated SELECT policy exposes only the current employee's rows or the Company Admin's company scope. Browser components merge insert events and resynchronize summaries after updates.
 
 ## Cross-cutting concerns
 

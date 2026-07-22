@@ -1490,6 +1490,19 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: boolean;
       };
+      can_access_company_admin: {
+        Args: Record<PropertyKey, never>;
+        Returns: boolean;
+      };
+      is_company_admin: { Args: { user_id: string }; Returns: boolean };
+      can_company_admin_manage_storage_object: {
+        Args: {
+          target_bucket_id: string;
+          target_object_name: string;
+          user_id: string;
+        };
+        Returns: boolean;
+      };
       log_feature_access_denied: {
         Args: {
           target_feature_key: string;

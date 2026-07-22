@@ -4,6 +4,7 @@ import { EmployeeDetails } from "@/features/employees/components";
 import {
   activateEmployeeAction,
   deactivateEmployeeAction,
+  resetEmployeePasswordAction,
 } from "@/features/employees/actions/employee.actions";
 import { getEmployeeDetails } from "@/features/employees/services/employee.service";
 
@@ -35,6 +36,7 @@ export default async function EmployeeDetailsPage({
       employee={employee}
       onActivate={activateEmployeeAction}
       onDeactivate={deactivateEmployeeAction}
+      onResetPassword={resetEmployeePasswordAction}
       createdEmployeeId={createdEmployeeId}
     />
   );

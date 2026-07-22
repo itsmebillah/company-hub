@@ -298,12 +298,14 @@ export async function listEmployees(
 
 export async function getEmployeeDetails(id: string): Promise<EmployeeDetails | null> {
   const supabase = createSupabaseAdminClient();
+  const companyId = await requireCurrentCompanyId();
   const { data, error } = await supabase
     .from("employees")
     .select(
       "id, employee_id, name, phone, email, photo_url, date_of_birth, joining_date, company_id, role_id, manager_id, work_mode, status, created_at, updated_at",
     )
     .eq("id", id)
+    .eq("company_id", companyId)
     .single();
 
   if (error || !data) {
@@ -317,7 +319,8 @@ export async function getEmployeeDetails(id: string): Promise<EmployeeDetails | 
   const { count: directReportsCount, error: directReportsError } = await supabase
     .from("employees")
     .select("id", { count: "exact", head: true })
-    .eq("manager_id", id);
+    .eq("manager_id", id)
+    .eq("company_id", companyId);
 
   if (directReportsError) {
     logEmployeeServiceError(

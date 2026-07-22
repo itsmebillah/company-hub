@@ -39,7 +39,7 @@ export function ExecutiveOverview({
     <section className="rounded-xl border bg-card p-5 shadow-sm">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h2 className="text-base font-semibold">Admin Overview</h2>
+          <h2 className="text-base font-semibold">Company Overview</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Company identity, module coverage, and overall platform readiness.
           </p>

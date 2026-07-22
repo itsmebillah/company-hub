@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Admin resource management for links, reports, tools, PDFs, and internal pages.
+Company Admin resource management for links, reports, tools, PDFs, and internal pages.
 
 ## Structure
 
@@ -14,7 +14,7 @@ Admin resource management for links, reports, tools, PDFs, and internal pages.
 
 ## Flow
 
-Admin creates resources inside active categories, then permissions determine employee visibility.
+Company Admin creates resources inside active categories, then permissions determine employee visibility.
 
 ## Dependencies
 
@@ -24,4 +24,4 @@ Resource categories, permissions, notifications, activity logs.
 
 Archived resources never appear to employees. URL is required unless resource type is `internal`.
 
-Quick Link visuals use `thumbnail` for an uploaded or existing custom image and retain `icon` for the built-in icon name. Admin uploads accept PNG, JPG, SVG, and WebP up to 2 MB. Server-side signature/SVG checks run before the file is stored. Object paths—not public URLs—are saved, and unreferenced replaced, canceled, or failed-save uploads are cleaned up.
+Quick Link visuals use `thumbnail` for an uploaded or existing custom image and retain `icon` for the built-in icon name. Company Admin uploads accept PNG, JPG, SVG, and WebP up to 2 MB. Server-side signature/SVG checks run before the file is stored. Object paths—not public URLs—are saved, and unreferenced replaced, canceled, or failed-save uploads are cleaned up.

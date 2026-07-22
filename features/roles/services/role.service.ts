@@ -11,6 +11,7 @@ import type {
 } from "@/features/roles/types/role.types";
 import { requireCurrentCompanyId } from "@/features/auth/services/current-company-context.service";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { ROLE_NAMES } from "@/lib/auth/permissions";
 
 const ALLOW_SYSTEM_ROLE_RENAME = false;
 
@@ -27,6 +28,14 @@ function assertStatus(status: string): asserts status is RoleStatus {
 function validate(values: RoleFormValues) {
   if (!values.name.trim()) {
     throw new Error("Role name is required.");
+  }
+
+  if (
+    ["system admin", "platform admin"].includes(
+      values.name.trim().toLowerCase(),
+    )
+  ) {
+    throw new Error("Platform role names cannot be created inside a company.");
   }
 
   assertStatus(values.status);
@@ -51,6 +60,7 @@ async function getActiveCompanyId() {
     logRoleServiceError("Unable to load active company.", error);
     throw new Error("Unable to load company information.");
   }
+
 }
 
 async function requireActiveCompanyId() {
@@ -255,6 +265,21 @@ export const RoleService = {
   async setStatus(id: string, status: Extract<RoleStatus, "active" | "inactive">) {
     const supabase = createSupabaseAdminClient();
     const companyId = await requireActiveCompanyId();
+    const { data: role, error: roleError } = await supabase
+      .from("roles")
+      .select("name")
+      .eq("company_id", companyId)
+      .eq("id", id)
+      .maybeSingle();
+
+    if (roleError || !role) {
+      throw new Error("Role was not found.");
+    }
+
+    if (role.name === ROLE_NAMES.companyAdmin) {
+      throw new Error("The Company Admin role must remain active.");
+    }
+
     const { error } = await supabase
       .from("roles")
       .update({ status, updated_at: new Date().toISOString() })

@@ -2,7 +2,7 @@
 
 ## Source of truth
 
-`supabase/migrations/` is the canonical schema history. Migrations `0001`–`0035` are applied to project `jjfktbgfwvekhlvyjlww`. Never edit an applied migration; add the next ordered migration. Migration `0030` adds the Platform Control Center; `0031` removes anonymous helper execution; `0032` makes schema telemetry invoker-safe; `0033` adds atomic company-name synchronization plus historical activity import; `0034` removes an argument/column ambiguity in the company-name RPC; and `0035` adds archived company lifecycle plus singleton platform branding/global configuration.
+`supabase/migrations/` is the canonical schema history. Migrations `0001`–`0037` are applied to project `jjfktbgfwvekhlvyjlww`. Never edit an applied migration; add the next ordered migration. Migrations `0036`–`0037` rename the tenant authority to Company Admin, update future company provisioning and notification scope, add caller-derived Company Admin route authorization, enforce company-aware Storage object access, and minimize helper execution privileges.
 
 The live verified catalog contains 27 public tables and the security-invoker `platform_company_overview` view. The original 1,748 restored application rows remain intact; migration `0030` backfilled the existing company status and seeded only the 14-row feature catalog. Migration `0035` adds one default `platform_settings` singleton row.
 
@@ -57,7 +57,10 @@ Composite company foreign keys prevent cross-company role, resource, announcemen
 
 - `get_company_celebrants(company, date)`: returns birthday/work-anniversary candidates.
 - `is_active_employee(user_id)`: caller-constrained storage authorization helper.
-- `is_admin_user(user_id)`: caller-constrained Admin storage authorization helper.
+- `is_company_admin(user_id)`: internal caller-constrained Company Admin predicate.
+- `is_admin_user(user_id)`: compatibility wrapper retained for historical policies; new code uses Company Admin terminology.
+- `can_access_company_admin()`: authenticated middleware predicate for `/admin/*`.
+- `can_company_admin_manage_storage_object(bucket, path, user_id)`: validates company-prefixed shared media or same-company employee-owned paths.
 - `is_self_storage_object(name, user_id)`: checks the first object-path segment.
 - `can_receive_notification(employee_id, company_id)`: caller-derived notification RLS predicate.
 
@@ -68,7 +71,7 @@ Security-definer helpers set a controlled search path. Anonymous execution is re
 All 27 public tables have RLS enabled. Direct access is default-deny except:
 
 - Authenticated employees may SELECT notification rows allowed by `can_receive_notification`.
-- Admin/company and employee CRUD continues through authorized server services using service role.
+- Company Admin and employee CRUD continues through authorized, tenant-scoped server services using service role.
 
 Any new table must enable RLS in its creation migration and document whether browser access is required. Avoid broad `authenticated using (true)` policies.
 
@@ -88,23 +91,23 @@ Migration `0033` imports existing immutable `activity_logs` rows into the centra
 
 | Bucket                | Visibility | Current usage                                        |
 | --------------------- | ---------- | ---------------------------------------------------- |
-| `profile-photos`      | Public     | Employee profile photos; owner/Admin mutation policy |
-| `announcement-images` | Public     | Announcement media; Admin mutation policy            |
-| `company-assets`      | Public     | Branding assets; Admin mutation policy               |
-| `resource-icons`      | Public     | Resource Quick Link imagery; Admin mutation policy   |
-| `category-icons`      | Public     | Category imagery; Admin mutation policy              |
-| `system-assets`       | Public     | Shared system assets; Admin mutation policy          |
-| `employee-documents`  | Private    | Foundation; owner/Admin policies                     |
-| `leave-attachments`   | Private    | Foundation; owner/Admin policies                     |
+| `profile-photos`      | Public     | Employee owner or same-company Company Admin mutation |
+| `announcement-images` | Public     | Company-prefixed announcement media                   |
+| `company-assets`      | Public     | Company-prefixed branding assets                      |
+| `resource-icons`      | Public     | Company-prefixed Quick Link imagery                   |
+| `category-icons`      | Public     | Company-prefixed category imagery                     |
+| `system-assets`       | Public     | Global assets; no Company Admin mutation grant        |
+| `employee-documents`  | Private    | Owner or same-company Company Admin policies          |
+| `leave-attachments`   | Private    | Owner or same-company Company Admin policies          |
 | `attendance-selfies`  | Private    | Server/service-role attendance uploads               |
 
-Eleven policies on `storage.objects` cover active-employee reads, Admin shared-object mutation, profile ownership, and private owner/Admin access. Attendance selfies intentionally use server-only service role. The restored Storage state contains nine matching bucket definitions and four objects whose downloaded bytes match the source SHA-256 checksums.
+Eleven policies on `storage.objects` cover active-employee reads, company-prefixed shared media, profile ownership, and private owner/same-company Company Admin access. Cross-company Company Admin object mutation and tenant mutation of `system-assets` are denied. Attendance selfies intentionally use server-only service role.
 
 Quick Link custom images use the existing `resources.thumbnail` object-path field and `resource-icons` bucket, so existing `resources.icon` names remain compatible and no schema migration is required. New uploads are company-scoped under `<company-id>/resources/`; replaced, canceled, and failed-save uploads are removed only when no resource still references the object.
 
 ## Seed data
 
-Migration `0003_seed_data.sql` creates the fixed Company Hub company UUID, five system roles (Admin, Sales Head, RSM, TSO, SR), and company settings. `supabase/seed/` contains no additional seed script.
+Migration `0003_seed_data.sql` creates the historical seed roles; migration `0036` deterministically advances `Admin` to `Company Admin`. The resulting tenant roles are Company Admin, Sales Head, RSM, TSO, and SR. `supabase/seed/` contains no additional seed script.
 
 Seed data does not create a persistent Auth user or employee. The live target is no longer seed-only: it contains the verified migrated company dataset and 17 employee/Auth links. `/setup` remains the empty-project bootstrap path, not a migration step.
 

@@ -6,6 +6,7 @@ import { getCompanySettings } from "@/features/company-settings/services/company
 import { appConfig } from "@/lib/config/app";
 import { getSupabaseAdminEnv } from "@/lib/env";
 import { createClient } from "@supabase/supabase-js";
+import { requireCurrentCompanyId } from "@/features/auth/services/current-company-context.service";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +45,14 @@ function formatBytes(bytes: number) {
   return `${value.toFixed(value >= 10 || exponent === 0 ? 0 : 1)} ${units[exponent]}`;
 }
 
-async function getStorageOverview() {
+const COMPANY_MEDIA_BUCKETS = [
+  "announcement-images",
+  "company-assets",
+  "resource-icons",
+  "category-icons",
+] as const;
+
+async function getStorageOverview(companyId: string) {
   const { url, serviceRoleKey } = getSupabaseAdminEnv();
   const supabase = createClient<StorageDatabase>(url, serviceRoleKey, {
     auth: {
@@ -57,8 +65,14 @@ async function getStorageOverview() {
       .schema("storage")
       .from("buckets")
       .select("id, public")
+      .in("id", [...COMPANY_MEDIA_BUCKETS])
       .order("id", { ascending: true }),
-    supabase.schema("storage").from("objects").select("metadata"),
+    supabase
+      .schema("storage")
+      .from("objects")
+      .select("metadata")
+      .in("bucket_id", [...COMPANY_MEDIA_BUCKETS])
+      .like("name", `${companyId}/%`),
   ]);
 
   if (bucketsResult.error || objectsResult.error) {
@@ -102,6 +116,7 @@ async function getStorageOverview() {
 }
 
 export default async function AdminSettingsPage() {
+  const companyId = await requireCurrentCompanyId();
   const [
     companySettings,
     attendanceSettings,
@@ -112,7 +127,7 @@ export default async function AdminSettingsPage() {
     await Promise.all([
       getCompanySettings(),
       AttendanceSettingsService.getSettings(),
-      getStorageOverview(),
+      getStorageOverview(companyId),
       DashboardService.getAdminDashboardData(),
       getCurrentSessionProfile(),
     ]);

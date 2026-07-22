@@ -3,23 +3,36 @@ import "server-only";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import {
   getAuthEmailForEmployee,
-  resolveEmployeeAuthIdentity,
 } from "@/features/auth/services/auth.service";
 import type { PasswordResetInput } from "@/features/auth/types/auth.types";
 import { toSupabaseEmployeePassword } from "@/features/auth/utils/employee-password";
 import { PlatformAuditService } from "@/features/platform-control/services/platform-audit.service";
+import { requireCompanyAdmin } from "@/features/auth/services/authorization.service";
 
-export async function resetEmployeePasswordToInitial(employeeId: string) {
-  const employee = await resolveEmployeeAuthIdentity(employeeId);
+export async function resetCompanyEmployeePasswordToInitial(
+  employeeRowId: string,
+  confirmation: string,
+) {
+  const actor = await requireCompanyAdmin("employee_directory");
+  const supabase = createSupabaseAdminClient();
+  const { data: employee, error: employeeError } = await supabase
+    .from("employees")
+    .select("id, employee_id, auth_user_id, status")
+    .eq("id", employeeRowId)
+    .eq("company_id", actor.companyId)
+    .maybeSingle();
 
-  if (employee.status !== "active" || !employee.authUserId) {
+  if (employeeError || !employee?.auth_user_id) {
     throw new Error("Employee account is not available for password reset.");
   }
 
-  const supabase = createSupabaseAdminClient();
+  if (confirmation.trim() !== employee.employee_id) {
+    throw new Error("Type the exact Employee ID to confirm the reset.");
+  }
+
   const { error } = await supabase.auth.admin.updateUserById(
-    employee.authUserId,
-    { password: toSupabaseEmployeePassword(employee.employeeId) },
+    employee.auth_user_id,
+    { password: toSupabaseEmployeePassword(employee.employee_id) },
   );
 
   if (error) {
@@ -31,8 +44,9 @@ export async function resetEmployeePasswordToInitial(employeeId: string) {
     action: "password_reset",
     entityType: "employee",
     entityId: employee.id,
-    description: "An administrator reset an employee password.",
-    companyId: employee.companyId,
+    description:
+      "Company Admin reset an employee password to its initial value.",
+    companyId: actor.companyId,
   });
 }
 

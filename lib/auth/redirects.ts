@@ -1,11 +1,20 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export function redirectToPath(request: NextRequest, path: string) {
-  const url = request.nextUrl.clone();
+export function redirectToPath(
+  request: NextRequest,
+  path: string,
+  sourceResponse?: NextResponse,
+) {
+  if (!path.startsWith("/")) {
+    throw new Error("Redirect paths must be application-relative.");
+  }
 
-  url.pathname = path;
-  url.search = "";
+  const response = NextResponse.redirect(new URL(path, request.url));
 
-  return NextResponse.redirect(url);
+  sourceResponse?.cookies.getAll().forEach((cookie) => {
+    response.cookies.set(cookie);
+  });
+
+  return response;
 }

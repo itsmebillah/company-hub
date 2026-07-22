@@ -89,11 +89,11 @@ async function getAdminRoleId(companyId: string) {
     .from("roles")
     .select("id")
     .eq("company_id", companyId)
-    .eq("name", ROLE_NAMES.admin)
+    .eq("name", ROLE_NAMES.companyAdmin)
     .limit(1);
 
   if (error) {
-    throw new Error("Unable to check Admin role.");
+    throw new Error("Unable to check Company Admin role.");
   }
 
   return data[0]?.id ?? null;
@@ -282,7 +282,7 @@ export async function bootstrapFirstAdmin(input: BootstrapAdminInput) {
         .from("roles")
         .insert({
           company_id: companyId,
-          name: ROLE_NAMES.admin,
+          name: ROLE_NAMES.companyAdmin,
           display_order: 1,
           status: "active",
         })
@@ -290,7 +290,7 @@ export async function bootstrapFirstAdmin(input: BootstrapAdminInput) {
         .single();
 
       if (roleError || !role) {
-        throw new Error("Unable to create Admin role.");
+        throw new Error("Unable to create Company Admin role.");
       }
 
       adminRoleId = role.id;

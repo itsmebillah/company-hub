@@ -17,6 +17,7 @@ import { ANNOUNCEMENT_IMAGES_BUCKET } from "@/lib/media";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type AnnouncementFormProps = {
+  companyId: string;
   announcement?: AnnouncementListItem | null;
   audienceOptions: AnnouncementAudienceOptions;
   onClose: () => void;
@@ -65,13 +66,14 @@ function toValues(
   };
 }
 
-function getAnnouncementImagePath(file: File) {
+function getAnnouncementImagePath(companyId: string, file: File) {
   const safeName = file.name.toLowerCase().replace(/[^a-z0-9._-]/g, "-");
 
-  return `announcements/${Date.now()}-${safeName}`;
+  return `${companyId}/announcements/${Date.now()}-${safeName}`;
 }
 
 export function AnnouncementForm({
+  companyId,
   announcement,
   audienceOptions,
   onClose,
@@ -125,7 +127,7 @@ export function AnnouncementForm({
     setIsUploadingImage(true);
     setUploadMessage("");
 
-    const storagePath = getAnnouncementImagePath(file);
+    const storagePath = getAnnouncementImagePath(companyId, file);
     const supabase = createSupabaseBrowserClient();
     const { error } = await supabase.storage
       .from(ANNOUNCEMENT_IMAGES_BUCKET)

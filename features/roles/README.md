@@ -13,7 +13,7 @@ Role management for system and custom roles used by employees, hierarchy, and pe
 
 ## Flow
 
-Admin opens roles. Missing system roles are repaired. Active roles populate employee and permission forms.
+Company Admin opens roles. Missing tenant system roles are repaired. Active roles populate employee and permission forms. The Company Admin role cannot be renamed or deactivated, and platform role names are reserved.
 
 ## Dependencies
 

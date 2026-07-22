@@ -55,7 +55,7 @@ export function AdminAttendancePage({
   return (
     <section className="space-y-5">
       <PageHeader
-        eyebrow="Admin Operations"
+        eyebrow="Company Attendance"
         title="Attendance"
         description="Read-only attendance management for manual check-in workflows."
         actions={

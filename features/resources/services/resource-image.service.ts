@@ -1,6 +1,6 @@
 import "server-only";
 
-import { requireAdmin } from "@/features/auth/services/authorization.service";
+import { requireCompanyAdmin } from "@/features/auth/services/authorization.service";
 import { getStorageObjectPath, RESOURCE_ICONS_BUCKET } from "@/lib/media";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
@@ -119,7 +119,7 @@ async function removeIfUnused(
 
 export const ResourceImageService = {
   async upload(file: File) {
-    const admin = await requireAdmin();
+    const admin = await requireCompanyAdmin("quick_links");
 
     if (!(file.type in imageTypes)) {
       throw new Error("Choose a PNG, JPG, SVG, or WebP image.");
@@ -152,7 +152,7 @@ export const ResourceImageService = {
   },
 
   async removeUploaded(value: string) {
-    const admin = await requireAdmin();
+    const admin = await requireCompanyAdmin("quick_links");
     await removeIfUnused(admin.companyId, value);
   },
 

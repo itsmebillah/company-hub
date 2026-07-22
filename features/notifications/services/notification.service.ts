@@ -11,6 +11,7 @@ import type {
   NotificationSummary,
   NotificationTrackingEvent,
 } from "@/features/notifications/types/notification.types";
+import { ROLE_NAMES } from "@/lib/auth/permissions";
 
 async function getCurrentNotificationContext() {
   const [employee, profile] = await Promise.all([
@@ -111,7 +112,7 @@ export const NotificationService = {
       redirect("/login");
     }
 
-    if (context.roleName === "Admin") {
+    if (context.roleName === ROLE_NAMES.companyAdmin) {
       await NotificationRepository.markAllReadForCompany(context.companyId);
       return;
     }

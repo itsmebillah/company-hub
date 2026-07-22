@@ -13,7 +13,7 @@ export default async function CalendarPage() {
 
   if (
     sessionProfile?.status === "active" &&
-    sessionProfile.roleName === ROLE_NAMES.admin
+    sessionProfile.roleName === ROLE_NAMES.companyAdmin
   ) {
     redirect(getAdminEquivalentPath("/calendar"));
   }

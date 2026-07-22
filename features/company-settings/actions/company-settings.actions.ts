@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { updateCompanySettings } from "@/features/company-settings/services/company-settings.service";
-import { requireAdmin } from "@/features/auth/services/authorization.service";
+import { requireCompanyAdmin } from "@/features/auth/services/authorization.service";
 import type {
   CompanySettingsActionState,
   CompanySettingsValues,
@@ -13,7 +13,7 @@ export async function updateCompanySettingsAction(
   values: CompanySettingsValues,
 ): Promise<CompanySettingsActionState> {
   try {
-    await requireAdmin();
+    await requireCompanyAdmin("company_settings");
     await updateCompanySettings(values);
     revalidatePath("/admin/company");
     revalidatePath("/admin/dashboard");

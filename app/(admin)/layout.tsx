@@ -23,13 +23,14 @@ export default async function AdminRouteGroupLayout({
     redirect("/login");
   }
 
-  if (profile.roleName !== ROLE_NAMES.admin) {
+  if (profile.roleName !== ROLE_NAMES.companyAdmin) {
     await PlatformAuditService.log({
       category: "security",
       action: "permission_denied",
       entityType: "admin_route",
       status: "denied",
-      description: "A non-Admin user attempted to access an Admin route.",
+      description:
+        "A non-Company Admin user attempted to access a Company Admin route.",
       companyId: profile.companyId,
     });
     redirect(getPostLoginRedirectPath(profile.roleName));

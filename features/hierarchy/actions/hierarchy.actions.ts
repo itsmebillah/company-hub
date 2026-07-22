@@ -6,7 +6,7 @@ import {
   bulkReassignEmployees,
   changeEmployeeManager,
 } from "@/features/hierarchy/services/hierarchy.service";
-import { requireAdmin } from "@/features/auth/services/authorization.service";
+import { requireCompanyAdmin } from "@/features/auth/services/authorization.service";
 import type {
   BulkReassignInput,
   ChangeManagerInput,
@@ -19,7 +19,7 @@ export async function changeManagerAction(
   input: ChangeManagerInput,
 ): Promise<HierarchyActionState> {
   try {
-    await requireAdmin();
+    await requireCompanyAdmin("employee_directory");
     await changeEmployeeManager(input);
     revalidatePath(HIERARCHY_PATH);
     revalidatePath("/admin/users");
@@ -38,7 +38,7 @@ export async function bulkReassignAction(
   input: BulkReassignInput,
 ): Promise<HierarchyActionState> {
   try {
-    await requireAdmin();
+    await requireCompanyAdmin("employee_directory");
     await bulkReassignEmployees(input);
     revalidatePath(HIERARCHY_PATH);
     revalidatePath("/admin/users");

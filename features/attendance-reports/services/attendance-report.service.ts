@@ -27,7 +27,7 @@ import {
 import { ROLE_NAMES } from "@/lib/auth/permissions";
 import { formatTimeValueLabel } from "@/features/attendance/utils/working-hours";
 
-const REPORT_ACCESS_ROLES = [ROLE_NAMES.admin, "HR"] as const;
+const REPORT_ACCESS_ROLES = [ROLE_NAMES.companyAdmin, "HR"] as const;
 
 type AttendanceReportDataset = {
   pageData: AttendanceReportPageData;

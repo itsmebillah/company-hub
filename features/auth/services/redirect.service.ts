@@ -19,7 +19,7 @@ export function getPostLoginRedirectPath(roleName: string, isSystemAdmin = false
   if (isSystemAdmin) {
     return "/platform/dashboard";
   }
-  if (roleName === ROLE_NAMES.admin) {
+  if (roleName === ROLE_NAMES.companyAdmin) {
     return ADMIN_DASHBOARD_PATH;
   }
 

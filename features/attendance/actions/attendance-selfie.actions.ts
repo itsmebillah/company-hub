@@ -1,9 +1,11 @@
 "use server";
 
 import { AttendanceSelfieService } from "@/features/attendance/services/attendance-selfie.service";
+import { FeatureAccessService } from "@/features/platform-control/services/feature-access.service";
 
 export async function uploadAttendanceSelfieAction(formData: FormData) {
   try {
+    await FeatureAccessService.requireForCurrentCompany("attendance");
     const phase = formData.get("phase");
     const attendanceDate = formData.get("attendanceDate");
     const file = formData.get("file");

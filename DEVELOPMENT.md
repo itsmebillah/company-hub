@@ -35,7 +35,7 @@ The application validates Supabase variables lazily through `lib/env.ts`; a buil
 npm.cmd run dev
 ```
 
-Open `http://localhost:3000`. On a fresh database with no active Admin, `/` redirects to `/setup`. Otherwise it redirects to `/login` or the current user's dashboard.
+Open `http://localhost:3000`. On a fresh database with no active Company Admin, `/` redirects to `/setup`. Otherwise it redirects to `/login` or the current user's dashboard.
 
 PowerShell may block `npm.ps1`; use `npm.cmd` if `npm` reports an execution-policy error.
 

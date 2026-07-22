@@ -23,6 +23,7 @@ import type {
 } from "@/features/announcements/types/announcement.types";
 
 type AnnouncementManagementPageProps = {
+  companyId: string;
   result: AnnouncementListResult;
   audienceOptions: AnnouncementAudienceOptions;
   filters: {
@@ -52,6 +53,7 @@ function formatDate(value: string) {
 }
 
 export function AnnouncementManagementPage({
+  companyId,
   result,
   audienceOptions,
   filters,
@@ -300,6 +302,7 @@ export function AnnouncementManagementPage({
 
       {isCreating || editingAnnouncement ? (
         <AnnouncementForm
+          companyId={companyId}
           announcement={editingAnnouncement}
           audienceOptions={audienceOptions}
           onClose={closeForm}

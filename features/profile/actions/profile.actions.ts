@@ -9,11 +9,13 @@ import type {
   ProfileActionState,
   ProfileFormValues,
 } from "@/features/profile/types/profile.types";
+import { FeatureAccessService } from "@/features/platform-control/services/feature-access.service";
 
 export async function updateProfileAction(
   values: ProfileFormValues,
 ): Promise<ProfileActionState> {
   try {
+    await FeatureAccessService.requireForCurrentCompany("profile");
     await ProfileService.updateProfile(values);
     revalidatePath("/profile");
     revalidatePath("/admin/profile");
@@ -34,6 +36,7 @@ export async function updatePasswordAction(
   values: PasswordFormValues,
 ): Promise<ProfileActionState> {
   try {
+    await FeatureAccessService.requireForCurrentCompany("profile");
     await PasswordService.updatePassword(values);
 
     return { ok: true, message: "Password updated." };

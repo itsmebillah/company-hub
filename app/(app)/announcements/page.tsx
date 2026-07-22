@@ -13,7 +13,7 @@ export default async function AnnouncementsPage() {
 
   if (
     sessionProfile?.status === "active" &&
-    sessionProfile.roleName === ROLE_NAMES.admin
+    sessionProfile.roleName === ROLE_NAMES.companyAdmin
   ) {
     redirect(getAdminEquivalentPath("/announcements"));
   }

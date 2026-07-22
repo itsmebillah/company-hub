@@ -10,6 +10,7 @@ import type {
   AnnouncementPriority,
   AnnouncementStatus,
 } from "@/features/announcements/types/announcement.types";
+import { requireCurrentCompanyId } from "@/features/auth/services/current-company-context.service";
 
 export const dynamic = "force-dynamic";
 
@@ -47,6 +48,7 @@ export default async function AdminAnnouncementsPage({
   searchParams,
 }: AdminAnnouncementsPageProps) {
   const params = await searchParams;
+  const companyId = await requireCurrentCompanyId();
   const target =
     params.target === "company" ||
     params.target === "roles" ||
@@ -66,6 +68,7 @@ export default async function AdminAnnouncementsPage({
   return (
     <AnnouncementManagementPage
       result={result}
+      companyId={companyId}
       audienceOptions={audienceOptions}
       filters={{
         search: params.search ?? "",

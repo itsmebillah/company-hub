@@ -16,7 +16,11 @@ export async function middleware(request: NextRequest) {
   } = await middlewareClient.supabase.auth.getUser();
 
   if (isProtectedRoute(request) && !user) {
-    return redirectToPath(request, AUTH_REDIRECTS.unauthenticated);
+    return redirectToPath(
+      request,
+      AUTH_REDIRECTS.unauthenticated,
+      middlewareClient.response,
+    );
   }
 
   if (user && !request.nextUrl.pathname.startsWith("/platform")) {
@@ -31,6 +35,15 @@ export async function middleware(request: NextRequest) {
         headers: middlewareClient.response.headers,
         status: 404,
       });
+    }
+  }
+
+  if (user && request.nextUrl.pathname.startsWith("/admin")) {
+    const { data: companyAdminAllowed, error: companyAdminError } =
+      await middlewareClient.supabase.rpc("can_access_company_admin");
+
+    if (companyAdminError || !companyAdminAllowed) {
+      return redirectToPath(request, "/dashboard", middlewareClient.response);
     }
   }
 

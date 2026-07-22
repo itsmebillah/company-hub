@@ -109,10 +109,10 @@ function getEmptyDashboard(): DashboardData {
   return {
     companyName: "Company Hub",
     companyLogo: null,
-    loggedInUserName: "Admin",
+    loggedInUserName: "Company Admin",
     loggedInUserEmployeeId: "--",
     loggedInUserPhotoUrl: null,
-    loggedInUserRoleName: "Admin",
+    loggedInUserRoleName: "Company Admin",
     totalModules: EXECUTIVE_MODULES.length,
     overallSystemStatus: getOverallStatus(health),
     counts: {
@@ -342,10 +342,10 @@ export async function getAdminDashboardData(): Promise<DashboardData> {
     return {
       companyName: settings.companyName,
       companyLogo: settings.logo || null,
-      loggedInUserName: session?.name ?? "Admin",
+      loggedInUserName: session?.name ?? "Company Admin",
       loggedInUserEmployeeId: session?.employeeId ?? "--",
       loggedInUserPhotoUrl: session?.photoUrl ?? null,
-      loggedInUserRoleName: session?.roleName ?? "Admin",
+      loggedInUserRoleName: session?.roleName ?? "Company Admin",
       totalModules: EXECUTIVE_MODULES.length,
       overallSystemStatus: getOverallStatus(health),
       counts: summary.counts,

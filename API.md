@@ -14,10 +14,10 @@ Company Hub is not a public REST API product. Its primary mutation interface is 
 
 | Method/path                             | Purpose                            | Input                                        | Success          | Authorization                                                                        |
 | --------------------------------------- | ---------------------------------- | -------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------ |
-| `GET /admin/attendance/reports/details` | Employee attendance detail         | Report filters plus required `employeeId`    | JSON detail      | Report service checks Admin access and company                                       |
-| `GET /admin/attendance/reports/export`  | Attendance export                  | Filters plus `format` (`csv`, `xlsx`, `pdf`) | Download         | Report service checks Admin access and company                                       |
-| `GET /admin/users/export`               | Employee CSV export                | Search, status, role, manager, mode, sort    | UTF-8 CSV        | Explicit Admin check plus current-company scoping                                    |
-| `GET /admin/users/import/template`      | Import template                    | None                                         | CSV download     | Explicit Admin check                                                                 |
+| `GET /admin/attendance/reports/details` | Employee attendance detail         | Report filters plus required `employeeId`    | JSON detail      | Report service checks Company Admin access, report feature, and company              |
+| `GET /admin/attendance/reports/export`  | Attendance export                  | Filters plus `format` (`csv`, `xlsx`, `pdf`) | Download         | Report service checks Company Admin access, report feature, and company              |
+| `GET /admin/users/export`               | Employee CSV export                | Search, status, role, manager, mode, sort    | UTF-8 CSV        | Explicit Company Admin and employee-directory checks plus current-company scoping    |
+| `GET /admin/users/import/template`      | Import template                    | None                                         | CSV download     | Explicit Company Admin and employee-directory checks                                 |
 | `GET /api/cron/celebrations`            | Generate scheduled celebrations    | `Authorization: Bearer <CRON_SECRET>`        | JSON run summary | Bearer secret in production                                                          |
 | `POST /api/notifications/track`         | Mark notification delivered/opened | Notification ID plus delivered/opened event  | `204`            | Authenticated ownership scope; signed-out callers receive `401`                      |
 | `GET /platform/audit/export`            | Export filtered centralized audit   | Audit filters plus `format` (`csv`, `xlsx`)  | File download    | Explicit System Admin; 5,000-row cap and truncation response header                  |
@@ -35,6 +35,7 @@ The Vercel cron schedule calls `/api/cron/celebrations` at `0 18 * * *` UTC, cor
 - `updatePlatformFeatureAction`: System Admin; authoritative global enable/disable.
 - `updateCompanyFeatureAction`: System Admin; selected-company override.
 - `updateOwnCompanyFeatureAction`: Company Admin; current-company override only and never bypasses platform disable.
+- `resetEmployeePasswordAction`: Company Admin; exact Employee-ID confirmation, current-company target, canonical initial password, and security audit.
 
 Middleware calls caller-derived `can_access_company_platform`, `can_access_feature`, `record_feature_usage`, and denial-log RPCs. These RPCs do not expose platform records.
 
@@ -53,7 +54,7 @@ Middleware calls caller-derived `can_access_company_platform`, `can_access_featu
 
 - Resource category create/update/archive/restore.
 - Resource create/update/duplicate/archive/restore.
-- Quick Link image upload and cancellation cleanup; authenticated Admin only, validated PNG/JPG/SVG/WebP up to 2 MB.
+- Quick Link image upload and cancellation cleanup; authenticated Company Admin with effective Quick Links access, validated PNG/JPG/SVG/WebP up to 2 MB.
 - `replaceResourcePermissionsAction`.
 - Announcement create/update/archive/restore.
 

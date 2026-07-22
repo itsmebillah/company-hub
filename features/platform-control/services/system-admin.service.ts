@@ -4,6 +4,7 @@ import { getCurrentAuthUser } from "@/features/auth/services/auth.service";
 import { getCurrentSessionProfile } from "@/features/auth/services/session.service";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
+import { ROLE_NAMES } from "@/lib/auth/permissions";
 
 export type SystemAdminContext = {
   id: string;
@@ -60,7 +61,7 @@ export async function requireSystemAdminPage() {
   const profile = await getCurrentSessionProfile();
   redirect(
     profile
-      ? profile.roleName === "Admin"
+      ? profile.roleName === ROLE_NAMES.companyAdmin
         ? "/admin/dashboard"
         : "/dashboard"
       : "/login",

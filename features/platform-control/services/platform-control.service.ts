@@ -1,6 +1,6 @@
 import "server-only";
 
-import { requireAdmin } from "@/features/auth/services/authorization.service";
+import { requireCompanyAdmin } from "@/features/auth/services/authorization.service";
 import { toSupabaseEmployeePassword } from "@/features/auth/utils/employee-password";
 import { PlatformAuditService } from "@/features/platform-control/services/platform-audit.service";
 import { requireSystemAdmin } from "@/features/platform-control/services/system-admin.service";
@@ -134,7 +134,7 @@ export const PlatformControlService = {
         .from("employees")
         .select("id, roles!inner(name)", { count: "exact", head: true })
         .eq("status", "active")
-        .eq("roles.name", "Admin"),
+        .eq("roles.name", "Company Admin"),
       supabase
         .from("attendance_records")
         .select("id", { count: "exact", head: true })
@@ -563,7 +563,7 @@ export const PlatformControlService = {
   },
 
   async updateOwnCompanyFeature(featureKey: FeatureKey, state: FeatureState) {
-    const profile = await requireAdmin();
+    const profile = await requireCompanyAdmin();
     const supabase = createSupabaseAdminClient();
     const { data: platformFeature } = await supabase
       .from("platform_features")
@@ -667,7 +667,7 @@ export const PlatformControlService = {
   },
 
   async listOwnCompanyAuditLogs(pageInput = 1) {
-    const profile = await requireAdmin();
+    const profile = await requireCompanyAdmin();
     const page = Math.max(pageInput, 1);
     const supabase = createSupabaseAdminClient();
     const { data, error, count } = await supabase

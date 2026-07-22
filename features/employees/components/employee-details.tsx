@@ -11,6 +11,10 @@ type EmployeeDetailsProps = {
   employee: EmployeeDetailsType;
   onActivate: (id: string) => Promise<EmployeeActionState>;
   onDeactivate: (id: string) => Promise<EmployeeActionState>;
+  onResetPassword: (
+    id: string,
+    confirmation: string,
+  ) => Promise<EmployeeActionState>;
   createdEmployeeId?: string;
 };
 
@@ -22,6 +26,7 @@ export function EmployeeDetails({
   employee,
   onActivate,
   onDeactivate,
+  onResetPassword,
   createdEmployeeId,
 }: EmployeeDetailsProps) {
   return (
@@ -123,6 +128,7 @@ export function EmployeeDetails({
             status={employee.status}
             onActivate={onActivate}
             onDeactivate={onDeactivate}
+            onResetPassword={onResetPassword}
           />
         </aside>
       </div>

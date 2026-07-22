@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { RoleService } from "@/features/roles/services/role.service";
-import { requireAdmin } from "@/features/auth/services/authorization.service";
+import { requireCompanyAdmin } from "@/features/auth/services/authorization.service";
 import type {
   RoleActionState,
   RoleFormValues,
@@ -16,7 +16,7 @@ export async function createRoleAction(
   values: RoleFormValues,
 ): Promise<RoleActionState> {
   try {
-    await requireAdmin();
+    await requireCompanyAdmin("role_management");
     await RoleService.create(values);
     revalidatePath(ROLES_PATH);
     revalidatePath(EMPLOYEES_PATH);
@@ -36,7 +36,7 @@ export async function updateRoleAction(
   values: RoleFormValues,
 ): Promise<RoleActionState> {
   try {
-    await requireAdmin();
+    await requireCompanyAdmin("role_management");
     await RoleService.update(id, values);
     revalidatePath(ROLES_PATH);
     revalidatePath(EMPLOYEES_PATH);
@@ -53,7 +53,7 @@ export async function updateRoleAction(
 
 export async function activateRoleAction(id: string): Promise<RoleActionState> {
   try {
-    await requireAdmin();
+    await requireCompanyAdmin("role_management");
     await RoleService.setStatus(id, "active");
     revalidatePath(ROLES_PATH);
     revalidatePath(EMPLOYEES_PATH);
@@ -68,7 +68,7 @@ export async function deactivateRoleAction(
   id: string,
 ): Promise<RoleActionState> {
   try {
-    await requireAdmin();
+    await requireCompanyAdmin("role_management");
     await RoleService.setStatus(id, "inactive");
     revalidatePath(ROLES_PATH);
     revalidatePath(EMPLOYEES_PATH);

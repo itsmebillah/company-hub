@@ -17,7 +17,7 @@ export default async function LeavePage() {
 
   if (
     sessionProfile?.status === "active" &&
-    sessionProfile.roleName === ROLE_NAMES.admin
+    sessionProfile.roleName === ROLE_NAMES.companyAdmin
   ) {
     redirect(getAdminEquivalentPath("/leave"));
   }

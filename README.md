@@ -1,6 +1,6 @@
 # Company Hub
 
-Company Hub is a role-aware internal operations portal built with Next.js 15, React 19, TypeScript, Tailwind CSS, and Supabase. It combines employee self-service, tenant administration, and an explicit System Admin Platform Control Center for companies, feature availability, usage, audit, security, and health.
+Company Hub is a role-aware internal operations portal built with Next.js 15, React 19, TypeScript, Tailwind CSS, and Supabase. It combines employee self-service, a one-company Company Admin control plane, and an explicit System Admin Platform Control Center for global company lifecycle, feature availability, usage, audit, security, and health.
 
 ## Quick start
 
@@ -31,4 +31,4 @@ npm run build
 
 ## Current backend
 
-The repository is linked to Supabase project `jjfktbgfwvekhlvyjlww`. Migrations `0001` through `0035` define the current production schema and security model. No company Admin is automatically a System Admin; global access requires explicit provisioning. Never commit `.env.local` or service-role credentials.
+The repository is linked to Supabase project `jjfktbgfwvekhlvyjlww`. Migrations `0001` through `0037` define the current production schema and security model. No Company Admin is automatically a System Admin; global access requires explicit provisioning. Never commit `.env.local` or service-role credentials.

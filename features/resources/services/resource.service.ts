@@ -15,6 +15,7 @@ import type {
   ResourceSort,
   ResourceStatus,
 } from "@/features/resources/types/resource.types";
+import type { FeatureKey } from "@/features/platform-control/types/platform.types";
 
 function normalizeOptional(value: string) {
   const nextValue = value.trim();
@@ -126,6 +127,23 @@ export async function listResources(
       updatedAt: resource.updated_at,
     })),
   };
+}
+
+export async function getResourceFeatureKey(id: string): Promise<FeatureKey> {
+  const supabase = createSupabaseAdminClient();
+  const companyId = await requireCurrentCompanyId();
+  const { data, error } = await supabase
+    .from("resources")
+    .select("is_featured")
+    .eq("id", id)
+    .eq("company_id", companyId)
+    .maybeSingle();
+
+  if (error || !data) {
+    throw new Error("Resource was not found.");
+  }
+
+  return data.is_featured ? "quick_links" : "resources";
 }
 
 async function assertDisplayOrderAvailable(
@@ -356,6 +374,7 @@ export async function setResourceStatus(
 
 export const ResourceService = {
   getCategories: getResourceCategories,
+  getFeatureKey: getResourceFeatureKey,
   list: listResources,
   create: createResource,
   update: updateResource,

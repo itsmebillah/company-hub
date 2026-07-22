@@ -128,7 +128,7 @@ export const primaryAdminNavigationItems: AdminNavigationItem[] = [
 ];
 
 export const adminNavigationFallback = {
-  title: "Admin",
+  title: "Company Admin",
   href: "/admin/dashboard",
   icon: BarChart3,
 } satisfies AdminNavigationItem;

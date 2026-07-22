@@ -31,21 +31,21 @@ Never place secrets in:
 
 - All 22 public tables have RLS enabled.
 - Direct browser access is default-deny except scoped notification SELECT.
-- Storage policies require an active employee and owner/Admin relationship as appropriate.
+- Storage policies require an active employee and either ownership, a company-prefixed shared path, or a same-company Company Admin relationship. Company Admins cannot mutate global `system-assets`.
 - Notification RLS derives identity from `auth.uid()` through a constrained security-definer helper.
 - Anonymous execution is revoked for storage, notification, schema-version, and platform helpers.
 - Service-role services must call current-context/role checks before accessing data.
 
-Current critical gap: many Admin-facing service-role operations check only active employee/company context, and some ID mutations omit a current-company predicate. Add service-boundary role checks and cross-company denial tests before production.
+Company Admin service-role operations resolve active Company Admin context, effective feature state, and authenticated company scope before privileged work. Cross-company employee-detail denial and Company Admin route denial are regression-tested.
 
 New tables require RLS, grants/policies, indexes, and security-advisor review in the same change.
 
 ## Storage
 
-Quick Link media uploads are Admin-only and company-scoped. The server validates allowed MIME types, binary signatures, size, and potentially active SVG content before writing unique immutable object paths. Cleanup removes only unreferenced objects inside the authenticated company’s resource prefix.
+Quick Link media uploads are Company Admin-only and company-scoped. The server validates allowed MIME types, binary signatures, size, and potentially active SVG content before writing unique immutable object paths. Cleanup removes only unreferenced objects inside the authenticated company’s resource prefix.
 
 - Public buckets expose object bytes by URL; do not store confidential content there.
-- Private employee documents and leave attachments require owner/Admin policies.
+- Private employee documents and leave attachments require owner or same-company Company Admin policies.
 - Attendance selfies are private and uploaded through server service role.
 - Object paths must be normalized and scoped; validate MIME type and size before production hardening.
 - Database rows store paths, not long-lived signed URLs.

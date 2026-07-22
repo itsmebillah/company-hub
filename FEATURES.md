@@ -10,7 +10,8 @@ Status values: **Implemented** means a routed workflow and supporting service ex
 | Employee import              | Implemented | CSV/XLSX preview, validation, batched processing, failure export, rollback                             |
 | Roles                        | Implemented | System-role repair, custom role CRUD/status, ordering                                                  |
 | Hierarchy                    | Implemented | Tree view, manager change, bulk reassignment, cycle/role validation                                    |
-| Admin dashboard              | Partial     | KPI/summary/celebration views implemented; activity/system-status cards contain placeholders           |
+| Company Admin dashboard      | Implemented | Company-only KPIs, pending work, celebrations, Quick Links, and feature-filtered actions                |
+| Company administration      | Implemented | Tenant-scoped employees, roles, hierarchy, import/export, password reset, activity, settings, and media |
 | Company settings             | Implemented | Branding, contact, locale, notification/resource/security preferences                                  |
 | Company locations            | Implemented | Location CRUD, default location, employee access foundation                                            |
 | Resource categories          | Implemented | CRUD/status/order                                                                                      |

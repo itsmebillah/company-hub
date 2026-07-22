@@ -1,6 +1,6 @@
 # Platform Control Center
 
-This feature owns global Company Hub operations. `/platform/*` requires an active row in `platform_admins`; a company `Admin` role is never sufficient.
+This feature owns global Company Hub operations. `/platform/*` requires an active row in `platform_admins`; a `Company Admin` tenant role is never sufficient.
 
 ## Resolution and enforcement
 
@@ -16,7 +16,7 @@ Migration `0030` does not auto-promote anyone. Approve the first System Admin on
 
 - `/platform/dashboard`: platform health and operating metrics.
 - `/platform/companies`: atomic company bootstrap and reversible lifecycle status.
-- `/platform/people`: cross-company employee/Admin visibility and confirmed, audited initial-password reset.
+- `/platform/people`: cross-company employee/Company Admin visibility and confirmed, audited initial-password reset.
 - `/platform/features`: global state, company overrides, and 30-day usage.
 - `/platform/audit`: searchable/filterable paginated cross-company events with CSV/Excel export.
 - `/platform/settings`: default-deny global branding and operational configuration.

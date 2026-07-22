@@ -97,6 +97,7 @@ export function AdminShell({
             notificationSummary={notificationSummary}
             notificationScope={notificationScope}
             pathname={pathname}
+            notificationsEnabled={enabledFeatureSet.has("notifications")}
           />
           <main className="flex-1 overflow-x-hidden px-4 pt-4 pb-28 sm:px-6 lg:px-8">
             <div className="min-w-0 space-y-5">

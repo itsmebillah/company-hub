@@ -378,7 +378,7 @@ export function BootstrapSetupForm({ onBootstrap }: BootstrapSetupFormProps) {
               value={name}
               onChange={setName}
               error={errors.name}
-              placeholder="Admin name"
+              placeholder="Company Admin name"
               icon={User}
               disabled={isLoading}
               autoComplete="name"
@@ -439,7 +439,7 @@ export function BootstrapSetupForm({ onBootstrap }: BootstrapSetupFormProps) {
                 ) : (
                   <ShieldCheck className="size-4" aria-hidden="true" />
                 )}
-                Create Admin
+                Create Company Admin
               </Button>
             </div>
           </div>

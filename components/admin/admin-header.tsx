@@ -25,6 +25,7 @@ type AdminHeaderProps = {
   notificationSummary: NotificationSummary;
   notificationScope: RealtimeNotificationScope;
   pathname: string;
+  notificationsEnabled: boolean;
 };
 
 function getPageTitle(pathname: string) {
@@ -44,6 +45,7 @@ export function AdminHeader({
   notificationSummary,
   notificationScope,
   pathname,
+  notificationsEnabled,
 }: AdminHeaderProps) {
   const title = getPageTitle(pathname);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -80,7 +82,7 @@ export function AdminHeader({
         <div className="flex min-w-0 items-center gap-3">
           <div className="min-w-0">
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-primary">
-              Admin Workspace
+              Company Admin Workspace
             </p>
             <h1 className="truncate text-lg font-semibold tracking-tight">
               {title}
@@ -92,10 +94,12 @@ export function AdminHeader({
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
-          <RealtimeNotificationCenter
-            initialSummary={notificationSummary}
-            scope={notificationScope}
-          />
+          {notificationsEnabled ? (
+            <RealtimeNotificationCenter
+              initialSummary={notificationSummary}
+              scope={notificationScope}
+            />
+          ) : null}
           <ThemeToggle />
           <div className="relative" ref={profileMenuRef}>
             <Button

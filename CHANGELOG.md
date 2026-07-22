@@ -4,6 +4,17 @@ This project follows a Keep-a-Changelog-style record. Versioning is not yet form
 
 ## Unreleased
 
+### Company Admin architecture
+
+- Renamed the tenant authority from `Admin` to `Company Admin` without changing stable `/admin/*` URLs or the completed System Admin control plane.
+- Added middleware Company Admin authorization and effective-feature checks inside privileged Server Actions, notification actions, media actions, and export/template handlers.
+- Fixed cross-company employee-detail access and added exact-confirmation, company-scoped employee initial-password reset with security auditing.
+- Replaced broad administrator Storage mutation policies with company-prefixed shared-media and same-company employee-object authorization; Company Admins cannot mutate global `system-assets`.
+- Scoped Company Admin storage metrics and announcement upload paths to the authenticated company.
+- Protected the Company Admin authority role from deactivation and reserved platform role names from tenant role creation.
+- Added migrations `0036_company_admin_architecture.sql` and `0037_company_admin_helper_privileges.sql` and advanced schema telemetry to `0037`.
+- Expanded browser coverage for Company Admin tenant isolation, reset, disabled-feature denial, routes, and responsive layouts.
+
 ### Fixed
 
 - Kept Lucide navigation components on the client side and passed only serializable feature keys through Server Component boundaries, removing the dashboard runtime Application Error found during production-mode regression testing.

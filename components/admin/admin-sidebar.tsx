@@ -61,7 +61,7 @@ export function AdminSidebar({
               isCollapsed && "sr-only",
             )}
           >
-            Admin Console
+            Company Admin Console
           </p>
           <p
             className={cn(

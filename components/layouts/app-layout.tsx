@@ -69,7 +69,9 @@ export async function AppLayout({ children }: AppLayoutProps) {
             version={
               companySettings.securityPreferences.permissionOnboardingVersion
             }
-            requireCamera={attendanceSettings.requireSelfie}
+            requireCamera={
+              enabledFeatures.has("attendance") && attendanceSettings.requireSelfie
+            }
           />
           <PwaInstallCard
             companyId={employeeContext.companyId}

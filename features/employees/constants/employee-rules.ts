@@ -1,7 +1,7 @@
 import type { EmployeeRoleName } from "@/features/employees/types/employee.types";
 
 export const SYSTEM_ROLE_ORDER = [
-  "Admin",
+  "Company Admin",
   "Sales Head",
   "RSM",
   "TSO",
@@ -11,7 +11,7 @@ export const SYSTEM_ROLE_ORDER = [
 export type SystemRoleName = (typeof SYSTEM_ROLE_ORDER)[number];
 
 const REPORTS_TO_ROLE: Record<SystemRoleName, EmployeeRoleName | null> = {
-  Admin: null,
+  "Company Admin": null,
   "Sales Head": null,
   RSM: "Sales Head",
   TSO: "RSM",

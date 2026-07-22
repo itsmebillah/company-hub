@@ -27,7 +27,9 @@ type HierarchyManagementProps = {
 };
 
 function roleRank(roleName: EmployeeRoleName) {
-  return ["Admin", "Sales Head", "RSM", "TSO", "SR"].indexOf(roleName);
+  return ["Company Admin", "Sales Head", "RSM", "TSO", "SR"].indexOf(
+    roleName,
+  );
 }
 
 function TreeNode({

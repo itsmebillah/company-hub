@@ -5,7 +5,7 @@ import {
   previewEmployeeImport,
   processEmployeeImportBatch,
 } from "@/features/employee-import/services/employee-import.service";
-import { requireAdmin } from "@/features/auth/services/authorization.service";
+import { requireCompanyAdmin } from "@/features/auth/services/authorization.service";
 import type {
   EmployeeImportActionState,
   EmployeeImportExecutionState,
@@ -17,7 +17,7 @@ export async function previewEmployeeImportAction(
   values: EmployeeImportUploadValues,
 ): Promise<EmployeeImportActionState> {
   try {
-    await requireAdmin();
+    await requireCompanyAdmin("employee_directory");
     return await previewEmployeeImport(values);
   } catch (error) {
     return {
@@ -40,7 +40,7 @@ export async function processEmployeeImportBatchAction(
   jobId: string,
 ): Promise<EmployeeImportExecutionState> {
   try {
-    await requireAdmin();
+    await requireCompanyAdmin("employee_directory");
     return await processEmployeeImportBatch(jobId);
   } catch (error) {
     return {
@@ -56,6 +56,6 @@ export async function processEmployeeImportBatchAction(
 export async function getEmployeeImportFailedRowsAction(
   jobId: string,
 ): Promise<EmployeeImportFailedRowExport[]> {
-  await requireAdmin();
+  await requireCompanyAdmin("employee_directory");
   return getEmployeeImportFailedRows(jobId);
 }

@@ -7,11 +7,13 @@ import type {
   AttendanceActionState,
   AttendanceCheckInput,
 } from "@/features/attendance/types/attendance.types";
+import { FeatureAccessService } from "@/features/platform-control/services/feature-access.service";
 
 export async function prepareCheckInAction(
   input: AttendanceCheckInput = {},
 ): Promise<AttendanceActionState> {
   try {
+    await FeatureAccessService.requireForCurrentCompany("attendance");
     return await AttendanceService.prepareCheckIn(input);
   } catch (error) {
     return {
@@ -26,6 +28,7 @@ export async function prepareCheckOutAction(
   input: AttendanceCheckInput = {},
 ): Promise<AttendanceActionState> {
   try {
+    await FeatureAccessService.requireForCurrentCompany("attendance");
     return await AttendanceService.prepareCheckOut(input);
   } catch (error) {
     return {
@@ -40,6 +43,7 @@ export async function checkInAction(
   input: AttendanceCheckInput = {},
 ): Promise<AttendanceActionState> {
   try {
+    await FeatureAccessService.requireForCurrentCompany("attendance");
     await AttendanceService.checkIn(input);
     revalidatePath("/attendance");
     revalidatePath("/dashboard");
@@ -67,6 +71,7 @@ export async function checkOutAction(
   input: AttendanceCheckInput = {},
 ): Promise<AttendanceActionState> {
   try {
+    await FeatureAccessService.requireForCurrentCompany("attendance");
     await AttendanceService.checkOut(input);
     revalidatePath("/attendance");
     revalidatePath("/dashboard");

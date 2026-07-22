@@ -5,7 +5,7 @@ loadEnvConfig(process.cwd());
 
 const playwrightPort = process.env.PLAYWRIGHT_PORT ?? "3100";
 const baseURL =
-  process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${playwrightPort}`;
+  process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${playwrightPort}`;
 const serverCommand = process.env.PLAYWRIGHT_USE_PRODUCTION
   ? `npm.cmd run start -- --hostname 127.0.0.1 --port ${playwrightPort}`
   : `npm.cmd run dev -- --hostname 127.0.0.1 --port ${playwrightPort}`;

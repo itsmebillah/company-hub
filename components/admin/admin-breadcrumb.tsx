@@ -21,7 +21,7 @@ export function AdminBreadcrumb({ pathname }: AdminBreadcrumbProps) {
   );
   const segments = pathname.split("/").filter(Boolean).slice(1);
   const crumbs = [
-    { title: "Admin", href: "/admin/dashboard" },
+    { title: "Company Admin", href: "/admin/dashboard" },
     ...(currentItem
       ? [{ title: currentItem.title, href: currentItem.href }]
       : segments.map((segment, index) => ({

@@ -21,7 +21,7 @@ export default async function AttendanceReportsPage({
     redirect("/login");
   }
 
-  if (![ROLE_NAMES.admin, "HR"].includes(profile.roleName)) {
+  if (![ROLE_NAMES.companyAdmin, "HR"].includes(profile.roleName)) {
     redirect(getPostLoginRedirectPath(profile.roleName));
   }
 

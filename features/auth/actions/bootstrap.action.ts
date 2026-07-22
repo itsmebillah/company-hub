@@ -85,7 +85,7 @@ export async function bootstrapAction(
 
     return {
       ok: true,
-      message: "Administrator account created.",
+      message: "Company Admin account created.",
       redirectTo: ADMIN_DASHBOARD_PATH,
     };
   } catch (error) {
@@ -95,7 +95,7 @@ export async function bootstrapAction(
     ) {
       return {
         ok: false,
-        message: "An active Admin already exists. Please sign in.",
+        message: "An active Company Admin already exists. Please sign in.",
       };
     }
 

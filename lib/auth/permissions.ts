@@ -1,5 +1,5 @@
 export const ROLE_NAMES = {
-  admin: "Admin",
+  companyAdmin: "Company Admin",
   salesHead: "Sales Head",
   rsm: "RSM",
   tso: "TSO",

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { requireRole } from "@/features/auth/services/authorization.service";
+import { requireCompanyAdmin } from "@/features/auth/services/authorization.service";
 import { getEmployeeWorkModeLabel } from "@/features/employees/constants/employee-work-mode.config";
 import { listEmployees } from "@/features/employees/services/employee.service";
 import type {
@@ -48,7 +48,9 @@ function escapeCsv(value: string | number | null) {
 }
 
 export async function GET(request: Request) {
-  const profile = await requireRole(["Admin"]);
+  const profile = await requireCompanyAdmin("employee_directory").catch(
+    () => null,
+  );
 
   if (!profile) {
     return NextResponse.json({ message: "Access denied." }, { status: 403 });

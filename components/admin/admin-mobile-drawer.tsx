@@ -69,7 +69,7 @@ export function AdminMobileDrawer({
 
         <div className="px-3 pt-5 pb-4">
           <p className="text-primary text-[0.68rem] font-semibold tracking-[0.24em] uppercase">
-            Admin Navigation
+            Company Admin Navigation
           </p>
           <p className="text-muted-foreground mt-1 text-sm">
             Move between company operations without leaving the workspace shell.

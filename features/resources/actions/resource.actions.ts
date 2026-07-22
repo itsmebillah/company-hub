@@ -5,14 +5,16 @@ import { revalidatePath } from "next/cache";
 import {
   createResource,
   duplicateResource,
+  getResourceFeatureKey,
   setResourceStatus,
   updateResource,
 } from "@/features/resources/services/resource.service";
-import { requireAdmin } from "@/features/auth/services/authorization.service";
+import { requireCompanyAdmin } from "@/features/auth/services/authorization.service";
 import type {
   ResourceActionState,
   ResourceFormValues,
 } from "@/features/resources/types/resource.types";
+import { FeatureAccessService } from "@/features/platform-control/services/feature-access.service";
 
 const RESOURCES_PATH = "/admin/resources";
 
@@ -20,7 +22,7 @@ export async function createResourceAction(
   values: ResourceFormValues,
 ): Promise<ResourceActionState> {
   try {
-    await requireAdmin();
+    await requireCompanyAdmin(values.isFeatured ? "quick_links" : "resources");
     await createResource(values);
     revalidatePath(RESOURCES_PATH);
     revalidatePath("/dashboard");
@@ -41,7 +43,13 @@ export async function updateResourceAction(
   values: ResourceFormValues,
 ): Promise<ResourceActionState> {
   try {
-    await requireAdmin();
+    await requireCompanyAdmin();
+    await FeatureAccessService.requireForCurrentCompany(
+      await getResourceFeatureKey(id),
+    );
+    await FeatureAccessService.requireForCurrentCompany(
+      values.isFeatured ? "quick_links" : "resources",
+    );
     await updateResource(id, values);
     revalidatePath(RESOURCES_PATH);
     revalidatePath("/dashboard");
@@ -61,7 +69,10 @@ export async function archiveResourceAction(
   id: string,
 ): Promise<ResourceActionState> {
   try {
-    await requireAdmin();
+    await requireCompanyAdmin();
+    await FeatureAccessService.requireForCurrentCompany(
+      await getResourceFeatureKey(id),
+    );
     await setResourceStatus(id, "archived");
     revalidatePath(RESOURCES_PATH);
     revalidatePath("/dashboard");
@@ -77,7 +88,10 @@ export async function duplicateResourceAction(
   id: string,
 ): Promise<ResourceActionState> {
   try {
-    await requireAdmin();
+    await requireCompanyAdmin();
+    await FeatureAccessService.requireForCurrentCompany(
+      await getResourceFeatureKey(id),
+    );
     await duplicateResource(id);
     revalidatePath(RESOURCES_PATH);
     revalidatePath("/dashboard");
@@ -99,7 +113,10 @@ export async function restoreResourceAction(
   id: string,
 ): Promise<ResourceActionState> {
   try {
-    await requireAdmin();
+    await requireCompanyAdmin();
+    await FeatureAccessService.requireForCurrentCompany(
+      await getResourceFeatureKey(id),
+    );
     await setResourceStatus(id, "active");
     revalidatePath(RESOURCES_PATH);
     revalidatePath("/dashboard");
