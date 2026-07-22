@@ -19,7 +19,11 @@ import { OfflineStatusIndicator } from "@/features/offline/components/offline-st
 import { OfflineSyncProvider } from "@/features/offline/components/offline-sync-provider";
 import { PwaInstallCard } from "@/features/pwa/components/pwa-install-card";
 import type { SchemaVersionStatus } from "@/features/schema-version/services/schema-version.service";
-import { primaryAdminNavigationItems } from "@/lib/navigation/admin-navigation";
+import {
+  adminNavigationItems,
+  primaryAdminNavigationItems,
+} from "@/lib/navigation/admin-navigation";
+import type { FeatureKey } from "@/features/platform-control/types/platform.types";
 
 type AdminShellProps = {
   children: ReactNode;
@@ -29,6 +33,7 @@ type AdminShellProps = {
   onboardingVersion: number;
   requireCameraOnboarding: boolean;
   schemaStatus: SchemaVersionStatus;
+  enabledFeatures: FeatureKey[];
 };
 
 export function AdminShell({
@@ -39,18 +44,26 @@ export function AdminShell({
   onboardingVersion,
   requireCameraOnboarding,
   schemaStatus,
+  enabledFeatures,
 }: AdminShellProps) {
   const pathname = usePathname();
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const enabledFeatureSet = new Set(enabledFeatures);
+  const navigationItems = adminNavigationItems.filter(
+    (item) => !item.featureKey || enabledFeatureSet.has(item.featureKey),
+  );
+  const primaryNavigationItems = primaryAdminNavigationItems.filter(
+    (item) => !item.featureKey || enabledFeatureSet.has(item.featureKey),
+  );
   const shouldShowSchemaBanner =
     schemaStatus.state === "pending" ||
     (schemaStatus.state === "unknown" && process.env.NODE_ENV !== "production");
-  const isPrimaryAdminRoute = primaryAdminNavigationItems.some(
+  const isPrimaryAdminRoute = primaryNavigationItems.some(
     (item) => pathname === item.href || pathname.startsWith(`${item.href}/`),
   );
   const adminBottomNavigationItems = [
-    ...primaryAdminNavigationItems,
+    ...primaryNavigationItems,
     {
       title: "More",
       icon: MoreHorizontal,
@@ -69,12 +82,14 @@ export function AdminShell({
         pathname={pathname}
         isOpen={isMobileDrawerOpen}
         onOpenChange={setIsMobileDrawerOpen}
+        items={navigationItems}
       />
       <div className="flex min-h-svh max-w-full">
         <AdminSidebar
           pathname={pathname}
           isCollapsed={isSidebarCollapsed}
           onCollapsedChange={setIsSidebarCollapsed}
+          items={navigationItems}
         />
         <div className="flex min-w-0 flex-1 flex-col overflow-x-hidden">
           <AdminHeader
@@ -83,7 +98,7 @@ export function AdminShell({
             notificationScope={notificationScope}
             pathname={pathname}
           />
-          <main className="flex-1 overflow-x-hidden px-4 pb-28 pt-4 sm:px-6 lg:px-8">
+          <main className="flex-1 overflow-x-hidden px-4 pt-4 pb-28 sm:px-6 lg:px-8">
             <div className="min-w-0 space-y-5">
               {shouldShowSchemaBanner ? (
                 <section className="app-card border-amber-300/70 bg-amber-50/90 px-4 py-3 text-sm text-amber-950 dark:bg-amber-950/35 dark:text-amber-100">
@@ -92,7 +107,8 @@ export function AdminShell({
                   </p>
                   {schemaStatus.pendingMigrations.length > 0 ? (
                     <p className="mt-1 text-amber-900 dark:text-amber-200">
-                      Pending migrations: {schemaStatus.pendingMigrations.join(", ")}
+                      Pending migrations:{" "}
+                      {schemaStatus.pendingMigrations.join(", ")}
                     </p>
                   ) : null}
                 </section>

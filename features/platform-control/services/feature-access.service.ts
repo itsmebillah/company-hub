@@ -1,0 +1,125 @@
+import "server-only";
+
+import { notFound } from "next/navigation";
+
+import { requireCurrentCompanyId } from "@/features/auth/services/current-company-context.service";
+import { PlatformAuditService } from "@/features/platform-control/services/platform-audit.service";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import type {
+  FeatureDefinition,
+  FeatureKey,
+  FeatureState,
+} from "@/features/platform-control/types/platform.types";
+
+function toCurrentState(value: string): FeatureState {
+  return value === "enabled" ? "enabled" : "disabled";
+}
+
+export const FeatureAccessService = {
+  async listForCompany(companyId: string): Promise<FeatureDefinition[]> {
+    const supabase = createSupabaseAdminClient();
+    const [
+      { data: features, error },
+      { data: overrides, error: overrideError },
+      { data: company, error: companyError },
+    ] = await Promise.all([
+      supabase
+        .from("platform_features")
+        .select("feature_key, display_name, description, state, display_order")
+        .order("display_order"),
+      supabase
+        .from("company_features")
+        .select("feature_key, state")
+        .eq("company_id", companyId),
+      supabase
+        .from("companies")
+        .select("platform_status")
+        .eq("id", companyId)
+        .maybeSingle(),
+    ]);
+
+    if (error || overrideError || companyError || !company) {
+      console.error("[FeatureAccessService] Unable to load feature state.", {
+        error,
+        overrideError,
+        companyError,
+      });
+      throw new Error("Unable to load feature availability.");
+    }
+
+    const companyStates = new Map(
+      overrides.map((item) => [item.feature_key, toCurrentState(item.state)]),
+    );
+
+    return features.map((feature) => {
+      const state = toCurrentState(feature.state);
+      const companyState = companyStates.get(feature.feature_key);
+      return {
+        key: feature.feature_key as FeatureKey,
+        name: feature.display_name,
+        description: feature.description,
+        state,
+        companyState,
+        effectiveState:
+          state === "enabled" &&
+          company.platform_status === "active" &&
+          companyState !== "disabled"
+            ? "enabled"
+            : "disabled",
+        displayOrder: feature.display_order,
+      };
+    });
+  },
+
+  async getCurrentCompanyStates() {
+    const companyId = await requireCurrentCompanyId();
+    return this.listForCompany(companyId);
+  },
+
+  async isEnabled(companyId: string, featureKey: FeatureKey) {
+    const supabase = createSupabaseAdminClient();
+    const { data, error } = await supabase.rpc(
+      "is_feature_enabled_for_company",
+      {
+        target_company_id: companyId,
+        target_feature_key: featureKey,
+      },
+    );
+
+    if (error) {
+      console.error("[FeatureAccessService] Feature check failed.", error);
+      return false;
+    }
+
+    return data === true;
+  },
+
+  async requireForCurrentCompany(featureKey: FeatureKey) {
+    const companyId = await requireCurrentCompanyId();
+    const enabled = await this.isEnabled(companyId, featureKey);
+
+    if (!enabled) {
+      await PlatformAuditService.log({
+        category: "security",
+        action: "feature_access_blocked",
+        entityType: "platform_feature",
+        entityId: featureKey,
+        status: "denied",
+        description: `Blocked access to disabled feature ${featureKey}.`,
+        companyId,
+        featureKey,
+      });
+      throw new Error("This feature is unavailable.");
+    }
+
+    return { companyId, featureKey };
+  },
+
+  async requirePage(featureKey: FeatureKey) {
+    try {
+      return await this.requireForCurrentCompany(featureKey);
+    } catch {
+      notFound();
+    }
+  },
+};

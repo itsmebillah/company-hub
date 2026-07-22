@@ -12,6 +12,7 @@ export const PROTECTED_ROUTE_PREFIXES = [
   "/dashboard",
   "/leave",
   "/profile",
+  "/platform",
   "/resources",
   "/settings",
 ] as const;

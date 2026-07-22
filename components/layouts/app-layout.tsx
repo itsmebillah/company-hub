@@ -12,6 +12,7 @@ import { NotificationService } from "@/features/notifications/services/notificat
 import { OfflineStatusIndicator } from "@/features/offline/components/offline-status-indicator";
 import { OfflineSyncProvider } from "@/features/offline/components/offline-sync-provider";
 import { PwaInstallCard } from "@/features/pwa/components/pwa-install-card";
+import { FeatureAccessService } from "@/features/platform-control/services/feature-access.service";
 
 type AppLayoutProps = {
   children: ReactNode;
@@ -23,12 +24,20 @@ export async function AppLayout({ children }: AppLayoutProps) {
     employeeContext,
     attendanceSettings,
     companySettings,
+    features,
   ] = await Promise.all([
     NotificationService.getCurrentUserSummary(),
     CurrentEmployeeContextService.getCurrentEmployeeContext(),
     AttendanceSettingsService.getSettings(),
     getCompanySettings(),
+    FeatureAccessService.getCurrentCompanyStates(),
   ]);
+  const enabledFeatures = new Set(
+    features
+      .filter((feature) => feature.effectiveState === "enabled")
+      .map((feature) => feature.key),
+  );
+  const enabledFeatureKeys = [...enabledFeatures];
   const notificationScope =
     employeeContext?.status === "active"
       ? {
@@ -44,12 +53,13 @@ export async function AppLayout({ children }: AppLayoutProps) {
         showProfile
         notificationSummary={notificationSummary}
         notificationScope={notificationScope}
+        enabledFeatures={enabledFeatureKeys}
       />
       <PageContainer className="flex-1 py-5 pb-28 sm:py-6 md:pb-8 lg:py-8">
         <main className="app-page">{children}</main>
       </PageContainer>
       <AppFooter />
-      <MobileBottomNav />
+      <MobileBottomNav enabledFeatures={enabledFeatureKeys} />
       <OfflineSyncProvider />
       <OfflineStatusIndicator />
       {employeeContext?.companyId ? (

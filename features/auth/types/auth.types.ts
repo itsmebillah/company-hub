@@ -16,6 +16,8 @@ export type AuthSessionProfile = {
   roleId: string;
   roleName: string;
   status: "active" | "inactive" | "archived";
+  isSystemAdmin: boolean;
+  platformAdminId: string | null;
 };
 
 export type LoginCredentials = {

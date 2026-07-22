@@ -1,5 +1,10 @@
 # Known Issues
 
+## Platform operations
+
+- No first System Admin has been provisioned (`platform_admins` is empty by design). The control center remains inaccessible until the owner explicitly approves an existing active Auth user UUID.
+- Platform Audit Center export is deferred; filtered pagination is implemented, while CSV/XLSX/PDF are backlog enhancements.
+
 ## Critical
 
 No unresolved application-critical defect was reproduced in the 2026-07-20 hardening verification. Historical secret rotation remains an operational action because repository history cannot prove whether prior example values were revoked.
@@ -25,9 +30,9 @@ The latest audit reports 35 total findings. Production scope contains 4 affected
 
 These should be completed, removed, or explicitly accepted before production.
 
-### Security Advisor retains four warnings
+### Security Advisor retains nine warnings
 
-`is_active_employee`, `is_admin_user`, and `can_receive_notification` are externally executable `SECURITY DEFINER` functions in `public`. The advisor reports three authenticated warnings plus an anonymous-execution warning for `can_receive_notification`. Anonymous RPC execution returned `false` because its predicate derives identity from `auth.uid()`, but the unnecessary grant/exposure should still be removed or relocated.
+Eight authenticated `SECURITY DEFINER` helpers remain executable because middleware, Storage/RLS, notification visibility, and caller-derived audit/usage telemetry require them. Their predicates derive identity from `auth.uid()` and expose no service-role inputs, but each should remain under review. Supabase leaked-password protection is also disabled. Migrations `0031`–`0032` removed the prior anonymous-definer warnings and unnecessary schema-version definer privilege.
 
 ### Repository-wide formatting check fails
 

@@ -6,6 +6,7 @@ Company Hub provides employees and administrators one secure, responsive portal 
 
 ## Personas
 
+- **System Admin:** manages companies, global/company feature availability, cross-company audit data, usage, security events, and platform health through an explicit global allow-list.
 - **Admin:** configures the company, users, roles, locations, policies, resources, announcements, calendars, leave, and reporting.
 - **Sales Head / RSM / TSO / SR:** signs in with Employee ID and uses employee-facing resources, announcements, attendance, calendar, leave, profile, and notifications.
 - **Operator/maintainer:** deploys the application, applies migrations, manages secrets, monitors cron and platform health, and responds to incidents.
@@ -18,6 +19,7 @@ Company Hub provides employees and administrators one secure, responsive portal 
 4. Admin mutations are validated, auditable, and company-scoped.
 5. Operational communications reach the intended audience and can update in realtime.
 6. The application remains usable across supported mobile and desktop sizes.
+7. A disabled platform or company feature disappears from discoverable UI and fails closed for direct routes, actions, and APIs.
 
 ## Functional requirements
 
@@ -28,6 +30,8 @@ Company Hub provides employees and administrators one secure, responsive portal 
 - Inactive employees cannot access protected workflows.
 - Admins are routed to `/admin/dashboard`; other active roles to `/dashboard`.
 - Bootstrap may create the first active Admin only when none exists.
+- System Admin is distinct from company Admin and must be explicitly provisioned.
+- Company Admins can narrow features only for their own company; platform-level disable always wins.
 
 ### People and hierarchy
 

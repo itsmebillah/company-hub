@@ -2,9 +2,9 @@
 
 ## Source of truth
 
-`supabase/migrations/` is the canonical schema history. Migrations `0001`–`0029` are applied to project `jjfktbgfwvekhlvyjlww`. Never edit an applied migration; add the next ordered migration. Migration `0029` adds the restricted `get_app_schema_version()` RPC because Supabase correctly does not expose its internal migration schema through PostgREST.
+`supabase/migrations/` is the canonical schema history. Migrations `0001`–`0032` are applied to project `jjfktbgfwvekhlvyjlww`. Never edit an applied migration; add the next ordered migration. Migration `0030` adds the Platform Control Center without rewriting tenant data or promoting existing company Admins; `0031` removes anonymous helper execution and `0032` makes constant-only schema telemetry invoker-safe.
 
-The live verified catalog contains 22 public tables, 137 indexes, 133 constraints, 53 foreign keys, 34 check constraints, and 24 unique constraints. No public views or triggers are currently defined. The cross-account restore contains 1,748 application rows and matches the verified source backup exactly after reversing the required Auth UUID mapping.
+The live verified catalog contains 26 public tables and the security-invoker `platform_company_overview` view. The original 1,748 restored application rows remain intact; migration `0030` backfilled the existing company status and seeded only the 14-row feature catalog.
 
 ## Domain tables
 
@@ -18,6 +18,8 @@ The live verified catalog contains 22 public tables, 137 indexes, 133 constraint
 | Leave/calendar      | `leave_types`, `leave_requests`, `holiday_calendars`, `holiday_events` | Leave workflow and working-day context                      |
 | Import              | `employee_import_jobs`, `employee_import_rows`                         | Durable bulk-import staging and outcomes                    |
 | Celebrations        | `employee_celebration_events`                                          | Per-year birthday/anniversary generation deduplication      |
+| Platform control    | `platform_admins`, `platform_features`, `company_features`             | Explicit global authorization and two-level feature state   |
+| Platform telemetry  | `platform_audit_logs`, `feature_usage_daily`                           | Central audit events and daily request aggregates           |
 
 ## Key relationships
 
@@ -63,12 +65,18 @@ Security-definer helpers set a controlled search path. Anonymous execution is re
 
 ## RLS
 
-All 22 public tables have RLS enabled. Direct access is default-deny except:
+All 26 public tables have RLS enabled. Direct access is default-deny except:
 
 - Authenticated employees may SELECT notification rows allowed by `can_receive_notification`.
 - Admin/company and employee CRUD continues through authorized server services using service role.
 
 Any new table must enable RLS in its creation migration and document whether browser access is required. Avoid broad `authenticated using (true)` policies.
+
+Platform-control tables expose no direct `anon` or `authenticated` grants. Browser access is limited to caller-derived company/feature checks and telemetry RPCs; cross-company reads and mutations use server-only access after explicit System Admin authorization.
+
+## Platform feature resolution
+
+Availability is `active company AND enabled platform feature AND company override not disabled`. Missing company overrides inherit enabled for backward compatibility. A platform-disabled feature cannot be re-enabled by a company. Future states (`beta`, `hidden`, `deprecated`) are stored additively but treated as disabled by the current application.
 
 ## Realtime
 

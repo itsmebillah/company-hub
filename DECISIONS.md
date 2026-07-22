@@ -1,5 +1,9 @@
 # Architecture Decision Log
 
+## ADR-010 — System Admin is explicit and feature gates fail closed
+
+Company `Admin` remains tenant-scoped. Global access requires an active `platform_admins` row and is never seeded or inferred. Feature availability resolves in order: active company, enabled platform feature, then optional company override. Missing overrides inherit enabled to preserve existing tenants; future global states are treated as disabled until their semantics exist. Company removal is a reversible lifecycle state, not destructive deletion.
+
 This file records durable decisions reflected in code. Add an entry when changing a system boundary or invariant; do not rewrite history to make an old decision appear current.
 
 ## ADR-001 — Next.js App Router and server-first features

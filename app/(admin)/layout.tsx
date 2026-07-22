@@ -9,6 +9,7 @@ import { getCompanySettings } from "@/features/company-settings/services/company
 import { NotificationService } from "@/features/notifications/services/notification.service";
 import { SchemaVersionService } from "@/features/schema-version/services/schema-version.service";
 import { ROLE_NAMES } from "@/lib/auth/permissions";
+import { FeatureAccessService } from "@/features/platform-control/services/feature-access.service";
 
 export default async function AdminRouteGroupLayout({
   children,
@@ -25,13 +26,24 @@ export default async function AdminRouteGroupLayout({
     redirect(getPostLoginRedirectPath(profile.roleName));
   }
 
-  const [notificationSummary, schemaStatus, attendanceSettings, companySettings] =
-    await Promise.all([
+  const [
+    notificationSummary,
+    schemaStatus,
+    attendanceSettings,
+    companySettings,
+    features,
+  ] = await Promise.all([
     NotificationService.getCurrentAdminSummary(),
     SchemaVersionService.getStatus(),
     AttendanceSettingsService.getSettings(),
     getCompanySettings(),
+    FeatureAccessService.getCurrentCompanyStates(),
   ]);
+  const enabledFeatures = new Set(
+    features
+      .filter((feature) => feature.effectiveState === "enabled")
+      .map((feature) => feature.key),
+  );
 
   return (
     <AdminShell
@@ -46,6 +58,7 @@ export default async function AdminRouteGroupLayout({
       }
       requireCameraOnboarding={attendanceSettings.requireSelfie}
       schemaStatus={schemaStatus}
+      enabledFeatures={[...enabledFeatures]}
     >
       {children}
     </AdminShell>

@@ -34,10 +34,14 @@ Status values: **Implemented** means a routed workflow and supporting service ex
 | Device onboarding            | Implemented | Versioned location/notification/camera permission flow                                                 |
 | Theme and responsive UI      | Implemented | System/light/dark theme, admin and employee desktop/mobile navigation                                  |
 | Schema diagnostics           | Foundation  | Read-only schema-version service; production migration control remains CLI-based                       |
+| Platform Control Center      | Implemented | `/platform/*` company, feature, usage, audit, security, and health controls for explicit System Admins  |
+| Company feature controls     | Implemented | `/admin/settings/features`; platform-authoritative current-company enable/disable overrides             |
+| Central audit center         | Implemented | Login/logout, security denial, feature changes, activity bridge, filters, and pagination                |
 
 ## Important boundaries
 
 - All business CRUD uses server-only service-role access after application-level authorization.
 - Browser Supabase access is limited to Auth, approved storage operations, and notification realtime.
 - Payroll, leave accrual/carry-forward, external push delivery, chat, and AI are not implemented.
+- Subscription plans, billing, automated tenant onboarding, and AI management are intentionally outside this control-center scope.
 - `employee-documents` and `leave-attachments` buckets exist, but full document-management UI/lifecycle is not implemented.

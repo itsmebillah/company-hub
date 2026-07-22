@@ -2,6 +2,10 @@
 
 ## Current state
 
+Platform Control Center verification additionally covers regular Admin denial from `/platform`, explicit System Admin access, company isolation for `/admin/audit`, global-disable precedence, company overrides, direct-route 404 enforcement, navigation/card removal, denial-event creation, and daily usage increments. Automated tests must use a disposable platform-admin grant removed in `finally`; never auto-promote a production user.
+
+The 2026-07-22 production-mode run passed the focused System Admin responsive matrix, full Company Admin route matrix, company feature-disable enforcement, and all 12 public/signed-out/PWA/accessibility Chrome checks. The full combined Chrome suite exceeded the command execution window once; its affected Platform tests were rerun directly and passed. Edge remains unavailable on this workstation as documented in project state.
+
 Playwright is committed under `tests/e2e/` with Chrome and Edge projects. The 42-check production-build suite verifies public routes, signed-out redirects/API denial, Admin and Employee login/session/logout, role routing, major route rendering, Quick Link custom-image/favicon/built-in/default fallback priority, card navigation, validated image upload and cleanup, 320/360/375/390/414/768/1024px layouts, attendance file selection and limits, temporary Storage lifecycles, exports, PWA caching, Realtime, and axe WCAG A/AA scans. CI and unit/service integration suites remain absent.
 
 ## Existing verification commands

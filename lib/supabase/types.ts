@@ -14,6 +14,7 @@ export type Database = {
           id: string;
           name: string;
           status: Database["public"]["Enums"]["record_status"];
+          platform_status: Database["public"]["Enums"]["platform_company_status"];
           created_at: string;
           updated_at: string;
           created_by: string | null;
@@ -23,6 +24,7 @@ export type Database = {
           id?: string;
           name: string;
           status?: Database["public"]["Enums"]["record_status"];
+          platform_status?: Database["public"]["Enums"]["platform_company_status"];
           created_at?: string;
           updated_at?: string;
           created_by?: string | null;
@@ -32,6 +34,7 @@ export type Database = {
           id?: string;
           name?: string;
           status?: Database["public"]["Enums"]["record_status"];
+          platform_status?: Database["public"]["Enums"]["platform_company_status"];
           created_at?: string;
           updated_at?: string;
           created_by?: string | null;
@@ -700,8 +703,7 @@ export type Database = {
           browser_enabled: boolean;
           realtime_enabled: boolean;
           native_enabled: boolean;
-          delivery_status:
-            Database["public"]["Enums"]["notification_delivery_status"];
+          delivery_status: Database["public"]["Enums"]["notification_delivery_status"];
           delivered_at: string | null;
           opened_at: string | null;
           created_at: string;
@@ -720,8 +722,7 @@ export type Database = {
           browser_enabled?: boolean;
           realtime_enabled?: boolean;
           native_enabled?: boolean;
-          delivery_status?:
-            Database["public"]["Enums"]["notification_delivery_status"];
+          delivery_status?: Database["public"]["Enums"]["notification_delivery_status"];
           delivered_at?: string | null;
           opened_at?: string | null;
           created_at?: string;
@@ -740,13 +741,152 @@ export type Database = {
           browser_enabled?: boolean;
           realtime_enabled?: boolean;
           native_enabled?: boolean;
-          delivery_status?:
-            Database["public"]["Enums"]["notification_delivery_status"];
+          delivery_status?: Database["public"]["Enums"]["notification_delivery_status"];
           delivered_at?: string | null;
           opened_at?: string | null;
           created_at?: string;
           created_by?: string | null;
         };
+        Relationships: [];
+      };
+      platform_admins: {
+        Row: {
+          id: string;
+          auth_user_id: string;
+          display_name: string;
+          status: Database["public"]["Enums"]["record_status"];
+          created_at: string;
+          updated_at: string;
+          created_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          auth_user_id: string;
+          display_name: string;
+          status?: Database["public"]["Enums"]["record_status"];
+          created_at?: string;
+          updated_at?: string;
+          created_by?: string | null;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["platform_admins"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      platform_features: {
+        Row: {
+          feature_key: string;
+          display_name: string;
+          description: string;
+          state: Database["public"]["Enums"]["platform_feature_state"];
+          display_order: number;
+          created_at: string;
+          updated_at: string;
+          updated_by: string | null;
+        };
+        Insert: {
+          feature_key: string;
+          display_name: string;
+          description?: string;
+          state?: Database["public"]["Enums"]["platform_feature_state"];
+          display_order: number;
+          created_at?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["platform_features"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      company_features: {
+        Row: {
+          id: string;
+          company_id: string;
+          feature_key: string;
+          state: Database["public"]["Enums"]["platform_feature_state"];
+          configuration: Json;
+          created_at: string;
+          updated_at: string;
+          updated_by_employee_id: string | null;
+          updated_by_platform_admin_id: string | null;
+        };
+        Insert: {
+          id?: string;
+          company_id: string;
+          feature_key: string;
+          state?: Database["public"]["Enums"]["platform_feature_state"];
+          configuration?: Json;
+          created_at?: string;
+          updated_at?: string;
+          updated_by_employee_id?: string | null;
+          updated_by_platform_admin_id?: string | null;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["company_features"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      platform_audit_logs: {
+        Row: {
+          id: string;
+          company_id: string | null;
+          employee_id: string | null;
+          platform_admin_id: string | null;
+          auth_user_id: string | null;
+          category: Database["public"]["Enums"]["platform_audit_category"];
+          feature_key: string | null;
+          action: string;
+          entity_type: string;
+          entity_id: string | null;
+          status: Database["public"]["Enums"]["platform_audit_status"];
+          description: string;
+          metadata: Json;
+          ip_address: string | null;
+          user_agent: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          company_id?: string | null;
+          employee_id?: string | null;
+          platform_admin_id?: string | null;
+          auth_user_id?: string | null;
+          category: Database["public"]["Enums"]["platform_audit_category"];
+          feature_key?: string | null;
+          action: string;
+          entity_type: string;
+          entity_id?: string | null;
+          status?: Database["public"]["Enums"]["platform_audit_status"];
+          description: string;
+          metadata?: Json;
+          ip_address?: string | null;
+          user_agent?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["platform_audit_logs"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      feature_usage_daily: {
+        Row: {
+          company_id: string;
+          feature_key: string;
+          usage_date: string;
+          request_count: number;
+          last_used_at: string;
+        };
+        Insert: {
+          company_id: string;
+          feature_key: string;
+          usage_date?: string;
+          request_count?: number;
+          last_used_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["feature_usage_daily"]["Insert"]
+        >;
         Relationships: [];
       };
       activity_logs: {
@@ -807,8 +947,7 @@ export type Database = {
           check_in_accuracy_meters: number | null;
           check_in_address: string | null;
           check_in_location_source:
-            | Database["public"]["Enums"]["attendance_location_source"]
-            | null;
+            Database["public"]["Enums"]["attendance_location_source"] | null;
           check_in_selfie_path: string | null;
           check_in_device_browser: string | null;
           check_in_device_platform: string | null;
@@ -821,8 +960,7 @@ export type Database = {
           check_out_accuracy_meters: number | null;
           check_out_address: string | null;
           check_out_location_source:
-            | Database["public"]["Enums"]["attendance_location_source"]
-            | null;
+            Database["public"]["Enums"]["attendance_location_source"] | null;
           check_out_selfie_path: string | null;
           check_out_device_browser: string | null;
           check_out_device_platform: string | null;
@@ -849,8 +987,7 @@ export type Database = {
           check_in_accuracy_meters?: number | null;
           check_in_address?: string | null;
           check_in_location_source?:
-            | Database["public"]["Enums"]["attendance_location_source"]
-            | null;
+            Database["public"]["Enums"]["attendance_location_source"] | null;
           check_in_selfie_path?: string | null;
           check_in_device_browser?: string | null;
           check_in_device_platform?: string | null;
@@ -863,8 +1000,7 @@ export type Database = {
           check_out_accuracy_meters?: number | null;
           check_out_address?: string | null;
           check_out_location_source?:
-            | Database["public"]["Enums"]["attendance_location_source"]
-            | null;
+            Database["public"]["Enums"]["attendance_location_source"] | null;
           check_out_selfie_path?: string | null;
           check_out_device_browser?: string | null;
           check_out_device_platform?: string | null;
@@ -891,8 +1027,7 @@ export type Database = {
           check_in_accuracy_meters?: number | null;
           check_in_address?: string | null;
           check_in_location_source?:
-            | Database["public"]["Enums"]["attendance_location_source"]
-            | null;
+            Database["public"]["Enums"]["attendance_location_source"] | null;
           check_in_selfie_path?: string | null;
           check_in_device_browser?: string | null;
           check_in_device_platform?: string | null;
@@ -905,8 +1040,7 @@ export type Database = {
           check_out_accuracy_meters?: number | null;
           check_out_address?: string | null;
           check_out_location_source?:
-            | Database["public"]["Enums"]["attendance_location_source"]
-            | null;
+            Database["public"]["Enums"]["attendance_location_source"] | null;
           check_out_selfie_path?: string | null;
           check_out_device_browser?: string | null;
           check_out_device_platform?: string | null;
@@ -1275,7 +1409,20 @@ export type Database = {
         ];
       };
     };
-    Views: Record<string, never>;
+    Views: {
+      platform_company_overview: {
+        Row: {
+          id: string | null;
+          name: string | null;
+          platform_status:
+            Database["public"]["Enums"]["platform_company_status"] | null;
+          created_at: string | null;
+          employee_count: number | null;
+          admin_count: number | null;
+        };
+        Relationships: [];
+      };
+    };
     Functions: {
       get_company_celebrants: {
         Args: {
@@ -1292,8 +1439,47 @@ export type Database = {
           years_completed: number | null;
         }[];
       };
+      is_system_admin: { Args: { user_id: string }; Returns: boolean };
+      is_feature_enabled_for_company: {
+        Args: { target_company_id: string; target_feature_key: string };
+        Returns: boolean;
+      };
+      can_access_feature: {
+        Args: { target_feature_key: string };
+        Returns: boolean;
+      };
+      can_access_company_platform: {
+        Args: Record<PropertyKey, never>;
+        Returns: boolean;
+      };
+      log_feature_access_denied: {
+        Args: {
+          target_feature_key: string;
+          target_path: string;
+          target_user_agent?: string | null;
+        };
+        Returns: undefined;
+      };
+      record_feature_usage: {
+        Args: { target_feature_key: string };
+        Returns: undefined;
+      };
+      log_company_access_denied: {
+        Args: { target_path: string; target_user_agent?: string | null };
+        Returns: undefined;
+      };
+      create_platform_company: {
+        Args: { company_name: string };
+        Returns: string;
+      };
     };
     Enums: {
+      platform_feature_state:
+        "enabled" | "disabled" | "beta" | "hidden" | "deprecated";
+      platform_company_status: "active" | "inactive" | "suspended" | "deleted";
+      platform_audit_category:
+        "audit" | "activity" | "login" | "security" | "feature_usage" | "error";
+      platform_audit_status: "success" | "failure" | "denied" | "warning";
       announcement_priority: "low" | "normal" | "high" | "urgent";
       celebration_event_type: "birthday" | "work_anniversary";
       attendance_type: "office" | "field" | "hybrid";
@@ -1321,11 +1507,7 @@ export type Database = {
         | "client_site";
       employee_import_file_type: "csv" | "xlsx";
       employee_import_row_status:
-        | "pending"
-        | "valid"
-        | "invalid"
-        | "processed"
-        | "failed";
+        "pending" | "valid" | "invalid" | "processed" | "failed";
       employee_import_status:
         | "uploaded"
         | "preview_ready"
@@ -1335,15 +1517,8 @@ export type Database = {
         | "failed"
         | "cancelled";
       employee_work_mode: "office" | "field" | "hybrid";
-      holiday_type:
-        | "public_holiday"
-        | "company_holiday"
-        | "optional_holiday";
-      leave_request_status:
-        | "pending"
-        | "approved"
-        | "rejected"
-        | "cancelled";
+      holiday_type: "public_holiday" | "company_holiday" | "optional_holiday";
+      leave_request_status: "pending" | "approved" | "rejected" | "cancelled";
       notification_type:
         | "announcement"
         | "resource"

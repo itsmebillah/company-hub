@@ -20,6 +20,12 @@ const protectedRoutes = [
   "/admin/company",
   "/admin/roles",
   "/admin/settings",
+  "/admin/audit",
+  "/admin/settings/features",
+  "/platform/dashboard",
+  "/platform/companies",
+  "/platform/features",
+  "/platform/audit",
 ] as const;
 
 const mobileWidths = [320, 360, 375, 390, 414, 768, 1024] as const;
@@ -95,7 +101,9 @@ test("PWA assets load and the worker does not cache authenticated pages", async 
   expect(source).not.toContain("isCacheablePage");
 });
 
-test("notification tracking rejects signed-out requests", async ({ request }) => {
+test("notification tracking rejects signed-out requests", async ({
+  request,
+}) => {
   const response = await request.post("/api/notifications/track", {
     data: {
       notificationId: crypto.randomUUID(),

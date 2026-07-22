@@ -28,4 +28,7 @@ export const SCHEMA_MIGRATION_MANIFEST = [
   "0027_storage_helper_security.sql",
   "0028_notification_realtime_rls.sql",
   "0029_schema_version_contract.sql",
+  "0030_platform_control_center.sql",
+  "0031_platform_security_and_schema_version.sql",
+  "0032_schema_version_invoker.sql",
 ] as const;

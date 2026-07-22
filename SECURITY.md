@@ -1,5 +1,14 @@
 # Security
 
+## Platform authorization and feature enforcement
+
+- Global authority is allow-listed in `platform_admins`; tenant role names never imply System Admin access.
+- Platform tables and the overview view are revoked from browser roles; server services re-check System Admin before privileged access.
+- Company status and feature state are enforced in middleware for pages, route handlers, and Server Action posts. Denied direct access returns a 404 rewrite and records a security event.
+- Disabled modules are removed from desktop/mobile navigation, dashboard shortcuts, and cards. UI filtering is not treated as authorization.
+- Company Admin changes are constrained to the current authenticated company and cannot override a platform-level disable.
+- Company deletion is a soft lifecycle state and never deletes tenant rows.
+
 ## Security model
 
 Company Hub uses defense in depth: authenticated sessions, server-side role/company authorization, RLS on all public tables, scoped storage policies, and server-only service-role operations. The service-role key bypasses RLS and is therefore the highest-risk application credential.
@@ -23,7 +32,7 @@ Never place secrets in:
 - Direct browser access is default-deny except scoped notification SELECT.
 - Storage policies require an active employee and owner/Admin relationship as appropriate.
 - Notification RLS derives identity from `auth.uid()` through a constrained security-definer helper.
-- Anonymous execution is revoked for storage helpers; `can_receive_notification` remains anonymously executable and is tracked for remediation.
+- Anonymous execution is revoked for storage, notification, schema-version, and platform helpers.
 - Service-role services must call current-context/role checks before accessing data.
 
 Current critical gap: many Admin-facing service-role operations check only active employee/company context, and some ID mutations omit a current-company predicate. Add service-boundary role checks and cross-company denial tests before production.
@@ -70,7 +79,7 @@ npm run typecheck
 npm run build
 ```
 
-Previous disposable-user checks verified Auth login, RLS isolation, employee notification visibility, realtime delivery, storage policy upload/download, service-role attendance storage, and cleanup. The latest read-only health check found four advisor warnings and confirmed anonymous RPC execution of `can_receive_notification` returns `false`; anonymous execution still needs to be revoked.
+Previous disposable-user checks verified Auth login, RLS isolation, employee notification visibility, realtime delivery, storage policy upload/download, service-role attendance storage, and cleanup. The latest advisor run has no anonymous-definer warning. It reports eight authenticated `SECURITY DEFINER` helpers that intentionally derive scope from `auth.uid()` for middleware/RLS/telemetry, plus disabled leaked-password protection. These remain explicit review items rather than silent passes.
 
 ## Incident response minimum
 

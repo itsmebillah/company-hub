@@ -6,6 +6,7 @@ This project follows a Keep-a-Changelog-style record. Versioning is not yet form
 
 ### Fixed
 
+- Kept Lucide navigation components on the client side and passed only serializable feature keys through Server Component boundaries, removing the dashboard runtime Application Error found during production-mode regression testing.
 - Rendered each dashboard Quick Link’s configured visual instead of reducing the stored icon to text initials, with graceful broken-image and favicon fallback.
 - Portaled the resource form outside the page stacking context so its controls remain clickable above the sticky admin header.
 - Raised the Server Action request limit to safely carry validated 5 MB attendance selfies, added immediate client-size feedback, and preserved HEIC/HEIF filename/MIME consistency.
@@ -22,6 +23,11 @@ This project follows a Keep-a-Changelog-style record. Versioning is not yet form
 - Verified all 17 migrated credentials without exposing Employee IDs/passwords, private attendance bucket behavior, Realtime, middleware, and wrong-role redirects.
 
 ### Added
+
+- Added the System Admin Platform Control Center with company lifecycle management, platform/company feature controls, aggregate feature usage, health metrics, centralized audit/security/login logs, company-scoped audit access, responsive routes, and fail-closed middleware enforcement.
+- Added migration `0030_platform_control_center.sql` with explicit platform administrators, 14 feature definitions, company overrides, audit telemetry, daily usage aggregation, a security-invoker overview, default-deny RLS, and caller-derived authorization RPCs.
+- Added migration `0031_platform_security_and_schema_version.sql` to advance runtime schema telemetry and explicitly revoke anonymous execution from notification/schema helpers.
+- Added migration `0032_schema_version_invoker.sql` so constant-only runtime schema telemetry no longer executes with definer privileges.
 
 - Added responsive Quick Link visuals with uploaded PNG/JPG/SVG/WebP artwork, memoized website-origin favicons, named Lucide icons, and a permanent Company Hub placeholder fallback.
 - Added authenticated, company-scoped `resource-icons` uploads with size, MIME/signature, SVG-content, retrieval, replacement, cancellation, and unreferenced-object cleanup controls.

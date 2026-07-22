@@ -16,6 +16,7 @@ import { CelebrationService } from "@/features/celebrations/services/celebration
 import { EmployeeResourceService } from "@/features/employee-resources/services/employee-resource.service";
 import { ROLE_NAMES } from "@/lib/auth/permissions";
 import { formatAppDate, getAppDateString } from "@/lib/datetime";
+import { FeatureAccessService } from "@/features/platform-control/services/feature-access.service";
 
 export const dynamic = "force-dynamic";
 
@@ -50,19 +51,26 @@ export default async function DashboardPage() {
     redirect(getAdminEquivalentPath("/dashboard"));
   }
 
-  const [data, announcements, attendanceSummary, celebrations] = await Promise.all([
-    EmployeeResourceService.getPortalData(),
-    AnnouncementService.listForEmployee(),
-    AttendanceService.getEmployeeDashboardSummary(),
-    CelebrationService.getEmployeeDashboardCelebrations().catch((error) => {
-      console.error(
-        "[DashboardPage] Unable to load employee celebrations.",
-        error,
-      );
+  const [data, announcements, attendanceSummary, celebrations, features] =
+    await Promise.all([
+      EmployeeResourceService.getPortalData(),
+      AnnouncementService.listForEmployee(),
+      AttendanceService.getEmployeeDashboardSummary(),
+      CelebrationService.getEmployeeDashboardCelebrations().catch((error) => {
+        console.error(
+          "[DashboardPage] Unable to load employee celebrations.",
+          error,
+        );
 
-      return EMPTY_CELEBRATIONS;
-    }),
-  ]);
+        return EMPTY_CELEBRATIONS;
+      }),
+      FeatureAccessService.getCurrentCompanyStates(),
+    ]);
+  const enabledFeatures = new Set(
+    features
+      .filter((feature) => feature.effectiveState === "enabled")
+      .map((feature) => feature.key),
+  );
   const employeeCelebrations = filterCelebrationsForEmployee(
     celebrations,
     data.profile.employeeId,
@@ -73,19 +81,22 @@ export default async function DashboardPage() {
 
   return (
     <section className="space-y-4 md:space-y-5">
-      <EmployeePortalHeader
-        profile={data.profile}
-        currentDate={currentDate}
-      />
-      <AnnouncementTicker announcements={announcements.announcements} />
-      <AttendanceSummaryCard summary={attendanceSummary} />
-      {hasEmployeeCelebration ? (
+      <EmployeePortalHeader profile={data.profile} currentDate={currentDate} />
+      {enabledFeatures.has("announcements") ? (
+        <AnnouncementTicker announcements={announcements.announcements} />
+      ) : null}
+      {enabledFeatures.has("attendance") ? (
+        <AttendanceSummaryCard summary={attendanceSummary} />
+      ) : null}
+      {enabledFeatures.has("calendar") && hasEmployeeCelebration ? (
         <TodaysCelebrationsCard
           celebrations={employeeCelebrations}
           dateKey={celebrationDateKey}
         />
       ) : null}
-      <QuickResourceLinks categories={data.categories} />
+      {enabledFeatures.has("quick_links") ? (
+        <QuickResourceLinks categories={data.categories} />
+      ) : null}
     </section>
   );
 }

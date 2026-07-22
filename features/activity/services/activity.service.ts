@@ -6,12 +6,29 @@ import { getCurrentAuthUser } from "@/features/auth/services/auth.service";
 import { ActivityRepository } from "@/features/activity/repositories/activity.repository";
 import type { ActivityLogInput } from "@/features/activity/types/activity.types";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { PlatformAuditService } from "@/features/platform-control/services/platform-audit.service";
+import { isFeatureKey } from "@/features/platform-control/constants/feature-catalog";
+import type { FeatureKey } from "@/features/platform-control/types/platform.types";
 
 type ActivityLogEvent = Omit<
   ActivityLogInput,
   "companyId" | "employeeId" | "ipAddress" | "userAgent"
 > & {
   companyId?: string | null;
+};
+
+const ACTIVITY_FEATURE_MAP: Partial<
+  Record<ActivityLogEvent["module"], FeatureKey>
+> = {
+  employee: "employee_directory",
+  announcement: "announcements",
+  resources: "resources",
+  company_settings: "company_settings",
+  roles: "role_management",
+  permissions: "resources",
+  attendance: "attendance",
+  calendar: "calendar",
+  leave: "leave",
 };
 
 async function getActor() {
@@ -83,6 +100,21 @@ export const ActivityService = {
       metadata: event.metadata,
       ipAddress: requestInfo.ipAddress,
       userAgent: requestInfo.userAgent,
+    });
+
+    const featureKey = isFeatureKey(event.module)
+      ? event.module
+      : (ACTIVITY_FEATURE_MAP[event.module] ?? null);
+    await PlatformAuditService.log({
+      category: "activity",
+      action: event.action,
+      entityType: event.entityType,
+      entityId: event.entityId,
+      description: event.description,
+      companyId,
+      employeeId: actor?.employeeId ?? null,
+      featureKey,
+      metadata: event.metadata,
     });
   },
 };

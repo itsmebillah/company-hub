@@ -25,6 +25,16 @@ The Vercel cron schedule calls `/api/cron/celebrations` at `0 18 * * *` UTC, cor
 
 ## Server action inventory
 
+### Platform control
+
+- `createCompanyAction`: System Admin; atomically creates company, default roles, and settings.
+- `updateCompanyStatusAction`: System Admin; active/inactive/suspended/deleted lifecycle state.
+- `updatePlatformFeatureAction`: System Admin; authoritative global enable/disable.
+- `updateCompanyFeatureAction`: System Admin; selected-company override.
+- `updateOwnCompanyFeatureAction`: Company Admin; current-company override only and never bypasses platform disable.
+
+Middleware calls caller-derived `can_access_company_platform`, `can_access_feature`, `record_feature_usage`, and denial-log RPCs. These RPCs do not expose platform records.
+
 ### Auth
 
 - `loginAction`, `logoutAction`, `bootstrapAction`.

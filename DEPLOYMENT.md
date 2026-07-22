@@ -4,7 +4,7 @@
 
 The intended topology is Vercel for Next.js and scheduled cron, with Supabase providing PostgreSQL, Auth, Storage, and Realtime. `vercel.json` schedules the celebrations endpoint daily at `0 18 * * *` UTC.
 
-The Vercel CLI is installed and authenticated locally, and the repository is linked to the existing `company-hub` project. The five required environment variable names are present for both Production and Preview; values remain encrypted and must never be printed. The Supabase data migration did not require an application redeployment.
+The Vercel CLI is installed and authenticated locally, and the repository is linked to the existing `company-hub` project. The five required environment variable names are present for both Production and Preview; values remain encrypted and must never be printed. Apply migration `0030` before deploying Platform Control Center code, then explicitly provision an approved System Admin separately.
 
 ## Environment setup
 

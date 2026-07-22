@@ -70,7 +70,9 @@ async function getFirstCompany() {
 
   const { data, error } = await supabase
     .from("companies")
-    .select("id, name, status, created_at, updated_at, created_by, updated_by")
+    .select(
+      "id, name, status, platform_status, created_at, updated_at, created_by, updated_by",
+    )
     .order("created_at", { ascending: true })
     .limit(1);
 

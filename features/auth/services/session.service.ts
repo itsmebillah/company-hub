@@ -19,19 +19,46 @@ export async function getCurrentSessionProfile(): Promise<AuthSessionProfile | n
     .single();
 
   if (error || !employee) {
+    if (error) {
+      console.error("[SessionService] Unable to resolve employee session.", {
+        code: error.code,
+      });
+    }
     return null;
   }
 
-  const { data: role, error: roleError } = await supabase
-    .from("roles")
-    .select("name")
-    .eq("company_id", employee.company_id)
-    .eq("id", employee.role_id)
-    .eq("status", "active")
-    .maybeSingle();
+  const [
+    { data: role, error: roleError },
+    { data: platformAdmin, error: platformAdminError },
+  ] = await Promise.all([
+    supabase
+      .from("roles")
+      .select("name")
+      .eq("company_id", employee.company_id)
+      .eq("id", employee.role_id)
+      .eq("status", "active")
+      .maybeSingle(),
+    supabase
+      .from("platform_admins")
+      .select("id")
+      .eq("auth_user_id", user.id)
+      .eq("status", "active")
+      .maybeSingle(),
+  ]);
 
   if (roleError || !role) {
+    if (roleError) {
+      console.error("[SessionService] Unable to resolve employee role.", {
+        code: roleError.code,
+      });
+    }
     return null;
+  }
+
+  if (platformAdminError) {
+    console.error("[SessionService] Unable to resolve System Admin status.", {
+      code: platformAdminError.code,
+    });
   }
 
   return {
@@ -42,6 +69,8 @@ export async function getCurrentSessionProfile(): Promise<AuthSessionProfile | n
     roleId: employee.role_id,
     roleName: role.name,
     status: employee.status,
+    isSystemAdmin: Boolean(platformAdmin),
+    platformAdminId: platformAdmin?.id ?? null,
   };
 }
 

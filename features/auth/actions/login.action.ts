@@ -1,8 +1,11 @@
 "use server";
 
+import { createHash } from "node:crypto";
+
 import { loginWithEmployeeId } from "@/features/auth/services/login.service";
 import { getPostLoginRedirectPath } from "@/features/auth/services/redirect.service";
 import { getCurrentSessionProfile } from "@/features/auth/services/session.service";
+import { PlatformAuditService } from "@/features/platform-control/services/platform-audit.service";
 
 export type LoginActionState =
   | {
@@ -58,12 +61,36 @@ export async function loginAction(
       return { ok: false, message: FRIENDLY_ERRORS.unexpected };
     }
 
+    await PlatformAuditService.log({
+      category: "login",
+      action: "login_succeeded",
+      entityType: "auth_session",
+      status: "success",
+      description: "User authentication succeeded.",
+      companyId: profile.companyId,
+      platformAdminId: profile.platformAdminId,
+      metadata: { role: profile.roleName },
+    });
+
     return {
       ok: true,
       message: "Login successful.",
-      redirectTo: getPostLoginRedirectPath(profile.roleName),
+      redirectTo: getPostLoginRedirectPath(
+        profile.roleName,
+        profile.isSystemAdmin,
+      ),
     };
   } catch (error) {
+    await PlatformAuditService.log({
+      category: "login",
+      action: "login_failed",
+      entityType: "auth_session",
+      status: "failure",
+      description: "User authentication failed.",
+      metadata: {
+        identifierHash: createHash("sha256").update(employeeId).digest("hex"),
+      },
+    });
     if (!(error instanceof Error)) {
       return { ok: false, message: FRIENDLY_ERRORS.unexpected };
     }

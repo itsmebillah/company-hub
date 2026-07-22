@@ -15,7 +15,10 @@ const APP_TO_ADMIN_ROUTE_MAP = {
   "/settings": "/admin/settings",
 } as const;
 
-export function getPostLoginRedirectPath(roleName: string) {
+export function getPostLoginRedirectPath(roleName: string, isSystemAdmin = false) {
+  if (isSystemAdmin) {
+    return "/platform/dashboard";
+  }
   if (roleName === ROLE_NAMES.admin) {
     return ADMIN_DASHBOARD_PATH;
   }

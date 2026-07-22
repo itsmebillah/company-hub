@@ -5,19 +5,21 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Logo } from "@/components/common/logo";
 import { Button } from "@/components/ui/button";
-import { adminNavigationItems } from "@/lib/navigation/admin-navigation";
+import type { AdminNavigationItem } from "@/lib/navigation/admin-navigation";
 import { cn } from "@/lib/utils";
 
 type AdminSidebarProps = {
   pathname: string;
   isCollapsed: boolean;
   onCollapsedChange: (isCollapsed: boolean) => void;
+  items: AdminNavigationItem[];
 };
 
 export function AdminSidebar({
   pathname,
   isCollapsed,
   onCollapsedChange,
+  items,
 }: AdminSidebarProps) {
   return (
     <aside
@@ -27,9 +29,12 @@ export function AdminSidebar({
       )}
     >
       <div className="app-card app-card-subtle flex min-h-[calc(100svh-1.5rem)] flex-col overflow-hidden px-3 py-3">
-        <div className="flex h-16 items-center justify-between rounded-2xl border border-white/20 bg-background/55 px-3">
+        <div className="bg-background/55 flex h-16 items-center justify-between rounded-2xl border border-white/20 px-3">
           {isCollapsed ? (
-            <Logo href="/admin/dashboard" className="[&>span:last-child]:sr-only" />
+            <Logo
+              href="/admin/dashboard"
+              className="[&>span:last-child]:sr-only"
+            />
           ) : (
             <Logo href="/admin/dashboard" />
           )}
@@ -37,7 +42,7 @@ export function AdminSidebar({
             type="button"
             size="icon"
             variant="outline"
-            className="size-9 border-white/20 bg-background/70 shadow-none"
+            className="bg-background/70 size-9 border-white/20 shadow-none"
             onClick={() => onCollapsedChange(!isCollapsed)}
             aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
@@ -49,10 +54,10 @@ export function AdminSidebar({
           </Button>
         </div>
 
-        <div className={cn("px-3 pb-4 pt-5", isCollapsed && "px-1")}>
+        <div className={cn("px-3 pt-5 pb-4", isCollapsed && "px-1")}>
           <p
             className={cn(
-              "text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-primary/80",
+              "text-primary/80 text-[0.68rem] font-semibold tracking-[0.22em] uppercase",
               isCollapsed && "sr-only",
             )}
           >
@@ -60,7 +65,7 @@ export function AdminSidebar({
           </p>
           <p
             className={cn(
-              "mt-1 text-xs leading-5 text-muted-foreground",
+              "text-muted-foreground mt-1 text-xs leading-5",
               isCollapsed && "sr-only",
             )}
           >
@@ -69,7 +74,7 @@ export function AdminSidebar({
         </div>
 
         <nav className="flex-1 space-y-1.5 overflow-y-auto px-1 pb-2">
-          {adminNavigationItems.map((item) => {
+          {items.map((item) => {
             const Icon = item.icon;
             const isActive =
               pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -79,7 +84,7 @@ export function AdminSidebar({
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "group flex min-h-11 items-center gap-3 rounded-2xl px-3 py-2 text-sm font-semibold text-muted-foreground transition duration-200 hover:-translate-y-0.5 hover:bg-accent/70 hover:text-foreground",
+                  "group text-muted-foreground hover:bg-accent/70 hover:text-foreground flex min-h-11 items-center gap-3 rounded-2xl px-3 py-2 text-sm font-semibold transition duration-200 hover:-translate-y-0.5",
                   isActive &&
                     "bg-primary/10 text-primary shadow-[0_18px_28px_-24px_rgba(37,99,235,0.78)]",
                   isCollapsed && "justify-center px-0",
@@ -88,13 +93,15 @@ export function AdminSidebar({
               >
                 <span
                   className={cn(
-                    "flex size-9 shrink-0 items-center justify-center rounded-2xl border border-white/20 bg-background/75 text-muted-foreground transition group-hover:text-foreground",
+                    "bg-background/75 text-muted-foreground group-hover:text-foreground flex size-9 shrink-0 items-center justify-center rounded-2xl border border-white/20 transition",
                     isActive && "border-primary/20 bg-primary/12 text-primary",
                   )}
                 >
                   <Icon className="size-4 shrink-0" aria-hidden="true" />
                 </span>
-                <span className={cn(isCollapsed && "sr-only")}>{item.title}</span>
+                <span className={cn(isCollapsed && "sr-only")}>
+                  {item.title}
+                </span>
               </Link>
             );
           })}

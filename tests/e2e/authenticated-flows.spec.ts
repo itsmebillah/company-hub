@@ -6,6 +6,7 @@ test.setTimeout(120_000);
 
 type TestAccounts = {
   adminEmployeeId: string;
+  adminAuthUserId: string;
   employeeEmployeeId: string;
   companyId: string;
 };
@@ -14,6 +15,7 @@ type EmployeeCredentialRow = {
   employee_id: string;
   role_id: string;
   company_id: string;
+  auth_user_id: string;
 };
 
 const adminRoutes = [
@@ -35,6 +37,8 @@ const adminRoutes = [
   "/admin/roles",
   "/admin/settings",
   "/admin/settings/attendance",
+  "/admin/settings/features",
+  "/admin/audit",
 ] as const;
 
 const employeeRoutes = [
@@ -89,7 +93,7 @@ test.beforeAll(async () => {
   ] = await Promise.all([
     supabase
       .from("employees")
-      .select("employee_id, role_id, company_id")
+      .select("employee_id, role_id, company_id, auth_user_id")
       .eq("status", "active")
       .not("auth_user_id", "is", null),
     supabase.from("roles").select("id, name").eq("status", "active"),
@@ -114,9 +118,67 @@ test.beforeAll(async () => {
 
   accounts = {
     adminEmployeeId: admin.employee_id,
+    adminAuthUserId: admin.auth_user_id,
     employeeEmployeeId: employee.employee_id,
     companyId: employee.company_id,
   };
+});
+
+test("explicit System Admin can use responsive platform routes", async ({
+  page,
+}) => {
+  const { data: existing } = await supabase
+    .from("platform_admins")
+    .select("id")
+    .eq("auth_user_id", accounts.adminAuthUserId)
+    .maybeSingle();
+  let createdId: string | null = null;
+
+  try {
+    if (!existing) {
+      const { data, error } = await supabase
+        .from("platform_admins")
+        .insert({
+          auth_user_id: accounts.adminAuthUserId,
+          display_name: "Platform QA Administrator",
+        })
+        .select("id")
+        .single();
+      expect(error).toBeNull();
+      createdId = data?.id ?? null;
+    }
+
+    await signIn(page, accounts.adminEmployeeId);
+    await expect(page).toHaveURL(/\/platform\/dashboard$/);
+
+    for (const width of responsiveWidths) {
+      await page.setViewportSize({ width, height: width < 768 ? 844 : 900 });
+      for (const route of [
+        "/platform/dashboard",
+        "/platform/companies",
+        "/platform/features",
+        "/platform/audit",
+      ] as const) {
+        const response = await page.goto(route, {
+          waitUntil: "domcontentloaded",
+        });
+        expect(response?.status(), `${route} at ${width}px`).toBe(200);
+        const overflow = await page.evaluate(
+          () =>
+            document.documentElement.scrollWidth -
+            document.documentElement.clientWidth,
+        );
+        expect(overflow, `${route} at ${width}px`).toBeLessThanOrEqual(1);
+        await expect(page.locator("body")).not.toContainText(
+          "Application error",
+        );
+      }
+    }
+  } finally {
+    if (createdId) {
+      await supabase.from("platform_admins").delete().eq("id", createdId);
+    }
+  }
 });
 
 test("Quick Links render custom images, favicons, built-in icons, and clickable cards", async ({
@@ -409,6 +471,54 @@ test("employee login, session restore, routes, and authorization work", async ({
   await dismissOnboarding(page);
   await page.getByRole("button", { name: "Log out" }).click();
   await expect(page).toHaveURL(/\/login$/);
+});
+
+test("company feature disable hides navigation and rejects direct access", async ({
+  page,
+}) => {
+  const { data: previous } = await supabase
+    .from("company_features")
+    .select("state")
+    .eq("company_id", accounts.companyId)
+    .eq("feature_key", "attendance")
+    .maybeSingle();
+
+  try {
+    const { error } = await supabase.from("company_features").upsert(
+      {
+        company_id: accounts.companyId,
+        feature_key: "attendance",
+        state: "disabled",
+      },
+      { onConflict: "company_id,feature_key" },
+    );
+    expect(error).toBeNull();
+
+    await signIn(page, accounts.employeeEmployeeId);
+    await page.goto("/dashboard", { waitUntil: "networkidle" });
+    await expect(
+      page.getByRole("link", { name: "Attendance", exact: true }),
+    ).toHaveCount(0);
+
+    const response = await page.goto("/attendance", {
+      waitUntil: "domcontentloaded",
+    });
+    expect(response?.status()).toBe(404);
+  } finally {
+    if (previous) {
+      await supabase
+        .from("company_features")
+        .update({ state: previous.state })
+        .eq("company_id", accounts.companyId)
+        .eq("feature_key", "attendance");
+    } else {
+      await supabase
+        .from("company_features")
+        .delete()
+        .eq("company_id", accounts.companyId)
+        .eq("feature_key", "attendance");
+    }
+  }
 });
 
 test("admin and employee layouts do not overflow at supported widths", async ({

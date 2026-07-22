@@ -1,5 +1,11 @@
 # Authentication and Authorization
 
+## System Admin boundary
+
+System Admin is an explicit global authorization in `platform_admins`; it is not inferred from the tenant-scoped `Admin` role. A System Admin must already have an active employee/Auth identity and is redirected to `/platform/dashboard` after login. Migration `0030` intentionally provisions nobody automatically.
+
+Company Admins remain restricted to their company and may use `/admin/settings/features` and `/admin/audit`. Employees cannot access either admin surface. Provisioning requires a deliberate trusted operation using the approved Auth user UUID and display name.
+
 ## Identity model
 
 Users enter Employee ID and password. Supabase Auth still uses email/password internally, so each employee has a generated `internal_auth_email` and an `auth_user_id` reference to `auth.users`. Both values are server-only implementation details.
