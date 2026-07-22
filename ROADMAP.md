@@ -15,7 +15,7 @@ The roadmap prioritizes safe production operation before additional product brea
 
 ## Phase 1 — Reliability and observability
 
-- Provision the first approved System Admin and operationally validate the Platform Control Center without broadening tenant Admin access.
+- Provision the first approved permanent System Admin and operationally validate Platform Architecture v2 without broadening tenant Admin access. The global authority, six-route control plane, archived lifecycle, platform settings, cross-company directory, and audited password reset are implemented.
 - Define retention and alert thresholds for centralized platform audit and feature-usage records.
 - Add structured server logging with request/correlation IDs and redaction.
 - Add production error monitoring and alerting for cron, Auth, imports, storage, and failed offline sync.

@@ -3,12 +3,14 @@ import {
   updatePlatformFeatureAction,
 } from "@/features/platform-control/actions/platform-control.actions";
 import { PlatformControlService } from "@/features/platform-control/services/platform-control.service";
+import { requireSystemAdminPage } from "@/features/platform-control/services/system-admin.service";
 
 export default async function PlatformFeaturesPage({
   searchParams,
 }: {
   searchParams: Promise<{ company?: string }>;
 }) {
+  await requireSystemAdminPage();
   const { company: companyId } = await searchParams;
   const [companies, result] = await Promise.all([
     PlatformControlService.listCompanies(),

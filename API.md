@@ -16,10 +16,10 @@ Company Hub is not a public REST API product. Its primary mutation interface is 
 | --------------------------------------- | ---------------------------------- | -------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------ |
 | `GET /admin/attendance/reports/details` | Employee attendance detail         | Report filters plus required `employeeId`    | JSON detail      | Report service checks Admin access and company                                       |
 | `GET /admin/attendance/reports/export`  | Attendance export                  | Filters plus `format` (`csv`, `xlsx`, `pdf`) | Download         | Report service checks Admin access and company                                       |
-| `GET /admin/users/export`               | Employee CSV export                | Search, status, role, manager, mode, sort    | UTF-8 CSV        | **Gap:** Auth middleware only; handler/service lacks direct Admin authorization      |
-| `GET /admin/users/import/template`      | Import template                    | None                                         | CSV download     | Auth middleware; handler has no direct Admin check                                   |
+| `GET /admin/users/export`               | Employee CSV export                | Search, status, role, manager, mode, sort    | UTF-8 CSV        | Explicit Admin check plus current-company scoping                                    |
+| `GET /admin/users/import/template`      | Import template                    | None                                         | CSV download     | Explicit Admin check                                                                 |
 | `GET /api/cron/celebrations`            | Generate scheduled celebrations    | `Authorization: Bearer <CRON_SECRET>`        | JSON run summary | Bearer secret in production                                                          |
-| `POST /api/notifications/track`         | Mark notification delivered/opened | Notification ID plus delivered/opened event  | `204`            | Ownership is scoped when authenticated; currently also returns `204` without context |
+| `POST /api/notifications/track`         | Mark notification delivered/opened | Notification ID plus delivered/opened event  | `204`            | Authenticated ownership scope; signed-out callers receive `401`                      |
 | `GET /platform/audit/export`            | Export filtered centralized audit   | Audit filters plus `format` (`csv`, `xlsx`)  | File download    | Explicit System Admin; 5,000-row cap and truncation response header                  |
 
 The Vercel cron schedule calls `/api/cron/celebrations` at `0 18 * * *` UTC, corresponding to Bangladesh midnight when UTC+6 applies.
@@ -29,7 +29,9 @@ The Vercel cron schedule calls `/api/cron/celebrations` at `0 18 * * *` UTC, cor
 ### Platform control
 
 - `createCompanyAction`: System Admin; atomically creates company, default roles, and settings.
-- `updateCompanyStatusAction`: System Admin; active/inactive/suspended/deleted lifecycle state.
+- `updateCompanyStatusAction`: System Admin; active/inactive/suspended/archived/deleted lifecycle state, with exact-name confirmation for soft deletion.
+- `resetPlatformEmployeePasswordAction`: System Admin; exact Employee-ID confirmation and audited reset to the canonical initial password.
+- `updatePlatformSettingsAction`: System Admin; global branding and operational defaults.
 - `updatePlatformFeatureAction`: System Admin; authoritative global enable/disable.
 - `updateCompanyFeatureAction`: System Admin; selected-company override.
 - `updateOwnCompanyFeatureAction`: Company Admin; current-company override only and never bypasses platform disable.

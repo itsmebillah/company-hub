@@ -7,18 +7,23 @@ import {
   LayoutDashboard,
   ShieldCheck,
   SlidersHorizontal,
+  Settings,
+  UsersRound,
 } from "lucide-react";
 
 import { LogoutButton } from "@/features/auth/components";
 import { getCurrentSessionProfile } from "@/features/auth/services/session.service";
 import { getCurrentSystemAdmin } from "@/features/platform-control/services/system-admin.service";
 import { PlatformAuditService } from "@/features/platform-control/services/platform-audit.service";
+import { PlatformControlService } from "@/features/platform-control/services/platform-control.service";
 
 const navigation = [
   { href: "/platform/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/platform/companies", label: "Companies", icon: Building2 },
+  { href: "/platform/people", label: "People", icon: UsersRound },
   { href: "/platform/features", label: "Features", icon: SlidersHorizontal },
   { href: "/platform/audit", label: "Audit center", icon: Activity },
+  { href: "/platform/settings", label: "Settings", icon: Settings },
 ];
 
 export default async function PlatformLayout({
@@ -49,6 +54,7 @@ export default async function PlatformLayout({
         : "/login",
     );
   }
+  const platformSettings = await PlatformControlService.getSettings();
 
   return (
     <div className="app-shell min-h-svh">
@@ -62,7 +68,9 @@ export default async function PlatformLayout({
               <ShieldCheck className="size-5" />
             </span>
             <span className="min-w-0">
-              <span className="block truncate">Platform Control Center</span>
+              <span className="block truncate">
+                {platformSettings.platformName} Control Center
+              </span>
               <span className="text-muted-foreground block truncate text-xs font-normal">
                 {admin.displayName}
               </span>

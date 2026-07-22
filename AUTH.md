@@ -2,7 +2,9 @@
 
 ## System Admin boundary
 
-System Admin is an explicit global authorization in `platform_admins`; it is not inferred from the tenant-scoped `Admin` role. A System Admin must already have an active employee/Auth identity and is redirected to `/platform/dashboard` after login. Migration `0030` intentionally provisions nobody automatically.
+System Admin is an explicit global authorization in `platform_admins`; it is the platform role and is deliberately not inserted into tenant-scoped `roles`. This prevents a Company Admin from inheriting global authority and allows one approved Auth identity to operate across every company. A System Admin currently uses an existing active employee/Auth identity and is redirected to `/platform/dashboard` after login. Migration `0030` intentionally provisions nobody automatically.
+
+System Admin password reset is server-only and requires an exact Employee ID confirmation. It restores the canonical Employee-ID-derived initial password through the Supabase Admin API without revealing Auth email mappings or the internally padded value, and records a centralized security audit event.
 
 Company Admins remain restricted to their company and may use `/admin/settings/features` and `/admin/audit`. Employees cannot access either admin surface. Provisioning requires a deliberate trusted operation using the approved Auth user UUID and display name.
 

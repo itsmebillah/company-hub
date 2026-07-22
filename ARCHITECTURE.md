@@ -2,7 +2,7 @@
 
 ## Platform control plane
 
-`app/(platform)/platform` is a separate System Admin route group. Its server pages call `features/platform-control`, which revalidates the explicit platform identity before privileged Supabase access. Tenant Admin feature and audit pages reuse that boundary but resolve the authenticated company. Middleware independently enforces company lifecycle and feature availability; navigation and dashboard filtering mirror, but do not replace, authorization.
+`app/(platform)/platform` is a separate System Admin route group. Its server pages call `features/platform-control`, which revalidates the explicit platform identity before privileged Supabase access. System Admin is represented by `platform_admins`, not by a company role: this keeps global authority above and outside the tenant hierarchy while preserving the existing Employee-ID login flow. The control plane owns cross-company people, company lifecycle, global settings/branding, features, health, and audit. Tenant Admin feature and audit pages reuse that boundary but always resolve the authenticated company. Middleware independently enforces company lifecycle and feature availability; navigation and dashboard filtering mirror, but do not replace, authorization.
 
 ## System context
 

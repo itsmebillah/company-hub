@@ -4,8 +4,10 @@ import {
   updateCompanyStatusAction,
 } from "@/features/platform-control/actions/platform-control.actions";
 import { PlatformControlService } from "@/features/platform-control/services/platform-control.service";
+import { requireSystemAdminPage } from "@/features/platform-control/services/system-admin.service";
 
 export default async function PlatformCompaniesPage() {
+  await requireSystemAdminPage();
   const companies = await PlatformControlService.listCompanies();
   return (
     <div className="space-y-6">
@@ -77,7 +79,7 @@ export default async function PlatformCompaniesPage() {
             </form>
             <form
               action={updateCompanyStatusAction}
-              className="mt-2 flex gap-2"
+              className="mt-2 grid grid-cols-[minmax(0,1fr)_auto] gap-2"
             >
               <input type="hidden" name="companyId" value={company.id ?? ""} />
               <select
@@ -88,11 +90,20 @@ export default async function PlatformCompaniesPage() {
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
                 <option value="suspended">Suspended</option>
+                <option value="archived">Archived</option>
                 <option value="deleted">Deleted</option>
               </select>
               <button className="rounded-xl border px-3 text-sm font-semibold">
                 Update
               </button>
+              <label className="text-muted-foreground col-span-2 text-xs">
+                To select Deleted, type the exact company name
+                <input
+                  name="confirmation"
+                  autoComplete="off"
+                  className="bg-background mt-1 h-10 w-full rounded-xl border px-3 text-sm"
+                />
+              </label>
             </form>
           </article>
         ))}

@@ -14,8 +14,8 @@ The quality-hardening baseline is deployable: privileged mutation boundaries, pr
 - Node.js 24.16.0 and npm 11.13.0 used for the latest verification.
 - Supabase CLI 2.109.1 and Vercel CLI 56.3.2 installed as dev dependencies.
 - Supabase project `jjfktbgfwvekhlvyjlww` linked and active.
-- Migrations `0001` through `0034` applied remotely with exact local/remote parity.
-- 26 public application tables with RLS enabled; platform-control tables are default-deny to browser roles.
+- Migrations `0001` through `0035` applied remotely with exact local/remote parity.
+- 27 public application tables with RLS enabled; platform-control tables are default-deny to browser roles.
 - Fourteen platform features are cataloged. Existing companies inherit enabled modules and `future_modules` starts disabled.
 - No System Admin is auto-provisioned. `platform_admins` remains empty until the owner explicitly approves an existing active Auth identity.
 - Exact restored content parity for 1,748 application rows across all 22 tables; all application IDs and hierarchy references were preserved.
@@ -24,7 +24,7 @@ The quality-hardening baseline is deployable: privileged mutation boundaries, pr
 - `npm install`, lint, typecheck, and production build pass.
 - Playwright: 46 production-build checks are defined across Chrome and Edge, including Admin/Employee login, session restore, logout, role redirects, major routes, Platform Audit CSV/XLSX exports, Quick Link visual priority and image lifecycle, PWA assets, private Storage, Realtime, attendance attachments, exports, signed-out API denial, responsive widths from 320px through 1024px, and WCAG A/AA scans. The 2026-07-22 build passes all 23 Chrome checks; Edge execution is currently blocked because Edge is not installed and its installer requires workstation elevation. The preceding foundation build passed both projects.
 - Local production runtime boots cleanly with Supabase network access. `/`, `/setup`, and `/login` return 200; unauthenticated protected routes redirect to login; migrated Admin and employee sessions render their dashboards; non-Admin access to the Admin dashboard is redirected.
-- Platform regression: a disposable explicit System Admin rendered all four control-center routes without horizontal overflow at 320/360/375/390/414/768/1024px; cleanup restored `platform_admins` to zero. A disposable company Attendance override hid navigation and returned HTTP 404 on direct access, then restored the prior state. Final Chrome checks pass for these flows, the complete Admin route matrix, and all 12 public/signed-out/PWA/accessibility checks.
+- Platform regression: a disposable explicit System Admin renders all six control-center routes without horizontal overflow at 320/360/375/390/414/768/1024px and verifies audited initial-password reset; cleanup restores `platform_admins` to zero. A disposable company Attendance override hides navigation and returns HTTP 404 on direct access, then restores the prior state. Chrome checks cover these flows, the complete Admin route matrix, and all 12 public/signed-out/PWA/accessibility checks.
 
 ## Implemented product areas
 
@@ -36,7 +36,7 @@ The quality-hardening baseline is deployable: privileged mutation boundaries, pr
 - Leave types, employee requests, approval/rejection/cancellation.
 - Holiday calendars and events.
 - Company branding/settings, dashboard summaries, audit activity, celebrations cron.
-- Platform Control Center with company status and rename controls, two-level feature controls, usage, security/login/activity audit events, complete audit filtering, bounded CSV/XLSX exports, pagination, and company-scoped audit access. All 136 immutable legacy activity events are represented in the central audit stream.
+- Platform Control Center with active/inactive/suspended/archived/deleted company lifecycle, confirmed soft deletion, cross-company people/Admin visibility, audited initial-password reset, global branding/configuration, two-level feature controls, usage, security/login/activity audit events, complete audit filtering, bounded CSV/XLSX exports, pagination, and company-scoped audit access. All 136 immutable legacy activity events are represented in the central audit stream.
 - Responsive admin/employee shells, theme support, PWA install flow, service worker, permission onboarding.
 
 ## Current quality signals

@@ -33,4 +33,5 @@ export const SCHEMA_MIGRATION_MANIFEST = [
   "0032_schema_version_invoker.sql",
   "0033_platform_company_update.sql",
   "0034_fix_platform_company_update.sql",
+  "0035_platform_architecture_v2.sql",
 ] as const;

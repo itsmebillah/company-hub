@@ -16,8 +16,10 @@ Migration `0030` does not auto-promote anyone. Approve the first System Admin on
 
 - `/platform/dashboard`: platform health and operating metrics.
 - `/platform/companies`: atomic company bootstrap and reversible lifecycle status.
+- `/platform/people`: cross-company employee/Admin visibility and confirmed, audited initial-password reset.
 - `/platform/features`: global state, company overrides, and 30-day usage.
 - `/platform/audit`: searchable/filterable paginated cross-company events with CSV/Excel export.
+- `/platform/settings`: default-deny global branding and operational configuration.
 - `/admin/settings/features`: current-company feature overrides.
 - `/admin/audit`: current-company event history.
 

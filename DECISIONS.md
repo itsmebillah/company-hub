@@ -4,6 +4,10 @@
 
 Company `Admin` remains tenant-scoped. Global access requires an active `platform_admins` row and is never seeded or inferred. Feature availability resolves in order: active company, enabled platform feature, then optional company override. Missing overrides inherit enabled to preserve existing tenants; future global states are treated as disabled until their semantics exist. Company removal is a reversible lifecycle state, not destructive deletion.
 
+## ADR-012 — Platform role is not a tenant role
+
+“System Admin” is the product-facing name for an explicit `platform_admins` authorization, not a row in each company’s `roles` table. Tenant roles remain `Admin → Sales Head → RSM → TSO → SR`; putting System Admin in that hierarchy would bind global authority to one company and make tenant role administration an escalation path. Platform settings are a default-deny singleton and every global operation rechecks the platform authorization in server-only code.
+
 This file records durable decisions reflected in code. Add an entry when changing a system boundary or invariant; do not rewrite history to make an old decision appear current.
 
 ## ADR-001 — Next.js App Router and server-first features

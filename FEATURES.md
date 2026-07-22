@@ -34,7 +34,7 @@ Status values: **Implemented** means a routed workflow and supporting service ex
 | Device onboarding            | Implemented | Versioned location/notification/camera permission flow                                                 |
 | Theme and responsive UI      | Implemented | System/light/dark theme, admin and employee desktop/mobile navigation                                  |
 | Schema diagnostics           | Foundation  | Read-only schema-version service; production migration control remains CLI-based                       |
-| Platform Control Center      | Implemented | `/platform/*` company, feature, usage, audit, security, and health controls for explicit System Admins  |
+| Platform Control Center      | Implemented | `/platform/*` companies, people/Admins, password recovery, global settings/branding, features, usage, audit, security, and health controls for explicit System Admins |
 | Company feature controls     | Implemented | `/admin/settings/features`; platform-authoritative current-company enable/disable overrides             |
 | Central audit center         | Implemented | Login/logout, security denial, historical activity, full filters, pagination, CSV, and Excel exports    |
 

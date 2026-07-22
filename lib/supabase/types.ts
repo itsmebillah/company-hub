@@ -799,6 +799,44 @@ export type Database = {
         >;
         Relationships: [];
       };
+      platform_settings: {
+        Row: {
+          id: boolean;
+          platform_name: string;
+          logo_url: string | null;
+          favicon_url: string | null;
+          primary_color: string;
+          support_email: string | null;
+          default_timezone: string;
+          maintenance_message: string | null;
+          allow_company_creation: boolean;
+          audit_retention_days: number;
+          global_configuration: Json;
+          updated_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: boolean;
+          platform_name?: string;
+          logo_url?: string | null;
+          favicon_url?: string | null;
+          primary_color?: string;
+          support_email?: string | null;
+          default_timezone?: string;
+          maintenance_message?: string | null;
+          allow_company_creation?: boolean;
+          audit_retention_days?: number;
+          global_configuration?: Json;
+          updated_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["platform_settings"]["Insert"]
+        >;
+        Relationships: [];
+      };
       company_features: {
         Row: {
           id: string;
@@ -1480,7 +1518,8 @@ export type Database = {
     Enums: {
       platform_feature_state:
         "enabled" | "disabled" | "beta" | "hidden" | "deprecated";
-      platform_company_status: "active" | "inactive" | "suspended" | "deleted";
+      platform_company_status:
+        "active" | "inactive" | "suspended" | "archived" | "deleted";
       platform_audit_category:
         "audit" | "activity" | "login" | "security" | "feature_usage" | "error";
       platform_audit_status: "success" | "failure" | "denied" | "warning";

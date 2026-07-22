@@ -97,6 +97,7 @@ export function ResourceVisual({
     <span
       data-resource-visual
       data-visual-source={visualSource}
+      data-favicon-src={faviconSrc ?? undefined}
       className={cn(
         "dark:bg-background/85 relative flex aspect-square shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/70 bg-white/90 text-current shadow-sm dark:border-white/15",
         className,

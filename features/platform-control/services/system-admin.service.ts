@@ -1,7 +1,9 @@
 import "server-only";
 
 import { getCurrentAuthUser } from "@/features/auth/services/auth.service";
+import { getCurrentSessionProfile } from "@/features/auth/services/session.service";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { redirect } from "next/navigation";
 
 export type SystemAdminContext = {
   id: string;
@@ -49,4 +51,18 @@ export async function requireSystemAdmin() {
   }
 
   return admin;
+}
+
+export async function requireSystemAdminPage() {
+  const admin = await getCurrentSystemAdmin();
+  if (admin) return admin;
+
+  const profile = await getCurrentSessionProfile();
+  redirect(
+    profile
+      ? profile.roleName === "Admin"
+        ? "/admin/dashboard"
+        : "/dashboard"
+      : "/login",
+  );
 }

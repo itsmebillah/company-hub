@@ -2,9 +2,9 @@
 
 ## Source of truth
 
-`supabase/migrations/` is the canonical schema history. Migrations `0001`–`0034` are applied to project `jjfktbgfwvekhlvyjlww`. Never edit an applied migration; add the next ordered migration. Migration `0030` adds the Platform Control Center; `0031` removes anonymous helper execution; `0032` makes schema telemetry invoker-safe; `0033` adds atomic company-name synchronization plus historical activity import; and `0034` removes an argument/column ambiguity in the company-name RPC.
+`supabase/migrations/` is the canonical schema history. Migrations `0001`–`0035` are applied to project `jjfktbgfwvekhlvyjlww`. Never edit an applied migration; add the next ordered migration. Migration `0030` adds the Platform Control Center; `0031` removes anonymous helper execution; `0032` makes schema telemetry invoker-safe; `0033` adds atomic company-name synchronization plus historical activity import; `0034` removes an argument/column ambiguity in the company-name RPC; and `0035` adds archived company lifecycle plus singleton platform branding/global configuration.
 
-The live verified catalog contains 26 public tables and the security-invoker `platform_company_overview` view. The original 1,748 restored application rows remain intact; migration `0030` backfilled the existing company status and seeded only the 14-row feature catalog.
+The live verified catalog contains 27 public tables and the security-invoker `platform_company_overview` view. The original 1,748 restored application rows remain intact; migration `0030` backfilled the existing company status and seeded only the 14-row feature catalog. Migration `0035` adds one default `platform_settings` singleton row.
 
 ## Domain tables
 
@@ -18,7 +18,7 @@ The live verified catalog contains 26 public tables and the security-invoker `pl
 | Leave/calendar      | `leave_types`, `leave_requests`, `holiday_calendars`, `holiday_events` | Leave workflow and working-day context                      |
 | Import              | `employee_import_jobs`, `employee_import_rows`                         | Durable bulk-import staging and outcomes                    |
 | Celebrations        | `employee_celebration_events`                                          | Per-year birthday/anniversary generation deduplication      |
-| Platform control    | `platform_admins`, `platform_features`, `company_features`             | Explicit global authorization and two-level feature state   |
+| Platform control    | `platform_admins`, `platform_settings`, `platform_features`, `company_features` | Explicit global authorization, global configuration, and two-level feature state |
 | Platform telemetry  | `platform_audit_logs`, `feature_usage_daily`                           | Central audit events and daily request aggregates           |
 
 ## Key relationships
@@ -65,7 +65,7 @@ Security-definer helpers set a controlled search path. Anonymous execution is re
 
 ## RLS
 
-All 26 public tables have RLS enabled. Direct access is default-deny except:
+All 27 public tables have RLS enabled. Direct access is default-deny except:
 
 - Authenticated employees may SELECT notification rows allowed by `can_receive_notification`.
 - Admin/company and employee CRUD continues through authorized server services using service role.

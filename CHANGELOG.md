@@ -25,6 +25,8 @@ This project follows a Keep-a-Changelog-style record. Versioning is not yet form
 
 ### Added
 
+- Added Platform Architecture v2 with an explicit global-vs-tenant authority boundary, cross-company people/Admin directory, audited initial-password reset, platform settings/branding, archived company lifecycle, confirmed soft deletion, expanded dashboard metrics, quick actions, and recent companies.
+- Added migration `0035_platform_architecture_v2.sql` with the default-deny singleton `platform_settings` table, archived platform company status, and schema telemetry advancement.
 - Added the System Admin Platform Control Center with company lifecycle management, platform/company feature controls, aggregate feature usage, health metrics, centralized audit/security/login logs, company-scoped audit access, responsive routes, and fail-closed middleware enforcement.
 - Added migration `0030_platform_control_center.sql` with explicit platform administrators, 14 feature definitions, company overrides, audit telemetry, daily usage aggregation, a security-invoker overview, default-deny RLS, and caller-derived authorization RPCs.
 - Added migration `0031_platform_security_and_schema_version.sql` to advance runtime schema telemetry and explicitly revoke anonymous execution from notification/schema helpers.

@@ -18,12 +18,17 @@ export async function createCompanyAction(formData: FormData) {
 export async function updateCompanyStatusAction(formData: FormData) {
   const companyId = String(formData.get("companyId") ?? "");
   const status = String(formData.get("status") ?? "") as PlatformCompanyStatus;
+  const confirmation = String(formData.get("confirmation") ?? "");
   if (
     !companyId ||
-    !["active", "inactive", "suspended", "deleted"].includes(status)
+    !["active", "inactive", "suspended", "archived", "deleted"].includes(status)
   )
     throw new Error("Invalid company status request.");
-  await PlatformControlService.updateCompanyStatus(companyId, status);
+  await PlatformControlService.updateCompanyStatus(
+    companyId,
+    status,
+    confirmation,
+  );
   revalidatePath("/platform");
 }
 
@@ -70,4 +75,29 @@ export async function updateOwnCompanyFeatureAction(formData: FormData) {
     throw new Error("Invalid feature request.");
   await PlatformControlService.updateOwnCompanyFeature(featureKey, state);
   revalidatePath("/admin/settings/features");
+}
+
+export async function resetPlatformEmployeePasswordAction(formData: FormData) {
+  const employeeId = String(formData.get("employeeId") ?? "");
+  const confirmation = String(formData.get("confirmation") ?? "");
+  if (!employeeId || !confirmation.trim()) {
+    throw new Error("Employee and confirmation are required.");
+  }
+  await PlatformControlService.resetEmployeePassword(employeeId, confirmation);
+  revalidatePath("/platform/people");
+}
+
+export async function updatePlatformSettingsAction(formData: FormData) {
+  await PlatformControlService.updateSettings({
+    platformName: String(formData.get("platformName") ?? ""),
+    logoUrl: String(formData.get("logoUrl") ?? ""),
+    faviconUrl: String(formData.get("faviconUrl") ?? ""),
+    primaryColor: String(formData.get("primaryColor") ?? ""),
+    supportEmail: String(formData.get("supportEmail") ?? ""),
+    defaultTimezone: String(formData.get("defaultTimezone") ?? ""),
+    maintenanceMessage: String(formData.get("maintenanceMessage") ?? ""),
+    allowCompanyCreation: formData.get("allowCompanyCreation") === "on",
+    auditRetentionDays: Number(formData.get("auditRetentionDays")),
+  });
+  revalidatePath("/platform");
 }

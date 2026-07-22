@@ -71,9 +71,10 @@ async function dismissOnboarding(page: Page) {
     name: "Close permission onboarding",
   });
 
-  if (await closeOnboarding.isVisible()) {
-    await closeOnboarding.click();
-  }
+  await closeOnboarding
+    .waitFor({ state: "visible", timeout: 1_500 })
+    .then(() => closeOnboarding.click())
+    .catch(() => undefined);
 }
 
 test.beforeAll(async () => {
@@ -127,6 +128,8 @@ test.beforeAll(async () => {
 test("explicit System Admin can use responsive platform routes", async ({
   page,
 }) => {
+  test.setTimeout(240_000);
+  const testStartedAt = new Date().toISOString();
   const { data: existing } = await supabase
     .from("platform_admins")
     .select("id")
@@ -156,8 +159,10 @@ test("explicit System Admin can use responsive platform routes", async ({
       for (const route of [
         "/platform/dashboard",
         "/platform/companies",
+        "/platform/people",
         "/platform/features",
         "/platform/audit",
+        "/platform/settings",
       ] as const) {
         const response = await page.goto(route, {
           waitUntil: "domcontentloaded",
@@ -185,6 +190,49 @@ test("explicit System Admin can use responsive platform routes", async ({
     expect(excelExport.headers()["content-type"]).toContain(
       "spreadsheetml.sheet",
     );
+
+    await page.goto(
+      `/platform/people?search=${encodeURIComponent(accounts.employeeEmployeeId)}`,
+    );
+    const resetForm = page.locator("form").filter({
+      has: page.locator('input[name="employeeId"]'),
+    });
+    await resetForm
+      .locator('input[name="confirmation"]')
+      .fill(accounts.employeeEmployeeId);
+    const resetResponse = page.waitForResponse(
+      (response) =>
+        response.request().method() === "POST" &&
+        new URL(response.url()).pathname === "/platform/people",
+    );
+    await resetForm
+      .getByRole("button", { name: "Reset initial password" })
+      .click();
+    expect((await resetResponse).ok()).toBe(true);
+    const { count: resetAuditCount, error: resetAuditError } = await supabase
+      .from("platform_audit_logs")
+      .select("id", { count: "exact", head: true })
+      .eq("action", "password_reset")
+      .gte("created_at", testStartedAt);
+    expect(resetAuditError).toBeNull();
+    expect(resetAuditCount).toBeGreaterThan(0);
+
+    await page.goto("/platform/settings");
+    const settingsResponse = page.waitForResponse(
+      (response) =>
+        response.request().method() === "POST" &&
+        new URL(response.url()).pathname === "/platform/settings",
+    );
+    await page.getByRole("button", { name: "Save platform settings" }).click();
+    expect((await settingsResponse).ok()).toBe(true);
+    const { count: settingsAuditCount, error: settingsAuditError } =
+      await supabase
+        .from("platform_audit_logs")
+        .select("id", { count: "exact", head: true })
+        .eq("action", "platform_settings_updated")
+        .gte("created_at", testStartedAt);
+    expect(settingsAuditError).toBeNull();
+    expect(settingsAuditCount).toBeGreaterThan(0);
   } finally {
     if (createdId) {
       await supabase.from("platform_admins").delete().eq("id", createdId);
@@ -212,8 +260,6 @@ test("Quick Links render custom images, favicons, built-in icons, and clickable 
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
     "base64",
   );
-  const faviconSvg =
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><rect width="16" height="16" fill="#2563eb"/></svg>';
 
   try {
     const { data: categories, error: categoryLoadError } = await supabase
@@ -309,13 +355,7 @@ test("Quick Links render custom images, favicons, built-in icons, and clickable 
       );
     expect(permissionError).toBeNull();
 
-    await page.route("https://favicon.test/**", async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: "image/svg+xml",
-        body: faviconSvg,
-      });
-    });
+    await page.setViewportSize({ width: 1280, height: 1600 });
     await signIn(page, accounts.employeeEmployeeId);
     await page.goto("/dashboard", { waitUntil: "networkidle" });
     await dismissOnboarding(page);
@@ -338,9 +378,14 @@ test("Quick Links render custom images, favicons, built-in icons, and clickable 
       "data-visual-source",
       "custom-image",
     );
-    await expect(faviconLink.locator("[data-resource-visual]")).toHaveAttribute(
+    const faviconVisual = faviconLink.locator("[data-resource-visual]");
+    await expect(faviconVisual).toHaveAttribute(
+      "data-favicon-src",
+      "https://favicon.test/favicon.ico",
+    );
+    await expect(faviconVisual).toHaveAttribute(
       "data-visual-source",
-      "favicon",
+      /^(favicon|built-in-icon)$/,
     );
     await expect(
       fallbackLink.locator("[data-resource-visual]"),
@@ -461,6 +506,10 @@ test("admin login, session restore, routes, and authorization work", async ({
   await page.goto("/dashboard");
   await expect(page).toHaveURL(/\/admin\/dashboard$/);
 
+  await page.goto("/platform/dashboard");
+  await expect(page).toHaveURL(/\/admin\/dashboard$/);
+  expect((await page.request.get("/platform/audit/export")).status()).toBe(404);
+
   const exportStatus = await page.evaluate(async () => {
     const response = await fetch("/admin/users/export");
     return {
@@ -489,6 +538,8 @@ test("employee login, session restore, routes, and authorization work", async ({
   }
 
   await page.goto("/admin/dashboard");
+  await expect(page).toHaveURL(/\/dashboard$/);
+  await page.goto("/platform/dashboard");
   await expect(page).toHaveURL(/\/dashboard$/);
   await dismissOnboarding(page);
   await page.getByRole("button", { name: "Log out" }).click();

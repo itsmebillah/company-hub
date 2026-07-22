@@ -3,6 +3,7 @@ import * as XLSX from "xlsx";
 
 import { FEATURE_KEYS } from "@/features/platform-control/constants/feature-catalog";
 import { PlatformControlService } from "@/features/platform-control/services/platform-control.service";
+import { getCurrentSystemAdmin } from "@/features/platform-control/services/system-admin.service";
 import type {
   AuditCategory,
   FeatureKey,
@@ -27,6 +28,9 @@ function csvCell(value: unknown) {
 }
 
 export async function GET(request: NextRequest) {
+  if (!(await getCurrentSystemAdmin())) {
+    return new NextResponse(null, { status: 404 });
+  }
   const query = request.nextUrl.searchParams;
   const category = query.get("category") ?? "";
   const feature = query.get("feature") ?? "";

@@ -18,7 +18,7 @@ export type FeatureKey =
 
 export type FeatureState = "enabled" | "disabled";
 export type PlatformCompanyStatus =
-  "active" | "inactive" | "suspended" | "deleted";
+  "active" | "inactive" | "suspended" | "archived" | "deleted";
 export type AuditCategory =
   "audit" | "activity" | "login" | "security" | "feature_usage" | "error";
 export type AuditStatus = "success" | "failure" | "denied" | "warning";
@@ -46,4 +46,24 @@ export type AuditEventInput = {
   authUserId?: string | null;
   featureKey?: FeatureKey | null;
   metadata?: Json;
+};
+
+export type PlatformEmployeeFilters = {
+  page?: number;
+  companyId?: string;
+  role?: string;
+  status?: string;
+  search?: string;
+};
+
+export type PlatformSettingsValues = {
+  platformName: string;
+  logoUrl: string;
+  faviconUrl: string;
+  primaryColor: string;
+  supportEmail: string;
+  defaultTimezone: string;
+  maintenanceMessage: string;
+  allowCompanyCreation: boolean;
+  auditRetentionDays: number;
 };

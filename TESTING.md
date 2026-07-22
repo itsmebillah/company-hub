@@ -2,7 +2,7 @@
 
 ## Current state
 
-Platform Control Center verification additionally covers regular Admin denial from `/platform`, explicit System Admin access, company isolation for `/admin/audit`, global-disable precedence, company overrides, direct-route 404 enforcement, navigation/card removal, denial-event creation, and daily usage increments. Automated tests must use a disposable platform-admin grant removed in `finally`; never auto-promote a production user.
+Platform Control Center verification additionally covers regular Admin and employee denial from `/platform`, explicit System Admin access across six responsive routes, cross-company people rendering, audited initial-password reset, platform-settings persistence, company isolation for `/admin/audit`, global-disable precedence, company overrides, direct-route/API denial, navigation/card removal, denial-event creation, and daily usage increments. Automated tests must use a disposable platform-admin grant removed in `finally`; never auto-promote a production user.
 
 The 2026-07-22 production-mode run passed the focused System Admin responsive matrix, full Company Admin route matrix, company feature-disable enforcement, and all 12 public/signed-out/PWA/accessibility Chrome checks. The full combined Chrome suite exceeded the command execution window once; its affected Platform tests were rerun directly and passed. Edge remains unavailable on this workstation as documented in project state.
 

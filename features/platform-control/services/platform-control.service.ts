@@ -1,12 +1,15 @@
 import "server-only";
 
 import { requireAdmin } from "@/features/auth/services/authorization.service";
+import { toSupabaseEmployeePassword } from "@/features/auth/utils/employee-password";
 import { PlatformAuditService } from "@/features/platform-control/services/platform-audit.service";
 import { requireSystemAdmin } from "@/features/platform-control/services/system-admin.service";
 import type {
   AuditCategory,
   FeatureKey,
   FeatureState,
+  PlatformEmployeeFilters,
+  PlatformSettingsValues,
   PlatformCompanyStatus,
 } from "@/features/platform-control/types/platform.types";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -27,7 +30,35 @@ export type PlatformAuditFilters = {
 };
 
 const PAGE_SIZE = 25;
+const PEOPLE_PAGE_SIZE = 25;
 type AuditRow = Database["public"]["Tables"]["platform_audit_logs"]["Row"];
+
+function optionalText(value: string) {
+  const nextValue = value.trim();
+  return nextValue || null;
+}
+
+function assertPlatformSettings(values: PlatformSettingsValues) {
+  if (values.platformName.trim().length < 2) {
+    throw new Error("Platform name is required.");
+  }
+  if (!/^#[0-9A-Fa-f]{6}$/.test(values.primaryColor)) {
+    throw new Error("Primary color must be a six-digit hex color.");
+  }
+  if (
+    values.supportEmail.trim() &&
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.supportEmail.trim())
+  ) {
+    throw new Error("Support email is invalid.");
+  }
+  if (
+    !Number.isInteger(values.auditRetentionDays) ||
+    values.auditRetentionDays < 30 ||
+    values.auditRetentionDays > 3650
+  ) {
+    throw new Error("Audit retention must be between 30 and 3650 days.");
+  }
+}
 
 async function enrichAuditItems(
   supabase: ReturnType<typeof createSupabaseAdminClient>,
@@ -87,9 +118,12 @@ export const PlatformControlService = {
       employees,
       admins,
       attendance,
+      announcements,
       features,
+      usage,
       security,
       recent,
+      recentCompanies,
     ] = await Promise.all([
       supabase.from("companies").select("id, platform_status"),
       supabase
@@ -105,7 +139,18 @@ export const PlatformControlService = {
         .from("attendance_records")
         .select("id", { count: "exact", head: true })
         .eq("attendance_date", today),
+      supabase
+        .from("announcements")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "active"),
       supabase.from("platform_features").select("feature_key, state"),
+      supabase
+        .from("feature_usage_daily")
+        .select("request_count")
+        .gte(
+          "usage_date",
+          new Date(Date.now() - 30 * 86_400_000).toISOString().slice(0, 10),
+        ),
       supabase
         .from("platform_audit_logs")
         .select("id", { count: "exact", head: true })
@@ -116,6 +161,11 @@ export const PlatformControlService = {
         .select("id, category, action, description, status, created_at")
         .order("created_at", { ascending: false })
         .limit(8),
+      supabase
+        .from("platform_company_overview")
+        .select("id, name, platform_status, created_at, employee_count")
+        .order("created_at", { ascending: false })
+        .limit(5),
     ]);
 
     return {
@@ -123,10 +173,21 @@ export const PlatformControlService = {
       activeEmployees: employees.count ?? 0,
       activeAdmins: admins.count ?? 0,
       todayAttendance: attendance.count ?? 0,
+      activeAnnouncements: announcements.count ?? 0,
       features: features.data ?? [],
+      featureRequests30Days: (usage.data ?? []).reduce(
+        (total, item) => total + item.request_count,
+        0,
+      ),
       securityEventsToday: security.count ?? 0,
       recentEvents: recent.data ?? [],
-      databaseHealthy: !companies.error && !employees.error && !features.error,
+      recentCompanies: recentCompanies.data ?? [],
+      databaseHealthy:
+        !companies.error &&
+        !employees.error &&
+        !announcements.error &&
+        !features.error &&
+        !recentCompanies.error,
     };
   },
 
@@ -144,6 +205,14 @@ export const PlatformControlService = {
   async createCompany(name: string) {
     const actor = await requireSystemAdmin();
     const supabase = createSupabaseAdminClient();
+    const { data: settings, error: settingsError } = await supabase
+      .from("platform_settings")
+      .select("allow_company_creation")
+      .eq("id", true)
+      .single();
+    if (settingsError || !settings?.allow_company_creation) {
+      throw new Error("Company creation is disabled in platform settings.");
+    }
     const { data, error } = await supabase.rpc("create_platform_company", {
       company_name: name,
     });
@@ -160,9 +229,22 @@ export const PlatformControlService = {
     return data;
   },
 
-  async updateCompanyStatus(companyId: string, status: PlatformCompanyStatus) {
+  async updateCompanyStatus(
+    companyId: string,
+    status: PlatformCompanyStatus,
+    confirmation = "",
+  ) {
     const actor = await requireSystemAdmin();
     const supabase = createSupabaseAdminClient();
+    const { data: company, error: companyError } = await supabase
+      .from("companies")
+      .select("name")
+      .eq("id", companyId)
+      .single();
+    if (companyError || !company) throw new Error("Company was not found.");
+    if (status === "deleted" && confirmation.trim() !== company.name) {
+      throw new Error("Type the exact company name to confirm deletion.");
+    }
     const { error } = await supabase
       .from("companies")
       .update({ platform_status: status, updated_at: new Date().toISOString() })
@@ -177,7 +259,9 @@ export const PlatformControlService = {
             ? "company_deactivated"
             : status === "suspended"
               ? "company_suspended"
-              : "company_deleted",
+              : status === "archived"
+                ? "company_archived"
+                : "company_deleted",
       entityType: "company",
       entityId: companyId,
       status: status === "active" ? "success" : "warning",
@@ -207,6 +291,174 @@ export const PlatformControlService = {
       description: "System Admin updated a company name.",
       companyId,
       platformAdminId: actor.id,
+    });
+  },
+
+  async listPeople(filters: PlatformEmployeeFilters = {}) {
+    await requireSystemAdmin();
+    const supabase = createSupabaseAdminClient();
+    const page = Math.max(filters.page ?? 1, 1);
+    let query = supabase
+      .from("employees")
+      .select(
+      "id, employee_id, name, status, company_id, auth_user_id, created_at, companies!inner(name), roles!employees_role_company_fk!inner(name)",
+        { count: "exact" },
+      );
+    if (filters.companyId) query = query.eq("company_id", filters.companyId);
+    if (filters.role) query = query.eq("roles.name", filters.role);
+    if (filters.status)
+      query = query.eq(
+        "status",
+        filters.status as "active" | "inactive" | "archived",
+      );
+    if (filters.search) {
+      const search = filters.search.replace(/[%_,()]/g, "").trim();
+      query = query.or(`employee_id.ilike.%${search}%,name.ilike.%${search}%`);
+    }
+
+    const { data, error, count } = await query
+      .order("created_at", { ascending: false })
+      .range((page - 1) * PEOPLE_PAGE_SIZE, page * PEOPLE_PAGE_SIZE - 1);
+    if (error) throw new Error("Unable to load platform employees.");
+    const rows = (data ?? []) as unknown as Array<{
+      id: string;
+      employee_id: string;
+      name: string;
+      status: "active" | "inactive" | "archived";
+      company_id: string;
+      auth_user_id: string | null;
+      created_at: string;
+      companies: { name: string } | null;
+      roles: { name: string } | null;
+    }>;
+    return {
+      items: rows.map((item) => ({
+        id: item.id,
+        employeeId: item.employee_id,
+        name: item.name,
+        status: item.status,
+        companyId: item.company_id,
+        companyName: item.companies?.name ?? "Unknown company",
+        roleName: item.roles?.name ?? "No active role",
+        canResetPassword: Boolean(item.auth_user_id),
+        createdAt: item.created_at,
+      })),
+      count: count ?? 0,
+      page,
+      pageSize: PEOPLE_PAGE_SIZE,
+    };
+  },
+
+  async listPeopleFilterOptions() {
+    await requireSystemAdmin();
+    const supabase = createSupabaseAdminClient();
+    const [{ data: roles, error }, companies] = await Promise.all([
+      supabase.from("roles").select("name").order("name"),
+      this.listCompanies(),
+    ]);
+    if (error) throw new Error("Unable to load platform people filters.");
+    return {
+      companies,
+      roles: [...new Set(roles.map((role) => role.name))],
+    };
+  },
+
+  async listSystemAdmins() {
+    await requireSystemAdmin();
+    const supabase = createSupabaseAdminClient();
+    const { data, error } = await supabase
+      .from("platform_admins")
+      .select("id, display_name, status, created_at")
+      .order("display_name");
+    if (error) throw new Error("Unable to load System Admins.");
+    return data;
+  },
+
+  async resetEmployeePassword(employeeId: string, confirmation: string) {
+    const actor = await requireSystemAdmin();
+    const supabase = createSupabaseAdminClient();
+    const { data: employee, error } = await supabase
+      .from("employees")
+      .select("id, employee_id, auth_user_id, company_id")
+      .eq("id", employeeId)
+      .single();
+    if (error || !employee?.auth_user_id) {
+      throw new Error("Employee authentication account was not found.");
+    }
+    if (confirmation.trim() !== employee.employee_id) {
+      throw new Error("Type the exact Employee ID to confirm the reset.");
+    }
+    const { error: updateError } = await supabase.auth.admin.updateUserById(
+      employee.auth_user_id,
+      {
+        password: toSupabaseEmployeePassword(employee.employee_id),
+      },
+    );
+    if (updateError) throw new Error("Unable to reset employee password.");
+    await PlatformAuditService.log({
+      category: "security",
+      action: "password_reset",
+      entityType: "employee",
+      entityId: employee.id,
+      description:
+        "System Admin reset an employee password to its initial value.",
+      companyId: employee.company_id,
+      platformAdminId: actor.id,
+    });
+  },
+
+  async getSettings(): Promise<PlatformSettingsValues> {
+    await requireSystemAdmin();
+    const supabase = createSupabaseAdminClient();
+    const { data, error } = await supabase
+      .from("platform_settings")
+      .select("*")
+      .eq("id", true)
+      .single();
+    if (error || !data) throw new Error("Unable to load platform settings.");
+    return {
+      platformName: data.platform_name,
+      logoUrl: data.logo_url ?? "",
+      faviconUrl: data.favicon_url ?? "",
+      primaryColor: data.primary_color,
+      supportEmail: data.support_email ?? "",
+      defaultTimezone: data.default_timezone,
+      maintenanceMessage: data.maintenance_message ?? "",
+      allowCompanyCreation: data.allow_company_creation,
+      auditRetentionDays: data.audit_retention_days,
+    };
+  },
+
+  async updateSettings(values: PlatformSettingsValues) {
+    const actor = await requireSystemAdmin();
+    assertPlatformSettings(values);
+    const supabase = createSupabaseAdminClient();
+    const { error } = await supabase.from("platform_settings").upsert({
+      id: true,
+      platform_name: values.platformName.trim(),
+      logo_url: optionalText(values.logoUrl),
+      favicon_url: optionalText(values.faviconUrl),
+      primary_color: values.primaryColor.toUpperCase(),
+      support_email: optionalText(values.supportEmail),
+      default_timezone: values.defaultTimezone.trim() || "UTC",
+      maintenance_message: optionalText(values.maintenanceMessage),
+      allow_company_creation: values.allowCompanyCreation,
+      audit_retention_days: values.auditRetentionDays,
+      updated_by: actor.id,
+      updated_at: new Date().toISOString(),
+    });
+    if (error) throw new Error("Unable to update platform settings.");
+    await PlatformAuditService.log({
+      category: "audit",
+      action: "platform_settings_updated",
+      entityType: "platform_settings",
+      entityId: "global",
+      description: "System Admin updated platform configuration.",
+      platformAdminId: actor.id,
+      metadata: {
+        allowCompanyCreation: values.allowCompanyCreation,
+        auditRetentionDays: values.auditRetentionDays,
+      },
     });
   },
 

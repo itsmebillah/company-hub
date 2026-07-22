@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { FEATURE_KEYS } from "@/features/platform-control/constants/feature-catalog";
 import { PlatformControlService } from "@/features/platform-control/services/platform-control.service";
+import { requireSystemAdminPage } from "@/features/platform-control/services/system-admin.service";
 import type {
   AuditCategory,
   FeatureKey,
@@ -33,6 +34,7 @@ export default async function PlatformAuditPage({
 }: {
   searchParams: Promise<Params>;
 }) {
+  await requireSystemAdminPage();
   const params = await searchParams;
   const filters = {
     page: Number(params.page) || 1,
