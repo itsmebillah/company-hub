@@ -174,6 +174,17 @@ test("explicit System Admin can use responsive platform routes", async ({
         );
       }
     }
+
+    const [csvExport, excelExport] = await Promise.all([
+      page.request.get("/platform/audit/export?format=csv"),
+      page.request.get("/platform/audit/export?format=xlsx"),
+    ]);
+    expect(csvExport.status()).toBe(200);
+    expect(csvExport.headers()["content-type"]).toContain("text/csv");
+    expect(excelExport.status()).toBe(200);
+    expect(excelExport.headers()["content-type"]).toContain(
+      "spreadsheetml.sheet",
+    );
   } finally {
     if (createdId) {
       await supabase.from("platform_admins").delete().eq("id", createdId);
@@ -201,6 +212,8 @@ test("Quick Links render custom images, favicons, built-in icons, and clickable 
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
     "base64",
   );
+  const faviconSvg =
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><rect width="16" height="16" fill="#2563eb"/></svg>';
 
   try {
     const { data: categories, error: categoryLoadError } = await supabase
@@ -296,8 +309,12 @@ test("Quick Links render custom images, favicons, built-in icons, and clickable 
       );
     expect(permissionError).toBeNull();
 
-    await page.route("https://favicon.test/favicon.ico", async (route) => {
-      await route.fulfill({ status: 200, contentType: "image/png", body: png });
+    await page.route("https://favicon.test/**", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "image/svg+xml",
+        body: faviconSvg,
+      });
     });
     await signIn(page, accounts.employeeEmployeeId);
     await page.goto("/dashboard", { waitUntil: "networkidle" });
@@ -436,6 +453,11 @@ test("admin login, session restore, routes, and authorization work", async ({
     );
   }
 
+  await page.goto("/admin/settings/features");
+  await expect(page.getByText("Future Modules", { exact: true })).toHaveCount(
+    0,
+  );
+
   await page.goto("/dashboard");
   await expect(page).toHaveURL(/\/admin\/dashboard$/);
 
@@ -506,17 +528,19 @@ test("company feature disable hides navigation and rejects direct access", async
     expect(response?.status()).toBe(404);
   } finally {
     if (previous) {
-      await supabase
+      const { error: restoreError } = await supabase
         .from("company_features")
         .update({ state: previous.state })
         .eq("company_id", accounts.companyId)
         .eq("feature_key", "attendance");
+      expect(restoreError).toBeNull();
     } else {
-      await supabase
+      const { error: cleanupError } = await supabase
         .from("company_features")
         .delete()
         .eq("company_id", accounts.companyId)
         .eq("feature_key", "attendance");
+      expect(cleanupError).toBeNull();
     }
   }
 });

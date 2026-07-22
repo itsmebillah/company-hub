@@ -33,7 +33,7 @@ This file applies to the entire repository. Treat implementation, migrations, an
 
 ## Database changes
 
-- Add a new ordered file after the canonical applied range `0001`–`0032`; never rewrite a migration already applied remotely.
+- Add a new ordered file after the canonical applied range `0001`–`0034`; never rewrite a migration already applied remotely.
 - Make migrations deterministic and safe for the current live schema.
 - Add indexes for foreign keys and high-frequency filters.
 - Verify with `supabase db push --linked --dry-run`, then apply only with explicit authorization.

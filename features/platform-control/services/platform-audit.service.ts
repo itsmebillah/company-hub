@@ -28,9 +28,17 @@ export const PlatformAuditService = {
         getRequestContext(),
       ]);
       const supabase = createSupabaseAdminClient();
+      const { data: actor } =
+        !input.employeeId && user?.id
+          ? await supabase
+              .from("employees")
+              .select("id, company_id")
+              .eq("auth_user_id", user.id)
+              .maybeSingle()
+          : { data: null };
       const { error } = await supabase.from("platform_audit_logs").insert({
-        company_id: input.companyId ?? null,
-        employee_id: input.employeeId ?? null,
+        company_id: input.companyId ?? actor?.company_id ?? null,
+        employee_id: input.employeeId ?? actor?.id ?? null,
         platform_admin_id: input.platformAdminId ?? null,
         auth_user_id: input.authUserId ?? user?.id ?? null,
         category: input.category,

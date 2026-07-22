@@ -20,6 +20,7 @@ Company Hub is not a public REST API product. Its primary mutation interface is 
 | `GET /admin/users/import/template`      | Import template                    | None                                         | CSV download     | Auth middleware; handler has no direct Admin check                                   |
 | `GET /api/cron/celebrations`            | Generate scheduled celebrations    | `Authorization: Bearer <CRON_SECRET>`        | JSON run summary | Bearer secret in production                                                          |
 | `POST /api/notifications/track`         | Mark notification delivered/opened | Notification ID plus delivered/opened event  | `204`            | Ownership is scoped when authenticated; currently also returns `204` without context |
+| `GET /platform/audit/export`            | Export filtered centralized audit   | Audit filters plus `format` (`csv`, `xlsx`)  | File download    | Explicit System Admin; 5,000-row cap and truncation response header                  |
 
 The Vercel cron schedule calls `/api/cron/celebrations` at `0 18 * * *` UTC, corresponding to Bangladesh midnight when UTC+6 applies.
 

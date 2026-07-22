@@ -9,6 +9,7 @@ import { getCompanySettings } from "@/features/company-settings/services/company
 import { NotificationService } from "@/features/notifications/services/notification.service";
 import { SchemaVersionService } from "@/features/schema-version/services/schema-version.service";
 import { ROLE_NAMES } from "@/lib/auth/permissions";
+import { PlatformAuditService } from "@/features/platform-control/services/platform-audit.service";
 import { FeatureAccessService } from "@/features/platform-control/services/feature-access.service";
 
 export default async function AdminRouteGroupLayout({
@@ -23,6 +24,14 @@ export default async function AdminRouteGroupLayout({
   }
 
   if (profile.roleName !== ROLE_NAMES.admin) {
+    await PlatformAuditService.log({
+      category: "security",
+      action: "permission_denied",
+      entityType: "admin_route",
+      status: "denied",
+      description: "A non-Admin user attempted to access an Admin route.",
+      companyId: profile.companyId,
+    });
     redirect(getPostLoginRedirectPath(profile.roleName));
   }
 

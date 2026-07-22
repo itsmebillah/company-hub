@@ -19,6 +19,7 @@ This project follows a Keep-a-Changelog-style record. Versioning is not yet form
 ### Security
 
 - Added throwing Admin guards to privileged server mutations and explicit role checks to employee export/template route handlers.
+- Captured authenticated actor identity for centralized audit events, recorded password resets, and neutralized spreadsheet-formula prefixes in audit exports.
 - Replaced committed example credentials with safe placeholders; historical credential rotation remains an operational follow-up.
 - Verified all 17 migrated credentials without exposing Employee IDs/passwords, private attendance bucket behavior, Realtime, middleware, and wrong-role redirects.
 
@@ -28,6 +29,9 @@ This project follows a Keep-a-Changelog-style record. Versioning is not yet form
 - Added migration `0030_platform_control_center.sql` with explicit platform administrators, 14 feature definitions, company overrides, audit telemetry, daily usage aggregation, a security-invoker overview, default-deny RLS, and caller-derived authorization RPCs.
 - Added migration `0031_platform_security_and_schema_version.sql` to advance runtime schema telemetry and explicitly revoke anonymous execution from notification/schema helpers.
 - Added migration `0032_schema_version_invoker.sql` so constant-only runtime schema telemetry no longer executes with definer privileges.
+- Added migration `0033_platform_company_update.sql` for atomic company-name synchronization, schema telemetry, and centralized historical activity import.
+- Added migration `0034_fix_platform_company_update.sql` to correct the company-name RPC argument ambiguity without rewriting applied history.
+- Added employee, role, action, status, date, company, feature, and keyword audit filters plus bounded CSV/Excel exports.
 
 - Added responsive Quick Link visuals with uploaded PNG/JPG/SVG/WebP artwork, memoized website-origin favicons, named Lucide icons, and a permanent Company Hub placeholder fallback.
 - Added authenticated, company-scoped `resource-icons` uploads with size, MIME/signature, SVG-content, retrieval, replacement, cancellation, and unreferenced-object cleanup controls.

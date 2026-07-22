@@ -1,5 +1,6 @@
 import {
   createCompanyAction,
+  updateCompanyNameAction,
   updateCompanyStatusAction,
 } from "@/features/platform-control/actions/platform-control.actions";
 import { PlatformControlService } from "@/features/platform-control/services/platform-control.service";
@@ -60,9 +61,23 @@ export default async function PlatformCompaniesPage() {
                 Admins
               </div>
             </div>
+            <form action={updateCompanyNameAction} className="mt-5 flex gap-2">
+              <input type="hidden" name="companyId" value={company.id ?? ""} />
+              <input
+                name="name"
+                defaultValue={company.name ?? ""}
+                minLength={2}
+                required
+                aria-label="Company name"
+                className="bg-background h-10 min-w-0 flex-1 rounded-xl border px-3 text-sm"
+              />
+              <button className="rounded-xl border px-3 text-sm font-semibold">
+                Rename
+              </button>
+            </form>
             <form
               action={updateCompanyStatusAction}
-              className="mt-5 flex gap-2"
+              className="mt-2 flex gap-2"
             >
               <input type="hidden" name="companyId" value={company.id ?? ""} />
               <select

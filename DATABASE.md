@@ -2,7 +2,7 @@
 
 ## Source of truth
 
-`supabase/migrations/` is the canonical schema history. Migrations `0001`–`0032` are applied to project `jjfktbgfwvekhlvyjlww`. Never edit an applied migration; add the next ordered migration. Migration `0030` adds the Platform Control Center without rewriting tenant data or promoting existing company Admins; `0031` removes anonymous helper execution and `0032` makes constant-only schema telemetry invoker-safe.
+`supabase/migrations/` is the canonical schema history. Migrations `0001`–`0034` are applied to project `jjfktbgfwvekhlvyjlww`. Never edit an applied migration; add the next ordered migration. Migration `0030` adds the Platform Control Center; `0031` removes anonymous helper execution; `0032` makes schema telemetry invoker-safe; `0033` adds atomic company-name synchronization plus historical activity import; and `0034` removes an argument/column ambiguity in the company-name RPC.
 
 The live verified catalog contains 26 public tables and the security-invoker `platform_company_overview` view. The original 1,748 restored application rows remain intact; migration `0030` backfilled the existing company status and seeded only the 14-row feature catalog.
 
@@ -77,6 +77,8 @@ Platform-control tables expose no direct `anon` or `authenticated` grants. Brows
 ## Platform feature resolution
 
 Availability is `active company AND enabled platform feature AND company override not disabled`. Missing company overrides inherit enabled for backward compatibility. A platform-disabled feature cannot be re-enabled by a company. Future states (`beta`, `hidden`, `deprecated`) are stored additively but treated as disabled by the current application.
+
+Migration `0033` imports existing immutable `activity_logs` rows into the centralized audit stream with original timestamps and source IDs.
 
 ## Realtime
 

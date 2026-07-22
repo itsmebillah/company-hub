@@ -3,7 +3,7 @@
 ## Platform operations
 
 - No first System Admin has been provisioned (`platform_admins` is empty by design). The control center remains inaccessible until the owner explicitly approves an existing active Auth user UUID.
-- Platform Audit Center export is deferred; filtered pagination is implemented, while CSV/XLSX/PDF are backlog enhancements.
+- Platform Audit Center PDF export remains future work; CSV and Excel use the same filters with a 5,000-row safety cap.
 
 ## Critical
 
@@ -50,7 +50,7 @@ Lint passes with 5 raw `<img>` optimization warnings for dynamic/user-provided m
 
 ### Edge browser unavailable on the current workstation
 
-The 42-check Playwright suite retains its Edge project and the preceding foundation build passed it, but Edge is no longer installed on this workstation. `playwright install msedge` was attempted on 2026-07-22 and requires elevated installer privileges. All 21 Chrome production-build checks pass; rerun the Edge project after workstation installation.
+The 46-check Playwright suite retains its Edge project and the preceding foundation build passed it, but Edge is no longer installed on this workstation. `playwright install msedge` was attempted on 2026-07-22 and requires elevated installer privileges. All 23 Chrome production-build checks pass; rerun the Edge project after workstation installation.
 
 ### PowerShell npm shim
 

@@ -13,6 +13,11 @@ type Params = {
   feature?: string;
   status?: string;
   search?: string;
+  employee?: string;
+  role?: string;
+  action?: string;
+  from?: string;
+  to?: string;
 };
 const categories: AuditCategory[] = [
   "audit",
@@ -40,6 +45,11 @@ export default async function PlatformAuditPage({
       : undefined,
     status: params.status,
     search: params.search,
+    employee: params.employee,
+    role: params.role,
+    action: params.action,
+    fromDate: params.from,
+    toDate: params.to,
   };
   const [logs, companies] = await Promise.all([
     PlatformControlService.listAuditLogs(filters),
@@ -57,6 +67,14 @@ export default async function PlatformAuditPage({
     query.set("page", String(page));
     return `?${query}`;
   };
+  const exportHref = (format: "csv" | "xlsx") => {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(
+      ([key, value]) => value && key !== "page" && query.set(key, value),
+    );
+    query.set("format", format);
+    return `/platform/audit/export?${query}`;
+  };
   return (
     <div className="space-y-6">
       <div>
@@ -66,7 +84,7 @@ export default async function PlatformAuditPage({
           events.
         </p>
       </div>
-      <form className="app-card grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-6">
+      <form className="app-card grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
         <input
           name="search"
           defaultValue={params.search}
@@ -105,16 +123,77 @@ export default async function PlatformAuditPage({
             <option key={feature}>{feature}</option>
           ))}
         </select>
+        <input
+          name="employee"
+          defaultValue={params.employee}
+          placeholder="Employee ID or name"
+          className="bg-background h-11 rounded-xl border px-3"
+        />
+        <input
+          name="role"
+          defaultValue={params.role}
+          placeholder="Role"
+          className="bg-background h-11 rounded-xl border px-3"
+        />
+        <input
+          name="action"
+          defaultValue={params.action}
+          placeholder="Action / event"
+          className="bg-background h-11 rounded-xl border px-3"
+        />
+        <select
+          name="status"
+          defaultValue={params.status ?? ""}
+          className="bg-background h-11 rounded-xl border px-3"
+        >
+          <option value="">All statuses</option>
+          {["success", "failure", "denied", "warning"].map((status) => (
+            <option key={status}>{status}</option>
+          ))}
+        </select>
+        <label className="text-muted-foreground text-xs font-semibold">
+          From
+          <input
+            type="date"
+            name="from"
+            defaultValue={params.from}
+            className="bg-background mt-1 h-11 w-full rounded-xl border px-3 text-sm"
+          />
+        </label>
+        <label className="text-muted-foreground text-xs font-semibold">
+          To
+          <input
+            type="date"
+            name="to"
+            defaultValue={params.to}
+            className="bg-background mt-1 h-11 w-full rounded-xl border px-3 text-sm"
+          />
+        </label>
         <button className="bg-primary text-primary-foreground h-11 rounded-xl px-4 font-semibold">
           Filter
         </button>
       </form>
+      <div className="flex flex-wrap justify-end gap-2">
+        <Link
+          href={exportHref("csv")}
+          className="rounded-xl border px-4 py-2 text-sm font-semibold"
+        >
+          Export CSV
+        </Link>
+        <Link
+          href={exportHref("xlsx")}
+          className="rounded-xl border px-4 py-2 text-sm font-semibold"
+        >
+          Export Excel
+        </Link>
+      </div>
       <div className="app-card overflow-x-auto">
         <table className="w-full min-w-[760px] text-left text-sm">
           <thead className="bg-muted/40 border-b">
             <tr>
               {[
                 "Time",
+                "Employee / role",
                 "Category",
                 "Event",
                 "Company",
@@ -132,6 +211,19 @@ export default async function PlatformAuditPage({
               <tr key={event.id}>
                 <td className="text-muted-foreground px-4 py-3 text-xs whitespace-nowrap">
                   {new Date(event.created_at).toLocaleString()}
+                </td>
+                <td className="px-4 py-3">
+                  {event.actorName ? (
+                    <>
+                      <strong className="block">{event.actorName}</strong>
+                      <span className="text-muted-foreground text-xs">
+                        {event.actorEmployeeId} ·{" "}
+                        {event.actorRole ?? "No active role"}
+                      </span>
+                    </>
+                  ) : (
+                    "System"
+                  )}
                 </td>
                 <td className="px-4 py-3">{event.category}</td>
                 <td className="max-w-sm px-4 py-3">

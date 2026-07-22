@@ -37,7 +37,7 @@ This backlog is ordered by risk and production value. Items require an owner and
 
 ## P3 — Enhancements
 
-- CSV/XLSX/PDF exports for filtered Platform Audit Center results.
+- PDF export for filtered Platform Audit Center results; CSV/XLSX are implemented.
 - Unique-user feature analytics and configurable usage-retention windows.
 
 - Leave balance/accrual rules.

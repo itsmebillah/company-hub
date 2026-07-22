@@ -27,6 +27,15 @@ export async function updateCompanyStatusAction(formData: FormData) {
   revalidatePath("/platform");
 }
 
+export async function updateCompanyNameAction(formData: FormData) {
+  const companyId = String(formData.get("companyId") ?? "");
+  const name = String(formData.get("name") ?? "").trim();
+  if (!companyId || name.length < 2)
+    throw new Error("A valid company and name are required.");
+  await PlatformControlService.updateCompanyName(companyId, name);
+  revalidatePath("/platform/companies");
+}
+
 export async function updatePlatformFeatureAction(formData: FormData) {
   const featureKey = String(formData.get("featureKey") ?? "");
   const state = String(formData.get("state") ?? "") as FeatureState;

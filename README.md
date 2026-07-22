@@ -31,4 +31,4 @@ npm run build
 
 ## Current backend
 
-The repository is linked to Supabase project `jjfktbgfwvekhlvyjlww`. Migrations `0001` through `0032` define the current production schema and security model. No company Admin is automatically a System Admin; global access requires explicit provisioning. Never commit `.env.local` or service-role credentials.
+The repository is linked to Supabase project `jjfktbgfwvekhlvyjlww`. Migrations `0001` through `0034` define the current production schema and security model. No company Admin is automatically a System Admin; global access requires explicit provisioning. Never commit `.env.local` or service-role credentials.

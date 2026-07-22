@@ -1472,6 +1472,10 @@ export type Database = {
         Args: { company_name: string };
         Returns: string;
       };
+      update_platform_company_name: {
+        Args: { target_company_id: string; target_company_name: string };
+        Returns: undefined;
+      };
     };
     Enums: {
       platform_feature_state:

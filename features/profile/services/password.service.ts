@@ -7,6 +7,7 @@ import { toSupabaseEmployeePassword } from "@/features/auth/utils/employee-passw
 import type { PasswordFormValues } from "@/features/profile/types/profile.types";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { PlatformAuditService } from "@/features/platform-control/services/platform-audit.service";
 
 function validatePassword(values: PasswordFormValues) {
   if (!values.currentPassword) {
@@ -36,7 +37,7 @@ async function getCurrentEmployeeAuth() {
   const supabase = createSupabaseAdminClient();
   const { data: employee, error } = await supabase
     .from("employees")
-    .select("id, internal_auth_email, status")
+    .select("id, company_id, internal_auth_email, status")
     .eq("auth_user_id", user.id)
     .single();
 
@@ -49,6 +50,8 @@ async function getCurrentEmployeeAuth() {
   }
 
   return {
+    id: employee.id,
+    companyId: employee.company_id,
     internalAuthEmail: employee.internal_auth_email,
   };
 }
@@ -75,5 +78,14 @@ export const PasswordService = {
     if (updateError) {
       throw new Error("Unable to update password right now.");
     }
+
+    await PlatformAuditService.log({
+      category: "security",
+      action: "password_updated",
+      entityType: "employee",
+      entityId: employee.id,
+      description: "An employee updated their password.",
+      companyId: employee.companyId,
+    });
   },
 };

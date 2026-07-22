@@ -3,6 +3,9 @@ import { FeatureAccessService } from "@/features/platform-control/services/featu
 
 export default async function CompanyFeatureSettingsPage() {
   const features = await FeatureAccessService.getCurrentCompanyStates();
+  const configurableFeatures = features.filter(
+    (feature) => feature.state === "enabled",
+  );
   return (
     <div className="space-y-5">
       <div>
@@ -14,7 +17,7 @@ export default async function CompanyFeatureSettingsPage() {
         </p>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
-        {features.map((feature) => (
+        {configurableFeatures.map((feature) => (
           <article key={feature.key} className="app-card p-4 sm:p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -35,24 +38,15 @@ export default async function CompanyFeatureSettingsPage() {
               <select
                 name="state"
                 defaultValue={feature.companyState ?? "enabled"}
-                disabled={feature.state !== "enabled"}
-                className="bg-background h-10 min-w-0 flex-1 rounded-xl border px-3 text-sm disabled:opacity-50"
+                className="bg-background h-10 min-w-0 flex-1 rounded-xl border px-3 text-sm"
               >
                 <option value="enabled">Enabled</option>
                 <option value="disabled">Disabled</option>
               </select>
-              <button
-                disabled={feature.state !== "enabled"}
-                className="rounded-xl border px-3 text-sm font-semibold disabled:opacity-50"
-              >
+              <button className="rounded-xl border px-3 text-sm font-semibold">
                 Save
               </button>
             </form>
-            {feature.state !== "enabled" ? (
-              <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">
-                Disabled by the platform owner.
-              </p>
-            ) : null}
           </article>
         ))}
       </div>

@@ -36,7 +36,7 @@ Status values: **Implemented** means a routed workflow and supporting service ex
 | Schema diagnostics           | Foundation  | Read-only schema-version service; production migration control remains CLI-based                       |
 | Platform Control Center      | Implemented | `/platform/*` company, feature, usage, audit, security, and health controls for explicit System Admins  |
 | Company feature controls     | Implemented | `/admin/settings/features`; platform-authoritative current-company enable/disable overrides             |
-| Central audit center         | Implemented | Login/logout, security denial, feature changes, activity bridge, filters, and pagination                |
+| Central audit center         | Implemented | Login/logout, security denial, historical activity, full filters, pagination, CSV, and Excel exports    |
 
 ## Important boundaries
 
