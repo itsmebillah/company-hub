@@ -391,17 +391,17 @@
     z-index: 60;
     max-width: 44rem;
     margin-inline: auto;
-    padding-top: 2rem;
+    padding-top: 1.75rem;
     filter: drop-shadow(0 22px 28px rgb(15 23 42 / 0.2));
   }
 
   .mobile-nav-v2::before {
     content: "";
     position: absolute;
-    top: 0.85rem;
+    top: 0.75rem;
     left: 50%;
-    width: 5.75rem;
-    height: 3.2rem;
+    width: 5.25rem;
+    height: 2.9rem;
     translate: -50% 0;
     border: 1px solid color-mix(in oklab, var(--border) 76%, transparent);
     border-bottom: 0;
@@ -413,9 +413,11 @@
   .mobile-nav-v2-grid {
     position: relative;
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    min-height: 4.65rem;
-    gap: 0.15rem;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr)) minmax(3.25rem, 4rem)
+      repeat(2, minmax(0, 1fr));
+    min-height: 4.5rem;
+    gap: 0;
     overflow: hidden;
     border: 1px solid color-mix(in oklab, var(--border) 76%, transparent);
     border-radius: 1.75rem;
@@ -435,6 +437,14 @@
     @apply text-muted-foreground focus-visible:ring-ring relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-[0.66rem] font-semibold outline-none focus-visible:ring-2;
   }
 
+  .mobile-nav-v2-item:nth-child(3) {
+    grid-column: 4;
+  }
+
+  .mobile-nav-v2-item:nth-child(4) {
+    grid-column: 5;
+  }
+
   .mobile-nav-v2-item:hover,
   .mobile-nav-v2-item.is-active {
     color: var(--primary);
@@ -446,10 +456,10 @@
   }
 
   .mobile-nav-fab {
-    @apply text-primary-foreground focus-visible:ring-ring absolute left-1/2 z-[2] flex size-[4.25rem] -translate-x-1/2 items-center justify-center rounded-full outline-none focus-visible:ring-4;
+    @apply text-primary-foreground focus-visible:ring-ring absolute left-1/2 z-[2] flex size-16 -translate-x-1/2 items-center justify-center rounded-full outline-none focus-visible:ring-4;
     top: 0;
     background: var(--primary);
-    border: 0.35rem solid
+    border: 0.3rem solid
       color-mix(in oklab, var(--surface-strong) 94%, transparent);
     box-shadow:
       0 0 0 1px color-mix(in oklab, var(--primary) 38%, transparent),
@@ -462,7 +472,7 @@
 
   .mobile-nav-fab:hover,
   .mobile-nav-fab.is-active {
-    transform: translateX(-50%) translateY(-0.2rem) scale(1.04);
+    transform: translateY(-0.125rem) scale(1.02);
     box-shadow:
       0 0 0 0.35rem color-mix(in oklab, var(--primary) 14%, transparent),
       0 22px 42px -14px color-mix(in oklab, var(--primary) 82%, transparent),
@@ -470,7 +480,7 @@
   }
 
   .mobile-nav-fab:active {
-    transform: translateX(-50%) scale(0.92);
+    transform: scale(0.94);
   }
 
   .mobile-nav-fab-ripple {

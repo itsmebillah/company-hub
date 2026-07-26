@@ -4,6 +4,13 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
 
 ## Unreleased
 
+### Fixed
+
+- Corrected the active Dashboard FAB's double horizontal translation, centered it in the notch, reduced its visual footprint to 64px, and reserved a center lane so navigation icons and labels no longer crowd or overlap it.
+- Kept Notification, Theme, and Profile controls aligned in one right-side header row from 320px upward; mobile logout remains available through the Me menu while the desktop header action is preserved.
+- Made asynchronous company-logo rendering start from the Company Hub fallback so invalid or delayed branding never exposes a broken image.
+- Added production-browser geometry regression coverage for FAB centering, the navigation center lane, clipped labels, header action wrapping, and all supported responsive widths.
+
 ## [0.2.0] - 2026-07-26
 
 ### Added

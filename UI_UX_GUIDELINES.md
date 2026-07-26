@@ -17,6 +17,8 @@ Canonical tokens live in `app/globals.css` and are mapped into Tailwind 4 throug
 
 ## Layout
 
+The four mobile groups must reserve a physical center lane for the Dashboard FAB. Keep the FAB centered at 64px, and do not apply an additional horizontal transform in hover, active, or current-page states. Notification, Theme, and Profile controls remain one right-aligned row from 320px upward; mobile logout belongs in the Me menu so it cannot force the employee header to wrap.
+
 - Mobile-first; reference widths are 320, 375, 768, 1024, and 1440 px.
 - Use admin and employee shells/navigation rather than route-specific chrome.
 - Keep route pages as composition layers using `app-page`, `app-page-header`, `app-card`, and `app-table-shell` patterns.

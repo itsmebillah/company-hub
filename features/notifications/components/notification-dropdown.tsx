@@ -318,7 +318,7 @@ export function NotificationDropdown({
         type="button"
         size="icon"
         variant="ghost"
-        className="relative size-9"
+        className="relative size-10"
         aria-label="Notifications"
         title="Notifications"
         aria-expanded={isOpen}

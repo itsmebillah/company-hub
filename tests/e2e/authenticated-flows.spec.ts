@@ -736,28 +736,56 @@ test("mobile navigation keeps one four-item shell for Company Admin and employee
       [adminPage, "company_admin"],
       [employeePage, "employee"],
     ] as const) {
+      for (const width of responsiveWidths) {
+        await page.setViewportSize({ width, height: width < 768 ? 844 : 900 });
+        const navigation = page.getByRole("navigation", {
+          name: "Primary mobile navigation",
+        });
+        await expect(navigation).toBeVisible();
+        await expect(navigation).toHaveAttribute(
+          "data-navigation-role",
+          expectedRole,
+        );
+        await expect(navigation.getByRole("button")).toHaveCount(4);
+        const fab = navigation.getByRole("link", { name: "Open Dashboard" });
+        await expect(fab).toBeVisible();
+
+        const [navigationBox, fabBox, itemLayout] = await Promise.all([
+          navigation.boundingBox(),
+          fab.boundingBox(),
+          navigation.locator(".mobile-nav-v2-item").evaluateAll((items) =>
+            items.map((item) => ({
+              left: item.getBoundingClientRect().left,
+              right: item.getBoundingClientRect().right,
+              clipped:
+                item.scrollWidth > item.clientWidth ||
+                item.scrollHeight > item.clientHeight,
+            })),
+          ),
+        ]);
+        expect(fabBox?.width).toBeGreaterThanOrEqual(64);
+        expect(fabBox?.height).toBeGreaterThanOrEqual(64);
+        expect(fabBox?.width).toBeLessThanOrEqual(68);
+        expect(fabBox?.height).toBeLessThanOrEqual(68);
+        expect(
+          Math.abs(
+            fabBox!.x +
+              fabBox!.width / 2 -
+              (navigationBox!.x + navigationBox!.width / 2),
+          ),
+          `${expectedRole} FAB centering at ${width}px`,
+        ).toBeLessThanOrEqual(1);
+        expect(itemLayout.every((item) => !item.clipped)).toBe(true);
+        expect(
+          itemLayout[2].left - itemLayout[1].right,
+          `${expectedRole} center lane at ${width}px`,
+        ).toBeGreaterThanOrEqual(48);
+      }
+
       await page.setViewportSize({ width: 390, height: 844 });
       const navigation = page.getByRole("navigation", {
         name: "Primary mobile navigation",
       });
-      await expect(navigation).toBeVisible();
-      await expect(navigation).toHaveAttribute(
-        "data-navigation-role",
-        expectedRole,
-      );
-      await expect(navigation.getByRole("button")).toHaveCount(4);
-      await expect(
-        navigation.getByRole("link", { name: "Open Dashboard" }),
-      ).toBeVisible();
-
-      const fabBox = await navigation
-        .getByRole("link", { name: "Open Dashboard" })
-        .boundingBox();
-      expect(fabBox?.width).toBeGreaterThanOrEqual(64);
-      expect(fabBox?.height).toBeGreaterThanOrEqual(64);
-      expect(fabBox?.width).toBeLessThanOrEqual(72);
-      expect(fabBox?.height).toBeLessThanOrEqual(72);
-
       await navigation.getByRole("button", { name: "Open More menu" }).click();
       await expect(page.getByRole("dialog")).toBeVisible();
       await expect(
@@ -802,6 +830,18 @@ test("Company Admin and employee layouts do not overflow at supported widths", a
         expect(metrics.scrollWidth, `${width}px`).toBeLessThanOrEqual(
           metrics.clientWidth + 1,
         );
+
+        const actionRow = page.locator("[data-header-actions]");
+        await expect(actionRow).toBeVisible();
+        const actionLayout = await actionRow.evaluate((element) => ({
+          flexWrap: getComputedStyle(element).flexWrap,
+          height: element.getBoundingClientRect().height,
+        }));
+        expect(actionLayout.flexWrap).toBe("nowrap");
+        expect(
+          actionLayout.height,
+          `${width}px header action row`,
+        ).toBeLessThanOrEqual(40.5);
       }
     }
   } finally {

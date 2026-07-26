@@ -116,7 +116,7 @@ export function MobileNavigationV2({
           }
         >
           <span className="mobile-nav-fab-ripple" aria-hidden="true" />
-          <LayoutDashboard className="size-7" aria-hidden="true" />
+          <LayoutDashboard className="size-6" aria-hidden="true" />
           <span className="sr-only">Dashboard</span>
         </Link>
 

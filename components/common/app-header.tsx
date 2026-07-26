@@ -55,9 +55,9 @@ export function AppHeader({
     <header className="sticky top-0 z-30 px-0 pt-3 sm:pt-4">
       <PageContainer className="space-y-3">
         <div className="app-card app-card-subtle flex flex-col gap-4 px-4 py-4 sm:px-5">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-4">
-              <Logo />
+          <div className="flex items-center justify-between gap-2 sm:gap-3">
+            <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
+              <Logo className="flex-1" />
               <div className="hidden min-w-0 lg:block">
                 <p className="text-primary text-[0.68rem] font-semibold tracking-[0.24em] uppercase">
                   Employee Workspace
@@ -68,7 +68,10 @@ export function AppHeader({
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div
+              className="flex shrink-0 items-center gap-2"
+              data-header-actions
+            >
               {actions}
               {notificationsEnabled &&
               notificationSummary &&
@@ -95,7 +98,9 @@ export function AppHeader({
                   <UserCircle className="size-[1.125rem]" aria-hidden="true" />
                 </Link>
               ) : null}
-              <LogoutButton compact />
+              <span className="hidden xl:inline-flex">
+                <LogoutButton compact />
+              </span>
             </div>
           </div>
 

@@ -15,8 +15,12 @@ type LogoProps = {
 export function Logo({ href = "/", className }: LogoProps) {
   const branding = useCompanyBranding();
   const [logoAvailable, setLogoAvailable] = useState(Boolean(branding?.logo));
+  const [logoLoaded, setLogoLoaded] = useState(false);
 
-  useEffect(() => setLogoAvailable(Boolean(branding?.logo)), [branding?.logo]);
+  useEffect(() => {
+    setLogoAvailable(Boolean(branding?.logo));
+    setLogoLoaded(false);
+  }, [branding?.logo]);
   return (
     <Link
       href={href}
@@ -25,25 +29,28 @@ export function Logo({ href = "/", className }: LogoProps) {
         className,
       )}
     >
-      <span className="app-icon-wrap text-primary size-10 overflow-hidden rounded-2xl shadow-[var(--shadow-soft)]">
+      <span className="app-icon-wrap text-primary relative size-10 shrink-0 overflow-hidden rounded-2xl shadow-[var(--shadow-soft)]">
+        <Building2 className="size-5" aria-hidden="true" />
         {branding?.logo && logoAvailable ? (
           // Company logos may come from an existing external URL.
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={branding.logo}
             alt=""
-            className="size-full object-contain p-1"
+            className={cn(
+              "bg-background absolute inset-0 size-full object-contain p-1 transition-opacity",
+              logoLoaded ? "opacity-100" : "opacity-0",
+            )}
+            onLoad={() => setLogoLoaded(true)}
             onError={() => {
               setLogoAvailable(false);
+              setLogoLoaded(false);
             }}
           />
         ) : null}
-        {!logoAvailable ? (
-          <Building2 className="size-5" aria-hidden="true" />
-        ) : null}
       </span>
       <span className="min-w-0 leading-tight">
-        <span className="block text-sm font-semibold tracking-tight">
+        <span className="block truncate text-sm font-semibold tracking-tight">
           {branding?.shortName || branding?.companyName || "Company Hub"}
         </span>
         <span className="text-muted-foreground block text-[0.7rem] font-medium tracking-[0.22em] uppercase">

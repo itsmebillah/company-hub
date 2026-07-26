@@ -78,11 +78,12 @@ export function AdminHeader({
 
   return (
     <header className="sticky top-0 z-30 px-4 pt-3 sm:px-6 sm:pt-4">
-      <div className="app-card app-card-subtle flex min-h-[4.5rem] flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-5">
-        <div className="flex min-w-0 items-center gap-3">
+      <div className="app-card app-card-subtle flex min-h-[4.5rem] items-center justify-between gap-2 px-4 py-3 sm:gap-3 sm:px-5">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
           <div className="min-w-0">
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-primary">
-              Company Admin Workspace
+            <p className="text-primary hidden truncate text-[0.68rem] font-semibold tracking-[0.2em] uppercase min-[360px]:block">
+              <span className="sm:hidden">Company Admin</span>
+              <span className="hidden sm:inline">Company Admin Workspace</span>
             </p>
             <h1 className="truncate text-lg font-semibold tracking-tight">
               {title}
@@ -93,7 +94,7 @@ export function AdminHeader({
           </div>
         </div>
 
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2" data-header-actions>
           {notificationsEnabled ? (
             <RealtimeNotificationCenter
               initialSummary={notificationSummary}
@@ -106,7 +107,7 @@ export function AdminHeader({
               type="button"
               size="icon"
               variant="outline"
-              className="size-10 border-white/30 bg-background/70 shadow-none"
+              className="bg-background/70 size-10 border-white/30 shadow-none"
               aria-label="Profile menu"
               aria-expanded={isProfileOpen}
               aria-haspopup="menu"
@@ -118,7 +119,7 @@ export function AdminHeader({
             {isProfileOpen ? (
               <div
                 role="menu"
-                className="absolute right-0 top-12 z-50 w-64 overflow-hidden rounded-[1.4rem] border bg-popover/95 p-1.5 text-popover-foreground shadow-[var(--shadow-card)] backdrop-blur-xl"
+                className="bg-popover/95 text-popover-foreground absolute top-12 right-0 z-50 w-64 overflow-hidden rounded-[1.4rem] border p-1.5 shadow-[var(--shadow-card)] backdrop-blur-xl"
               >
                 <div className="flex items-center gap-3 rounded-2xl px-3 py-3">
                   <ProfilePhoto
@@ -128,19 +129,19 @@ export function AdminHeader({
                     fallbackClassName="bg-primary/15 text-primary"
                   />
                   <div className="min-w-0">
-                    <p className="break-words text-sm font-semibold">
+                    <p className="text-sm font-semibold break-words">
                       {profile.name}
                     </p>
-                    <p className="break-words text-xs text-muted-foreground">
+                    <p className="text-muted-foreground text-xs break-words">
                       {profile.employeeId}
                     </p>
                   </div>
                 </div>
-                <div className="my-1 border-t border-border/70" />
+                <div className="border-border/70 my-1 border-t" />
                 <Link
                   href="/admin/profile"
                   role="menuitem"
-                  className="flex items-center gap-2 rounded-2xl px-3 py-2.5 text-sm font-medium outline-none hover:bg-accent focus-visible:bg-accent"
+                  className="hover:bg-accent focus-visible:bg-accent flex items-center gap-2 rounded-2xl px-3 py-2.5 text-sm font-medium outline-none"
                   onClick={() => setIsProfileOpen(false)}
                 >
                   <UserCircle className="size-4" aria-hidden="true" />
@@ -149,13 +150,13 @@ export function AdminHeader({
                 <Link
                   href="/admin/settings"
                   role="menuitem"
-                  className="flex items-center gap-2 rounded-2xl px-3 py-2.5 text-sm font-medium outline-none hover:bg-accent focus-visible:bg-accent"
+                  className="hover:bg-accent focus-visible:bg-accent flex items-center gap-2 rounded-2xl px-3 py-2.5 text-sm font-medium outline-none"
                   onClick={() => setIsProfileOpen(false)}
                 >
                   <Settings className="size-4" aria-hidden="true" />
                   Settings
                 </Link>
-                <div className="my-1 border-t border-border/70" />
+                <div className="border-border/70 my-1 border-t" />
                 <div className="px-1 py-1">
                   <LogoutButton compact />
                 </div>
