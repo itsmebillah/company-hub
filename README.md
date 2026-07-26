@@ -22,7 +22,7 @@ npm run build
 
 ## Documentation
 
-- Current status and risks: [PROJECT_STATE.md](PROJECT_STATE.md), [KNOWN_ISSUES.md](KNOWN_ISSUES.md)
+- Current status, risks, and handover: [PROJECT_STATE.md](PROJECT_STATE.md), [KNOWN_ISSUES.md](KNOWN_ISSUES.md), [NEXT_SPRINT.md](NEXT_SPRINT.md)
 - Product scope: [PRODUCT_REQUIREMENTS.md](PRODUCT_REQUIREMENTS.md), [BUSINESS_RULES.md](BUSINESS_RULES.md), [FEATURES.md](FEATURES.md), [ROADMAP.md](ROADMAP.md)
 - System design: [ARCHITECTURE.md](ARCHITECTURE.md), [DATABASE.md](DATABASE.md), [API.md](API.md), [AUTH.md](AUTH.md)
 - Engineering workflow: [DEVELOPMENT.md](DEVELOPMENT.md), [TESTING.md](TESTING.md), [CODING_STANDARDS.md](CODING_STANDARDS.md)

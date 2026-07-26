@@ -21,6 +21,10 @@ The latest audit reports 44 total findings, primarily through development-only V
 
 ## Medium
 
+### Isolated production authorization event requires monitoring
+
+One `POST /login` request returned 500 immediately after the 2026-07-26 deployment, with the bundled stack originating at the `requireCompanyAdmin` guard. The event could not be reproduced: subsequent complete Company Admin and Employee login, dashboard, authorization, profile, and logout checks passed, followed by an empty 30-minute production error-log check. Preserve request/action identifiers if it recurs and diagnose against that evidence; do not weaken the guard or make a speculative authorization change.
+
 ### Security Advisor retains reviewed warnings
 
 Authenticated `SECURITY DEFINER` helpers remain executable because middleware, Storage/RLS, notification visibility, and caller-derived audit/usage telemetry require them. Their predicates derive identity from `auth.uid()` and expose no service-role inputs, but each should remain under review. Supabase leaked-password protection is also disabled. Migrations `0031`–`0032` and `0040` removed unnecessary anonymous-definer execution.
@@ -47,6 +51,6 @@ The machine execution policy blocks `npm.ps1`. Use `npm.cmd` in PowerShell or ad
 
 Queued attendance actions use local storage and can be lost when browser storage is cleared. Failed items have limited user recovery controls.
 
-### Generated/local artifacts exist
+### Generated/local artifacts require routine cleanup
 
-`.codex-dev.log`, `tsconfig.tsbuildinfo`, `.next/`, and `supabase/.temp/` are local/generated artifacts and must not be treated as product source or committed accidentally.
+`.next/`, `tsconfig.tsbuildinfo`, Playwright output, and Supabase CLI state are locally generated and must not be treated as product source or committed. Checkpoint cleanup removed tracked/runtime logs and disposable verification output while preserving the verified migration backup archives and required Supabase link metadata.

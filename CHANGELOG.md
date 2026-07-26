@@ -4,6 +4,10 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
 
 ## Unreleased
 
+### Documentation
+
+- Added the frozen sprint handover with completed work, deliberately postponed scope, unresolved monitoring items, and the exact recommended continuation order.
+
 ### Fixed
 
 - Added a clear, touch-friendly Account/logout card to Employee and Company Admin profiles and verified the existing System Admin logout inside the mobile Me panel.
