@@ -10,7 +10,7 @@ The Vercel CLI is installed and authenticated locally, and the repository is lin
 
 `.github/workflows/automatic-release.yml` listens for a successful production deployment status. It checks out the exact deployment commit, installs deterministically, runs lint/typecheck/build, confirms Supabase migration parity and database lint, verifies the production URL, then runs `npm run release:publish` and creates the matching GitHub Release. The publisher reads the version from `package.json` and the matching section in `CHANGELOG.md`; do not duplicate notes manually.
 
-Configure these GitHub Actions secrets before enabling the gate: the five application variables listed below plus `SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROJECT_REF`, and `SUPABASE_DB_PASSWORD`. The project reference must be `jjfktbgfwvekhlvyjlww`. Release publication must fail closed when any gate or required secret is unavailable. Major-version approval is deliberately future-ready but is not part of the current automatic workflow.
+Configure these GitHub Actions secrets before enabling the gate: the five application variables listed below plus a percent-encoded `SUPABASE_DB_URL` for the target project. The direct database URL avoids storing a broad Supabase account access token in GitHub. Release publication must fail closed when any gate or required secret is unavailable. Major-version approval is deliberately future-ready but is not part of the current automatic workflow.
 
 ## Environment setup
 

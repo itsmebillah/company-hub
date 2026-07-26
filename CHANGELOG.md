@@ -11,6 +11,7 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
 - Added one configuration-driven Mobile Navigation v2 framework for System Admin, Company Admin, and every employee role: four fixed category controls, a branded floating Dashboard FAB, role-aware menu contents, combined update badge, safe-area support, haptics, reduced-motion handling, and responsive layouts.
 - Added hierarchical platform-first feature control with company `inherit`, `enabled`, and `disabled` states plus System Admin control over whether company overrides are allowed.
 - Added automatic release history, optional and mandatory update dialogs, PWA asset activation, public release notes, System Admin release controls, maintenance mode, and a deployment-success GitHub workflow with quality gates.
+- Added least-privilege GitHub Actions secret provisioning: the migration quality gate uses a target database URL and does not require a Supabase account access token.
 - Added migrations `0038_hierarchical_feature_control.sql`, `0039_release_management.sql`, and `0040_maintenance_status_invoker.sql`.
 
 ### Changed
