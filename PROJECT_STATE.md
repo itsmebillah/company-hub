@@ -12,7 +12,7 @@ The quality-hardening baseline is deployable: privileged mutation boundaries, pr
 
 - Next.js 15 App Router, React 19, strict TypeScript, Tailwind CSS 4.
 - Node.js 24.16.0 and npm 11.13.0 used for the latest verification.
-- Supabase CLI 2.109.1 and Vercel CLI 56.3.2 installed as dev dependencies.
+- Supabase CLI 2.109.1 and Vercel CLI 56.5.0 installed as dev dependencies.
 - Supabase project `jjfktbgfwvekhlvyjlww` linked and active.
 - Migrations `0001` through `0040` applied remotely with exact local/remote parity.
 - 29 public application tables with RLS enabled; platform-control and draft release rows are default-deny to browser roles.
@@ -22,7 +22,7 @@ The quality-hardening baseline is deployable: privileged mutation boundaries, pr
 - Nine storage buckets, 11 storage-object policies, four checksum-verified objects, and notification realtime publication.
 - 17 Auth identities recreated with matching email, metadata, confirmation state, and employee linkage. All 17 passwords are synchronized to the canonical Employee-ID-derived policy and individually verified; no Auth emails changed and no duplicate users were created.
 - `npm install`, lint, typecheck, and production build pass.
-- Playwright: 48 production-build checks are defined across Chrome and Edge, including Admin/Employee login, session restore, logout, role redirects, the invariant navigation shell, major routes, Platform Audit CSV/XLSX exports, Quick Link visual priority and image lifecycle, PWA assets, private Storage, Realtime, attendance attachments, exports, signed-out API denial, responsive widths from 320px through 1024px, and WCAG A/AA scans. The 2026-07-26 Chrome matrix passes all 24 checks, including focused reruns after accessibility/API corrections; Edge execution remains blocked because Edge is not installed and its installer requires workstation elevation. The mobile UI regression pass additionally verifies exact FAB centering, a reserved center lane, unclipped navigation labels, single-row header actions, Android touch interaction, portrait/landscape rendering, and zero horizontal overflow.
+- Playwright: 50 production-build checks are defined across Chrome and Edge, including Admin/Employee login, session restore, logout, role redirects, the invariant navigation shell, major routes, Platform Audit CSV/XLSX exports, Quick Link visual priority and image lifecycle, PWA assets, private Storage, Realtime, attendance attachments, exports, signed-out API denial, responsive widths from 320px through 1024px, and WCAG A/AA scans. The 2026-07-26 optimized-runtime Chrome matrix passes all 25 checks; Edge execution remains blocked because Edge is not installed and its installer requires workstation elevation. The mobile UI regression pass additionally verifies exact FAB centering, a reserved center lane, unclipped navigation labels, single-row header actions, Android touch interaction, portrait/landscape rendering, and zero horizontal overflow.
 - Company Admin uses the canonical `Company Admin` tenant role, middleware authorization, action-level feature checks, tenant-scoped service-role queries, protected password reset, and company-aware Storage policies. `/admin/*` paths remain stable compatibility URLs.
 - Platform regression: a disposable explicit System Admin renders all six control-center routes without horizontal overflow at 320/360/375/390/414/768/1024px and verifies audited initial-password reset; cleanup restores `platform_admins` to zero. A disposable company Attendance override hides navigation and returns HTTP 404 on direct access, then restores the prior state. Chrome checks cover these flows, the complete Admin route matrix, and all 12 public/signed-out/PWA/accessibility checks.
 
@@ -44,19 +44,20 @@ The quality-hardening baseline is deployable: privileged mutation boundaries, pr
 
 ## Current quality signals
 
-- Lint: zero errors, 5 raw-image optimization warnings; all unused-code warnings were removed.
+- Lint: zero errors and zero warnings; dynamic company media now uses dimensioned Next images where appropriate.
 - Typecheck: zero errors.
 - Production build: successful.
 - Prettier check: failed; 353 files currently differ from configured formatting.
 - Database lint: no schema errors.
 - Runtime schema status uses the least-privilege `get_app_schema_version()` contract from migration `0029`; the invalid `supabase_migrations` PostgREST request and `PGRST106` log are removed.
 - Supabase Security Advisor: no RLS-disabled or anonymous-definer warnings. Twelve warnings remain: eleven intentionally authenticated caller-derived/RLS helper RPCs and the project-level leaked-password-protection setting.
-- npm audit: 35 total findings. Production scope contains 4 affected packages (1 moderate and 3 high) through Next.js/PostCSS/Sharp and `xlsx`; npm reports no safe in-range fix and suggests an invalid Next.js downgrade. Do not force-fix.
+- npm audit: 44 total findings after current registry advisories; most are development-only Vercel/ESLint transitive findings. Production scope contains 4 high findings through bundled Next.js/PostCSS/Sharp and `xlsx`; npm reports no safe compatible fix and suggests an invalid Next.js downgrade. Do not force-fix.
 - Automated tests: Playwright route, Auth, authorization, mobile, PWA, Storage, attendance, export, and Realtime coverage is committed. Unit/service integration coverage is still absent.
 - CI/CD workflow: the production `deployment_status` workflow gates release publication on install, lint, typecheck, build, migration parity, database lint, and production HTTP verification. Required repository secrets must be configured before its first run.
 - Vercel CLI: authenticated and linked to `company-hub`; all five required environment variable names are present for Production and Preview. Values were not printed during verification.
 - Production deployment for the canonical password flow is Ready at `company-hub-zeta.vercel.app`; public pages return 200 and protected routes redirect to login.
 - Authenticated Company Admin/employee runtime covers canonical-password login, session restoration, logout, dashboards, major route surfaces, middleware denial, tenant isolation, feature denial, and responsive layouts.
+- The P0 stabilization pass removed production-facing placeholder panels, redirects unsupported `/register` access to login, added a clear Account/logout card to Employee and Company Admin profiles, verified System Admin logout in the mobile Me panel, and preserved redacted before/after evidence under `docs/screenshots/stabilization/`.
 
 ## Release blockers
 

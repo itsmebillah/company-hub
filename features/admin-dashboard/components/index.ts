@@ -1,7 +1,6 @@
 export { AreaChart } from "./area-chart";
 export { BarChart } from "./bar-chart";
 export { ChartCard } from "./chart-card";
-export { ActivityCard } from "./activity-card";
 export { CompactMetricGrid } from "./compact-metric-grid";
 export { DashboardHeader } from "./dashboard-header";
 export { ExecutiveOverview } from "./executive-overview";
@@ -17,4 +16,3 @@ export { RecentResources } from "./recent-resources";
 export { StatCard } from "./stat-card";
 export { SummaryPanel } from "./summary-panel";
 export { SystemStatus } from "./system-status";
-export { SystemStatusCard } from "./system-status-card";

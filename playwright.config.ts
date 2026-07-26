@@ -7,8 +7,8 @@ const playwrightPort = process.env.PLAYWRIGHT_PORT ?? "3100";
 const baseURL =
   process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${playwrightPort}`;
 const serverCommand = process.env.PLAYWRIGHT_USE_PRODUCTION
-  ? `npm.cmd run start -- --hostname 127.0.0.1 --port ${playwrightPort}`
-  : `npm.cmd run dev -- --hostname 127.0.0.1 --port ${playwrightPort}`;
+  ? `npm.cmd run start -- --hostname localhost --port ${playwrightPort}`
+  : `npm.cmd run dev -- --hostname localhost --port ${playwrightPort}`;
 
 export default defineConfig({
   testDir: "./tests/e2e",

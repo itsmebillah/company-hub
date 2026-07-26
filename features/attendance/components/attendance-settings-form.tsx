@@ -67,14 +67,15 @@ export function AttendanceSettingsForm({
 
   return (
     <form
-      className="space-y-6 rounded-xl border bg-card p-5 shadow-sm"
+      className="bg-card space-y-6 rounded-xl border p-5 shadow-sm"
       onSubmit={handleSubmit}
       noValidate
     >
       <section>
         <h2 className="text-base font-semibold">Attendance Mode</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Switch attendance validation behavior without changing application code.
+        <p className="text-muted-foreground mt-1 text-sm">
+          Switch attendance validation behavior without changing application
+          code.
         </p>
 
         <div className="mt-4 grid gap-3 lg:grid-cols-2">
@@ -97,7 +98,7 @@ export function AttendanceSettingsForm({
                 className="sr-only"
               />
               <p className="text-sm font-semibold">{option.label}</p>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="text-muted-foreground mt-1 text-sm">
                 {option.description}
               </p>
             </label>
@@ -107,28 +108,30 @@ export function AttendanceSettingsForm({
 
       <section>
         <h2 className="text-base font-semibold">Employee Work Modes</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Office employees follow the company working-hours policy. Field employees
-          keep the existing GPS-only flow. Hybrid employees use office hours only
-          when the attendance policy classifies the check-in as office attendance.
+        <p className="text-muted-foreground mt-1 text-sm">
+          Office employees follow the company working-hours policy. Field
+          employees keep the existing GPS-only flow. Hybrid employees use office
+          hours only when the attendance policy classifies the check-in as
+          office attendance.
         </p>
         <div className="mt-4 grid gap-3 md:grid-cols-3">
-          <div className="rounded-lg border bg-background p-4">
+          <div className="bg-background rounded-lg border p-4">
             <p className="text-sm font-semibold">Office</p>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="text-muted-foreground mt-1 text-sm">
               Office time, grace, and early check-in rules apply.
             </p>
           </div>
-          <div className="rounded-lg border bg-background p-4">
+          <div className="bg-background rounded-lg border p-4">
             <p className="text-sm font-semibold">Field</p>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="text-muted-foreground mt-1 text-sm">
               No office start restriction and no late calculation.
             </p>
           </div>
-          <div className="rounded-lg border bg-background p-4">
+          <div className="bg-background rounded-lg border p-4">
             <p className="text-sm font-semibold">Hybrid</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Office rules apply only when the check-in is matched to office attendance.
+            <p className="text-muted-foreground mt-1 text-sm">
+              Office rules apply only when the check-in is matched to office
+              attendance.
             </p>
           </div>
         </div>
@@ -137,9 +140,9 @@ export function AttendanceSettingsForm({
       <section>
         <div>
           <h2 className="text-base font-semibold">Working Hours</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            These settings control office start, grace, and early-arrival rules without
-            changing field attendance behavior.
+          <p className="text-muted-foreground mt-1 text-sm">
+            These settings control office start, grace, and early-arrival rules
+            without changing field attendance behavior.
           </p>
         </div>
 
@@ -152,7 +155,7 @@ export function AttendanceSettingsForm({
               onChange={(event) =>
                 updateValue("officeStartTime", event.target.value)
               }
-              className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="bg-background focus-visible:ring-ring h-11 w-full rounded-md border px-3 outline-none focus-visible:ring-2"
             />
           </label>
 
@@ -164,7 +167,7 @@ export function AttendanceSettingsForm({
               onChange={(event) =>
                 updateValue("officeEndTime", event.target.value)
               }
-              className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="bg-background focus-visible:ring-ring h-11 w-full rounded-md border px-3 outline-none focus-visible:ring-2"
             />
           </label>
 
@@ -181,12 +184,14 @@ export function AttendanceSettingsForm({
                   Math.min(120, Math.max(0, Number(event.target.value) || 0)),
                 )
               }
-              className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="bg-background focus-visible:ring-ring h-11 w-full rounded-md border px-3 outline-none focus-visible:ring-2"
             />
           </label>
 
           <label className="space-y-2">
-            <span className="text-sm font-medium">Allow Early Check-in (min)</span>
+            <span className="text-sm font-medium">
+              Allow Early Check-in (min)
+            </span>
             <input
               type="number"
               min={0}
@@ -198,7 +203,7 @@ export function AttendanceSettingsForm({
                   Math.min(180, Math.max(0, Number(event.target.value) || 0)),
                 )
               }
-              className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="bg-background focus-visible:ring-ring h-11 w-full rounded-md border px-3 outline-none focus-visible:ring-2"
             />
           </label>
         </div>
@@ -214,10 +219,12 @@ export function AttendanceSettingsForm({
               className="mt-1 size-4"
             />
             <span>
-              <span className="block text-sm font-medium">Allow Late Check-out</span>
-              <span className="text-sm text-muted-foreground">
-                Keep the checkout policy flag configurable without changing the current
-                attendance engine.
+              <span className="block text-sm font-medium">
+                Allow Late Check-out
+              </span>
+              <span className="text-muted-foreground text-sm">
+                Keep the checkout policy flag configurable without changing the
+                current attendance engine.
               </span>
             </span>
           </label>
@@ -233,19 +240,19 @@ export function AttendanceSettingsForm({
             />
             <span>
               <span className="block text-sm font-medium">Weekend Working</span>
-              <span className="text-sm text-muted-foreground">
-                Store the office weekend policy alongside the rest of the attendance
-                configuration for future scheduling control.
+              <span className="text-muted-foreground text-sm">
+                Store the office weekend policy alongside the rest of the
+                attendance configuration for future scheduling control.
               </span>
             </span>
           </label>
         </div>
 
-        <div className="mt-4 rounded-xl border bg-background p-4">
+        <div className="bg-background mt-4 rounded-xl border p-4">
           <h3 className="text-sm font-semibold">Live Preview</h3>
           <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            <div className="rounded-lg border bg-card p-3">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <div className="bg-card rounded-lg border p-3">
+              <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
                 Office Hours
               </p>
               <p className="mt-2 text-sm font-semibold">
@@ -253,8 +260,8 @@ export function AttendanceSettingsForm({
                 {formatTimeValueLabel(values.officeEndTime)}
               </p>
             </div>
-            <div className="rounded-lg border bg-card p-3">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <div className="bg-card rounded-lg border p-3">
+              <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
                 Grace Period
               </p>
               <p className="mt-2 text-sm font-semibold">
@@ -262,16 +269,16 @@ export function AttendanceSettingsForm({
                 {values.officeGracePeriodMinutes === 1 ? "" : "s"}
               </p>
             </div>
-            <div className="rounded-lg border bg-card p-3">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <div className="bg-card rounded-lg border p-3">
+              <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
                 Late After
               </p>
               <p className="mt-2 text-sm font-semibold">
                 {formatTimeValueLabel(lateAfterTime)}
               </p>
             </div>
-            <div className="rounded-lg border bg-card p-3">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <div className="bg-card rounded-lg border p-3">
+              <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
                 Early Check-in Opens
               </p>
               <p className="mt-2 text-sm font-semibold">
@@ -286,7 +293,9 @@ export function AttendanceSettingsForm({
         <h2 className="text-base font-semibold">GPS Validation</h2>
         <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           <label className="space-y-2">
-            <span className="text-sm font-medium">GPS Accuracy Threshold (m)</span>
+            <span className="text-sm font-medium">
+              GPS Accuracy Threshold (m)
+            </span>
             <input
               type="number"
               min={1}
@@ -297,7 +306,7 @@ export function AttendanceSettingsForm({
                   Math.max(1, Number(event.target.value) || 0),
                 )
               }
-              className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="bg-background focus-visible:ring-ring h-11 w-full rounded-md border px-3 outline-none focus-visible:ring-2"
             />
           </label>
           <label className="space-y-2">
@@ -312,7 +321,7 @@ export function AttendanceSettingsForm({
                   Math.max(1, Number(event.target.value) || 0),
                 )
               }
-              className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="bg-background focus-visible:ring-ring h-11 w-full rounded-md border px-3 outline-none focus-visible:ring-2"
             />
           </label>
         </div>
@@ -325,13 +334,16 @@ export function AttendanceSettingsForm({
             <input
               type="checkbox"
               checked={values.requireGps}
-              onChange={(event) => updateValue("requireGps", event.target.checked)}
+              onChange={(event) =>
+                updateValue("requireGps", event.target.checked)
+              }
               className="mt-1 size-4"
             />
             <span>
               <span className="block text-sm font-medium">Require GPS</span>
-              <span className="text-sm text-muted-foreground">
-                Attendance must capture device coordinates when the selected policy needs them.
+              <span className="text-muted-foreground text-sm">
+                Attendance must capture device coordinates when the selected
+                policy needs them.
               </span>
             </span>
           </label>
@@ -346,8 +358,9 @@ export function AttendanceSettingsForm({
             />
             <span>
               <span className="block text-sm font-medium">Require Selfie</span>
-              <span className="text-sm text-muted-foreground">
-                Require employees to capture a selfie before attendance check-in.
+              <span className="text-muted-foreground text-sm">
+                Require employees to capture a selfie before attendance
+                check-in.
               </span>
             </span>
           </label>
@@ -361,9 +374,12 @@ export function AttendanceSettingsForm({
               className="mt-1 size-4"
             />
             <span>
-              <span className="block text-sm font-medium">Require High Accuracy</span>
-              <span className="text-sm text-muted-foreground">
-                Reject GPS readings that exceed the configured accuracy threshold.
+              <span className="block text-sm font-medium">
+                Require High Accuracy
+              </span>
+              <span className="text-muted-foreground text-sm">
+                Reject GPS readings that exceed the configured accuracy
+                threshold.
               </span>
             </span>
           </label>
@@ -378,57 +394,10 @@ export function AttendanceSettingsForm({
             />
             <span>
               <span className="block text-sm font-medium">Enable Geofence</span>
-              <span className="text-sm text-muted-foreground">
-                Enforce branch radius validation for office-based attendance modes.
+              <span className="text-muted-foreground text-sm">
+                Enforce branch radius validation for office-based attendance
+                modes.
               </span>
-            </span>
-          </label>
-        </div>
-      </section>
-
-      <section>
-        <h2 className="text-base font-semibold">Future Validation Placeholders</h2>
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
-          <label className="flex items-start gap-3 rounded-lg border p-4">
-            <input
-              type="checkbox"
-              checked={values.faceVerificationEnabled}
-              onChange={(event) =>
-                updateValue("faceVerificationEnabled", event.target.checked)
-              }
-              className="mt-1 size-4"
-            />
-            <span className="text-sm">
-              <span className="block font-medium">Face Verification</span>
-              <span className="text-muted-foreground">Placeholder only</span>
-            </span>
-          </label>
-          <label className="flex items-start gap-3 rounded-lg border p-4">
-            <input
-              type="checkbox"
-              checked={values.wifiValidationEnabled}
-              onChange={(event) =>
-                updateValue("wifiValidationEnabled", event.target.checked)
-              }
-              className="mt-1 size-4"
-            />
-            <span className="text-sm">
-              <span className="block font-medium">Wi-Fi Validation</span>
-              <span className="text-muted-foreground">Placeholder only</span>
-            </span>
-          </label>
-          <label className="flex items-start gap-3 rounded-lg border p-4">
-            <input
-              type="checkbox"
-              checked={values.bluetoothBeaconEnabled}
-              onChange={(event) =>
-                updateValue("bluetoothBeaconEnabled", event.target.checked)
-              }
-              className="mt-1 size-4"
-            />
-            <span className="text-sm">
-              <span className="block font-medium">Bluetooth Beacon</span>
-              <span className="text-muted-foreground">Placeholder only</span>
             </span>
           </label>
         </div>

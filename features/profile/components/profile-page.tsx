@@ -6,6 +6,7 @@ import { EmployeeWorkModeBadge } from "@/features/employees/ui/employee-work-mod
 import { PasswordSection } from "@/features/profile/components/password-section";
 import { PreferencesSection } from "@/features/profile/components/preferences-section";
 import { ProfileDetailsForm } from "@/features/profile/components/profile-details-form";
+import { AccountSection } from "@/features/profile/components/account-section";
 import type {
   PasswordFormValues,
   ProfileActionState,
@@ -42,9 +43,14 @@ function formatWorkAnniversary(value: string) {
   const [joiningYear, joiningMonth, joiningDay] = value.split("-").map(Number);
 
   if (
-    [currentYear, currentMonth, currentDay, joiningYear, joiningMonth, joiningDay].some(
-      (part) => Number.isNaN(part),
-    )
+    [
+      currentYear,
+      currentMonth,
+      currentDay,
+      joiningYear,
+      joiningMonth,
+      joiningDay,
+    ].some((part) => Number.isNaN(part))
   ) {
     return "Not set";
   }
@@ -89,21 +95,25 @@ export function ProfilePage({
         <div className="app-card app-card-subtle flex items-center gap-3 px-4 py-4">
           <IconBadge icon={Cake} className="size-10 rounded-2xl" />
           <div>
-            <p className="text-xs text-muted-foreground">Birthday</p>
-            <p className="text-sm font-medium">{formatDate(profile.dateOfBirth)}</p>
+            <p className="text-muted-foreground text-xs">Birthday</p>
+            <p className="text-sm font-medium">
+              {formatDate(profile.dateOfBirth)}
+            </p>
           </div>
         </div>
         <div className="app-card app-card-subtle flex items-center gap-3 px-4 py-4">
           <IconBadge icon={CalendarDays} className="size-10 rounded-2xl" />
           <div>
-            <p className="text-xs text-muted-foreground">Joined</p>
-            <p className="text-sm font-medium">{formatDate(profile.joiningDate)}</p>
+            <p className="text-muted-foreground text-xs">Joined</p>
+            <p className="text-sm font-medium">
+              {formatDate(profile.joiningDate)}
+            </p>
           </div>
         </div>
         <div className="app-card app-card-subtle flex items-center gap-3 px-4 py-4">
           <IconBadge icon={PartyPopper} className="size-10 rounded-2xl" />
           <div>
-            <p className="text-xs text-muted-foreground">Work Anniversary</p>
+            <p className="text-muted-foreground text-xs">Work Anniversary</p>
             <p className="text-sm font-medium">
               {formatWorkAnniversary(profile.joiningDate)}
             </p>
@@ -112,14 +122,14 @@ export function ProfilePage({
         <div className="app-card app-card-subtle flex items-center gap-3 px-4 py-4">
           <IconBadge icon={ShieldCheck} className="size-10 rounded-2xl" />
           <div>
-            <p className="text-xs text-muted-foreground">Status</p>
+            <p className="text-muted-foreground text-xs">Status</p>
             <p className="text-sm font-medium capitalize">{profile.status}</p>
           </div>
         </div>
         <div className="app-card app-card-subtle flex items-center gap-3 px-4 py-4 sm:col-span-2">
           <IconBadge icon={ShieldCheck} className="size-10 rounded-2xl" />
           <div>
-            <p className="text-xs text-muted-foreground">Work Mode</p>
+            <p className="text-muted-foreground text-xs">Work Mode</p>
             <div className="mt-1">
               <EmployeeWorkModeBadge workMode={profile.workMode} />
             </div>
@@ -132,6 +142,7 @@ export function ProfilePage({
         <div className="space-y-6">
           <PasswordSection onSave={onPasswordSave} />
           <PreferencesSection />
+          <AccountSection />
         </div>
       </div>
     </section>

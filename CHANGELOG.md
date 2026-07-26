@@ -6,6 +6,12 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
 
 ### Fixed
 
+- Added a clear, touch-friendly Account/logout card to Employee and Company Admin profiles and verified the existing System Admin logout inside the mobile Me panel.
+- Removed production-facing placeholder content from registration, company settings, attendance settings/details, reports, and announcement guidance; unsupported public registration now returns to login.
+- Removed dead placeholder dashboard components and eliminated misleading “Prepared” preference badges.
+- Replaced raw company branding images with dimensioned Next images to eliminate lint warnings and reduce layout-shift risk.
+- Aligned the local browser runner with the canonical application origin, hardened cold-start waits and selectors, and expanded production-runtime coverage to 25 passing Chrome checks.
+- Advanced compatible patch dependencies to Next.js 15.5.22, Supabase SSR 0.12.3, Supabase JS 2.110.8, and Vercel CLI 56.5.0.
 - Corrected the active Dashboard FAB's double horizontal translation, centered it in the notch, reduced its visual footprint to 64px, and reserved a center lane so navigation icons and labels no longer crowd or overlap it.
 - Kept Notification, Theme, and Profile controls aligned in one right-side header row from 320px upward; mobile logout remains available through the Me menu while the desktop header action is preserved.
 - Made asynchronous company-logo rendering start from the Company Hub fallback so invalid or delayed branding never exposes a broken image.

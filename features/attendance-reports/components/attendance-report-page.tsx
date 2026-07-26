@@ -106,7 +106,7 @@ export function AttendanceReportPage({ data }: AttendanceReportPageProps) {
                 <Link
                   key={link.label}
                   href={link.href}
-                  className="inline-flex min-h-11 items-center gap-2 rounded-2xl border border-white/20 bg-background/75 px-4 py-2 text-sm font-semibold shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5 hover:bg-muted"
+                  className="bg-background/75 hover:bg-muted inline-flex min-h-11 items-center gap-2 rounded-2xl border border-white/20 px-4 py-2 text-sm font-semibold shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5"
                 >
                   <Download className="size-4" aria-hidden="true" />
                   <Icon className="size-4" aria-hidden="true" />
@@ -121,12 +121,14 @@ export function AttendanceReportPage({ data }: AttendanceReportPageProps) {
 
       <form className="app-card grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-4">
         <label className="block">
-          <span className="text-xs font-medium text-muted-foreground">Company</span>
+          <span className="text-muted-foreground text-xs font-medium">
+            Company
+          </span>
           <select
             name="companyId"
             defaultValue={data.company.id}
             disabled
-            className="mt-1 min-h-11 w-full rounded-lg border bg-background px-3 text-sm"
+            className="bg-background mt-1 min-h-11 w-full rounded-lg border px-3 text-sm"
           >
             {data.companies.map((company) => (
               <option key={company.id} value={company.id}>
@@ -137,22 +139,13 @@ export function AttendanceReportPage({ data }: AttendanceReportPageProps) {
         </label>
 
         <label className="block">
-          <span className="text-xs font-medium text-muted-foreground">Department</span>
-          <input
-            name="department"
-            defaultValue={data.filters.department}
-            disabled
-            placeholder="Future ready"
-            className="mt-1 min-h-11 w-full rounded-lg border bg-background px-3 text-sm text-muted-foreground"
-          />
-        </label>
-
-        <label className="block">
-          <span className="text-xs font-medium text-muted-foreground">Role</span>
+          <span className="text-muted-foreground text-xs font-medium">
+            Role
+          </span>
           <select
             name="roleId"
             defaultValue={data.filters.roleId}
-            className="mt-1 min-h-11 w-full rounded-lg border bg-background px-3 text-sm"
+            className="bg-background mt-1 min-h-11 w-full rounded-lg border px-3 text-sm"
           >
             <option value="">All roles</option>
             {data.roles.map((role) => (
@@ -164,11 +157,13 @@ export function AttendanceReportPage({ data }: AttendanceReportPageProps) {
         </label>
 
         <label className="block">
-          <span className="text-xs font-medium text-muted-foreground">Employee</span>
+          <span className="text-muted-foreground text-xs font-medium">
+            Employee
+          </span>
           <select
             name="employeeId"
             defaultValue={data.filters.employeeId}
-            className="mt-1 min-h-11 w-full rounded-lg border bg-background px-3 text-sm"
+            className="bg-background mt-1 min-h-11 w-full rounded-lg border px-3 text-sm"
           >
             <option value="">All employees</option>
             {data.employees.map((employee) => (
@@ -180,13 +175,13 @@ export function AttendanceReportPage({ data }: AttendanceReportPageProps) {
         </label>
 
         <label className="block">
-          <span className="text-xs font-medium text-muted-foreground">
+          <span className="text-muted-foreground text-xs font-medium">
             Attendance Mode
           </span>
           <select
             name="attendanceMode"
             defaultValue={data.filters.attendanceMode}
-            className="mt-1 min-h-11 w-full rounded-lg border bg-background px-3 text-sm"
+            className="bg-background mt-1 min-h-11 w-full rounded-lg border px-3 text-sm"
           >
             <option value="all">All</option>
             <option value="office">Office-based</option>
@@ -196,13 +191,13 @@ export function AttendanceReportPage({ data }: AttendanceReportPageProps) {
         </label>
 
         <label className="block">
-          <span className="text-xs font-medium text-muted-foreground">
+          <span className="text-muted-foreground text-xs font-medium">
             Work Mode
           </span>
           <select
             name="workMode"
             defaultValue={data.filters.workMode}
-            className="mt-1 min-h-11 w-full rounded-lg border bg-background px-3 text-sm"
+            className="bg-background mt-1 min-h-11 w-full rounded-lg border px-3 text-sm"
           >
             <option value="all">All work modes</option>
             {EMPLOYEE_WORK_MODE_OPTIONS.map((option) => (
@@ -214,11 +209,13 @@ export function AttendanceReportPage({ data }: AttendanceReportPageProps) {
         </label>
 
         <label className="block">
-          <span className="text-xs font-medium text-muted-foreground">Status</span>
+          <span className="text-muted-foreground text-xs font-medium">
+            Status
+          </span>
           <select
             name="status"
             defaultValue={data.filters.status}
-            className="mt-1 min-h-11 w-full rounded-lg border bg-background px-3 text-sm"
+            className="bg-background mt-1 min-h-11 w-full rounded-lg border px-3 text-sm"
           >
             <option value="all">All statuses</option>
             <option value="present">Present</option>
@@ -232,53 +229,61 @@ export function AttendanceReportPage({ data }: AttendanceReportPageProps) {
         </label>
 
         <label className="block">
-          <span className="text-xs font-medium text-muted-foreground">Month</span>
+          <span className="text-muted-foreground text-xs font-medium">
+            Month
+          </span>
           <input
             type="number"
             min={1}
             max={12}
             name="month"
             defaultValue={data.filters.month}
-            className="mt-1 min-h-11 w-full rounded-lg border bg-background px-3 text-sm"
+            className="bg-background mt-1 min-h-11 w-full rounded-lg border px-3 text-sm"
           />
         </label>
 
         <label className="block">
-          <span className="text-xs font-medium text-muted-foreground">Year</span>
+          <span className="text-muted-foreground text-xs font-medium">
+            Year
+          </span>
           <input
             type="number"
             min={2020}
             max={2100}
             name="year"
             defaultValue={data.filters.year}
-            className="mt-1 min-h-11 w-full rounded-lg border bg-background px-3 text-sm"
+            className="bg-background mt-1 min-h-11 w-full rounded-lg border px-3 text-sm"
           />
         </label>
 
         <label className="block">
-          <span className="text-xs font-medium text-muted-foreground">Start Date</span>
+          <span className="text-muted-foreground text-xs font-medium">
+            Start Date
+          </span>
           <input
             type="date"
             name="startDate"
             defaultValue={data.filters.startDate ?? ""}
-            className="mt-1 min-h-11 w-full rounded-lg border bg-background px-3 text-sm"
+            className="bg-background mt-1 min-h-11 w-full rounded-lg border px-3 text-sm"
           />
         </label>
 
         <label className="block">
-          <span className="text-xs font-medium text-muted-foreground">End Date</span>
+          <span className="text-muted-foreground text-xs font-medium">
+            End Date
+          </span>
           <input
             type="date"
             name="endDate"
             defaultValue={data.filters.endDate ?? ""}
-            className="mt-1 min-h-11 w-full rounded-lg border bg-background px-3 text-sm"
+            className="bg-background mt-1 min-h-11 w-full rounded-lg border px-3 text-sm"
           />
         </label>
 
         <div className="flex items-end">
           <button
             type="submit"
-            className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex min-h-11 w-full items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold transition"
           >
             Apply Filters
           </button>
@@ -303,13 +308,16 @@ export function AttendanceReportPage({ data }: AttendanceReportPageProps) {
       <div className="app-card p-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-lg font-semibold">Employee Attendance Summary</h2>
-            <p className="text-sm text-muted-foreground">
+            <h2 className="text-lg font-semibold">
+              Employee Attendance Summary
+            </h2>
+            <p className="text-muted-foreground text-sm">
               Generated by {data.generatedBy} on {data.generatedAt}
             </p>
           </div>
-          <p className="text-sm text-muted-foreground">
-            {data.rows.length} employee row{data.rows.length === 1 ? "" : "s"} in this report
+          <p className="text-muted-foreground text-sm">
+            {data.rows.length} employee row{data.rows.length === 1 ? "" : "s"}{" "}
+            in this report
           </p>
         </div>
       </div>

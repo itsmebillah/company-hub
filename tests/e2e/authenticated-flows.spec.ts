@@ -36,6 +36,7 @@ const adminRoutes = [
   "/admin/calendar",
   "/admin/company",
   "/admin/company/locations",
+  "/admin/profile",
   "/admin/roles",
   "/admin/settings",
   "/admin/settings/attendance",
@@ -64,7 +65,7 @@ async function signIn(page: Page, employeeId: string) {
   await page.locator("#employee-id").fill(employeeId);
   await page.locator("#password").fill(employeeId);
   await page.getByRole("button", { name: "Login" }).click();
-  await expect(page).not.toHaveURL(/\/login$/);
+  await expect(page).not.toHaveURL(/\/login$/, { timeout: 20_000 });
   await dismissOnboarding(page);
 }
 
@@ -135,7 +136,7 @@ test.beforeAll(async () => {
 test("explicit System Admin can use responsive platform routes", async ({
   page,
 }) => {
-  test.setTimeout(240_000);
+  test.setTimeout(360_000);
   const testStartedAt = new Date().toISOString();
   const { data: existing } = await supabase
     .from("platform_admins")
@@ -169,6 +170,7 @@ test("explicit System Admin can use responsive platform routes", async ({
         "/platform/people",
         "/platform/features",
         "/platform/audit",
+        "/platform/releases",
         "/platform/settings",
       ] as const) {
         const response = await page.goto(route, {
@@ -186,6 +188,19 @@ test("explicit System Admin can use responsive platform routes", async ({
         );
       }
     }
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/platform/settings", { waitUntil: "networkidle" });
+    const platformNavigation = page.getByRole("navigation", {
+      name: "Primary mobile navigation",
+    });
+    await platformNavigation
+      .getByRole("button", { name: "Open Me menu", exact: true })
+      .click();
+    const meDialog = page.getByRole("dialog");
+    await expect(meDialog.getByRole("heading", { name: "Me" })).toBeVisible();
+    await expect(meDialog.getByRole("button", { name: "Log out" })).toBeVisible();
+    await meDialog.getByRole("button", { name: "Close menu" }).click();
 
     const [csvExport, excelExport] = await Promise.all([
       page.request.get("/platform/audit/export?format=csv"),
@@ -394,9 +409,12 @@ test("Quick Links render custom images, favicons, built-in icons, and clickable 
       "data-visual-source",
       /^(favicon|built-in-icon)$/,
     );
+    await fallbackLink.scrollIntoViewIfNeeded();
     await expect(
       fallbackLink.locator("[data-resource-visual]"),
-    ).toHaveAttribute("data-visual-source", "built-in-icon");
+    ).toHaveAttribute("data-visual-source", "built-in-icon", {
+      timeout: 15_000,
+    });
     await expect(
       placeholderLink.locator("[data-resource-visual]"),
     ).toHaveAttribute("data-visual-source", "placeholder");
@@ -492,6 +510,7 @@ test("Company Admin Quick Link image upload is retrievable and canceled uploads 
 test("Company Admin login, tenant scope, password reset, routes, and authorization work", async ({
   page,
 }) => {
+  test.setTimeout(240_000);
   await signIn(page, accounts.adminEmployeeId);
   await expect(page).toHaveURL(/\/admin\/dashboard$/);
   await page.reload();
@@ -503,6 +522,10 @@ test("Company Admin login, tenant scope, password reset, routes, and authorizati
     await expect(page.locator("body"), route).not.toContainText(
       "Application error",
     );
+    if (route === "/admin/profile") {
+      await expect(page.getByRole("heading", { name: "Account" })).toBeVisible();
+      await expect(page.getByRole("button", { name: "Log out" })).toBeVisible();
+    }
   }
 
   await page.goto("/admin/settings/features");
@@ -654,8 +677,14 @@ test("employee login, session restore, routes, and authorization work", async ({
   await expect(page).toHaveURL(/\/dashboard$/);
   await page.goto("/platform/dashboard");
   await expect(page).toHaveURL(/\/dashboard$/);
+  await page.goto("/profile");
+  await expect(page.getByRole("heading", { name: "Account" })).toBeVisible();
+  const accountLogout = page
+    .getByRole("main")
+    .getByRole("button", { name: "Log out" });
+  await expect(accountLogout).toBeVisible();
   await dismissOnboarding(page);
-  await page.getByRole("button", { name: "Log out" }).click();
+  await accountLogout.click();
   await expect(page).toHaveURL(/\/login$/);
 });
 

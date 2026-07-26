@@ -10,7 +10,6 @@ import {
   Megaphone,
   Palette,
   ShieldCheck,
-  Sparkles,
   Users,
 } from "lucide-react";
 
@@ -104,11 +103,6 @@ const navItems: SettingsNavItem[] = [
   { label: "Application", href: "#application", icon: Layers3 },
   { label: "Storage", href: "#storage", icon: HardDrive },
   { label: "System", href: "#system", icon: Database },
-  {
-    label: "Future Integrations",
-    href: "#future-integrations",
-    icon: Sparkles,
-  },
 ];
 
 function MetricCard({ label, value, description }: SettingsMetric) {
@@ -462,38 +456,6 @@ export function AdminSettingsCenter({
               >
                 <span className="text-muted-foreground text-sm">{label}</span>
                 <span className="text-sm font-medium">{value}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section
-          id="future-integrations"
-          className="app-card scroll-mt-24 p-5 xl:col-span-1"
-        >
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <h2 className="text-base font-semibold">Future Integrations</h2>
-              <p className="text-muted-foreground mt-1 text-sm">
-                Placeholder space for upcoming admin capabilities without
-                forcing premature implementation into this sprint.
-              </p>
-            </div>
-            <Layers3 className="text-primary size-5" aria-hidden="true" />
-          </div>
-
-          <div className="mt-5 space-y-3">
-            {[
-              "Approval routing dashboard connections",
-              "Payroll-facing company policy mirrors",
-              "Third-party storage cleanup automation",
-              "Security force logout execution controls",
-            ].map((item) => (
-              <div
-                key={item}
-                className="bg-background/75 text-muted-foreground rounded-2xl border border-dashed px-4 py-3 text-sm"
-              >
-                {item}
               </div>
             ))}
           </div>

@@ -1,4 +1,5 @@
 import { Building2, CalendarDays, Layers3, Shield } from "lucide-react";
+import Image from "next/image";
 
 import type { DashboardSystemStatus } from "@/features/admin-dashboard/types/dashboard.types";
 import { cn } from "@/lib/utils";
@@ -36,11 +37,11 @@ export function ExecutiveOverview({
   const logoSrc = getRenderableImageSrc(companyLogo);
 
   return (
-    <section className="rounded-xl border bg-card p-5 shadow-sm">
+    <section className="bg-card rounded-xl border p-5 shadow-sm">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <h2 className="text-base font-semibold">Company Overview</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="text-muted-foreground mt-1 text-sm">
             Company identity, module coverage, and overall platform readiness.
           </p>
         </div>
@@ -55,57 +56,60 @@ export function ExecutiveOverview({
       </div>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
-        <div className="rounded-lg border bg-background p-4">
+        <div className="bg-background rounded-lg border p-4">
           <div className="flex items-center gap-3">
-            {companyLogo ? (
-              <img
-                src={logoSrc ?? companyLogo}
+            {logoSrc ? (
+              <Image
+                src={logoSrc}
                 alt=""
+                width={44}
+                height={44}
+                unoptimized
                 className="size-11 rounded-lg border object-cover"
               />
             ) : (
-              <div className="flex size-11 items-center justify-center rounded-lg bg-secondary">
+              <div className="bg-secondary flex size-11 items-center justify-center rounded-lg">
                 <Building2 className="size-5" aria-hidden="true" />
               </div>
             )}
             <div>
-              <p className="text-xs text-muted-foreground">Company</p>
-              <p className="break-words font-medium">{companyName}</p>
+              <p className="text-muted-foreground text-xs">Company</p>
+              <p className="font-medium break-words">{companyName}</p>
             </div>
           </div>
         </div>
 
-        <div className="rounded-lg border bg-background p-4">
+        <div className="bg-background rounded-lg border p-4">
           <div className="flex items-center gap-3">
-            <div className="flex size-11 items-center justify-center rounded-lg bg-secondary">
+            <div className="bg-secondary flex size-11 items-center justify-center rounded-lg">
               <CalendarDays className="size-5" aria-hidden="true" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Current Date</p>
+              <p className="text-muted-foreground text-xs">Current Date</p>
               <p className="font-medium">{currentDate}</p>
             </div>
           </div>
         </div>
 
-        <div className="rounded-lg border bg-background p-4">
+        <div className="bg-background rounded-lg border p-4">
           <div className="flex items-center gap-3">
-            <div className="flex size-11 items-center justify-center rounded-lg bg-secondary">
+            <div className="bg-secondary flex size-11 items-center justify-center rounded-lg">
               <Layers3 className="size-5" aria-hidden="true" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Total Modules</p>
+              <p className="text-muted-foreground text-xs">Total Modules</p>
               <p className="font-medium">{totalModules}</p>
             </div>
           </div>
         </div>
 
-        <div className="rounded-lg border bg-background p-4">
+        <div className="bg-background rounded-lg border p-4">
           <div className="flex items-center gap-3">
-            <div className="flex size-11 items-center justify-center rounded-lg bg-secondary">
+            <div className="bg-secondary flex size-11 items-center justify-center rounded-lg">
               <Shield className="size-5" aria-hidden="true" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">System Status</p>
+              <p className="text-muted-foreground text-xs">System Status</p>
               <p className="font-medium">{statusLabel[systemStatus]}</p>
             </div>
           </div>

@@ -17,18 +17,9 @@ The automatic release workflow runs install, lint, typecheck, build, migration p
 
 ### Dependency audit findings
 
-The latest audit reports 35 total findings. Production scope contains 4 affected packages: moderate PostCSS plus high Next.js/Sharp and `xlsx` findings. npm currently reports no safe in-range fix for `xlsx` or the bundled Next.js dependencies and suggests an invalid framework downgrade. Do not run `npm audit fix --force`.
+The latest audit reports 44 total findings, primarily through development-only Vercel/ESLint tooling. Production scope contains 4 high findings through bundled Next.js/PostCSS/Sharp and `xlsx`. npm currently reports no safe compatible fix for `xlsx` or the bundled Next.js dependencies and suggests an invalid framework downgrade. Do not run `npm audit fix --force`.
 
 ## Medium
-
-### Visible placeholders remain
-
-- `/register` displays placeholder content.
-- Admin dashboard activity and system-status cards contain placeholders.
-- Settings and attendance screens expose “future” placeholder panels.
-- Announcement body input describes a future rich-text editor.
-
-These should be completed, removed, or explicitly accepted before production.
 
 ### Security Advisor retains reviewed warnings
 
@@ -43,10 +34,6 @@ Prettier reports 353 files. A scoped formatting baseline is required; bulk forma
 The Supabase CLI is installed, but schema dump/local stack commands requiring Docker fail until Docker Desktop is installed. Linked remote query, migration, lint, and type generation commands work.
 
 ## Low
-
-### Lint warnings
-
-Lint passes with 5 raw `<img>` optimization warnings for dynamic/user-provided media. Unused variable/import warnings are resolved.
 
 ### Edge browser unavailable on the current workstation
 

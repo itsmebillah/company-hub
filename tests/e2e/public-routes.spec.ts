@@ -68,6 +68,13 @@ test("protected routes redirect signed-out users to login", async ({
   }
 });
 
+test("unsupported public registration returns users to login", async ({
+  page,
+}) => {
+  await page.goto("/register", { waitUntil: "domcontentloaded" });
+  await expect(page).toHaveURL(/\/login$/);
+});
+
 for (const width of mobileWidths) {
   test(`login remains usable without horizontal overflow at ${width}px`, async ({
     page,

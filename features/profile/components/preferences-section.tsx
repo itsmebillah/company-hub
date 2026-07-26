@@ -32,7 +32,10 @@ export function PreferencesSection() {
                   key={item.value}
                   type="button"
                   variant={isActive ? "secondary" : "outline"}
-                  className={cn("h-11 justify-start", isActive && "border-primary")}
+                  className={cn(
+                    "h-11 justify-start",
+                    isActive && "border-primary",
+                  )}
                   onClick={() => setTheme(item.value)}
                   aria-pressed={isActive}
                 >
@@ -45,30 +48,30 @@ export function PreferencesSection() {
         </div>
 
         <div className="grid gap-3">
-          <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/20 bg-background/70 p-3">
+          <div className="bg-background/70 flex items-center gap-3 rounded-2xl border border-white/20 p-3">
             <div className="flex items-center gap-3">
-              <Globe2 className="size-4 text-muted-foreground" aria-hidden="true" />
+              <Globe2
+                className="text-muted-foreground size-4"
+                aria-hidden="true"
+              />
               <div>
                 <p className="text-sm font-medium">Language</p>
-                <p className="text-xs text-muted-foreground">English</p>
+                <p className="text-muted-foreground text-xs">English</p>
               </div>
             </div>
-            <span className="rounded-full border px-2.5 py-1 text-xs text-muted-foreground">
-              Prepared
-            </span>
           </div>
 
-          <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/20 bg-background/70 p-3">
+          <div className="bg-background/70 flex items-center gap-3 rounded-2xl border border-white/20 p-3">
             <div className="flex items-center gap-3">
-              <Bell className="size-4 text-muted-foreground" aria-hidden="true" />
+              <Bell
+                className="text-muted-foreground size-4"
+                aria-hidden="true"
+              />
               <div>
                 <p className="text-sm font-medium">Notifications</p>
-                <p className="text-xs text-muted-foreground">Enabled</p>
+                <p className="text-muted-foreground text-xs">Enabled</p>
               </div>
             </div>
-            <span className="rounded-full border px-2.5 py-1 text-xs text-muted-foreground">
-              Prepared
-            </span>
           </div>
         </div>
       </div>
