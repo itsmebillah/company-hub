@@ -533,7 +533,9 @@ test("Company Admin login, tenant scope, password reset, routes, and authorizati
     .getByLabel("Confirm Employee ID")
     .fill(accounts.employeeEmployeeId);
   await page.getByRole("button", { name: "Reset initial password" }).click();
-  await expect(page.getByText("Employee password reset successfully.")).toBeVisible();
+  await expect(
+    page.getByText("Employee password reset successfully."),
+  ).toBeVisible();
   const { count: resetAuditCount, error: resetAuditError } = await supabase
     .from("platform_audit_logs")
     .select("id", { count: "exact", head: true })
@@ -587,7 +589,8 @@ test("Company Admin login, tenant scope, password reset, routes, and authorizati
     expect(adminAuthError).toBeNull();
     const adminEmail = adminAuth.user?.email;
     expect(adminEmail).toBeTruthy();
-    if (!adminEmail) throw new Error("Company Admin Auth email is unavailable.");
+    if (!adminEmail)
+      throw new Error("Company Admin Auth email is unavailable.");
 
     const tenantClient = createClient(supabaseUrl!, anonKey!, {
       auth: { autoRefreshToken: false, persistSession: false },
@@ -617,7 +620,9 @@ test("Company Admin login, tenant scope, password reset, routes, and authorizati
     await page.goto(`/admin/users/${foreignEmployee!.id}`, {
       waitUntil: "domcontentloaded",
     });
-    await expect(page.getByRole("heading", { name: "Page unavailable" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Page unavailable" }),
+    ).toBeVisible();
     await expect(page.getByText("Foreign Tenant Employee")).toHaveCount(0);
   } finally {
     if (ownStoragePath) {
@@ -712,6 +717,57 @@ test("company feature disable hides navigation and rejects direct access", async
         .eq("feature_key", "attendance");
       expect(cleanupError).toBeNull();
     }
+  }
+});
+
+test("mobile navigation keeps one four-item shell for Company Admin and employees", async ({
+  browser,
+}) => {
+  const adminContext = await browser.newContext();
+  const employeeContext = await browser.newContext();
+  const adminPage = await adminContext.newPage();
+  const employeePage = await employeeContext.newPage();
+
+  try {
+    await signIn(adminPage, accounts.adminEmployeeId);
+    await signIn(employeePage, accounts.employeeEmployeeId);
+
+    for (const [page, expectedRole] of [
+      [adminPage, "company_admin"],
+      [employeePage, "employee"],
+    ] as const) {
+      await page.setViewportSize({ width: 390, height: 844 });
+      const navigation = page.getByRole("navigation", {
+        name: "Primary mobile navigation",
+      });
+      await expect(navigation).toBeVisible();
+      await expect(navigation).toHaveAttribute(
+        "data-navigation-role",
+        expectedRole,
+      );
+      await expect(navigation.getByRole("button")).toHaveCount(4);
+      await expect(
+        navigation.getByRole("link", { name: "Open Dashboard" }),
+      ).toBeVisible();
+
+      const fabBox = await navigation
+        .getByRole("link", { name: "Open Dashboard" })
+        .boundingBox();
+      expect(fabBox?.width).toBeGreaterThanOrEqual(64);
+      expect(fabBox?.height).toBeGreaterThanOrEqual(64);
+      expect(fabBox?.width).toBeLessThanOrEqual(72);
+      expect(fabBox?.height).toBeLessThanOrEqual(72);
+
+      await navigation.getByRole("button", { name: "Open More menu" }).click();
+      await expect(page.getByRole("dialog")).toBeVisible();
+      await expect(
+        page.getByRole("button", { name: "Close menu" }),
+      ).toBeFocused();
+      await page.keyboard.press("Escape");
+      await expect(page.getByRole("dialog")).toHaveCount(0);
+    }
+  } finally {
+    await Promise.all([adminContext.close(), employeeContext.close()]);
   }
 });
 

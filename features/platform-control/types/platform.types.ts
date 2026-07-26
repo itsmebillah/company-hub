@@ -17,6 +17,7 @@ export type FeatureKey =
   | "future_modules";
 
 export type FeatureState = "enabled" | "disabled";
+export type CompanyFeatureState = "inherit" | FeatureState;
 export type PlatformCompanyStatus =
   "active" | "inactive" | "suspended" | "archived" | "deleted";
 export type AuditCategory =
@@ -28,7 +29,9 @@ export type FeatureDefinition = {
   name: string;
   description: string;
   state: FeatureState;
-  companyState?: FeatureState;
+  companyState: CompanyFeatureState;
+  allowCompanyOverride: boolean;
+  companyConfigurable: boolean;
   effectiveState: FeatureState;
   displayOrder: number;
 };
@@ -64,6 +67,7 @@ export type PlatformSettingsValues = {
   supportEmail: string;
   defaultTimezone: string;
   maintenanceMessage: string;
+  maintenanceMode: boolean;
   allowCompanyCreation: boolean;
   auditRetentionDays: number;
 };

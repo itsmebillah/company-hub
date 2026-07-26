@@ -31,4 +31,6 @@ npm run build
 
 ## Current backend
 
-The repository is linked to Supabase project `jjfktbgfwvekhlvyjlww`. Migrations `0001` through `0037` define the current production schema and security model. No Company Admin is automatically a System Admin; global access requires explicit provisioning. Never commit `.env.local` or service-role credentials.
+The repository is linked to Supabase project `jjfktbgfwvekhlvyjlww`. Migrations `0001` through `0040` define the current production schema and security model. No Company Admin is automatically a System Admin; global access requires explicit provisioning. Never commit `.env.local` or service-role credentials.
+
+The current application version is `0.2.0`. Production-ready deployments publish the matching changelog entry to the release database and GitHub through `.github/workflows/automatic-release.yml` after all quality gates and the Vercel production check pass.

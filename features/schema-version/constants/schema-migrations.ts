@@ -36,4 +36,7 @@ export const SCHEMA_MIGRATION_MANIFEST = [
   "0035_platform_architecture_v2.sql",
   "0036_company_admin_architecture.sql",
   "0037_company_admin_helper_privileges.sql",
+  "0038_hierarchical_feature_control.sql",
+  "0039_release_management.sql",
+  "0040_maintenance_status_invoker.sql",
 ] as const;

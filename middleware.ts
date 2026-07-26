@@ -7,7 +7,7 @@ import {
   isProtectedRoute,
   isPublicAuthRoute,
 } from "@/lib/auth/route-protection";
-import { getRouteFeature } from "@/features/platform-control/constants/feature-catalog";
+import { getRouteFeatureRule } from "@/features/platform-control/constants/feature-catalog";
 
 export async function middleware(request: NextRequest) {
   const middlewareClient = createSupabaseMiddlewareClient(request);
@@ -24,6 +24,16 @@ export async function middleware(request: NextRequest) {
   }
 
   if (user && !request.nextUrl.pathname.startsWith("/platform")) {
+    const { data: maintenanceMode } = await middlewareClient.supabase.rpc(
+      "is_platform_maintenance_mode",
+    );
+    if (maintenanceMode && request.nextUrl.pathname !== "/maintenance") {
+      return NextResponse.rewrite(new URL("/maintenance", request.url), {
+        headers: middlewareClient.response.headers,
+        status: 503,
+      });
+    }
+
     const { data: companyAllowed, error: companyError } =
       await middlewareClient.supabase.rpc("can_access_company_platform");
     if (companyError || !companyAllowed) {
@@ -47,20 +57,26 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  const featureKey = user ? getRouteFeature(request.nextUrl.pathname) : null;
+  const featureRule = user
+    ? getRouteFeatureRule(request.nextUrl.pathname)
+    : null;
 
-  if (featureKey) {
+  if (featureRule) {
     const { data: allowed, error } = await middlewareClient.supabase.rpc(
-      "can_access_feature",
-      { target_feature_key: featureKey },
+      "can_access_any_feature",
+      { target_feature_keys: [...featureRule.anyOf] },
     );
 
     if (error || !allowed) {
-      await middlewareClient.supabase.rpc("log_feature_access_denied", {
-        target_feature_key: featureKey,
-        target_path: request.nextUrl.pathname,
-        target_user_agent: request.headers.get("user-agent"),
-      });
+      await Promise.all(
+        featureRule.anyOf.map((featureKey) =>
+          middlewareClient.supabase.rpc("log_feature_access_denied", {
+            target_feature_key: featureKey,
+            target_path: request.nextUrl.pathname,
+            target_user_agent: request.headers.get("user-agent"),
+          }),
+        ),
+      );
 
       return NextResponse.rewrite(new URL("/not-found", request.url), {
         headers: middlewareClient.response.headers,
@@ -69,9 +85,13 @@ export async function middleware(request: NextRequest) {
     }
 
     if (request.method === "GET") {
-      await middlewareClient.supabase.rpc("record_feature_usage", {
-        target_feature_key: featureKey,
-      });
+      await Promise.all(
+        featureRule.anyOf.map((featureKey) =>
+          middlewareClient.supabase.rpc("record_feature_usage", {
+            target_feature_key: featureKey,
+          }),
+        ),
+      );
     }
   }
 

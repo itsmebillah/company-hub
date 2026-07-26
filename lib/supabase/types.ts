@@ -779,6 +779,7 @@ export type Database = {
           display_name: string;
           description: string;
           state: Database["public"]["Enums"]["platform_feature_state"];
+          allow_company_override: boolean;
           display_order: number;
           created_at: string;
           updated_at: string;
@@ -789,6 +790,7 @@ export type Database = {
           display_name: string;
           description?: string;
           state?: Database["public"]["Enums"]["platform_feature_state"];
+          allow_company_override?: boolean;
           display_order: number;
           created_at?: string;
           updated_at?: string;
@@ -809,6 +811,7 @@ export type Database = {
           support_email: string | null;
           default_timezone: string;
           maintenance_message: string | null;
+          maintenance_mode: boolean;
           allow_company_creation: boolean;
           audit_retention_days: number;
           global_configuration: Json;
@@ -825,6 +828,7 @@ export type Database = {
           support_email?: string | null;
           default_timezone?: string;
           maintenance_message?: string | null;
+          maintenance_mode?: boolean;
           allow_company_creation?: boolean;
           audit_retention_days?: number;
           global_configuration?: Json;
@@ -843,6 +847,7 @@ export type Database = {
           company_id: string;
           feature_key: string;
           state: Database["public"]["Enums"]["platform_feature_state"];
+          company_state: string;
           configuration: Json;
           created_at: string;
           updated_at: string;
@@ -854,6 +859,7 @@ export type Database = {
           company_id: string;
           feature_key: string;
           state?: Database["public"]["Enums"]["platform_feature_state"];
+          company_state?: string;
           configuration?: Json;
           created_at?: string;
           updated_at?: string;
@@ -862,6 +868,80 @@ export type Database = {
         };
         Update: Partial<
           Database["public"]["Tables"]["company_features"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      platform_releases: {
+        Row: {
+          id: string;
+          version: string;
+          title: string;
+          description: string;
+          release_type: string;
+          whats_new: Json;
+          bug_fixes: Json;
+          improvements: Json;
+          breaking_changes: Json;
+          requires_update: boolean;
+          show_popup: boolean;
+          published_at: string | null;
+          commit_sha: string;
+          deployment_id: string;
+          created_by: string | null;
+          status: string;
+          release_notes: string;
+          rollback_metadata: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          version: string;
+          title: string;
+          description?: string;
+          release_type: string;
+          whats_new?: Json;
+          bug_fixes?: Json;
+          improvements?: Json;
+          breaking_changes?: Json;
+          requires_update?: boolean;
+          show_popup?: boolean;
+          published_at?: string | null;
+          commit_sha: string;
+          deployment_id: string;
+          created_by?: string | null;
+          status?: string;
+          release_notes?: string;
+          rollback_metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["platform_releases"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      release_receipts: {
+        Row: {
+          id: string;
+          release_id: string;
+          auth_user_id: string;
+          dismissed_at: string | null;
+          installed_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          release_id: string;
+          auth_user_id: string;
+          dismissed_at?: string | null;
+          installed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["release_receipts"]["Insert"]
         >;
         Relationships: [];
       };
@@ -1448,6 +1528,14 @@ export type Database = {
       };
     };
     Views: {
+      platform_feature_company_summary: {
+        Row: {
+          feature_key: string | null;
+          disabled_company_count: number | null;
+          enabled_company_count: number | null;
+        };
+        Relationships: [];
+      };
       platform_company_overview: {
         Row: {
           id: string | null;
@@ -1484,6 +1572,14 @@ export type Database = {
       };
       can_access_feature: {
         Args: { target_feature_key: string };
+        Returns: boolean;
+      };
+      can_access_any_feature: {
+        Args: { target_feature_keys: string[] };
+        Returns: boolean;
+      };
+      is_platform_maintenance_mode: {
+        Args: Record<PropertyKey, never>;
         Returns: boolean;
       };
       can_access_company_platform: {

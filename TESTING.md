@@ -6,7 +6,11 @@ Platform Control Center verification additionally covers Company Admin and emplo
 
 The 2026-07-22 production-mode run passed the focused System Admin responsive matrix, full Company Admin route matrix, company feature-disable enforcement, and all 12 public/signed-out/PWA/accessibility Chrome checks. The full combined Chrome suite exceeded the command execution window once; its affected Platform tests were rerun directly and passed. Edge remains unavailable on this workstation as documented in project state.
 
-Playwright is committed under `tests/e2e/` with Chrome and Edge projects. The suite verifies public routes, signed-out redirects/API denial, Company Admin and Employee login/session/logout, role routing, tenant employee denial, company password reset, feature hiding/direct denial, major route rendering, Quick Link visual priority and cleanup, 320/360/375/390/414/768/1024px layouts, attendance media, Storage, exports, PWA, Realtime, and axe WCAG A/AA scans. CI and unit/service integration suites remain absent.
+Playwright is committed under `tests/e2e/` with Chrome and Edge projects. The suite verifies public routes, signed-out redirects/API denial, Company Admin and Employee login/session/logout, role routing, tenant employee denial, company password reset, feature hiding/direct denial, the invariant four-item navigation shell and 64–72px Dashboard FAB, major route rendering, Quick Link visual priority and cleanup, 320/360/375/390/414/768/1024px layouts, attendance media, Storage, exports, PWA, Realtime, and axe WCAG A/AA scans. Lower-level unit/service integration suites remain absent; the production release workflow now supplies the deployment quality gate.
+
+Feature-control regression must restore every platform/company state in `finally`. Verify platform-disabled/company-enabled resolves disabled, platform-locked enabled ignores company state, and all seven primary product features disappear from menus/cards/settings and reject direct access. Shared `/resources` routes are denied only when Resources, Quick Links, and Knowledge Hub are all disabled.
+
+Release tests should use a disposable future version, validate optional and mandatory dialogs plus `/releases`, then delete both release and receipt fixtures. Branding tests must preserve and restore the company's original settings.
 
 ## Existing verification commands
 

@@ -8,6 +8,18 @@
 
 `app/(admin)` is the tenant control plane. The canonical tenant authority is the `Company Admin` role; `/admin/*` URLs remain stable for backward-compatible links. Middleware calls the caller-derived `can_access_company_admin()` predicate before route rendering, while every privileged Server Action rechecks Company Admin status and the relevant effective feature state. Service-role reads and writes resolve the authenticated company first and include `company_id` in entity queries. Company Admins cannot create companies, access `/platform`, create platform roles, read global analytics, or manage another tenant.
 
+## Navigation and feature resolution
+
+`lib/navigation/navigation-engine.ts` is the single navigation catalog. `MobileNavigationV2` renders the same structural shell for every role: Hub, Updates, Me, and More remain inside the floating bar while Dashboard is a separate central FAB. Role changes destinations, never layout. Desktop navigation consumes the same feature-aware destination model.
+
+Feature resolution is platform-first. A platform feature must be enabled; when company override is permitted, the company may inherit, enable, or disable it. A platform-disabled feature always wins, and a platform-locked enabled feature ignores a tenant disable. The resulting effective set is shared by dashboards, navigation, settings, resource surfaces, middleware, APIs, and Server Actions. Shared resource routes accept an any-of rule so Quick Links, Knowledge Hub, and Resources can be controlled independently without stranding the common portal.
+
+## Branding and releases
+
+Company settings remain the branding source of truth. The authenticated layout resolves stored logo, favicon, and color settings into CSS variables and shared `Logo` rendering; server metadata and the manifest use the same settings with safe fallbacks. Platform routes use platform branding rather than tenant branding.
+
+Release metadata lives in `platform_releases`; per-user acknowledgment lives in `release_receipts`. `ReleaseUpdateProvider` compares the built package version with the latest published release, supports optional and mandatory dialogs, and requests service-worker activation before reloading a PWA. System Admin controls publish/update/maintenance metadata at `/platform/releases`; automated publication is performed only after the deployment quality gate.
+
 ## System context
 
 Company Hub is a server-first Next.js App Router application backed by Supabase PostgreSQL, Auth, Storage, and Realtime. Vercel is the intended web/cron host. Browsers interact with Next.js routes and server actions; privileged data access remains on the server.

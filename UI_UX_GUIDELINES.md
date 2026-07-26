@@ -22,6 +22,10 @@ Canonical tokens live in `app/globals.css` and are mapped into Tailwind 4 throug
 - Keep route pages as composition layers using `app-page`, `app-page-header`, `app-card`, and `app-table-shell` patterns.
 - Provide mobile card alternatives for dense tables.
 - Respect safe-area insets for floating/mobile navigation.
+- Mobile navigation always has four bottom groups—Hub, Updates, Me, and More—with a 64–72px Dashboard FAB above the bar. Do not add a fifth slot or create a role-specific shell.
+- Filter destinations before rendering. Disabled features must not produce blank cards, menu gaps, placeholders, settings sections, or dashboard grid cells.
+- Quick Links use a 3-column grid at 320–375px, 4 columns from 390px, then expand responsively. Visual priority is uploaded image, non-blocking favicon, built-in icon, then the Company Hub placeholder. Preserve square crop, keyboard focus, and a minimum 44px touch target.
+- Company Admin management cards may expose Edit, Change Icon, Upload Image, and Delete through a 550ms long press or keyboard-accessible/context-menu equivalent. Employee cards never expose management actions.
 - Avoid horizontal scrolling except deliberate data tables/visualizations.
 
 ## Forms and actions

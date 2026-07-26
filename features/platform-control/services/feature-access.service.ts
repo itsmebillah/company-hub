@@ -9,10 +9,15 @@ import type {
   FeatureDefinition,
   FeatureKey,
   FeatureState,
+  CompanyFeatureState,
 } from "@/features/platform-control/types/platform.types";
 
 function toCurrentState(value: string): FeatureState {
   return value === "enabled" ? "enabled" : "disabled";
+}
+
+function toCompanyState(value: string | null | undefined): CompanyFeatureState {
+  return value === "enabled" || value === "disabled" ? value : "inherit";
 }
 
 export const FeatureAccessService = {
@@ -25,11 +30,13 @@ export const FeatureAccessService = {
     ] = await Promise.all([
       supabase
         .from("platform_features")
-        .select("feature_key, display_name, description, state, display_order")
+        .select(
+          "feature_key, display_name, description, state, allow_company_override, display_order",
+        )
         .order("display_order"),
       supabase
         .from("company_features")
-        .select("feature_key, state")
+        .select("feature_key, company_state")
         .eq("company_id", companyId),
       supabase
         .from("companies")
@@ -48,22 +55,29 @@ export const FeatureAccessService = {
     }
 
     const companyStates = new Map(
-      overrides.map((item) => [item.feature_key, toCurrentState(item.state)]),
+      overrides.map((item) => [
+        item.feature_key,
+        toCompanyState(item.company_state),
+      ]),
     );
 
     return features.map((feature) => {
       const state = toCurrentState(feature.state);
-      const companyState = companyStates.get(feature.feature_key);
+      const companyState = companyStates.get(feature.feature_key) ?? "inherit";
+      const companyConfigurable =
+        state === "enabled" && feature.allow_company_override;
       return {
         key: feature.feature_key as FeatureKey,
         name: feature.display_name,
         description: feature.description,
         state,
         companyState,
+        allowCompanyOverride: feature.allow_company_override,
+        companyConfigurable,
         effectiveState:
           state === "enabled" &&
           company.platform_status === "active" &&
-          companyState !== "disabled"
+          (!feature.allow_company_override || companyState !== "disabled")
             ? "enabled"
             : "disabled",
         displayOrder: feature.display_order,

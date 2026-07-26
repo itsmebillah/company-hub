@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import {
   createResource,
+  deleteResource,
   duplicateResource,
   getResourceFeatureKey,
   setResourceStatus,
@@ -125,5 +126,27 @@ export async function restoreResourceAction(
     return { ok: true, message: "Resource restored." };
   } catch {
     return { ok: false, message: "Unable to restore resource." };
+  }
+}
+
+export async function deleteResourceAction(
+  id: string,
+): Promise<ResourceActionState> {
+  try {
+    await requireCompanyAdmin();
+    await FeatureAccessService.requireForCurrentCompany(
+      await getResourceFeatureKey(id),
+    );
+    await deleteResource(id);
+    revalidatePath(RESOURCES_PATH);
+    revalidatePath("/dashboard");
+    revalidatePath("/resources");
+    return { ok: true, message: "Resource deleted." };
+  } catch (error) {
+    return {
+      ok: false,
+      message:
+        error instanceof Error ? error.message : "Unable to delete resource.",
+    };
   }
 }

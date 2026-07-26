@@ -69,6 +69,15 @@ export default async function AdminRouteGroupLayout({
       requireCameraOnboarding={attendanceSettings.requireSelfie}
       schemaStatus={schemaStatus}
       enabledFeatures={[...enabledFeatures]}
+      branding={{
+        companyName: companySettings.companyName,
+        shortName: companySettings.shortName,
+        logo: companySettings.logo,
+        favicon: companySettings.favicon,
+        primaryColor: companySettings.primaryColor,
+        secondaryColor: companySettings.secondaryColor,
+        theme: companySettings.theme,
+      }}
     >
       {children}
     </AdminShell>

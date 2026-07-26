@@ -7,6 +7,8 @@
 - Cross-company people reads, password resets, company lifecycle changes, and platform settings writes remain server-only and require `requireSystemAdmin`; reset and soft-delete operations require exact business-identifier confirmation and are audited.
 - Company status and feature state are enforced in middleware for pages, route handlers, and Server Action posts. Denied direct access returns a 404 rewrite and records a security event.
 - Disabled modules are removed from desktop/mobile navigation, dashboard shortcuts, and cards. UI filtering is not treated as authorization.
+- The effective feature state is platform-first and is rechecked by middleware, APIs, and Server Actions. Company state cannot enable a platform-disabled feature or override a platform lock. Shared resource routes use one caller-derived any-of RPC so denial does not reveal inaccessible module details.
+- Release notes are public only after publication; drafts and cross-user receipts remain protected by RLS. Automated release notes must never include environment values, secrets, internal auth email, provider errors, or stack traces.
 - Company Admin changes are constrained to the current authenticated company and cannot override a platform-level disable.
 - Company deletion is a soft lifecycle state and never deletes tenant rows.
 

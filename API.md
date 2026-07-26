@@ -12,15 +12,15 @@ Company Hub is not a public REST API product. Its primary mutation interface is 
 
 ## HTTP routes
 
-| Method/path                             | Purpose                            | Input                                        | Success          | Authorization                                                                        |
-| --------------------------------------- | ---------------------------------- | -------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------ |
-| `GET /admin/attendance/reports/details` | Employee attendance detail         | Report filters plus required `employeeId`    | JSON detail      | Report service checks Company Admin access, report feature, and company              |
-| `GET /admin/attendance/reports/export`  | Attendance export                  | Filters plus `format` (`csv`, `xlsx`, `pdf`) | Download         | Report service checks Company Admin access, report feature, and company              |
-| `GET /admin/users/export`               | Employee CSV export                | Search, status, role, manager, mode, sort    | UTF-8 CSV        | Explicit Company Admin and employee-directory checks plus current-company scoping    |
-| `GET /admin/users/import/template`      | Import template                    | None                                         | CSV download     | Explicit Company Admin and employee-directory checks                                 |
-| `GET /api/cron/celebrations`            | Generate scheduled celebrations    | `Authorization: Bearer <CRON_SECRET>`        | JSON run summary | Bearer secret in production                                                          |
-| `POST /api/notifications/track`         | Mark notification delivered/opened | Notification ID plus delivered/opened event  | `204`            | Authenticated ownership scope; signed-out callers receive `401`                      |
-| `GET /platform/audit/export`            | Export filtered centralized audit   | Audit filters plus `format` (`csv`, `xlsx`)  | File download    | Explicit System Admin; 5,000-row cap and truncation response header                  |
+| Method/path                             | Purpose                            | Input                                        | Success          | Authorization                                                                     |
+| --------------------------------------- | ---------------------------------- | -------------------------------------------- | ---------------- | --------------------------------------------------------------------------------- |
+| `GET /admin/attendance/reports/details` | Employee attendance detail         | Report filters plus required `employeeId`    | JSON detail      | Report service checks Company Admin access, report feature, and company           |
+| `GET /admin/attendance/reports/export`  | Attendance export                  | Filters plus `format` (`csv`, `xlsx`, `pdf`) | Download         | Report service checks Company Admin access, report feature, and company           |
+| `GET /admin/users/export`               | Employee CSV export                | Search, status, role, manager, mode, sort    | UTF-8 CSV        | Explicit Company Admin and employee-directory checks plus current-company scoping |
+| `GET /admin/users/import/template`      | Import template                    | None                                         | CSV download     | Explicit Company Admin and employee-directory checks                              |
+| `GET /api/cron/celebrations`            | Generate scheduled celebrations    | `Authorization: Bearer <CRON_SECRET>`        | JSON run summary | Bearer secret in production                                                       |
+| `POST /api/notifications/track`         | Mark notification delivered/opened | Notification ID plus delivered/opened event  | `204`            | Authenticated ownership scope; signed-out callers receive `401`                   |
+| `GET /platform/audit/export`            | Export filtered centralized audit  | Audit filters plus `format` (`csv`, `xlsx`)  | File download    | Explicit System Admin; 5,000-row cap and truncation response header               |
 
 The Vercel cron schedule calls `/api/cron/celebrations` at `0 18 * * *` UTC, corresponding to Bangladesh midnight when UTC+6 applies.
 
@@ -32,12 +32,13 @@ The Vercel cron schedule calls `/api/cron/celebrations` at `0 18 * * *` UTC, cor
 - `updateCompanyStatusAction`: System Admin; active/inactive/suspended/archived/deleted lifecycle state, with exact-name confirmation for soft deletion.
 - `resetPlatformEmployeePasswordAction`: System Admin; exact Employee-ID confirmation and audited reset to the canonical initial password.
 - `updatePlatformSettingsAction`: System Admin; global branding and operational defaults.
-- `updatePlatformFeatureAction`: System Admin; authoritative global enable/disable.
-- `updateCompanyFeatureAction`: System Admin; selected-company override.
-- `updateOwnCompanyFeatureAction`: Company Admin; current-company override only and never bypasses platform disable.
+- `updatePlatformFeatureAction`: System Admin; authoritative global enable/disable plus company-override lock.
+- `updateCompanyFeatureAction`: System Admin; selected-company `inherit`/`enabled`/`disabled` state.
+- `updateOwnCompanyFeatureAction`: Company Admin; current-company state only when platform override is allowed and never bypasses platform disable.
+- Release actions: System Admin update of publication, popup, mandatory-update, maintenance, and release metadata; ordinary users may acknowledge only their own published release.
 - `resetEmployeePasswordAction`: Company Admin; exact Employee-ID confirmation, current-company target, canonical initial password, and security audit.
 
-Middleware calls caller-derived `can_access_company_platform`, `can_access_feature`, `record_feature_usage`, and denial-log RPCs. These RPCs do not expose platform records.
+Middleware calls caller-derived `can_access_company_platform`, `can_access_any_feature`, `record_feature_usage`, and denial-log RPCs. These RPCs do not expose platform records. Any-of checks are required for the shared Resources/Quick Links/Knowledge Hub route family.
 
 ### Auth
 

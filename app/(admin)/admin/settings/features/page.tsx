@@ -3,7 +3,7 @@ import { FeatureAccessService } from "@/features/platform-control/services/featu
 
 export default async function CompanyFeatureSettingsPage() {
   const features = await FeatureAccessService.getCurrentCompanyStates();
-  const configurableFeatures = features.filter(
+  const visibleFeatures = features.filter(
     (feature) => feature.state === "enabled",
   );
   return (
@@ -12,12 +12,12 @@ export default async function CompanyFeatureSettingsPage() {
         <p className="text-primary text-sm font-semibold">Company settings</p>
         <h1 className="text-2xl font-bold sm:text-3xl">Feature controls</h1>
         <p className="text-muted-foreground mt-2">
-          Disable optional modules for this company. Platform-disabled modules
-          cannot be enabled here.
+          Choose inherit, enabled, or disabled where the platform permits a
+          company override. Platform decisions always win.
         </p>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
-        {configurableFeatures.map((feature) => (
+        {visibleFeatures.map((feature) => (
           <article key={feature.key} className="app-card p-4 sm:p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -37,16 +37,26 @@ export default async function CompanyFeatureSettingsPage() {
               <input type="hidden" name="featureKey" value={feature.key} />
               <select
                 name="state"
-                defaultValue={feature.companyState ?? "enabled"}
+                defaultValue={feature.companyState}
+                disabled={!feature.companyConfigurable}
                 className="bg-background h-10 min-w-0 flex-1 rounded-xl border px-3 text-sm"
               >
+                <option value="inherit">Inherit platform</option>
                 <option value="enabled">Enabled</option>
                 <option value="disabled">Disabled</option>
               </select>
-              <button className="rounded-xl border px-3 text-sm font-semibold">
+              <button
+                disabled={!feature.companyConfigurable}
+                className="rounded-xl border px-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+              >
                 Save
               </button>
             </form>
+            {!feature.companyConfigurable ? (
+              <p className="text-muted-foreground mt-3 text-xs font-medium">
+                Read only · controlled by System Admin
+              </p>
+            ) : null}
           </article>
         ))}
       </div>

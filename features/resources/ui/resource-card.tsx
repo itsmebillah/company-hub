@@ -1,3 +1,6 @@
+"use client";
+
+import { useRef, useState } from "react";
 import { Archive, Copy, Eye, Pencil, RotateCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -10,6 +13,7 @@ type ResourceCardProps = {
   onView: (resource: ResourceListItem) => void;
   onEdit: (resource: ResourceListItem) => void;
   onDuplicate: (id: string) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
   onArchive: (id: string) => Promise<void>;
   onRestore: (id: string) => Promise<void>;
 };
@@ -35,79 +39,148 @@ export function ResourceCard({
   onView,
   onEdit,
   onDuplicate,
+  onDelete,
   onArchive,
   onRestore,
 }: ResourceCardProps) {
+  const [isContextOpen, setIsContextOpen] = useState(false);
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const startLongPress = () => {
+    longPressTimer.current = setTimeout(() => setIsContextOpen(true), 550);
+  };
+  const cancelLongPress = () => {
+    if (longPressTimer.current) clearTimeout(longPressTimer.current);
+    longPressTimer.current = null;
+  };
+
   return (
-    <EmployeeResourceCard
-      resource={toEmployeePortalResource(resource)}
-      categoryName={resource.categoryName}
-      extraBadges={
-        resource.status !== "active" ? (
-          <span
-            className={
-              resource.status === "archived"
-                ? "inline-flex rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
-                : "inline-flex rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300"
-            }
+    <div
+      className="relative min-w-0 touch-manipulation"
+      onPointerDown={startLongPress}
+      onPointerUp={cancelLongPress}
+      onPointerCancel={cancelLongPress}
+      onPointerLeave={cancelLongPress}
+      onContextMenu={(event) => {
+        event.preventDefault();
+        setIsContextOpen(true);
+      }}
+    >
+      <EmployeeResourceCard
+        resource={toEmployeePortalResource(resource)}
+        categoryName={resource.categoryName}
+        extraBadges={
+          resource.status !== "active" ? (
+            <span
+              className={
+                resource.status === "archived"
+                  ? "inline-flex rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+                  : "inline-flex rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300"
+              }
+            >
+              {resource.status}
+            </span>
+          ) : null
+        }
+        primaryAction={
+          <Button
+            type="button"
+            size="sm"
+            className="h-8 w-full rounded-xl"
+            onClick={() => onView(resource)}
           >
-            {resource.status}
-          </span>
-        ) : null
-      }
-      primaryAction={
-        <Button
-          type="button"
-          size="sm"
-          className="h-8 w-full rounded-xl"
-          onClick={() => onView(resource)}
+            <Eye className="size-3.5" aria-hidden="true" />
+            View Resource
+          </Button>
+        }
+        footer={
+          <div className="grid grid-cols-3 gap-1.5">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="h-8 rounded-xl px-2 text-xs"
+              onClick={() => onEdit(resource)}
+            >
+              <Pencil className="size-3.5" aria-hidden="true" />
+              Edit
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="h-8 rounded-xl px-2 text-xs"
+              onClick={() => onDuplicate(resource.id)}
+            >
+              <Copy className="size-3.5" aria-hidden="true" />
+              Duplicate
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="h-8 rounded-xl px-2 text-xs"
+              onClick={() =>
+                resource.status === "archived"
+                  ? onRestore(resource.id)
+                  : onArchive(resource.id)
+              }
+            >
+              {resource.status === "archived" ? (
+                <RotateCcw className="size-3.5" aria-hidden="true" />
+              ) : (
+                <Archive className="size-3.5" aria-hidden="true" />
+              )}
+              {resource.status === "archived" ? "Restore" : "Archive"}
+            </Button>
+          </div>
+        }
+      />
+      {isContextOpen ? (
+        <div
+          role="menu"
+          aria-label={`Manage ${resource.title}`}
+          className="bg-popover/98 absolute inset-x-2 top-1/2 z-20 -translate-y-1/2 rounded-2xl border p-2 shadow-[var(--shadow-raised)] backdrop-blur-xl"
         >
-          <Eye className="size-3.5" aria-hidden="true" />
-          View Resource
-        </Button>
-      }
-      footer={
-        <div className="grid grid-cols-3 gap-1.5">
-          <Button
+          {[
+            { label: "Edit", action: () => onEdit(resource) },
+            { label: "Change Icon", action: () => onEdit(resource) },
+            { label: "Upload Image", action: () => onEdit(resource) },
+            {
+              label: "Delete",
+              action: () => {
+                if (
+                  window.confirm(
+                    `Delete ${resource.title}? This also removes its managed image when unused.`,
+                  )
+                ) {
+                  void onDelete(resource.id);
+                }
+              },
+            },
+          ].map((item) => (
+            <button
+              key={item.label}
+              type="button"
+              role="menuitem"
+              className="hover:bg-accent focus-visible:ring-ring flex min-h-11 w-full items-center rounded-xl px-3 text-left text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
+              onClick={() => {
+                item.action();
+                setIsContextOpen(false);
+              }}
+            >
+              {item.label}
+            </button>
+          ))}
+          <button
             type="button"
-            size="sm"
-            variant="outline"
-            className="h-8 rounded-xl px-2 text-xs"
-            onClick={() => onEdit(resource)}
+            role="menuitem"
+            className="text-muted-foreground hover:bg-accent flex min-h-11 w-full items-center rounded-xl px-3 text-left text-sm font-semibold"
+            onClick={() => setIsContextOpen(false)}
           >
-            <Pencil className="size-3.5" aria-hidden="true" />
-            Edit
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            className="h-8 rounded-xl px-2 text-xs"
-            onClick={() => onDuplicate(resource.id)}
-          >
-            <Copy className="size-3.5" aria-hidden="true" />
-            Duplicate
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            className="h-8 rounded-xl px-2 text-xs"
-            onClick={() =>
-              resource.status === "archived"
-                ? onRestore(resource.id)
-                : onArchive(resource.id)
-            }
-          >
-            {resource.status === "archived" ? (
-              <RotateCcw className="size-3.5" aria-hidden="true" />
-            ) : (
-              <Archive className="size-3.5" aria-hidden="true" />
-            )}
-            {resource.status === "archived" ? "Restore" : "Archive"}
-          </Button>
+            Cancel
+          </button>
         </div>
-      }
-    />
+      ) : null}
+    </div>
   );
 }

@@ -1,0 +1,79 @@
+name: Automatic production release
+
+on:
+  deployment_status:
+
+permissions:
+  contents: write
+  deployments: read
+
+concurrency:
+  group: production-release-${{ github.event.deployment.sha }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: >-
+      github.event.deployment_status.state == 'success' &&
+      github.event.deployment_status.environment == 'Production'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.deployment.sha }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run build
+        env:
+          NEXT_PUBLIC_APP_URL: ${{ github.event.deployment_status.target_url }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+
+      - name: Verify migration parity and database lint
+        run: |
+          npx supabase link --project-ref "$SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
+          npx supabase migration list --linked
+          npx supabase db push --linked --dry-run
+          npx supabase db lint --linked --level error
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+
+      - name: Verify production deployment
+        run: curl --fail --silent --show-error --location "$DEPLOYMENT_URL/login" > /dev/null
+        env:
+          DEPLOYMENT_URL: ${{ github.event.deployment_status.target_url }}
+
+      - name: Publish synchronized release history
+        id: release
+        run: node scripts/publish-release.mjs
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RELEASE_COMMIT_SHA: ${{ github.event.deployment.sha }}
+          RELEASE_DEPLOYMENT_ID: ${{ github.event.deployment.id }}
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.release.outputs.version }}
+          TITLE: ${{ steps.release.outputs.title }}
+          NOTES_PATH: ${{ steps.release.outputs.notes_path }}
+        run: |
+          if gh release view "v$VERSION" >/dev/null 2>&1; then
+            gh release edit "v$VERSION" --title "$TITLE" --notes-file "$NOTES_PATH"
+          else
+            gh release create "v$VERSION" --target "$GITHUB_SHA" --title "$TITLE" --notes-file "$NOTES_PATH"
+          fi

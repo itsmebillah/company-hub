@@ -40,7 +40,12 @@ export function AppHeader({
   const enabledFeatureSet = enabledFeatures ? new Set(enabledFeatures) : null;
   const navigationItems = enabledFeatureSet
     ? appNavigationItems.filter(
-        (item) => !item.featureKey || enabledFeatureSet.has(item.featureKey),
+        (item) =>
+          (!item.featureKey || enabledFeatureSet.has(item.featureKey)) &&
+          (!item.featureKeys ||
+            item.featureKeys.some((featureKey) =>
+              enabledFeatureSet.has(featureKey),
+            )),
       )
     : appNavigationItems;
   const notificationsEnabled =
@@ -65,7 +70,9 @@ export function AppHeader({
 
             <div className="flex items-center gap-2">
               {actions}
-              {notificationsEnabled && notificationSummary && notificationScope ? (
+              {notificationsEnabled &&
+              notificationSummary &&
+              notificationScope ? (
                 <RealtimeNotificationCenter
                   initialSummary={notificationSummary}
                   scope={notificationScope}
@@ -93,7 +100,7 @@ export function AppHeader({
           </div>
 
           <nav
-            className="hidden flex-wrap items-center gap-2 md:flex"
+            className="hidden flex-wrap items-center gap-2 xl:flex"
             aria-label="Workspace navigation"
           >
             {navigationItems.map((item) => {

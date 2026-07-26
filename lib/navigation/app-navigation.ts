@@ -16,6 +16,7 @@ export type AppNavigationItem = {
   href: string;
   icon: LucideIcon;
   featureKey?: FeatureKey;
+  featureKeys?: FeatureKey[];
 };
 
 export const appNavigationItems: AppNavigationItem[] = [
@@ -52,7 +53,7 @@ export const appNavigationItems: AppNavigationItem[] = [
     title: "Resources",
     href: "/resources",
     icon: FolderKanban,
-    featureKey: "resources",
+    featureKeys: ["resources", "quick_links", "knowledge_hub"],
   },
   {
     title: "Profile",
@@ -66,12 +67,4 @@ export const appNavigationItems: AppNavigationItem[] = [
     icon: Settings,
     featureKey: "company_settings",
   },
-];
-
-export const primaryMobileAppNavigationItems: AppNavigationItem[] = [
-  appNavigationItems[0],
-  appNavigationItems[2],
-  appNavigationItems[4],
-  appNavigationItems[5],
-  appNavigationItems[6],
 ];

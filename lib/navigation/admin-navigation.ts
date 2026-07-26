@@ -24,6 +24,7 @@ export type AdminNavigationItem = {
   href: string;
   icon: LucideIcon;
   featureKey?: FeatureKey;
+  featureKeys?: FeatureKey[];
 };
 
 export const adminNavigationItems: AdminNavigationItem[] = [
@@ -48,7 +49,7 @@ export const adminNavigationItems: AdminNavigationItem[] = [
     title: "Resources",
     href: "/admin/resources",
     icon: FolderKanban,
-    featureKey: "resources",
+    featureKeys: ["resources", "quick_links", "knowledge_hub"],
   },
   {
     title: "Announcements",
@@ -114,17 +115,6 @@ export const adminNavigationItems: AdminNavigationItem[] = [
     href: "/admin/audit",
     icon: Activity,
   },
-];
-
-export const primaryAdminNavigationItems: AdminNavigationItem[] = [
-  adminNavigationItems[0],
-  adminNavigationItems[1],
-  adminNavigationItems[5],
-  {
-    ...adminNavigationItems[4],
-    title: "Notice",
-  },
-  adminNavigationItems[3],
 ];
 
 export const adminNavigationFallback = {

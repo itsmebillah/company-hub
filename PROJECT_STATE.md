@@ -1,6 +1,6 @@
 # Project State
 
-Last verified: 2026-07-22
+Last verified: 2026-07-26
 
 ## Summary
 
@@ -14,15 +14,15 @@ The quality-hardening baseline is deployable: privileged mutation boundaries, pr
 - Node.js 24.16.0 and npm 11.13.0 used for the latest verification.
 - Supabase CLI 2.109.1 and Vercel CLI 56.3.2 installed as dev dependencies.
 - Supabase project `jjfktbgfwvekhlvyjlww` linked and active.
-- Migrations `0001` through `0037` applied remotely with exact local/remote parity.
-- 27 public application tables with RLS enabled; platform-control tables are default-deny to browser roles.
+- Migrations `0001` through `0040` applied remotely with exact local/remote parity.
+- 29 public application tables with RLS enabled; platform-control and draft release rows are default-deny to browser roles.
 - Fourteen platform features are cataloged. Existing companies inherit enabled modules and `future_modules` starts disabled.
 - No System Admin is auto-provisioned. `platform_admins` remains empty until the owner explicitly approves an existing active Auth identity.
 - Exact restored content parity for 1,748 application rows across all 22 tables; all application IDs and hierarchy references were preserved.
 - Nine storage buckets, 11 storage-object policies, four checksum-verified objects, and notification realtime publication.
 - 17 Auth identities recreated with matching email, metadata, confirmation state, and employee linkage. All 17 passwords are synchronized to the canonical Employee-ID-derived policy and individually verified; no Auth emails changed and no duplicate users were created.
 - `npm install`, lint, typecheck, and production build pass.
-- Playwright: 46 production-build checks are defined across Chrome and Edge, including Admin/Employee login, session restore, logout, role redirects, major routes, Platform Audit CSV/XLSX exports, Quick Link visual priority and image lifecycle, PWA assets, private Storage, Realtime, attendance attachments, exports, signed-out API denial, responsive widths from 320px through 1024px, and WCAG A/AA scans. The 2026-07-22 build passes all 23 Chrome checks; Edge execution is currently blocked because Edge is not installed and its installer requires workstation elevation. The preceding foundation build passed both projects.
+- Playwright: 48 production-build checks are defined across Chrome and Edge, including Admin/Employee login, session restore, logout, role redirects, the invariant navigation shell, major routes, Platform Audit CSV/XLSX exports, Quick Link visual priority and image lifecycle, PWA assets, private Storage, Realtime, attendance attachments, exports, signed-out API denial, responsive widths from 320px through 1024px, and WCAG A/AA scans. The 2026-07-26 Chrome matrix passes all 24 checks, including focused reruns after accessibility/API corrections; Edge execution remains blocked because Edge is not installed and its installer requires workstation elevation.
 - Company Admin uses the canonical `Company Admin` tenant role, middleware authorization, action-level feature checks, tenant-scoped service-role queries, protected password reset, and company-aware Storage policies. `/admin/*` paths remain stable compatibility URLs.
 - Platform regression: a disposable explicit System Admin renders all six control-center routes without horizontal overflow at 320/360/375/390/414/768/1024px and verifies audited initial-password reset; cleanup restores `platform_admins` to zero. A disposable company Attendance override hides navigation and returns HTTP 404 on direct access, then restores the prior state. Chrome checks cover these flows, the complete Admin route matrix, and all 12 public/signed-out/PWA/accessibility checks.
 
@@ -38,6 +38,9 @@ The quality-hardening baseline is deployable: privileged mutation boundaries, pr
 - Company branding/settings, dashboard summaries, audit activity, celebrations cron.
 - Platform Control Center with active/inactive/suspended/archived/deleted company lifecycle, confirmed soft deletion, cross-company people/Admin visibility, audited initial-password reset, global branding/configuration, two-level feature controls, usage, security/login/activity audit events, complete audit filtering, bounded CSV/XLSX exports, pagination, and company-scoped audit access. All 136 immutable legacy activity events are represented in the central audit stream.
 - Responsive admin/employee shells, theme support, PWA install flow, service worker, permission onboarding.
+- A single configuration-driven mobile navigation shell serves every role: four fixed groups plus a separate Dashboard FAB, with centralized role and effective-feature filtering.
+- Company branding is resolved at the authenticated shell and propagated through shared CSS tokens, logo, metadata, favicon, manifest, and PWA theme color.
+- Release Management stores semantic versions, notes, deployment/commit provenance, user receipts, optional/mandatory update policy, and maintenance state. Version `0.2.0` introduces the automated post-deployment publishing workflow.
 
 ## Current quality signals
 
@@ -47,10 +50,10 @@ The quality-hardening baseline is deployable: privileged mutation boundaries, pr
 - Prettier check: failed; 353 files currently differ from configured formatting.
 - Database lint: no schema errors.
 - Runtime schema status uses the least-privilege `get_app_schema_version()` contract from migration `0029`; the invalid `supabase_migrations` PostgREST request and `PGRST106` log are removed.
-- Supabase Security Advisor: no RLS-disabled or anonymous-definer warnings. Nine warnings remain: eight intentionally authenticated caller-derived/RLS helper RPCs and the project-level leaked-password-protection setting.
+- Supabase Security Advisor: no RLS-disabled or anonymous-definer warnings. Twelve warnings remain: eleven intentionally authenticated caller-derived/RLS helper RPCs and the project-level leaked-password-protection setting.
 - npm audit: 35 total findings. Production scope contains 4 affected packages (1 moderate and 3 high) through Next.js/PostCSS/Sharp and `xlsx`; npm reports no safe in-range fix and suggests an invalid Next.js downgrade. Do not force-fix.
 - Automated tests: Playwright route, Auth, authorization, mobile, PWA, Storage, attendance, export, and Realtime coverage is committed. Unit/service integration coverage is still absent.
-- CI/CD workflow: none committed.
+- CI/CD workflow: the production `deployment_status` workflow gates release publication on install, lint, typecheck, build, migration parity, database lint, and production HTTP verification. Required repository secrets must be configured before its first run.
 - Vercel CLI: authenticated and linked to `company-hub`; all five required environment variable names are present for Production and Preview. Values were not printed during verification.
 - Production deployment for the canonical password flow is Ready at `company-hub-zeta.vercel.app`; public pages return 200 and protected routes redirect to login.
 - Authenticated Company Admin/employee runtime covers canonical-password login, session restoration, logout, dashboards, major route surfaces, middleware denial, tenant isolation, feature denial, and responsive layouts.

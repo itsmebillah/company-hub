@@ -6,6 +6,7 @@ import { PlatformAuditService } from "@/features/platform-control/services/platf
 import { requireSystemAdmin } from "@/features/platform-control/services/system-admin.service";
 import type {
   AuditCategory,
+  CompanyFeatureState,
   FeatureKey,
   FeatureState,
   PlatformEmployeeFilters,
@@ -301,7 +302,7 @@ export const PlatformControlService = {
     let query = supabase
       .from("employees")
       .select(
-      "id, employee_id, name, status, company_id, auth_user_id, created_at, companies!inner(name), roles!employees_role_company_fk!inner(name)",
+        "id, employee_id, name, status, company_id, auth_user_id, created_at, companies!inner(name), roles!employees_role_company_fk!inner(name)",
         { count: "exact" },
       );
     if (filters.companyId) query = query.eq("company_id", filters.companyId);
@@ -424,6 +425,7 @@ export const PlatformControlService = {
       supportEmail: data.support_email ?? "",
       defaultTimezone: data.default_timezone,
       maintenanceMessage: data.maintenance_message ?? "",
+      maintenanceMode: data.maintenance_mode,
       allowCompanyCreation: data.allow_company_creation,
       auditRetentionDays: data.audit_retention_days,
     };
@@ -442,6 +444,7 @@ export const PlatformControlService = {
       support_email: optionalText(values.supportEmail),
       default_timezone: values.defaultTimezone.trim() || "UTC",
       maintenance_message: optionalText(values.maintenanceMessage),
+      maintenance_mode: values.maintenanceMode,
       allow_company_creation: values.allowCompanyCreation,
       audit_retention_days: values.auditRetentionDays,
       updated_by: actor.id,
@@ -469,6 +472,7 @@ export const PlatformControlService = {
       { data: features, error },
       { data: overrides, error: overrideError },
       { data: usage, error: usageError },
+      { data: companySummary, error: companySummaryError },
     ] = await Promise.all([
       supabase.from("platform_features").select("*").order("display_order"),
       companyId
@@ -493,8 +497,9 @@ export const PlatformControlService = {
               "usage_date",
               new Date(Date.now() - 30 * 86_400_000).toISOString().slice(0, 10),
             ),
+      supabase.from("platform_feature_company_summary").select("*"),
     ]);
-    if (error || overrideError || usageError)
+    if (error || overrideError || usageError || companySummaryError)
       throw new Error("Unable to load features.");
     const usageByFeature = new Map<string, number>();
     usage.forEach((item) =>
@@ -503,16 +508,30 @@ export const PlatformControlService = {
         (usageByFeature.get(item.feature_key) ?? 0) + item.request_count,
       ),
     );
-    return { features, overrides, companyId, usageByFeature };
+    const companySummaryByFeature = new Map(
+      companySummary.map((item) => [item.feature_key, item]),
+    );
+    return {
+      features,
+      overrides,
+      companyId,
+      usageByFeature,
+      companySummaryByFeature,
+    };
   },
 
-  async updatePlatformFeature(featureKey: FeatureKey, state: FeatureState) {
+  async updatePlatformFeature(
+    featureKey: FeatureKey,
+    state: FeatureState,
+    allowCompanyOverride: boolean,
+  ) {
     const actor = await requireSystemAdmin();
     const supabase = createSupabaseAdminClient();
     const { error } = await supabase
       .from("platform_features")
       .update({
         state,
+        allow_company_override: allowCompanyOverride,
         updated_at: new Date().toISOString(),
         updated_by: actor.id,
       })
@@ -527,14 +546,14 @@ export const PlatformControlService = {
       description: `System Admin changed platform feature ${featureKey} to ${state}.`,
       featureKey,
       platformAdminId: actor.id,
-      metadata: { state },
+      metadata: { state, allowCompanyOverride },
     });
   },
 
   async updateCompanyFeature(
     companyId: string,
     featureKey: FeatureKey,
-    state: FeatureState,
+    state: CompanyFeatureState,
   ) {
     const actor = await requireSystemAdmin();
     const supabase = createSupabaseAdminClient();
@@ -542,7 +561,8 @@ export const PlatformControlService = {
       {
         company_id: companyId,
         feature_key: featureKey,
-        state,
+        state: state === "disabled" ? "disabled" : "enabled",
+        company_state: state,
         updated_at: new Date().toISOString(),
         updated_by_platform_admin_id: actor.id,
       },
@@ -562,21 +582,27 @@ export const PlatformControlService = {
     });
   },
 
-  async updateOwnCompanyFeature(featureKey: FeatureKey, state: FeatureState) {
+  async updateOwnCompanyFeature(
+    featureKey: FeatureKey,
+    state: CompanyFeatureState,
+  ) {
     const profile = await requireCompanyAdmin();
     const supabase = createSupabaseAdminClient();
     const { data: platformFeature } = await supabase
       .from("platform_features")
-      .select("state")
+      .select("state, allow_company_override")
       .eq("feature_key", featureKey)
       .single();
     if (platformFeature?.state !== "enabled")
       throw new Error("This feature is disabled at platform level.");
+    if (!platformFeature.allow_company_override)
+      throw new Error("Company overrides are disabled for this feature.");
     const { error } = await supabase.from("company_features").upsert(
       {
         company_id: profile.companyId,
         feature_key: featureKey,
-        state,
+        state: state === "disabled" ? "disabled" : "enabled",
+        company_state: state,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "company_id,feature_key" },

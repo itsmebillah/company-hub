@@ -37,6 +37,7 @@ type ResourceManagementPageProps = {
     values: ResourceFormValues,
   ) => Promise<ResourceActionState>;
   onDuplicate: (id: string) => Promise<ResourceActionState>;
+  onDelete: (id: string) => Promise<ResourceActionState>;
   onArchive: (id: string) => Promise<ResourceActionState>;
   onRestore: (id: string) => Promise<ResourceActionState>;
 };
@@ -48,6 +49,7 @@ export function ResourceManagementPage({
   onCreate,
   onUpdate,
   onDuplicate,
+  onDelete,
   onArchive,
   onRestore,
 }: ResourceManagementPageProps) {
@@ -99,7 +101,7 @@ export function ResourceManagementPage({
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Resources</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Manage employee links, reports, documents, and internal tools
           </p>
         </div>
@@ -141,9 +143,11 @@ export function ResourceManagementPage({
         onReset={() => router.replace("/admin/resources")}
       />
 
-      {message ? <p className="text-sm text-muted-foreground">{message}</p> : null}
+      {message ? (
+        <p className="text-muted-foreground text-sm">{message}</p>
+      ) : null}
       {isPending ? (
-        <p className="text-sm text-muted-foreground">Updating resource...</p>
+        <p className="text-muted-foreground text-sm">Updating resource...</p>
       ) : null}
 
       {categories.length === 0 ? (
@@ -178,6 +182,7 @@ export function ResourceManagementPage({
                 onView={setSelectedResource}
                 onEdit={setEditingResource}
                 onDuplicate={(id) => runStatusAction(onDuplicate, id)}
+                onDelete={(id) => runStatusAction(onDelete, id)}
                 onArchive={(id) => runStatusAction(onArchive, id)}
                 onRestore={(id) => runStatusAction(onRestore, id)}
               />

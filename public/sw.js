@@ -24,6 +24,12 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+});
+
 function isStaticAsset(requestUrl) {
   return (
     requestUrl.origin === self.location.origin &&

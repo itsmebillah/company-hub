@@ -17,15 +17,15 @@ export default async function PlatformFeaturesPage({
     PlatformControlService.listFeatures(companyId),
   ]);
   const overrideMap = new Map(
-    result.overrides.map((item) => [item.feature_key, item.state]),
+    result.overrides.map((item) => [item.feature_key, item.company_state]),
   );
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold sm:text-3xl">Feature management</h1>
         <p className="text-muted-foreground mt-2">
-          Platform state is authoritative. Company overrides can only narrow
-          access.
+          Platform state is authoritative. Company overrides are available only
+          when explicitly allowed.
         </p>
       </div>
       <form className="app-card p-4">
@@ -52,6 +52,9 @@ export default async function PlatformFeaturesPage({
       <div className="grid gap-4 lg:grid-cols-2">
         {result.features.map((feature) => {
           const override = overrideMap.get(feature.feature_key);
+          const summary = result.companySummaryByFeature.get(
+            feature.feature_key,
+          );
           return (
             <article key={feature.feature_key} className="app-card p-4 sm:p-5">
               <div className="flex items-start justify-between gap-3">
@@ -64,6 +67,10 @@ export default async function PlatformFeaturesPage({
                     {result.usageByFeature.get(feature.feature_key) ?? 0}{" "}
                     requests in 30 days
                   </p>
+                  <p className="text-muted-foreground mt-1 text-xs">
+                    {summary?.disabled_company_count ?? 0} companies disabled ·{" "}
+                    {summary?.enabled_company_count ?? 0} explicitly enabled
+                  </p>
                 </div>
                 <span className="bg-accent rounded-full px-2.5 py-1 text-xs font-semibold uppercase">
                   {feature.state}
@@ -71,26 +78,37 @@ export default async function PlatformFeaturesPage({
               </div>
               <form
                 action={updatePlatformFeatureAction}
-                className="mt-4 flex gap-2"
+                className="mt-4 grid gap-3"
               >
                 <input
                   type="hidden"
                   name="featureKey"
                   value={feature.feature_key}
                 />
-                <select
-                  name="state"
-                  defaultValue={
-                    feature.state === "enabled" ? "enabled" : "disabled"
-                  }
-                  className="bg-background h-10 flex-1 rounded-xl border px-3 text-sm"
-                >
-                  <option value="enabled">Enabled</option>
-                  <option value="disabled">Disabled</option>
-                </select>
-                <button className="rounded-xl border px-3 text-sm font-semibold">
-                  Platform
-                </button>
+                <div className="flex gap-2">
+                  <select
+                    name="state"
+                    defaultValue={
+                      feature.state === "enabled" ? "enabled" : "disabled"
+                    }
+                    className="bg-background h-10 flex-1 rounded-xl border px-3 text-sm"
+                  >
+                    <option value="enabled">Platform enabled</option>
+                    <option value="disabled">Platform disabled</option>
+                  </select>
+                  <button className="rounded-xl border px-3 text-sm font-semibold">
+                    Save
+                  </button>
+                </div>
+                <label className="flex min-h-11 items-center gap-3 rounded-xl border px-3 text-sm font-medium">
+                  <input
+                    type="checkbox"
+                    name="allowCompanyOverride"
+                    defaultChecked={feature.allow_company_override}
+                    className="size-4 w-auto"
+                  />
+                  Allow Company Admin override
+                </label>
               </form>
               {companyId ? (
                 <form
@@ -105,17 +123,22 @@ export default async function PlatformFeaturesPage({
                   />
                   <select
                     name="state"
-                    defaultValue={
-                      override === "disabled" ? "disabled" : "enabled"
+                    defaultValue={override ?? "inherit"}
+                    disabled={
+                      feature.state !== "enabled" ||
+                      !feature.allow_company_override
                     }
-                    disabled={feature.state !== "enabled"}
                     className="bg-background h-10 flex-1 rounded-xl border px-3 text-sm disabled:opacity-50"
                   >
+                    <option value="inherit">Inherit platform</option>
                     <option value="enabled">Company enabled</option>
                     <option value="disabled">Company disabled</option>
                   </select>
                   <button
-                    disabled={feature.state !== "enabled"}
+                    disabled={
+                      feature.state !== "enabled" ||
+                      !feature.allow_company_override
+                    }
                     className="rounded-xl border px-3 text-sm font-semibold disabled:opacity-50"
                   >
                     Company

@@ -316,6 +316,46 @@ export async function updateResource(id: string, values: ResourceFormValues) {
   });
 }
 
+export async function deleteResource(id: string) {
+  const supabase = createSupabaseAdminClient();
+  const companyId = await requireCurrentCompanyId();
+  const { data: resource, error: loadError } = await supabase
+    .from("resources")
+    .select("id, title, thumbnail")
+    .eq("id", id)
+    .eq("company_id", companyId)
+    .maybeSingle();
+
+  if (loadError || !resource) {
+    throw new Error("Resource was not found.");
+  }
+
+  const { error } = await supabase
+    .from("resources")
+    .delete()
+    .eq("id", id)
+    .eq("company_id", companyId);
+
+  if (error) throw new Error("Unable to delete resource.");
+
+  if (resource.thumbnail) {
+    await ResourceImageService.cleanupReplaced(
+      companyId,
+      resource.thumbnail,
+      id,
+    );
+  }
+
+  await logActivity({
+    companyId,
+    module: "resources",
+    action: "deleted",
+    entityType: "resources",
+    entityId: id,
+    description: `Deleted resource ${resource.title}`,
+  });
+}
+
 export async function duplicateResource(id: string) {
   const supabase = createSupabaseAdminClient();
   const companyId = await requireCurrentCompanyId();

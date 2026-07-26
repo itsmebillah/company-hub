@@ -2,24 +2,28 @@
 
 ## Source of truth
 
-`supabase/migrations/` is the canonical schema history. Migrations `0001`–`0037` are applied to project `jjfktbgfwvekhlvyjlww`. Never edit an applied migration; add the next ordered migration. Migrations `0036`–`0037` rename the tenant authority to Company Admin, update future company provisioning and notification scope, add caller-derived Company Admin route authorization, enforce company-aware Storage object access, and minimize helper execution privileges.
+`supabase/migrations/` is the canonical schema history. Migrations `0001`–`0040` are applied to project `jjfktbgfwvekhlvyjlww`. Never edit an applied migration; add the next ordered migration. Migrations `0038`–`0040` add hierarchical feature control, release history and receipts, maintenance state, and a least-privilege maintenance-status contract.
+
+`platform_features.state` is authoritative. `allow_company_override` determines whether `company_features.company_state` (`inherit`, `enabled`, or `disabled`) participates in resolution. `is_feature_enabled_for_company` and `can_access_any_feature` expose the canonical platform-first decision to server and middleware callers. `platform_feature_company_summary` supplies aggregate override counts without exposing tenant configuration rows.
+
+`platform_releases` stores semantic release metadata, deployment/commit provenance, publication controls, and future-ready rollback metadata. `release_receipts` records per-Auth-user acknowledgement. RLS exposes only published release rows to ordinary clients and only a caller's own receipt; System Admin mutations remain server-authorized.
 
 The live verified catalog contains 27 public tables and the security-invoker `platform_company_overview` view. The original 1,748 restored application rows remain intact; migration `0030` backfilled the existing company status and seeded only the 14-row feature catalog. Migration `0035` adds one default `platform_settings` singleton row.
 
 ## Domain tables
 
-| Domain              | Tables                                                                 | Purpose                                                     |
-| ------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------- |
-| Organization        | `companies`, `company_settings`, `roles`, `employees`                  | Tenant, branding/policy, roles, employee identity/hierarchy |
-| Resources           | `resource_categories`, `resources`, `resource_permissions`             | Resource catalog and public/role/employee visibility        |
-| Announcements       | `announcements`, `announcement_roles`, `announcement_employees`        | Scheduled content and targeting                             |
-| Notifications/audit | `notifications`, `activity_logs`                                       | User/company notifications, delivery state, audit history   |
-| Attendance          | `attendance_records`, `company_locations`, `employee_location_access`  | Daily records, GPS locations, assignments, policy snapshots |
-| Leave/calendar      | `leave_types`, `leave_requests`, `holiday_calendars`, `holiday_events` | Leave workflow and working-day context                      |
-| Import              | `employee_import_jobs`, `employee_import_rows`                         | Durable bulk-import staging and outcomes                    |
-| Celebrations        | `employee_celebration_events`                                          | Per-year birthday/anniversary generation deduplication      |
+| Domain              | Tables                                                                          | Purpose                                                                          |
+| ------------------- | ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Organization        | `companies`, `company_settings`, `roles`, `employees`                           | Tenant, branding/policy, roles, employee identity/hierarchy                      |
+| Resources           | `resource_categories`, `resources`, `resource_permissions`                      | Resource catalog and public/role/employee visibility                             |
+| Announcements       | `announcements`, `announcement_roles`, `announcement_employees`                 | Scheduled content and targeting                                                  |
+| Notifications/audit | `notifications`, `activity_logs`                                                | User/company notifications, delivery state, audit history                        |
+| Attendance          | `attendance_records`, `company_locations`, `employee_location_access`           | Daily records, GPS locations, assignments, policy snapshots                      |
+| Leave/calendar      | `leave_types`, `leave_requests`, `holiday_calendars`, `holiday_events`          | Leave workflow and working-day context                                           |
+| Import              | `employee_import_jobs`, `employee_import_rows`                                  | Durable bulk-import staging and outcomes                                         |
+| Celebrations        | `employee_celebration_events`                                                   | Per-year birthday/anniversary generation deduplication                           |
 | Platform control    | `platform_admins`, `platform_settings`, `platform_features`, `company_features` | Explicit global authorization, global configuration, and two-level feature state |
-| Platform telemetry  | `platform_audit_logs`, `feature_usage_daily`                           | Central audit events and daily request aggregates           |
+| Platform telemetry  | `platform_audit_logs`, `feature_usage_daily`                                    | Central audit events and daily request aggregates                                |
 
 ## Key relationships
 
@@ -89,8 +93,8 @@ Migration `0033` imports existing immutable `activity_logs` rows into the centra
 
 ## Storage
 
-| Bucket                | Visibility | Current usage                                        |
-| --------------------- | ---------- | ---------------------------------------------------- |
+| Bucket                | Visibility | Current usage                                         |
+| --------------------- | ---------- | ----------------------------------------------------- |
 | `profile-photos`      | Public     | Employee owner or same-company Company Admin mutation |
 | `announcement-images` | Public     | Company-prefixed announcement media                   |
 | `company-assets`      | Public     | Company-prefixed branding assets                      |
@@ -99,7 +103,7 @@ Migration `0033` imports existing immutable `activity_logs` rows into the centra
 | `system-assets`       | Public     | Global assets; no Company Admin mutation grant        |
 | `employee-documents`  | Private    | Owner or same-company Company Admin policies          |
 | `leave-attachments`   | Private    | Owner or same-company Company Admin policies          |
-| `attendance-selfies`  | Private    | Server/service-role attendance uploads               |
+| `attendance-selfies`  | Private    | Server/service-role attendance uploads                |
 
 Eleven policies on `storage.objects` cover active-employee reads, company-prefixed shared media, profile ownership, and private owner/same-company Company Admin access. Cross-company Company Admin object mutation and tenant mutation of `system-assets` are denied. Attendance selfies intentionally use server-only service role.
 

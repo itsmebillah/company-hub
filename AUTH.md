@@ -8,6 +8,8 @@ System Admin password reset is server-only and requires an exact Employee ID con
 
 Company Admins are represented by the tenant role `Company Admin` and remain restricted to one company. Middleware, Server Actions, services, APIs, notification policies, and Storage policies independently enforce that boundary. Company Admin password resets require the exact target Employee ID, preserve the internal Auth email, reuse the canonical initial-password transform, and create a company-scoped security audit event.
 
+Feature state is an authorization input, not only a presentation preference. Platform disabled always denies access. A company state is considered only when the platform feature is enabled and company overrides are allowed; role and permission checks occur after that decision. The navigation shell may hide unavailable destinations for usability, but middleware, HTTP handlers, and Server Actions independently enforce the same effective state.
+
 ## Identity model
 
 Users enter Employee ID and password. Supabase Auth still uses email/password internally, so each employee has a generated `internal_auth_email` and an `auth_user_id` reference to `auth.users`. Both values are server-only implementation details.
@@ -85,3 +87,5 @@ Because public signup is enabled while `/register` is incomplete, production own
 - Validate company ownership for every service-role query/mutation.
 - Enforce Company Admin/permission and effective-feature checks inside privileged actions, handlers, and services; route layout placement is not authorization.
 - Add rate limiting and monitoring before production exposure.
+
+# Authentication and Authorization

@@ -9,6 +9,7 @@
 /coverage
 /playwright-report/
 /test-results/
+/.release-notes.md
 
 # next.js
 /.next/
@@ -27,6 +28,8 @@ yarn-debug.log*
 yarn-error.log*
 /.codex-dev.log
 /.codex-dev-error.log
+/.codex-prod.log
+/.codex-prod-error.log
 
 # local env files
 .env*.local

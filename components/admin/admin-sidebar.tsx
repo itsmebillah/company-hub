@@ -24,7 +24,7 @@ export function AdminSidebar({
   return (
     <aside
       className={cn(
-        "hidden min-h-svh px-3 py-3 transition-[width] duration-200 md:flex md:flex-col",
+        "hidden min-h-svh px-3 py-3 transition-[width] duration-200 xl:flex xl:flex-col",
         isCollapsed ? "w-24" : "w-72",
       )}
     >

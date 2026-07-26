@@ -1,6 +1,7 @@
 import {
   archiveResourceAction,
   createResourceAction,
+  deleteResourceAction,
   duplicateResourceAction,
   restoreResourceAction,
   updateResourceAction,
@@ -101,6 +102,7 @@ export default async function AdminResourcesPage({
       onCreate={createResourceAction}
       onUpdate={updateResourceAction}
       onDuplicate={duplicateResourceAction}
+      onDelete={deleteResourceAction}
       onArchive={archiveResourceAction}
       onRestore={restoreResourceAction}
     />

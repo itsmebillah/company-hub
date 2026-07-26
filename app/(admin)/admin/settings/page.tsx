@@ -7,6 +7,7 @@ import { appConfig } from "@/lib/config/app";
 import { getSupabaseAdminEnv } from "@/lib/env";
 import { createClient } from "@supabase/supabase-js";
 import { requireCurrentCompanyId } from "@/features/auth/services/current-company-context.service";
+import { FeatureAccessService } from "@/features/platform-control/services/feature-access.service";
 
 export const dynamic = "force-dynamic";
 
@@ -86,7 +87,8 @@ async function getStorageOverview(companyId: string) {
     };
   }
 
-  const buckets: Array<{ id: string; public: boolean }> = bucketsResult.data ?? [];
+  const buckets: Array<{ id: string; public: boolean }> =
+    bucketsResult.data ?? [];
   const objects: Array<{ metadata?: { size?: number } | null }> =
     objectsResult.data ?? [];
 
@@ -123,14 +125,15 @@ export default async function AdminSettingsPage() {
     storageOverview,
     dashboard,
     profile,
-  ] =
-    await Promise.all([
-      getCompanySettings(),
-      AttendanceSettingsService.getSettings(),
-      getStorageOverview(companyId),
-      DashboardService.getAdminDashboardData(),
-      getCurrentSessionProfile(),
-    ]);
+    featureStates,
+  ] = await Promise.all([
+    getCompanySettings(),
+    AttendanceSettingsService.getSettings(),
+    getStorageOverview(companyId),
+    DashboardService.getAdminDashboardData(),
+    getCurrentSessionProfile(),
+    FeatureAccessService.listForCompany(companyId),
+  ]);
 
   return (
     <AdminSettingsCenter
@@ -153,6 +156,9 @@ export default async function AdminSettingsPage() {
         activeResources: dashboard.counts.activeResources,
         unreadNotifications: dashboard.counts.unreadNotifications,
       }}
+      enabledFeatures={featureStates
+        .filter((feature) => feature.effectiveState === "enabled")
+        .map((feature) => feature.key)}
     />
   );
 }

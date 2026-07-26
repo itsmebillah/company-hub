@@ -4,7 +4,13 @@
 
 The intended topology is Vercel for Next.js and scheduled cron, with Supabase providing PostgreSQL, Auth, Storage, and Realtime. `vercel.json` schedules the celebrations endpoint daily at `0 18 * * *` UTC.
 
-The Vercel CLI is installed and authenticated locally, and the repository is linked to the existing `company-hub` project. The five required environment variable names are present for both Production and Preview; values remain encrypted and must never be printed. Apply migration `0030` before deploying Platform Control Center code, then explicitly provision an approved System Admin separately.
+The Vercel CLI is installed and authenticated locally, and the repository is linked to the existing `company-hub` project. The five required environment variable names are present for both Production and Preview; values remain encrypted and must never be printed. Migrations through `0040` must precede version `0.2.0`; provision System Admin access explicitly and separately.
+
+## Automatic release publication
+
+`.github/workflows/automatic-release.yml` listens for a successful production deployment status. It checks out the exact deployment commit, installs deterministically, runs lint/typecheck/build, confirms Supabase migration parity and database lint, verifies the production URL, then runs `npm run release:publish` and creates the matching GitHub Release. The publisher reads the version from `package.json` and the matching section in `CHANGELOG.md`; do not duplicate notes manually.
+
+Configure these GitHub Actions secrets before enabling the gate: the five application variables listed below plus `SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROJECT_REF`, and `SUPABASE_DB_PASSWORD`. The project reference must be `jjfktbgfwvekhlvyjlww`. Release publication must fail closed when any gate or required secret is unavailable. Major-version approval is deliberately future-ready but is not part of the current automatic workflow.
 
 ## Environment setup
 

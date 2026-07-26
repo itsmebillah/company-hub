@@ -1,8 +1,28 @@
 # Changelog
 
-This project follows a Keep-a-Changelog-style record. Versioning is not yet formalized beyond package version `0.1.0`.
+This project follows Keep a Changelog and Semantic Versioning. Production deployment success automatically synchronizes this file with database and GitHub release history.
 
 ## Unreleased
+
+## [0.2.0] - 2026-07-26
+
+### Added
+
+- Added one configuration-driven Mobile Navigation v2 framework for System Admin, Company Admin, and every employee role: four fixed category controls, a branded floating Dashboard FAB, role-aware menu contents, combined update badge, safe-area support, haptics, reduced-motion handling, and responsive layouts.
+- Added hierarchical platform-first feature control with company `inherit`, `enabled`, and `disabled` states plus System Admin control over whether company overrides are allowed.
+- Added automatic release history, optional and mandatory update dialogs, PWA asset activation, public release notes, System Admin release controls, maintenance mode, and a deployment-success GitHub workflow with quality gates.
+- Added migrations `0038_hierarchical_feature_control.sql`, `0039_release_management.sql`, and `0040_maintenance_status_invoker.sql`.
+
+### Changed
+
+- Standardized existing company branding as runtime CSS, logo, favicon, browser theme-color, manifest, navigation, focus, and action styling without replacing the existing company-settings model.
+- Upgraded Quick Links to a three/four-column mobile launcher and added Company Admin long-press management with image-aware permanent deletion cleanup.
+- Removed disabled feature metrics, settings shortcuts, and settings panels so the Company Admin grid reflows without hidden-module gaps.
+
+### Security
+
+- Centralized multi-feature route denial through the platform-first feature resolver and retained action-level authorization, company scope, RLS, and Storage path enforcement.
+- Added published-only release visibility and per-user release-receipt RLS without exposing deployment secrets or internal logs.
 
 ### Company Admin architecture
 
@@ -17,6 +37,9 @@ This project follows a Keep-a-Changelog-style record. Versioning is not yet form
 
 ### Fixed
 
+- Selected a WCAG-aware black or white foreground for stored company brand colors, preventing low-contrast branded badges and controls.
+- Preserved signed-out `401` semantics on notification tracking while retaining feature-disabled `404` denial for authenticated callers.
+- Kept platform-disabled features completely absent from Company Admin feature controls.
 - Kept Lucide navigation components on the client side and passed only serializable feature keys through Server Component boundaries, removing the dashboard runtime Application Error found during production-mode regression testing.
 - Rendered each dashboard Quick Link’s configured visual instead of reducing the stored icon to text initials, with graceful broken-image and favicon fallback.
 - Portaled the resource form outside the page stacking context so its controls remain clickable above the sticky admin header.

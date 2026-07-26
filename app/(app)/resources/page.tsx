@@ -8,6 +8,7 @@ import { getAdminEquivalentPath } from "@/features/auth/services/redirect.servic
 import { getCurrentSessionProfile } from "@/features/auth/services/session.service";
 import { EmployeeResourceService } from "@/features/employee-resources/services/employee-resource.service";
 import { ROLE_NAMES } from "@/lib/auth/permissions";
+import { FeatureAccessService } from "@/features/platform-control/services/feature-access.service";
 
 export const dynamic = "force-dynamic";
 
@@ -25,15 +26,27 @@ export default async function ResourcesPage() {
     redirect(getAdminEquivalentPath("/resources"));
   }
 
-  const data = await EmployeeResourceService.getPortalData();
+  const [data, features] = await Promise.all([
+    EmployeeResourceService.getPortalData(),
+    FeatureAccessService.getCurrentCompanyStates(),
+  ]);
+  const enabledFeatures = new Set(
+    features
+      .filter((feature) => feature.effectiveState === "enabled")
+      .map((feature) => feature.key),
+  );
 
   return (
     <section className="space-y-4 md:space-y-5">
-      <EmployeePortalHeader
-        profile={data.profile}
-        currentDate={currentDate}
+      <EmployeePortalHeader profile={data.profile} currentDate={currentDate} />
+      <EmployeeResourcePortal
+        data={data}
+        showQuickLinks={enabledFeatures.has("quick_links")}
+        showKnowledge={
+          enabledFeatures.has("knowledge_hub") ||
+          enabledFeatures.has("resources")
+        }
       />
-      <EmployeeResourcePortal data={data} />
     </section>
   );
 }

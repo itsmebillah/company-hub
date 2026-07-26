@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { isFeatureKey } from "@/features/platform-control/constants/feature-catalog";
 import { PlatformControlService } from "@/features/platform-control/services/platform-control.service";
 import type {
+  CompanyFeatureState,
   FeatureState,
   PlatformCompanyStatus,
 } from "@/features/platform-control/types/platform.types";
@@ -44,20 +45,25 @@ export async function updateCompanyNameAction(formData: FormData) {
 export async function updatePlatformFeatureAction(formData: FormData) {
   const featureKey = String(formData.get("featureKey") ?? "");
   const state = String(formData.get("state") ?? "") as FeatureState;
+  const allowCompanyOverride = formData.get("allowCompanyOverride") === "on";
   if (!isFeatureKey(featureKey) || !["enabled", "disabled"].includes(state))
     throw new Error("Invalid feature request.");
-  await PlatformControlService.updatePlatformFeature(featureKey, state);
+  await PlatformControlService.updatePlatformFeature(
+    featureKey,
+    state,
+    allowCompanyOverride,
+  );
   revalidatePath("/platform/features");
 }
 
 export async function updateCompanyFeatureAction(formData: FormData) {
   const companyId = String(formData.get("companyId") ?? "");
   const featureKey = String(formData.get("featureKey") ?? "");
-  const state = String(formData.get("state") ?? "") as FeatureState;
+  const state = String(formData.get("state") ?? "") as CompanyFeatureState;
   if (
     !companyId ||
     !isFeatureKey(featureKey) ||
-    !["enabled", "disabled"].includes(state)
+    !["inherit", "enabled", "disabled"].includes(state)
   )
     throw new Error("Invalid company feature request.");
   await PlatformControlService.updateCompanyFeature(
@@ -70,8 +76,11 @@ export async function updateCompanyFeatureAction(formData: FormData) {
 
 export async function updateOwnCompanyFeatureAction(formData: FormData) {
   const featureKey = String(formData.get("featureKey") ?? "");
-  const state = String(formData.get("state") ?? "") as FeatureState;
-  if (!isFeatureKey(featureKey) || !["enabled", "disabled"].includes(state))
+  const state = String(formData.get("state") ?? "") as CompanyFeatureState;
+  if (
+    !isFeatureKey(featureKey) ||
+    !["inherit", "enabled", "disabled"].includes(state)
+  )
     throw new Error("Invalid feature request.");
   await PlatformControlService.updateOwnCompanyFeature(featureKey, state);
   revalidatePath("/admin/settings/features");
@@ -96,6 +105,7 @@ export async function updatePlatformSettingsAction(formData: FormData) {
     supportEmail: String(formData.get("supportEmail") ?? ""),
     defaultTimezone: String(formData.get("defaultTimezone") ?? ""),
     maintenanceMessage: String(formData.get("maintenanceMessage") ?? ""),
+    maintenanceMode: formData.get("maintenanceMode") === "on",
     allowCompanyCreation: formData.get("allowCompanyCreation") === "on",
     auditRetentionDays: Number(formData.get("auditRetentionDays")),
   });

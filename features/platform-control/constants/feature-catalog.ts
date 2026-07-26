@@ -17,37 +17,52 @@ export const FEATURE_KEYS = [
   "future_modules",
 ] as const satisfies readonly FeatureKey[];
 
-const routeFeatureMap: Array<[string, FeatureKey]> = [
-  ["/admin/attendance/reports", "reports"],
-  ["/admin/attendance", "attendance"],
-  ["/admin/resources", "resources"],
-  ["/admin/announcements", "announcements"],
-  ["/admin/leave", "leave"],
-  ["/admin/calendar", "calendar"],
-  ["/admin/users", "employee_directory"],
-  ["/admin/roles", "role_management"],
-  ["/admin/company", "company_settings"],
-  ["/admin/settings", "company_settings"],
-  ["/admin/profile", "profile"],
-  ["/attendance", "attendance"],
-  ["/resources", "resources"],
-  ["/announcements", "announcements"],
-  ["/leave", "leave"],
-  ["/calendar", "calendar"],
-  ["/profile", "profile"],
-  ["/settings", "company_settings"],
-  ["/api/notifications", "notifications"],
+export type RouteFeatureRule = {
+  prefix: string;
+  anyOf: readonly FeatureKey[];
+};
+
+const routeFeatureMap: RouteFeatureRule[] = [
+  { prefix: "/admin/attendance/reports", anyOf: ["reports"] },
+  { prefix: "/admin/attendance", anyOf: ["attendance"] },
+  {
+    prefix: "/admin/resources",
+    anyOf: ["resources", "quick_links", "knowledge_hub"],
+  },
+  { prefix: "/admin/announcements", anyOf: ["announcements"] },
+  { prefix: "/admin/leave", anyOf: ["leave"] },
+  { prefix: "/admin/calendar", anyOf: ["calendar"] },
+  { prefix: "/admin/users", anyOf: ["employee_directory"] },
+  { prefix: "/admin/roles", anyOf: ["role_management"] },
+  { prefix: "/admin/company", anyOf: ["company_settings"] },
+  { prefix: "/admin/settings", anyOf: ["company_settings"] },
+  { prefix: "/admin/profile", anyOf: ["profile"] },
+  { prefix: "/attendance", anyOf: ["attendance"] },
+  {
+    prefix: "/resources",
+    anyOf: ["resources", "quick_links", "knowledge_hub"],
+  },
+  { prefix: "/announcements", anyOf: ["announcements"] },
+  { prefix: "/leave", anyOf: ["leave"] },
+  { prefix: "/calendar", anyOf: ["calendar"] },
+  { prefix: "/profile", anyOf: ["profile"] },
+  { prefix: "/settings", anyOf: ["company_settings"] },
+  { prefix: "/api/notifications", anyOf: ["notifications"] },
 ];
 
-export function getRouteFeature(pathname: string): FeatureKey | null {
+export function getRouteFeatureRule(pathname: string): RouteFeatureRule | null {
   if (pathname === "/admin/settings/features") {
     return null;
   }
   return (
     routeFeatureMap.find(
-      ([prefix]) => pathname === prefix || pathname.startsWith(`${prefix}/`),
-    )?.[1] ?? null
+      ({ prefix }) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+    ) ?? null
   );
+}
+
+export function getRouteFeature(pathname: string): FeatureKey | null {
+  return getRouteFeatureRule(pathname)?.anyOf[0] ?? null;
 }
 
 export function isFeatureKey(value: string): value is FeatureKey {

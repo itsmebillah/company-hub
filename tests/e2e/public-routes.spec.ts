@@ -26,6 +26,7 @@ const protectedRoutes = [
   "/platform/companies",
   "/platform/features",
   "/platform/audit",
+  "/platform/releases",
 ] as const;
 
 const mobileWidths = [320, 360, 375, 390, 414, 768, 1024] as const;
@@ -46,7 +47,7 @@ function collectRuntimeFailures(page: Page) {
 test("public entry points render without runtime errors", async ({ page }) => {
   const failures = collectRuntimeFailures(page);
 
-  for (const route of ["/", "/login", "/setup"] as const) {
+  for (const route of ["/", "/login", "/setup", "/releases"] as const) {
     const response = await page.goto(route, { waitUntil: "networkidle" });
     expect(response?.status(), route).toBe(200);
     await expect(page.locator("body"), route).toBeVisible();

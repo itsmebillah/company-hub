@@ -94,6 +94,15 @@ export default async function PlatformSettingsPage() {
           />
           Allow new company creation
         </label>
+        <label className="flex min-h-11 items-center gap-3 rounded-xl border px-3 text-sm font-medium sm:col-span-2">
+          <input
+            name="maintenanceMode"
+            type="checkbox"
+            defaultChecked={settings.maintenanceMode}
+            className="size-5 w-auto"
+          />
+          Maintenance mode (System Admin routes remain available)
+        </label>
         <label className="text-sm font-medium sm:col-span-2">
           Maintenance message
           <textarea

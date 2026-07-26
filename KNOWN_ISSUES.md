@@ -11,9 +11,9 @@ No unresolved application-critical defect was reproduced in the 2026-07-20 harde
 
 ## High
 
-### Automated coverage has no CI gate
+### Browser coverage is not part of the automatic release gate
 
-Playwright end-to-end coverage is committed and passes in Chrome and Edge, but no CI workflow executes it. Unit tests and isolated service/database integration tests are still absent.
+The automatic release workflow runs install, lint, typecheck, build, migration parity, database lint, and production HTTP verification. Full authenticated Playwright coverage is still workstation-run because the linked data fixtures are not isolated for CI. Unit tests and isolated service/database integration tests remain absent.
 
 ### Dependency audit findings
 
@@ -30,9 +30,9 @@ The latest audit reports 35 total findings. Production scope contains 4 affected
 
 These should be completed, removed, or explicitly accepted before production.
 
-### Security Advisor retains nine warnings
+### Security Advisor retains reviewed warnings
 
-Eight authenticated `SECURITY DEFINER` helpers remain executable because middleware, Storage/RLS, notification visibility, and caller-derived audit/usage telemetry require them. Their predicates derive identity from `auth.uid()` and expose no service-role inputs, but each should remain under review. Supabase leaked-password protection is also disabled. Migrations `0031`–`0032` removed the prior anonymous-definer warnings and unnecessary schema-version definer privilege.
+Authenticated `SECURITY DEFINER` helpers remain executable because middleware, Storage/RLS, notification visibility, and caller-derived audit/usage telemetry require them. Their predicates derive identity from `auth.uid()` and expose no service-role inputs, but each should remain under review. Supabase leaked-password protection is also disabled. Migrations `0031`–`0032` and `0040` removed unnecessary anonymous-definer execution.
 
 ### Repository-wide formatting check fails
 
@@ -50,7 +50,7 @@ Lint passes with 5 raw `<img>` optimization warnings for dynamic/user-provided m
 
 ### Edge browser unavailable on the current workstation
 
-The 46-check Playwright suite retains its Edge project and the preceding foundation build passed it, but Edge is no longer installed on this workstation. `playwright install msedge` was attempted on 2026-07-22 and requires elevated installer privileges. All 23 Chrome production-build checks pass; rerun the Edge project after workstation installation.
+The 48-check Playwright suite retains its Edge project and the preceding foundation build passed it, but Edge is no longer installed on this workstation. `playwright install msedge` was attempted on 2026-07-22 and requires elevated installer privileges. All 24 Chrome production-build checks pass; rerun the Edge project after workstation installation.
 
 ### PowerShell npm shim
 
