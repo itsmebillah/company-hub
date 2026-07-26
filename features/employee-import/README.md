@@ -18,7 +18,6 @@ Admin uploads CSV/XLSX. Parser normalizes rows. Validator checks duplicates and 
 
 ## Dependencies
 
-Employees, roles, Supabase Auth, activity logs, notifications.
 
 ## Rules
 

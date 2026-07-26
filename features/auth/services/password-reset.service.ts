@@ -6,7 +6,6 @@ import {
 } from "@/features/auth/services/auth.service";
 import type { PasswordResetInput } from "@/features/auth/types/auth.types";
 import { toSupabaseEmployeePassword } from "@/features/auth/utils/employee-password";
-import { PlatformAuditService } from "@/features/platform-control/services/platform-audit.service";
 import { requireCompanyAdmin } from "@/features/auth/services/authorization.service";
 
 export async function resetCompanyEmployeePasswordToInitial(
@@ -39,15 +38,6 @@ export async function resetCompanyEmployeePasswordToInitial(
     throw new Error("Unable to reset employee password.");
   }
 
-  await PlatformAuditService.log({
-    category: "security",
-    action: "password_reset",
-    entityType: "employee",
-    entityId: employee.id,
-    description:
-      "Company Admin reset an employee password to its initial value.",
-    companyId: actor.companyId,
-  });
 }
 
 export async function requestPasswordReset(input: PasswordResetInput) {

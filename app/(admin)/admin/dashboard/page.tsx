@@ -2,7 +2,6 @@ import {
   CompactMetricGrid,
   DashboardHeader,
   QuickActionGrid,
-  RecentActivity,
 } from "@/features/admin-dashboard/components";
 import {
   getCompanySnapshotItems,
@@ -100,8 +99,6 @@ export default async function AdminDashboardPage() {
         />
       ) : null}
       <QuickActionGrid enabledFeatures={enabledFeatures} />
-
-      <RecentActivity items={dashboard.recentActivity} />
     </section>
   );
 }

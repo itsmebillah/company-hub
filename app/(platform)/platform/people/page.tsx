@@ -47,7 +47,7 @@ export default async function PlatformPeoplePage({
         <p className="text-primary text-sm font-semibold">Global directory</p>
         <h1 className="text-2xl font-bold sm:text-3xl">People and admins</h1>
         <p className="text-muted-foreground mt-2">
-          Cross-company visibility and audited credential recovery for System
+          Cross-company visibility and controlled credential recovery for System
           Admins. Internal Auth identities are never displayed.
         </p>
       </div>

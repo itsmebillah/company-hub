@@ -17,7 +17,6 @@ Employees submit leave requests. Admins approve or reject them. During approval,
 
 ## Dependencies
 
-Employees, notifications, activity logs, holiday calendar foundation.
 
 ## Rules
 

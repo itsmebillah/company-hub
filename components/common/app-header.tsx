@@ -3,7 +3,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { UserCircle } from "lucide-react";
 
 import { Logo } from "@/components/common/logo";
 import { ThemeToggle } from "@/components/common/theme-toggle";
@@ -25,7 +24,6 @@ type AppHeaderProps = {
   actions?: ReactNode;
   notificationSummary?: NotificationSummary;
   notificationScope?: RealtimeNotificationScope;
-  showProfile?: boolean;
   enabledFeatures?: FeatureKey[];
 };
 
@@ -33,7 +31,6 @@ export function AppHeader({
   actions,
   notificationSummary,
   notificationScope,
-  showProfile = false,
   enabledFeatures,
 }: AppHeaderProps) {
   const pathname = usePathname();
@@ -84,20 +81,6 @@ export function AppHeader({
                 <NotificationDropdown summary={notificationSummary} />
               ) : null}
               <ThemeToggle />
-              {showProfile ? (
-                <Link
-                  href="/profile"
-                  className={cn(
-                    "bg-background/70 hover:border-primary/30 hover:bg-accent/60 focus-visible:ring-ring inline-flex size-10 items-center justify-center rounded-2xl border border-white/30 shadow-none backdrop-blur-md transition outline-none hover:-translate-y-0.5 focus-visible:ring-2",
-                    pathname === "/profile" &&
-                      "border-primary/40 bg-primary/10 text-primary",
-                  )}
-                  aria-label="Profile"
-                  title="Profile"
-                >
-                  <UserCircle className="size-[1.125rem]" aria-hidden="true" />
-                </Link>
-              ) : null}
               <span className="hidden xl:inline-flex">
                 <LogoutButton compact />
               </span>

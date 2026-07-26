@@ -7,7 +7,6 @@ import { toSupabaseEmployeePassword } from "@/features/auth/utils/employee-passw
 import type { PasswordFormValues } from "@/features/profile/types/profile.types";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { PlatformAuditService } from "@/features/platform-control/services/platform-audit.service";
 
 function validatePassword(values: PasswordFormValues) {
   if (!values.currentPassword) {
@@ -79,13 +78,5 @@ export const PasswordService = {
       throw new Error("Unable to update password right now.");
     }
 
-    await PlatformAuditService.log({
-      category: "security",
-      action: "password_updated",
-      entityType: "employee",
-      entityId: employee.id,
-      description: "An employee updated their password.",
-      companyId: employee.companyId,
-    });
   },
 };

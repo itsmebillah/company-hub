@@ -41,7 +41,6 @@ const adminRoutes = [
   "/admin/settings",
   "/admin/settings/attendance",
   "/admin/settings/features",
-  "/admin/audit",
 ] as const;
 
 const employeeRoutes = [
@@ -137,7 +136,6 @@ test("explicit System Admin can use responsive platform routes", async ({
   page,
 }) => {
   test.setTimeout(360_000);
-  const testStartedAt = new Date().toISOString();
   const { data: existing } = await supabase
     .from("platform_admins")
     .select("id")
@@ -169,7 +167,6 @@ test("explicit System Admin can use responsive platform routes", async ({
         "/platform/companies",
         "/platform/people",
         "/platform/features",
-        "/platform/audit",
         "/platform/releases",
         "/platform/settings",
       ] as const) {
@@ -202,17 +199,6 @@ test("explicit System Admin can use responsive platform routes", async ({
     await expect(meDialog.getByRole("button", { name: "Log out" })).toBeVisible();
     await meDialog.getByRole("button", { name: "Close menu" }).click();
 
-    const [csvExport, excelExport] = await Promise.all([
-      page.request.get("/platform/audit/export?format=csv"),
-      page.request.get("/platform/audit/export?format=xlsx"),
-    ]);
-    expect(csvExport.status()).toBe(200);
-    expect(csvExport.headers()["content-type"]).toContain("text/csv");
-    expect(excelExport.status()).toBe(200);
-    expect(excelExport.headers()["content-type"]).toContain(
-      "spreadsheetml.sheet",
-    );
-
     await page.goto(
       `/platform/people?search=${encodeURIComponent(accounts.employeeEmployeeId)}`,
     );
@@ -231,14 +217,6 @@ test("explicit System Admin can use responsive platform routes", async ({
       .getByRole("button", { name: "Reset initial password" })
       .click();
     expect((await resetResponse).ok()).toBe(true);
-    const { count: resetAuditCount, error: resetAuditError } = await supabase
-      .from("platform_audit_logs")
-      .select("id", { count: "exact", head: true })
-      .eq("action", "password_reset")
-      .gte("created_at", testStartedAt);
-    expect(resetAuditError).toBeNull();
-    expect(resetAuditCount).toBeGreaterThan(0);
-
     await page.goto("/platform/settings");
     const settingsResponse = page.waitForResponse(
       (response) =>
@@ -247,14 +225,6 @@ test("explicit System Admin can use responsive platform routes", async ({
     );
     await page.getByRole("button", { name: "Save platform settings" }).click();
     expect((await settingsResponse).ok()).toBe(true);
-    const { count: settingsAuditCount, error: settingsAuditError } =
-      await supabase
-        .from("platform_audit_logs")
-        .select("id", { count: "exact", head: true })
-        .eq("action", "platform_settings_updated")
-        .gte("created_at", testStartedAt);
-    expect(settingsAuditError).toBeNull();
-    expect(settingsAuditCount).toBeGreaterThan(0);
   } finally {
     if (createdId) {
       await supabase.from("platform_admins").delete().eq("id", createdId);
@@ -381,6 +351,9 @@ test("Quick Links render custom images, favicons, built-in icons, and clickable 
     await signIn(page, accounts.employeeEmployeeId);
     await page.goto("/dashboard", { waitUntil: "networkidle" });
     await dismissOnboarding(page);
+    await expect(
+      page.getByRole("link", { name: "Profile", exact: true }),
+    ).toHaveCount(1);
 
     const customLink = page.getByRole("link", {
       name: "Open QA custom visual",
@@ -434,6 +407,16 @@ test("Quick Links render custom images, favicons, built-in icons, and clickable 
         .boundingBox();
       expect(visualBox, `${width}px custom visual`).not.toBeNull();
       expect(Math.abs(visualBox!.width - visualBox!.height)).toBeLessThan(1);
+      if (width <= 414) {
+        const gridColumns = await page
+          .getByRole("heading", { name: "Quick Resource Links" })
+          .locator("..")
+          .locator("xpath=following-sibling::div[1]")
+          .evaluate((element) =>
+            getComputedStyle(element).gridTemplateColumns.split(" ").length,
+          );
+        expect(gridColumns, `${width}px Quick Links columns`).toBe(4);
+      }
     }
 
     await customLink.locator("[data-resource-visual]").click();
@@ -550,7 +533,6 @@ test("Company Admin login, tenant scope, password reset, routes, and authorizati
   expect(exportStatus.status).toBe(200);
   expect(exportStatus.contentType).toContain("text/csv");
 
-  const testStartedAt = new Date().toISOString();
   await page.goto(`/admin/users/${accounts.employeeRowId}`);
   await page
     .getByLabel("Confirm Employee ID")
@@ -559,15 +541,6 @@ test("Company Admin login, tenant scope, password reset, routes, and authorizati
   await expect(
     page.getByText("Employee password reset successfully."),
   ).toBeVisible();
-  const { count: resetAuditCount, error: resetAuditError } = await supabase
-    .from("platform_audit_logs")
-    .select("id", { count: "exact", head: true })
-    .eq("company_id", accounts.companyId)
-    .eq("entity_id", accounts.employeeRowId)
-    .eq("action", "password_reset")
-    .gte("created_at", testStartedAt);
-  expect(resetAuditError).toBeNull();
-  expect(resetAuditCount).toBeGreaterThan(0);
 
   const suffix = crypto.randomUUID().slice(0, 8);
   const { data: foreignCompany, error: foreignCompanyError } = await supabase

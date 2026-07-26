@@ -20,12 +20,10 @@ const protectedRoutes = [
   "/admin/company",
   "/admin/roles",
   "/admin/settings",
-  "/admin/audit",
   "/admin/settings/features",
   "/platform/dashboard",
   "/platform/companies",
   "/platform/features",
-  "/platform/audit",
   "/platform/releases",
 ] as const;
 

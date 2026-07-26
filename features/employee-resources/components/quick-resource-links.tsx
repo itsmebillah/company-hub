@@ -56,7 +56,7 @@ export function QuickResourceLinks({ categories }: QuickResourceLinksProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-2.5 min-[390px]:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-6 xl:[grid-template-columns:repeat(auto-fit,minmax(7.5rem,1fr))]">
+      <div className="grid grid-cols-4 gap-2 sm:gap-3 md:grid-cols-5 lg:grid-cols-6 xl:[grid-template-columns:repeat(auto-fit,minmax(7.5rem,1fr))]">
         {resources.map((resource) => (
           <QuickResourceCard key={resource.id} resource={resource} />
         ))}
@@ -68,7 +68,7 @@ export function QuickResourceLinks({ categories }: QuickResourceLinksProps) {
 function QuickResourceCard({ resource }: { resource: EmployeePortalResource }) {
   const className = getPremiumCardClassName(
     "cyan",
-    "group relative flex min-h-28 min-w-0 touch-manipulation flex-col items-center justify-center gap-2.5 rounded-[1.35rem] p-2.5 text-center transition duration-200 hover:-translate-y-1 hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97] sm:aspect-square sm:min-h-0 sm:p-3",
+    "group relative flex min-h-28 min-w-0 touch-manipulation flex-col items-center justify-center gap-2 rounded-[1.35rem] p-2 text-center transition duration-200 hover:-translate-y-1 hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.97] sm:aspect-square sm:min-h-0 sm:gap-2.5 sm:p-3",
   );
   const content = (
     <>
@@ -87,7 +87,7 @@ function QuickResourceCard({ resource }: { resource: EmployeePortalResource }) {
         customImage={resource.thumbnail}
         url={resource.url}
         title={resource.title}
-        className="size-14 transition duration-200 group-hover:scale-105 sm:size-16"
+        className="size-12 transition duration-200 group-hover:scale-105 min-[390px]:size-14 sm:size-16"
       />
 
       <h3 className="line-clamp-2 min-h-8 w-full text-xs leading-4 font-semibold sm:text-sm">

@@ -1,6 +1,5 @@
 import "server-only";
 
-import { logActivity } from "@/features/activity/utils/activity-log";
 import { requireCurrentCompanyId } from "@/features/auth/services/current-company-context.service";
 import type {
   AdminCalendarPageData,
@@ -433,14 +432,6 @@ export const CalendarService = {
       throw new Error("Unable to create holiday.");
     }
 
-    await logActivity({
-      companyId,
-      module: "calendar",
-      action: "created",
-      entityType: "holiday_events",
-      entityId: data.id,
-      description: `Created holiday ${values.title.trim()}`,
-    });
   },
 
   async updateEvent(id: string, values: HolidayEventFormValues) {
@@ -468,14 +459,6 @@ export const CalendarService = {
       throw new Error("Unable to update holiday.");
     }
 
-    await logActivity({
-      companyId,
-      module: "calendar",
-      action: "updated",
-      entityType: "holiday_events",
-      entityId: id,
-      description: `Updated holiday ${values.title.trim()}`,
-    });
   },
 
   async archiveEvent(id: string) {
@@ -491,14 +474,6 @@ export const CalendarService = {
       throw new Error("Unable to archive holiday.");
     }
 
-    await logActivity({
-      companyId,
-      module: "calendar",
-      action: "archived",
-      entityType: "holiday_events",
-      entityId: id,
-      description: "Archived holiday",
-    });
   },
 
   async prepareHolidayReminder(eventId: string) {

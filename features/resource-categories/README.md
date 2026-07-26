@@ -17,7 +17,6 @@ Admin creates active categories, then resources are assigned to categories.
 
 ## Dependencies
 
-Companies, resources, activity logs.
 
 ## Rules
 

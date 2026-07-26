@@ -73,7 +73,7 @@ export function AreaChart({
           </div>
         </>
       ) : (
-        <p className="text-sm text-muted-foreground">No activity log trend is available yet.</p>
+        <p className="text-sm text-muted-foreground">No trend data is available yet.</p>
       )}
     </ChartCard>
   );

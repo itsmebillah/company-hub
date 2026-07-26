@@ -3,7 +3,6 @@ import "server-only";
 import { redirect } from "next/navigation";
 
 import { ATTENDANCE_RULES } from "@/features/attendance/constants/attendance-options";
-import { getAttendancePolicyOption } from "@/features/attendance/constants/attendance-policy-options";
 import { AttendanceRepository } from "@/features/attendance/repositories/attendance.repository";
 import { AttendancePolicyService } from "@/features/attendance/services/attendance-policy.service";
 import { AttendanceReverseGeocodeService } from "@/features/attendance/services/attendance-reverse-geocode.service";
@@ -19,7 +18,6 @@ import type {
   EmployeeAttendanceSummary,
   TodayAttendance,
 } from "@/features/attendance/types/attendance.types";
-import { logActivity } from "@/features/activity/utils/activity-log";
 import { requireCurrentEmployeeContext } from "@/features/auth/services/current-employee-context.service";
 import { requireCurrentCompanyId } from "@/features/auth/services/current-company-context.service";
 import { CalendarService } from "@/features/company-calendar/services/calendar.service";
@@ -372,36 +370,6 @@ export const AttendanceService = {
       deviceInfo: input.deviceInfo ?? null,
     });
 
-    await logActivity({
-      companyId: employee.company_id,
-      module: "attendance",
-      action: "created",
-      entityType: "attendance_records",
-      entityId: record.id,
-      description: `${employee.name} checked in`,
-      metadata: {
-        employeeId: employee.employee_id,
-        attendanceDate,
-        checkIn: serverTimestamp,
-        attendanceMode: getAttendancePolicyOption(policySettings.attendanceMode)
-          .label,
-        workMode: employee.work_mode,
-        attendanceType,
-        officeStartTimeSnapshot: checkInPolicy.officeStartTimeSnapshot,
-        officeGracePeriodMinutesSnapshot:
-          checkInPolicy.officeGracePeriodMinutesSnapshot,
-        lateMinutes: checkInPolicy.lateMinutes,
-        checkInStatus: checkInPolicy.status,
-        gpsLocationName: policyValidation.location?.name ?? null,
-        gpsAddress: gpsWithAddress?.address ?? null,
-        selfiePath: input.selfiePath ?? null,
-        gpsDistanceMeters:
-          typeof policyValidation.distanceMeters === "number"
-            ? Math.round(policyValidation.distanceMeters)
-            : null,
-        gpsAccuracyMeters: policyValidation.gps?.accuracy ?? null,
-      },
-    });
 
     await NotificationService.create({
       companyId: employee.company_id,
@@ -469,33 +437,6 @@ export const AttendanceService = {
       deviceInfo: input.deviceInfo ?? null,
     });
 
-    await logActivity({
-      companyId: employee.company_id,
-      module: "attendance",
-      action: "updated",
-      entityType: "attendance_records",
-      entityId: record.id,
-      description: `${employee.name} checked out`,
-      metadata: {
-        employeeId: employee.employee_id,
-        attendanceDate,
-        checkOut: serverTimestamp,
-        workingMinutes,
-        notes: input.notes?.trim() || null,
-        attendanceMode: getAttendancePolicyOption(policySettings.attendanceMode)
-          .label,
-        workMode: employee.work_mode,
-        attendanceType: record.attendanceType ?? policyValidation.attendanceType ?? "office",
-        gpsLocationName: policyValidation.location?.name ?? null,
-        gpsAddress: gpsWithAddress?.address ?? null,
-        selfiePath: input.selfiePath ?? null,
-        gpsDistanceMeters:
-          typeof policyValidation.distanceMeters === "number"
-            ? Math.round(policyValidation.distanceMeters)
-            : null,
-        gpsAccuracyMeters: policyValidation.gps?.accuracy ?? null,
-      },
-    });
 
     await NotificationService.create({
       companyId: employee.company_id,

@@ -18,7 +18,6 @@ Company Admin creates an employee. The service validates company role/manager, d
 
 ## Dependencies
 
-Companies, roles, Supabase Auth, activity logs.
 
 ## Rules
 

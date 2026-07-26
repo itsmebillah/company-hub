@@ -73,18 +73,6 @@ export default async function PlatformSettingsPage() {
             className="bg-background mt-2 h-11 w-full rounded-xl border px-3"
           />
         </label>
-        <label className="text-sm font-medium">
-          Audit retention target (days)
-          <input
-            name="auditRetentionDays"
-            type="number"
-            min={30}
-            max={3650}
-            defaultValue={settings.auditRetentionDays}
-            required
-            className="bg-background mt-2 h-11 w-full rounded-xl border px-3"
-          />
-        </label>
         <label className="flex min-h-11 items-center gap-3 self-end rounded-xl border px-3 text-sm font-medium">
           <input
             name="allowCompanyCreation"

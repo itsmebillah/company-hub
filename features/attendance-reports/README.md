@@ -16,7 +16,6 @@ Admin report pages call report services. Export routes call export services for 
 
 ## Dependencies
 
-Attendance, employees, company settings, activity logs.
 
 ## Rules
 

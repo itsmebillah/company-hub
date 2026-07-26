@@ -17,7 +17,6 @@ Profile page loads current employee data. Updates go through server actions and 
 
 ## Dependencies
 
-Auth, employees, media helpers, activity logs.
 
 ## Rules
 

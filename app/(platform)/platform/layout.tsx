@@ -8,7 +8,6 @@ import { NavigationIcon } from "@/components/common/navigation-icon";
 import { LogoutButton } from "@/features/auth/components";
 import { getCurrentSessionProfile } from "@/features/auth/services/session.service";
 import { getCurrentSystemAdmin } from "@/features/platform-control/services/system-admin.service";
-import { PlatformAuditService } from "@/features/platform-control/services/platform-audit.service";
 import { PlatformControlService } from "@/features/platform-control/services/platform-control.service";
 import { ROLE_NAMES } from "@/lib/auth/permissions";
 import { resolveNavigation } from "@/lib/navigation/navigation-engine";
@@ -27,14 +26,6 @@ export default async function PlatformLayout({
   ]);
   if (!admin) {
     if (profile) {
-      await PlatformAuditService.log({
-        category: "security",
-        action: "unauthorized_access",
-        entityType: "platform_route",
-        status: "denied",
-        description: "A non-System-Admin user attempted platform access.",
-        companyId: profile.companyId,
-      });
     }
     redirect(
       profile

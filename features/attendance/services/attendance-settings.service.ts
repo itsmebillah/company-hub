@@ -1,6 +1,5 @@
 import "server-only";
 
-import { logActivity } from "@/features/activity/utils/activity-log";
 import { AttendancePolicyRepository } from "@/features/attendance/repositories/attendance-policy.repository";
 import type { AttendanceSettingsValues } from "@/features/attendance/types/attendance.types";
 import {
@@ -93,28 +92,5 @@ export const AttendanceSettingsService = {
       });
     }
 
-    await logActivity({
-      companyId: company.id,
-      module: "attendance",
-      action: "updated",
-      entityType: "company_settings",
-      entityId: company.id,
-      description: `Updated attendance settings for ${company.name}`,
-      metadata: {
-        attendanceMode: values.attendanceMode,
-        officeStartTime: values.officeStartTime,
-        officeEndTime: values.officeEndTime,
-        officeGracePeriodMinutes: values.officeGracePeriodMinutes,
-        gpsAccuracyThresholdMeters: values.gpsAccuracyThresholdMeters,
-        allowedRadiusMeters: values.allowedRadiusMeters,
-        allowEarlyCheckInMinutes: values.allowEarlyCheckInMinutes,
-        allowLateCheckOut: values.allowLateCheckOut,
-        weekendWorkingEnabled: values.weekendWorkingEnabled,
-        requireGps: values.requireGps,
-        requireSelfie: values.requireSelfie,
-        requireHighAccuracy: values.requireHighAccuracy,
-        enableGeofence: values.enableGeofence,
-      },
-    });
   },
 };

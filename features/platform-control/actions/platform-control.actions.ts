@@ -107,7 +107,6 @@ export async function updatePlatformSettingsAction(formData: FormData) {
     maintenanceMessage: String(formData.get("maintenanceMessage") ?? ""),
     maintenanceMode: formData.get("maintenanceMode") === "on",
     allowCompanyCreation: formData.get("allowCompanyCreation") === "on",
-    auditRetentionDays: Number(formData.get("auditRetentionDays")),
   });
   revalidatePath("/platform");
 }

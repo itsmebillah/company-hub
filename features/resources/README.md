@@ -18,7 +18,6 @@ Company Admin creates resources inside active categories, then permissions deter
 
 ## Dependencies
 
-Resource categories, permissions, notifications, activity logs.
 
 ## Rules
 

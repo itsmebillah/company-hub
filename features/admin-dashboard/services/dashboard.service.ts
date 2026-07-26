@@ -11,7 +11,6 @@ import { NotificationRepository } from "@/features/notifications/repositories/no
 import { AttendanceService } from "@/features/attendance/services/attendance.service";
 import {
   formatAppDate,
-  formatAppDateTime,
   getAppDateString,
   shiftAppDateString,
 } from "@/lib/datetime";
@@ -21,7 +20,6 @@ import type {
   DashboardChartPoint,
   DashboardData,
   DashboardPieSlice,
-  DashboardRecentActivityItem,
   DashboardSystemStatus,
 } from "@/features/admin-dashboard/types/dashboard.types";
 
@@ -74,28 +72,12 @@ function formatChartDate(value: string) {
   });
 }
 
-function formatActivityTime(value: string) {
-  return formatAppDateTime(value, {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
-
 function getRecentDateLabels(days: number) {
   const today = getAppDateString();
 
   return Array.from({ length: days }, (_, index) => {
     return shiftAppDateString(today, -(days - index - 1));
   });
-}
-
-function toActivityTitle(module: string, action: string) {
-  const nextModule = module.replace(/_/g, " ");
-  const nextAction = action.replace(/_/g, " ");
-
-  return `${nextModule.charAt(0).toUpperCase()}${nextModule.slice(1)} ${nextAction}`;
 }
 
 function getEmptyDashboard(): DashboardData {
@@ -139,9 +121,7 @@ function getEmptyDashboard(): DashboardData {
         { label: "Inactive", value: 0, color: EMPLOYEE_STATUS_COLORS.inactive },
         { label: "Archived", value: 0, color: EMPLOYEE_STATUS_COLORS.archived },
       ],
-      activityTrend: [],
     },
-    recentActivity: [],
     liveAnnouncements: [],
     quickResourceCategories: [],
     health,
@@ -153,7 +133,6 @@ const getCachedExecutiveSummary = unstable_cache(
     const supabase = createSupabaseAdminClient();
     const recentDates = getRecentDateLabels(7);
     const earliestDate = recentDates[0];
-    const recentActivityStart = new Date(`${earliestDate}T00:00:00.000Z`).toISOString();
 
     const [
       employeeStatusesResult,
@@ -161,8 +140,6 @@ const getCachedExecutiveSummary = unstable_cache(
       announcementStatusesResult,
       leaveStatusesResult,
       attendanceTrendResult,
-      recentActivityResult,
-      activityTrendResult,
       adminNotifications,
       attendanceOverview,
     ] = await Promise.all([
@@ -179,19 +156,6 @@ const getCachedExecutiveSummary = unstable_cache(
         .eq("company_id", companyId)
         .gte("attendance_date", earliestDate)
         .order("attendance_date", { ascending: true }),
-      supabase
-        .from("activity_logs")
-        .select("id, module, action, description, created_at")
-        .eq("company_id", companyId)
-        .in("module", ["employee", "announcement", "resources", "leave", "attendance"])
-        .order("created_at", { ascending: false })
-        .limit(8),
-      supabase
-        .from("activity_logs")
-        .select("created_at")
-        .eq("company_id", companyId)
-        .in("module", ["employee", "announcement", "resources", "leave", "attendance"])
-        .gte("created_at", recentActivityStart),
       NotificationRepository.countUnreadForCompany(companyId),
       AttendanceService.getAdminOverview(companyId),
     ]);
@@ -201,9 +165,7 @@ const getCachedExecutiveSummary = unstable_cache(
       resourceStatusesResult.error ||
       announcementStatusesResult.error ||
       leaveStatusesResult.error ||
-      attendanceTrendResult.error ||
-      recentActivityResult.error ||
-      activityTrendResult.error
+      attendanceTrendResult.error
     ) {
       throw new Error("Unable to load executive dashboard data.");
     }
@@ -240,23 +202,6 @@ const getCachedExecutiveSummary = unstable_cache(
         (attendanceCountByDate.get(record.attendance_date) ?? 0) + 1,
       );
     });
-
-    const activityCountByDate = new Map(recentDates.map((label) => [label, 0]));
-    activityTrendResult.data.forEach((record) => {
-      const date = record.created_at.slice(0, 10);
-      activityCountByDate.set(date, (activityCountByDate.get(date) ?? 0) + 1);
-    });
-
-    const recentActivity: DashboardRecentActivityItem[] = recentActivityResult.data.map(
-      (item) => ({
-        id: item.id,
-        title: toActivityTitle(item.module, item.action),
-        description: item.description,
-        time: formatActivityTime(item.created_at),
-        module: item.module,
-        action: item.action,
-      }),
-    );
 
     return {
       counts: {
@@ -304,14 +249,7 @@ const getCachedExecutiveSummary = unstable_cache(
             color: EMPLOYEE_STATUS_COLORS.archived,
           },
         ] satisfies DashboardPieSlice[],
-        activityTrend: recentDates.map(
-          (date): DashboardChartPoint => ({
-            label: formatChartDate(date),
-            value: activityCountByDate.get(date) ?? 0,
-          }),
-        ),
       },
-      recentActivity,
     };
   },
   ["executive-dashboard-summary"],
@@ -350,7 +288,6 @@ export async function getAdminDashboardData(): Promise<DashboardData> {
       overallSystemStatus: getOverallStatus(health),
       counts: summary.counts,
       charts: summary.charts,
-      recentActivity: summary.recentActivity,
       liveAnnouncements: liveAnnouncements.announcements,
       quickResourceCategories,
       health,

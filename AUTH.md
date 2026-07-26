@@ -4,9 +4,7 @@
 
 System Admin is an explicit global authorization in `platform_admins`; it is the platform role and is deliberately not inserted into tenant-scoped `roles`. This prevents a Company Admin from inheriting global authority and allows one approved Auth identity to operate across every company. A System Admin currently uses an existing active employee/Auth identity and is redirected to `/platform/dashboard` after login. Migration `0030` intentionally provisions nobody automatically.
 
-System Admin password reset is server-only and requires an exact Employee ID confirmation. It restores the canonical Employee-ID-derived initial password through the Supabase Admin API without revealing Auth email mappings or the internally padded value, and records a centralized security audit event.
 
-Company Admins are represented by the tenant role `Company Admin` and remain restricted to one company. Middleware, Server Actions, services, APIs, notification policies, and Storage policies independently enforce that boundary. Company Admin password resets require the exact target Employee ID, preserve the internal Auth email, reuse the canonical initial-password transform, and create a company-scoped security audit event.
 
 Feature state is an authorization input, not only a presentation preference. Platform disabled always denies access. A company state is considered only when the platform feature is enabled and company overrides are allowed; role and permission checks occur after that decision. The navigation shell may hide unavailable destinations for usability, but middleware, HTTP handlers, and Server Actions independently enforce the same effective state.
 

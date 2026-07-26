@@ -17,7 +17,6 @@ Admins configure active locations and employee access. Attendance validates agai
 
 ## Dependencies
 
-Companies, employees, attendance, activity logs.
 
 ## Rules
 

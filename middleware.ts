@@ -37,10 +37,6 @@ export async function middleware(request: NextRequest) {
     const { data: companyAllowed, error: companyError } =
       await middlewareClient.supabase.rpc("can_access_company_platform");
     if (companyError || !companyAllowed) {
-      await middlewareClient.supabase.rpc("log_company_access_denied", {
-        target_path: request.nextUrl.pathname,
-        target_user_agent: request.headers.get("user-agent"),
-      });
       return NextResponse.rewrite(new URL("/not-found", request.url), {
         headers: middlewareClient.response.headers,
         status: 404,
@@ -68,16 +64,6 @@ export async function middleware(request: NextRequest) {
     );
 
     if (error || !allowed) {
-      await Promise.all(
-        featureRule.anyOf.map((featureKey) =>
-          middlewareClient.supabase.rpc("log_feature_access_denied", {
-            target_feature_key: featureKey,
-            target_path: request.nextUrl.pathname,
-            target_user_agent: request.headers.get("user-agent"),
-          }),
-        ),
-      );
-
       return NextResponse.rewrite(new URL("/not-found", request.url), {
         headers: middlewareClient.response.headers,
         status: 404,

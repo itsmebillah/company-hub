@@ -2,11 +2,9 @@ import "server-only";
 
 import { utils, write } from "xlsx";
 
-import { logActivity } from "@/features/activity/utils/activity-log";
 import { getEmployeeWorkModeLabel } from "@/features/employees/constants/employee-work-mode.config";
 import type {
   AttendanceReportDetailsResult,
-  AttendanceReportExportFormat,
   AttendanceReportPageData,
 } from "@/features/attendance-reports/types/attendance-report.types";
 
@@ -577,28 +575,5 @@ export const AttendanceExportService = {
         buildDailyDetailsRows(detailsByEmployeeId),
       ),
     };
-  },
-
-  async logDownload(input: {
-    pageData: AttendanceReportPageData;
-    format: AttendanceReportExportFormat;
-  }) {
-    await logActivity({
-      companyId: input.pageData.company.id,
-      module: "attendance",
-      action: "downloaded",
-      entityType: "attendance_reports",
-      description: "Monthly Attendance Report Downloaded",
-      metadata: {
-        format: input.format,
-        generatedBy: input.pageData.generatedBy,
-        generatedAt: input.pageData.generatedAt,
-        month: input.pageData.range.month,
-        year: input.pageData.range.year,
-        startDate: input.pageData.range.startDate,
-        endDate: input.pageData.range.endDate,
-        filters: input.pageData.filters,
-      },
-    });
   },
 };

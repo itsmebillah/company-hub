@@ -3,7 +3,6 @@
 ## Platform operations
 
 - No first System Admin has been provisioned (`platform_admins` is empty by design). The control center remains inaccessible until the owner explicitly approves an existing active Auth user UUID.
-- Platform Audit Center PDF export remains future work; CSV and Excel use the same filters with a 5,000-row safety cap.
 
 ## Critical
 

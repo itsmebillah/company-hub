@@ -1,6 +1,5 @@
 import "server-only";
 
-import { logActivity } from "@/features/activity/utils/activity-log";
 import {
   isValidTimeValue,
   parseTimeValueToMinutes,
@@ -377,20 +376,4 @@ export async function updateCompanySettings(values: CompanySettingsValues) {
     }
   }
 
-  await logActivity({
-    companyId: company.id,
-    module: "company_settings",
-    action: "updated",
-    entityType: "company_settings",
-    entityId: company.id,
-    description: `Updated company settings for ${values.companyName.trim()}`,
-    metadata: {
-      companyName: values.companyName.trim(),
-      theme: values.theme,
-      language: values.language,
-      workingDays: values.workingDays,
-      permissionOnboardingVersion:
-        values.securityPreferences.permissionOnboardingVersion,
-    },
-  });
 }

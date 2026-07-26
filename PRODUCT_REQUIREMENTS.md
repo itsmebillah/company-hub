@@ -6,7 +6,6 @@ Company Hub provides employees and administrators one secure, responsive portal 
 
 ## Personas
 
-- **System Admin:** manages companies, global/company feature availability, cross-company audit data, usage, security events, and platform health through an explicit global allow-list.
 - **Admin:** configures the company, users, roles, locations, policies, resources, announcements, calendars, leave, and reporting.
 - **Sales Head / RSM / TSO / SR:** signs in with Employee ID and uses employee-facing resources, announcements, attendance, calendar, leave, profile, and notifications.
 - **Operator/maintainer:** deploys the application, applies migrations, manages secrets, monitors cron and platform health, and responds to incidents.

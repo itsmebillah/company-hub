@@ -15,6 +15,7 @@ The quality-hardening baseline is deployable: privileged mutation boundaries, pr
 - Supabase CLI 2.109.1 and Vercel CLI 56.5.0 installed as dev dependencies.
 - Supabase project `jjfktbgfwvekhlvyjlww` linked and active.
 - Migrations `0001` through `0040` applied remotely with exact local/remote parity.
+- Local migration `0041` removes the retired logging tables, enums, denial-log functions, and retention setting; linked verification and application are pending sufficient Supabase project privileges.
 - 29 public application tables with RLS enabled; platform-control and draft release rows are default-deny to browser roles.
 - Fourteen platform features are cataloged. Existing companies inherit enabled modules and `future_modules` starts disabled.
 - No System Admin is auto-provisioned. `platform_admins` remains empty until the owner explicitly approves an existing active Auth identity.
@@ -22,9 +23,7 @@ The quality-hardening baseline is deployable: privileged mutation boundaries, pr
 - Nine storage buckets, 11 storage-object policies, four checksum-verified objects, and notification realtime publication.
 - 17 Auth identities recreated with matching email, metadata, confirmation state, and employee linkage. All 17 passwords are synchronized to the canonical Employee-ID-derived policy and individually verified; no Auth emails changed and no duplicate users were created.
 - `npm install`, lint, typecheck, and production build pass.
-- Playwright: 50 production-build checks are defined across Chrome and Edge, including Admin/Employee login, session restore, logout, role redirects, the invariant navigation shell, major routes, Platform Audit CSV/XLSX exports, Quick Link visual priority and image lifecycle, PWA assets, private Storage, Realtime, attendance attachments, exports, signed-out API denial, responsive widths from 320px through 1024px, and WCAG A/AA scans. The 2026-07-26 optimized-runtime Chrome matrix passes all 25 checks; Edge execution remains blocked because Edge is not installed and its installer requires workstation elevation. The mobile UI regression pass additionally verifies exact FAB centering, a reserved center lane, unclipped navigation labels, single-row header actions, Android touch interaction, portrait/landscape rendering, and zero horizontal overflow.
 - Company Admin uses the canonical `Company Admin` tenant role, middleware authorization, action-level feature checks, tenant-scoped service-role queries, protected password reset, and company-aware Storage policies. `/admin/*` paths remain stable compatibility URLs.
-- Platform regression: a disposable explicit System Admin renders all six control-center routes without horizontal overflow at 320/360/375/390/414/768/1024px and verifies audited initial-password reset; cleanup restores `platform_admins` to zero. A disposable company Attendance override hides navigation and returns HTTP 404 on direct access, then restores the prior state. Chrome checks cover these flows, the complete Admin route matrix, and all 12 public/signed-out/PWA/accessibility checks.
 
 ## Implemented product areas
 
@@ -36,7 +35,6 @@ The quality-hardening baseline is deployable: privileged mutation boundaries, pr
 - Leave types, employee requests, approval/rejection/cancellation.
 - Holiday calendars and events.
 - Company branding/settings, dashboard summaries, audit activity, celebrations cron.
-- Platform Control Center with active/inactive/suspended/archived/deleted company lifecycle, confirmed soft deletion, cross-company people/Admin visibility, audited initial-password reset, global branding/configuration, two-level feature controls, usage, security/login/activity audit events, complete audit filtering, bounded CSV/XLSX exports, pagination, and company-scoped audit access. All 136 immutable legacy activity events are represented in the central audit stream.
 - Responsive admin/employee shells, theme support, PWA install flow, service worker, permission onboarding.
 - A single configuration-driven mobile navigation shell serves every role: four fixed groups plus a separate, centered 64px Dashboard FAB, with a reserved center lane and centralized role and effective-feature filtering.
 - Company branding is resolved at the authenticated shell and propagated through shared CSS tokens, logo, metadata, favicon, manifest, and PWA theme color.

@@ -17,7 +17,6 @@ Read-only executive overview for admins with compact mobile-first business statu
 
 ## Dependencies
 
-Employees, resources, announcements, attendance, leave, notifications, activity logs, company settings.
 
 ## Rules
 

@@ -18,7 +18,6 @@ UI calls attendance actions. Services validate session, policy, date, location, 
 
 ## Dependencies
 
-Employees, company locations, activity logs, holiday calendar.
 
 ## Rules
 

@@ -2,7 +2,6 @@ import "server-only";
 
 import { redirect } from "next/navigation";
 
-import { logActivity } from "@/features/activity/utils/activity-log";
 import { requireCurrentEmployeeContext } from "@/features/auth/services/current-employee-context.service";
 import type {
   ProfileData,
@@ -124,16 +123,5 @@ export const ProfileService = {
       throw new Error("Unable to update profile.");
     }
 
-    await logActivity({
-      companyId: employee.company_id,
-      module: "employee",
-      action: "updated",
-      entityType: "employees",
-      entityId: employee.id,
-      description: `Updated profile for ${employee.name}`,
-      metadata: {
-        photoUpdated: Boolean(values.photoUrl),
-      },
-    });
   },
 };

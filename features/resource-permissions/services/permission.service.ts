@@ -1,6 +1,5 @@
 import "server-only";
 
-import { logActivity } from "@/features/activity/utils/activity-log";
 import { requireCurrentCompanyId } from "@/features/auth/services/current-company-context.service";
 import { isNotificationPriority } from "@/features/notifications/constants/notification-priority";
 import { NotificationService } from "@/features/notifications/services/notification.service";
@@ -265,19 +264,6 @@ export const PermissionService = {
       }
     }
 
-    await logActivity({
-      companyId,
-      module: "permissions",
-      action: "updated",
-      entityType: "resources",
-      entityId: resourceId,
-      description: `Updated resource permissions for ${resource.title}`,
-      metadata: {
-        isPublic: draft.isPublic,
-        roleCount: draft.roleIds.length,
-        employeeCount: draft.employeeIds.length,
-      },
-    });
 
     if (resource.status === "active") {
       try {

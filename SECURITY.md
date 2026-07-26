@@ -61,7 +61,6 @@ Quick Link media uploads are Company Admin-only and company-scoped. The server v
 - React rendering supplies default output escaping; any future rich HTML requires sanitization.
 - Browser permissions are requested in a user-visible onboarding flow.
 
-Production gaps include rate limiting, CSP/security headers beyond removing `X-Powered-By`, centralized audit monitoring, and automated dependency scanning.
 
 The service worker caches only immutable public assets. Activation removes legacy page-cache generations so authenticated HTML cannot survive logout/account switching in Cache Storage.
 

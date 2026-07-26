@@ -18,7 +18,6 @@ Admins save announcements through actions. Services persist target audience. Emp
 
 ## Dependencies
 
-Employees, roles, notifications, activity logs, media helpers.
 
 ## Rules
 

@@ -1,4 +1,3 @@
-import type { ActivityLogInput } from "@/features/activity/types/activity.types";
 import type { CreateNotificationInput } from "@/features/notifications/types/notification.types";
 import type { Database } from "@/lib/supabase/types";
 
@@ -212,18 +211,6 @@ export type EmployeeImportValidationCatalog = {
 };
 
 export type EmployeeImportFoundationHooks = {
-  started: Omit<
-    ActivityLogInput,
-    "companyId" | "employeeId" | "ipAddress" | "userAgent"
-  >;
-  completed: Omit<
-    ActivityLogInput,
-    "companyId" | "employeeId" | "ipAddress" | "userAgent"
-  >;
-  failed: Omit<
-    ActivityLogInput,
-    "companyId" | "employeeId" | "ipAddress" | "userAgent"
-  >;
   notification: Omit<CreateNotificationInput, "companyId" | "employeeId">;
 };
 

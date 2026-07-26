@@ -46,11 +46,6 @@ export async function GET(request: NextRequest) {
             dataset.companyLogo,
           );
 
-  await AttendanceExportService.logDownload({
-    pageData: dataset.pageData,
-    format,
-  });
-
   return new NextResponse(file.buffer, {
     headers: {
       "Content-Type": file.contentType,

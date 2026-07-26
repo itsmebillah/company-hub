@@ -3,10 +3,8 @@ import type { FeatureKey } from "@/features/platform-control/types/platform.type
 export type NavigationRole = "system_admin" | "company_admin" | "employee";
 export type NavigationGroupKey = "hub" | "updates" | "me" | "more";
 export type NavigationIconKey =
-  | "activity"
   | "announcement"
   | "attendance"
-  | "audit"
   | "building"
   | "calendar"
   | "company"
@@ -20,7 +18,6 @@ export type NavigationIconKey =
   | "reports"
   | "resources"
   | "roles"
-  | "security"
   | "settings"
   | "system_health"
   | "users";
@@ -271,12 +268,6 @@ const companyAdminGroups: ResolvedNavigation["groups"] = {
       href: "/admin/settings/features",
       icon: "feature",
     },
-    {
-      id: "company-audit",
-      label: "Activity Logs",
-      href: "/admin/audit",
-      icon: "audit",
-    },
   ],
 };
 
@@ -288,27 +279,8 @@ const systemAdminGroups: ResolvedNavigation["groups"] = {
       href: "/platform/features",
       icon: "feature",
     },
-    {
-      id: "platform-activity-hub",
-      label: "Activity Center",
-      href: "/platform/audit?category=activity",
-      icon: "activity",
-    },
   ],
-  updates: [
-    {
-      id: "platform-audit-updates",
-      label: "Audit Center",
-      href: "/platform/audit",
-      icon: "audit",
-    },
-    {
-      id: "platform-security-updates",
-      label: "Security Events",
-      href: "/platform/audit?category=security",
-      icon: "security",
-    },
-  ],
+  updates: [],
   me: [
     {
       id: "platform-settings-personal",
@@ -341,24 +313,6 @@ const systemAdminGroups: ResolvedNavigation["groups"] = {
       label: "Platform Features",
       href: "/platform/features",
       icon: "feature",
-    },
-    {
-      id: "platform-audit",
-      label: "Audit Center",
-      href: "/platform/audit",
-      icon: "audit",
-    },
-    {
-      id: "platform-activity",
-      label: "Activity Center",
-      href: "/platform/audit?category=activity",
-      icon: "activity",
-    },
-    {
-      id: "platform-security",
-      label: "Security",
-      href: "/platform/audit?category=security",
-      icon: "security",
     },
     {
       id: "platform-settings",

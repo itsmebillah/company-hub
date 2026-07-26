@@ -813,7 +813,6 @@ export type Database = {
           maintenance_message: string | null;
           maintenance_mode: boolean;
           allow_company_creation: boolean;
-          audit_retention_days: number;
           global_configuration: Json;
           updated_by: string | null;
           created_at: string;
@@ -830,7 +829,6 @@ export type Database = {
           maintenance_message?: string | null;
           maintenance_mode?: boolean;
           allow_company_creation?: boolean;
-          audit_retention_days?: number;
           global_configuration?: Json;
           updated_by?: string | null;
           created_at?: string;
@@ -945,48 +943,6 @@ export type Database = {
         >;
         Relationships: [];
       };
-      platform_audit_logs: {
-        Row: {
-          id: string;
-          company_id: string | null;
-          employee_id: string | null;
-          platform_admin_id: string | null;
-          auth_user_id: string | null;
-          category: Database["public"]["Enums"]["platform_audit_category"];
-          feature_key: string | null;
-          action: string;
-          entity_type: string;
-          entity_id: string | null;
-          status: Database["public"]["Enums"]["platform_audit_status"];
-          description: string;
-          metadata: Json;
-          ip_address: string | null;
-          user_agent: string | null;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          company_id?: string | null;
-          employee_id?: string | null;
-          platform_admin_id?: string | null;
-          auth_user_id?: string | null;
-          category: Database["public"]["Enums"]["platform_audit_category"];
-          feature_key?: string | null;
-          action: string;
-          entity_type: string;
-          entity_id?: string | null;
-          status?: Database["public"]["Enums"]["platform_audit_status"];
-          description: string;
-          metadata?: Json;
-          ip_address?: string | null;
-          user_agent?: string | null;
-          created_at?: string;
-        };
-        Update: Partial<
-          Database["public"]["Tables"]["platform_audit_logs"]["Insert"]
-        >;
-        Relationships: [];
-      };
       feature_usage_daily: {
         Row: {
           company_id: string;
@@ -1005,51 +961,6 @@ export type Database = {
         Update: Partial<
           Database["public"]["Tables"]["feature_usage_daily"]["Insert"]
         >;
-        Relationships: [];
-      };
-      activity_logs: {
-        Row: {
-          id: string;
-          company_id: string;
-          employee_id: string | null;
-          module: string;
-          action: string;
-          entity_type: string;
-          entity_id: string | null;
-          description: string;
-          metadata: Json;
-          ip_address: string | null;
-          user_agent: string | null;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          company_id: string;
-          employee_id?: string | null;
-          module: string;
-          action: string;
-          entity_type: string;
-          entity_id?: string | null;
-          description: string;
-          metadata?: Json;
-          ip_address?: string | null;
-          user_agent?: string | null;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          company_id?: string;
-          employee_id?: string | null;
-          module?: string;
-          action?: string;
-          entity_type?: string;
-          entity_id?: string | null;
-          description?: string;
-          metadata?: Json;
-          ip_address?: string | null;
-          user_agent?: string | null;
-          created_at?: string;
-        };
         Relationships: [];
       };
       attendance_records: {
@@ -1599,20 +1510,8 @@ export type Database = {
         };
         Returns: boolean;
       };
-      log_feature_access_denied: {
-        Args: {
-          target_feature_key: string;
-          target_path: string;
-          target_user_agent?: string | null;
-        };
-        Returns: undefined;
-      };
       record_feature_usage: {
         Args: { target_feature_key: string };
-        Returns: undefined;
-      };
-      log_company_access_denied: {
-        Args: { target_path: string; target_user_agent?: string | null };
         Returns: undefined;
       };
       create_platform_company: {
@@ -1629,9 +1528,6 @@ export type Database = {
         "enabled" | "disabled" | "beta" | "hidden" | "deprecated";
       platform_company_status:
         "active" | "inactive" | "suspended" | "archived" | "deleted";
-      platform_audit_category:
-        "audit" | "activity" | "login" | "security" | "feature_usage" | "error";
-      platform_audit_status: "success" | "failure" | "denied" | "warning";
       announcement_priority: "low" | "normal" | "high" | "urgent";
       celebration_event_type: "birthday" | "work_anniversary";
       attendance_type: "office" | "field" | "hybrid";

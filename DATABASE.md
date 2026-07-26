@@ -2,7 +2,7 @@
 
 ## Source of truth
 
-`supabase/migrations/` is the canonical schema history. Migrations `0001`–`0040` are applied to project `jjfktbgfwvekhlvyjlww`. Never edit an applied migration; add the next ordered migration. Migrations `0038`–`0040` add hierarchical feature control, release history and receipts, maintenance state, and a least-privilege maintenance-status contract.
+`supabase/migrations/` is the canonical schema history. Migrations `0001`–`0040` are applied to project `jjfktbgfwvekhlvyjlww`; migration `0041` removes the retired logging tables and related database objects and is pending remote application. Never edit an applied migration; add the next ordered migration.
 
 `platform_features.state` is authoritative. `allow_company_override` determines whether `company_features.company_state` (`inherit`, `enabled`, or `disabled`) participates in resolution. `is_feature_enabled_for_company` and `can_access_any_feature` expose the canonical platform-first decision to server and middleware callers. `platform_feature_company_summary` supplies aggregate override counts without exposing tenant configuration rows.
 
@@ -17,13 +17,11 @@ The live verified catalog contains 27 public tables and the security-invoker `pl
 | Organization        | `companies`, `company_settings`, `roles`, `employees`                           | Tenant, branding/policy, roles, employee identity/hierarchy                      |
 | Resources           | `resource_categories`, `resources`, `resource_permissions`                      | Resource catalog and public/role/employee visibility                             |
 | Announcements       | `announcements`, `announcement_roles`, `announcement_employees`                 | Scheduled content and targeting                                                  |
-| Notifications/audit | `notifications`, `activity_logs`                                                | User/company notifications, delivery state, audit history                        |
 | Attendance          | `attendance_records`, `company_locations`, `employee_location_access`           | Daily records, GPS locations, assignments, policy snapshots                      |
 | Leave/calendar      | `leave_types`, `leave_requests`, `holiday_calendars`, `holiday_events`          | Leave workflow and working-day context                                           |
 | Import              | `employee_import_jobs`, `employee_import_rows`                                  | Durable bulk-import staging and outcomes                                         |
 | Celebrations        | `employee_celebration_events`                                                   | Per-year birthday/anniversary generation deduplication                           |
 | Platform control    | `platform_admins`, `platform_settings`, `platform_features`, `company_features` | Explicit global authorization, global configuration, and two-level feature state |
-| Platform telemetry  | `platform_audit_logs`, `feature_usage_daily`                                    | Central audit events and daily request aggregates                                |
 
 ## Key relationships
 
@@ -39,7 +37,6 @@ companies
   ├─ resource_categories ── resources ── resource_permissions
   ├─ announcements ── announcement_roles / announcement_employees
   ├─ notifications
-  ├─ activity_logs
   ├─ holiday_calendars ── holiday_events
   └─ employee_import_jobs ── employee_import_rows
 ```
@@ -85,7 +82,6 @@ Platform-control tables expose no direct `anon` or `authenticated` grants. Brows
 
 Availability is `active company AND enabled platform feature AND company override not disabled`. Missing company overrides inherit enabled for backward compatibility. A platform-disabled feature cannot be re-enabled by a company. Future states (`beta`, `hidden`, `deprecated`) are stored additively but treated as disabled by the current application.
 
-Migration `0033` imports existing immutable `activity_logs` rows into the centralized audit stream with original timestamps and source IDs.
 
 ## Realtime
 

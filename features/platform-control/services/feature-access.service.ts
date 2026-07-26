@@ -3,7 +3,6 @@ import "server-only";
 import { notFound } from "next/navigation";
 
 import { requireCurrentCompanyId } from "@/features/auth/services/current-company-context.service";
-import { PlatformAuditService } from "@/features/platform-control/services/platform-audit.service";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type {
   FeatureDefinition,
@@ -113,16 +112,6 @@ export const FeatureAccessService = {
     const enabled = await this.isEnabled(companyId, featureKey);
 
     if (!enabled) {
-      await PlatformAuditService.log({
-        category: "security",
-        action: "feature_access_blocked",
-        entityType: "platform_feature",
-        entityId: featureKey,
-        status: "denied",
-        description: `Blocked access to disabled feature ${featureKey}.`,
-        companyId,
-        featureKey,
-      });
       throw new Error("This feature is unavailable.");
     }
 

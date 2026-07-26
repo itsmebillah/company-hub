@@ -10,7 +10,6 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getPriorityRank } from "@/features/announcements/constants/announcement-options";
 import { AnnouncementValidationService } from "@/features/announcements/services/announcement-validation.service";
 import { NotificationService } from "@/features/notifications/services/notification.service";
-import { logActivity } from "@/features/activity/utils/activity-log";
 import type {
   AnnouncementFilters,
   AnnouncementAudienceOptions,
@@ -479,19 +478,6 @@ export const AnnouncementService = {
       validated.employeeIds,
     );
 
-    await logActivity({
-      companyId,
-      module: "announcement",
-      action: "created",
-      entityType: "announcements",
-      entityId: data.id,
-      description: `Created announcement ${validated.title}`,
-      metadata: {
-        priority: validated.priority,
-        status: validated.status,
-        targetAudience: validated.targetAudience,
-      },
-    });
 
     if (
       isAnnouncementVisibleNow({
@@ -559,19 +545,6 @@ export const AnnouncementService = {
       validated.employeeIds,
     );
 
-    await logActivity({
-      companyId,
-      module: "announcement",
-      action: "updated",
-      entityType: "announcements",
-      entityId: id,
-      description: `Updated announcement ${validated.title}`,
-      metadata: {
-        priority: validated.priority,
-        status: validated.status,
-        targetAudience: validated.targetAudience,
-      },
-    });
   },
 
   async setStatus(id: string, status: Extract<AnnouncementStatus, "active" | "archived">) {

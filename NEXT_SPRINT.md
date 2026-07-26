@@ -31,7 +31,6 @@ This document freezes the current Company Hub implementation at the end of the s
 - Branding improvements.
 - Navigation improvements.
 - Release Center enhancements.
-- PDF export for the Platform Audit Center.
 - Audit retention policy and archival automation.
 - Dependency updates that require a controlled framework or library migration.
 - Image optimization warnings and broader remote/user-media optimization beyond the dimensioned images completed in this sprint.
@@ -44,6 +43,5 @@ This document freezes the current Company Hub implementation at the end of the s
 3. Complete the security maintenance decision set: historical credential rotation confirmation, leaked-password-protection policy, and the documented authenticated helper review.
 4. Plan compatible replacements or upgrades for `xlsx` and the remaining Next.js/PostCSS/Sharp advisory chain; do not force an incompatible audit fix.
 5. Establish the repository-wide formatting baseline in a dedicated mechanical change.
-6. Define and implement audit retention, followed by Platform Audit PDF export.
 7. Continue Release Center work only after the quality and security gates above are complete.
 8. Perform measured UI, mobile UX, branding, and navigation polish last, preserving the frozen architecture and existing business rules.

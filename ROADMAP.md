@@ -15,14 +15,11 @@ The roadmap prioritizes safe production operation before additional product brea
 
 ## Phase 1 — Reliability and observability
 
-- Provision the first approved permanent System Admin and operationally validate Platform Architecture v2 without broadening tenant Admin access. The global authority, six-route control plane, archived lifecycle, platform settings, cross-company directory, and audited password reset are implemented.
-- Define retention and alert thresholds for centralized platform audit and feature-usage records.
 - Add structured server logging with request/correlation IDs and redaction.
 - Add production error monitoring and alerting for cron, Auth, imports, storage, and failed offline sync.
 - Add database performance baselines, slow-query review, and index monitoring.
 - Add idempotency protection to cron and externally retryable mutations where needed.
 - Add health/readiness endpoints that do not disclose secrets.
-- Add retention policies for activity logs, notification history, import staging rows, and private documents.
 
 ## Phase 2 — Product completeness
 
@@ -40,7 +37,6 @@ The roadmap prioritizes safe production operation before additional product brea
 - Add accessibility audits and cross-browser/device matrices.
 - Add data export/deletion processes and documented retention compliance.
 - Introduce release environments, migration rehearsal, and automated smoke tests.
-- Add filtered Platform Audit Center CSV/XLSX/PDF exports after retention and privacy requirements are approved.
 
 ## Future candidates
 

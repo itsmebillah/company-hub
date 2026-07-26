@@ -1,5 +1,3 @@
-import type { Json } from "@/lib/supabase/types";
-
 export type FeatureKey =
   | "attendance"
   | "quick_links"
@@ -20,9 +18,6 @@ export type FeatureState = "enabled" | "disabled";
 export type CompanyFeatureState = "inherit" | FeatureState;
 export type PlatformCompanyStatus =
   "active" | "inactive" | "suspended" | "archived" | "deleted";
-export type AuditCategory =
-  "audit" | "activity" | "login" | "security" | "feature_usage" | "error";
-export type AuditStatus = "success" | "failure" | "denied" | "warning";
 
 export type FeatureDefinition = {
   key: FeatureKey;
@@ -34,21 +29,6 @@ export type FeatureDefinition = {
   companyConfigurable: boolean;
   effectiveState: FeatureState;
   displayOrder: number;
-};
-
-export type AuditEventInput = {
-  category: AuditCategory;
-  action: string;
-  entityType: string;
-  entityId?: string | null;
-  status?: AuditStatus;
-  description: string;
-  companyId?: string | null;
-  employeeId?: string | null;
-  platformAdminId?: string | null;
-  authUserId?: string | null;
-  featureKey?: FeatureKey | null;
-  metadata?: Json;
 };
 
 export type PlatformEmployeeFilters = {
@@ -69,5 +49,4 @@ export type PlatformSettingsValues = {
   maintenanceMessage: string;
   maintenanceMode: boolean;
   allowCompanyCreation: boolean;
-  auditRetentionDays: number;
 };

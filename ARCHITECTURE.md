@@ -78,7 +78,6 @@ route/page
   → Supabase client
 ```
 
-Pages compose data and presentation. Actions validate transport-shaped input, call services, convert failures into friendly action state, and revalidate paths. Services own authorization, business invariants, orchestration, rollback, notifications, and audit logging. Repositories own direct table operations in larger domains.
 
 Client components do not import the service-role client. The browser client is used for session-aware Auth, profile storage upload, notification realtime, and other explicitly policy-protected operations.
 
@@ -115,7 +114,6 @@ Server services create rows and track state. `notifications` is in `supabase_rea
 
 ## Cross-cutting concerns
 
-- **Audit:** domain services call non-blocking activity logging after successful mutations.
 - **Errors:** technical details are logged server-side; UI receives bounded messages.
 - **Caching:** protected/auth routes are `no-store`; actions use `revalidatePath`.
 - **Media:** database fields store object paths; shared helpers build public URLs.

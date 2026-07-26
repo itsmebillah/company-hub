@@ -1,6 +1,5 @@
 import "server-only";
 
-import { logActivity } from "@/features/activity/utils/activity-log";
 import { requireCurrentCompanyId } from "@/features/auth/services/current-company-context.service";
 import { toSupabaseEmployeePassword } from "@/features/auth/utils/employee-password";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -496,19 +495,6 @@ export async function createEmployee(values: EmployeeFormValues) {
     throw new Error("Unable to create employee.");
   }
 
-  await logActivity({
-    companyId,
-    module: "employee",
-    action: "created",
-    entityType: "employees",
-    entityId: data.id,
-    description: `Created employee ${employeeId}`,
-    metadata: {
-      employeeId,
-      roleId: values.roleId,
-      status: values.status,
-    },
-  });
 
   return {
     id: data.id,
@@ -558,19 +544,6 @@ export async function updateEmployee(id: string, values: EmployeeFormValues) {
     throw new Error("Unable to update employee.");
   }
 
-  await logActivity({
-    companyId,
-    module: "employee",
-    action: "updated",
-    entityType: "employees",
-    entityId: id,
-    description: `Updated employee ${existingEmployee.employee_id}`,
-    metadata: {
-      employeeId: existingEmployee.employee_id,
-      roleId: values.roleId,
-      status: values.status,
-    },
-  });
 }
 
 export async function setEmployeeStatus(id: string, status: Extract<EmployeeStatus, "active" | "inactive">) {

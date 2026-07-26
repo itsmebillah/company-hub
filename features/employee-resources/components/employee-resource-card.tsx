@@ -77,7 +77,7 @@ export function EmployeeResourceCard({
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0 flex-1">
-                <h3 className="truncate text-sm leading-5 font-semibold">
+                <h3 className="line-clamp-2 min-h-10 text-sm leading-5 font-semibold">
                   {resource.title}
                 </h3>
                 <p className="text-muted-foreground truncate text-[11px]">

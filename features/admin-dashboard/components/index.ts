@@ -9,7 +9,6 @@ export { LineChart } from "./line-chart";
 export { PieChart } from "./pie-chart";
 export { QuickActionCard } from "./quick-action-card";
 export { QuickActionGrid } from "./quick-action-grid";
-export { RecentActivity } from "./recent-activity";
 export { RecentAnnouncements } from "./recent-announcements";
 export { RecentEmployees } from "./recent-employees";
 export { RecentResources } from "./recent-resources";

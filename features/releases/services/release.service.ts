@@ -2,7 +2,6 @@ import "server-only";
 
 import { unstable_cache } from "next/cache";
 
-import { PlatformAuditService } from "@/features/platform-control/services/platform-audit.service";
 import { requireSystemAdmin } from "@/features/platform-control/services/system-admin.service";
 import type {
   ReleaseRecord,
@@ -106,7 +105,7 @@ export const ReleaseService = {
     requiresUpdate: boolean;
     showPopup: boolean;
   }) {
-    const actor = await requireSystemAdmin();
+    await requireSystemAdmin();
     const supabase = createSupabaseAdminClient();
     const { error } = await supabase
       .from("platform_releases")
@@ -120,19 +119,6 @@ export const ReleaseService = {
       })
       .eq("id", input.releaseId);
     if (error) throw new Error("Unable to update release controls.");
-    await PlatformAuditService.log({
-      category: "audit",
-      action: "release_controls_updated",
-      entityType: "platform_release",
-      entityId: input.releaseId,
-      description: "System Admin updated release visibility controls.",
-      platformAdminId: actor.id,
-      metadata: {
-        status: input.status,
-        requiresUpdate: input.requiresUpdate,
-        showPopup: input.showPopup,
-      },
-    });
   },
 
   async recordReceipt(releaseId: string, event: "dismissed" | "installed") {

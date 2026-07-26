@@ -1,20 +1,10 @@
 import Link from "next/link";
 
 import { getCurrentSessionProfile } from "@/features/auth/services/session.service";
-import { PlatformAuditService } from "@/features/platform-control/services/platform-audit.service";
 
 export default async function NotFoundPage() {
   const profile = await getCurrentSessionProfile();
   if (profile) {
-    await PlatformAuditService.log({
-      category: "security",
-      action: "invalid_route_access",
-      entityType: "route",
-      status: "denied",
-      description: "An authenticated user requested an unavailable route.",
-      companyId: profile.companyId,
-      platformAdminId: profile.platformAdminId,
-    });
   }
 
   return (

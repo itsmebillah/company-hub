@@ -1,6 +1,5 @@
 import "server-only";
 
-import { logActivity } from "@/features/activity/utils/activity-log";
 import { requireCurrentCompanyId } from "@/features/auth/services/current-company-context.service";
 import type {
   CompanyLocationFormValues,
@@ -286,14 +285,6 @@ export async function createCompanyLocation(values: CompanyLocationFormValues) {
   }
 
   await syncAssignments(companyId, data.id, values.assignedEmployeeIds);
-  await logActivity({
-    companyId,
-    module: "future",
-    action: "created",
-    entityType: "company_locations",
-    entityId: data.id,
-    description: `Created location ${values.name.trim()}`,
-  });
 }
 
 export async function updateCompanyLocation(
@@ -336,14 +327,6 @@ export async function updateCompanyLocation(
   }
 
   await syncAssignments(companyId, id, values.assignedEmployeeIds);
-  await logActivity({
-    companyId,
-    module: "future",
-    action: "updated",
-    entityType: "company_locations",
-    entityId: id,
-    description: `Updated location ${values.name.trim()}`,
-  });
 }
 
 export async function archiveCompanyLocation(id: string) {
@@ -364,14 +347,6 @@ export async function archiveCompanyLocation(id: string) {
     throw new Error("Unable to archive location.");
   }
 
-  await logActivity({
-    companyId,
-    module: "future",
-    action: "archived",
-    entityType: "company_locations",
-    entityId: id,
-    description: "Archived company location",
-  });
 }
 
 export async function setDefaultCompanyLocation(id: string) {

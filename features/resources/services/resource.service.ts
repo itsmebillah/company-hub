@@ -1,6 +1,5 @@
 import "server-only";
 
-import { logActivity } from "@/features/activity/utils/activity-log";
 import { requireCurrentCompanyId } from "@/features/auth/services/current-company-context.service";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { RESOURCE_SORTS } from "@/features/resources/constants/resource-options";
@@ -231,19 +230,6 @@ export async function createResource(values: ResourceFormValues) {
     throw new Error("Unable to create resource.");
   }
 
-  await logActivity({
-    companyId,
-    module: "resources",
-    action: "created",
-    entityType: "resources",
-    entityId: data.id,
-    description: `Created resource ${values.title.trim()}`,
-    metadata: {
-      categoryId: values.categoryId,
-      resourceType: validated.resourceType,
-      status: validated.status,
-    },
-  });
 }
 
 export async function updateResource(id: string, values: ResourceFormValues) {
@@ -301,19 +287,6 @@ export async function updateResource(id: string, values: ResourceFormValues) {
     );
   }
 
-  await logActivity({
-    companyId,
-    module: "resources",
-    action: "updated",
-    entityType: "resources",
-    entityId: id,
-    description: `Updated resource ${values.title.trim()}`,
-    metadata: {
-      categoryId: values.categoryId,
-      resourceType: validated.resourceType,
-      status: validated.status,
-    },
-  });
 }
 
 export async function deleteResource(id: string) {
@@ -346,14 +319,6 @@ export async function deleteResource(id: string) {
     );
   }
 
-  await logActivity({
-    companyId,
-    module: "resources",
-    action: "deleted",
-    entityType: "resources",
-    entityId: id,
-    description: `Deleted resource ${resource.title}`,
-  });
 }
 
 export async function duplicateResource(id: string) {

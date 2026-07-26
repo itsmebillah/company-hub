@@ -13,7 +13,6 @@ import {
   ShieldCheck,
   Settings,
   Users,
-  Activity,
   SlidersHorizontal,
   type LucideIcon,
 } from "lucide-react";
@@ -109,11 +108,6 @@ export const adminNavigationItems: AdminNavigationItem[] = [
     title: "Feature Controls",
     href: "/admin/settings/features",
     icon: SlidersHorizontal,
-  },
-  {
-    title: "Audit Center",
-    href: "/admin/audit",
-    icon: Activity,
   },
 ];
 

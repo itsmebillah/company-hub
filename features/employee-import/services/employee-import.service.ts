@@ -2,7 +2,6 @@ import "server-only";
 
 import { requireCurrentEmployeeContext } from "@/features/auth/services/current-employee-context.service";
 import { toSupabaseEmployeePassword } from "@/features/auth/utils/employee-password";
-import { logActivity } from "@/features/activity/utils/activity-log";
 import { NotificationService } from "@/features/notifications/services/notification.service";
 import { EmployeeImportRepository } from "@/features/employee-import/repositories/employee-import.repository";
 import { EmployeeImportValidator } from "@/features/employee-import/services/employee-import.validator";
@@ -160,36 +159,6 @@ function buildInternalAuthEmail(employeeId: string) {
 
 function buildHooks(fileName: string): EmployeeImportFoundationHooks {
   return {
-    started: {
-      module: "employee",
-      action: "created",
-      entityType: "employee_import_jobs",
-      entityId: null,
-      description: `Started employee import for ${fileName}`,
-      metadata: {
-        pipeline: EMPLOYEE_IMPORT_WIZARD_STEPS.map((step) => step.key),
-      },
-    },
-    completed: {
-      module: "employee",
-      action: "updated",
-      entityType: "employee_import_jobs",
-      entityId: null,
-      description: `Completed employee import for ${fileName}`,
-      metadata: {
-        pipeline: EMPLOYEE_IMPORT_WIZARD_STEPS.map((step) => step.key),
-      },
-    },
-    failed: {
-      module: "employee",
-      action: "updated",
-      entityType: "employee_import_jobs",
-      entityId: null,
-      description: `Failed employee import for ${fileName}`,
-      metadata: {
-        pipeline: EMPLOYEE_IMPORT_WIZARD_STEPS.map((step) => step.key),
-      },
-    },
     notification: {
       type: "system",
       title: "Employee import completed",
@@ -429,19 +398,6 @@ export async function processEmployeeImportBatch(
 
   if (job.status !== "processing") {
     await EmployeeImportRepository.markJobProcessing(jobId);
-    await logActivity({
-      companyId: actor.companyId,
-      module: "employee",
-      action: "created",
-      entityType: "employee_import_jobs",
-      entityId: jobId,
-      description: `Import started for ${job.sourceFileName}`,
-      metadata: {
-        totalRows: job.totalRows,
-        validRows: job.validRows,
-        invalidRows: job.invalidRows,
-      },
-    });
   }
 
   const pendingRows = await EmployeeImportRepository.getNextPendingValidRows(
@@ -459,21 +415,6 @@ export async function processEmployeeImportBatch(
       successfulRows: importedCount,
       failedRows: failedCount,
       status: failedCount > 0 ? "failed" : "completed",
-    });
-    await logActivity({
-      companyId: actor.companyId,
-      module: "employee",
-      action: failedCount > 0 ? "updated" : "updated",
-      entityType: "employee_import_jobs",
-      entityId: jobId,
-      description:
-        failedCount > 0
-          ? `Import failed with ${failedCount} failed row(s) for ${job.sourceFileName}`
-          : `Import completed for ${job.sourceFileName}`,
-      metadata: {
-        importedCount,
-        failedCount,
-      },
     });
     await notifyImportCompletion({
       companyId: actor.companyId,

@@ -17,7 +17,6 @@ Admin pages load settings service data and submit updates through actions.
 
 ## Dependencies
 
-Companies, media helpers, activity logs.
 
 ## Rules
 

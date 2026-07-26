@@ -17,7 +17,6 @@ Admin manages calendars and events. Employee calendar displays read-only company
 
 ## Dependencies
 
-Companies, notifications, activity logs, attendance, leave.
 
 ## Rules
 

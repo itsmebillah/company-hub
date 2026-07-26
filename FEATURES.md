@@ -11,7 +11,7 @@ Status values: **Implemented** means a routed workflow and supporting service ex
 | Roles                        | Implemented | System-role repair, custom role CRUD/status, ordering                                                                                                                 |
 | Hierarchy                    | Implemented | Tree view, manager change, bulk reassignment, cycle/role validation                                                                                                   |
 | Company Admin dashboard      | Implemented | Company-only KPIs, pending work, celebrations, Quick Links, and feature-filtered actions                                                                              |
-| Company administration       | Implemented | Tenant-scoped employees, roles, hierarchy, import/export, password reset, activity, settings, and media                                                               |
+| Company administration       | Implemented | Tenant-scoped employees, roles, hierarchy, import/export, password reset, settings, and media                                                                         |
 | Company settings             | Implemented | Branding, contact, locale, notification/resource/security preferences                                                                                                 |
 | Company locations            | Implemented | Location CRUD, default location, employee access foundation                                                                                                           |
 | Resource categories          | Implemented | CRUD/status/order                                                                                                                                                     |
@@ -26,18 +26,16 @@ Status values: **Implemented** means a routed workflow and supporting service ex
 | Offline attendance           | Foundation  | Local queue, online retry, Background Sync fallback; browser-local only                                                                                               |
 | Attendance administration    | Implemented | Employee status/detail and attendance settings                                                                                                                        |
 | Attendance reports           | Implemented | Filters, detail API, CSV/XLSX/PDF export                                                                                                                              |
-| Leave                        | Implemented | Leave types, requests, approve/reject/cancel, approval-time request adjustment, notifications/activity                                                                |
+| Leave                        | Implemented | Leave types, requests, approve/reject/cancel, approval-time request adjustment, and notifications                                                                      |
 | Holiday calendar             | Implemented | Calendar/event management and employee read-only calendar                                                                                                             |
 | Profile                      | Implemented | Contact updates, profile photo upload, password update                                                                                                                |
-| Activity logs                | Implemented | Non-blocking audit writes and dashboard/list consumption                                                                                                              |
 | Celebrations                 | Implemented | Birthday/anniversary calculation, notification generation, daily cron, dashboard UI                                                                                   |
 | PWA                          | Foundation  | Manifest, service worker, install prompt/settings, standalone detection                                                                                               |
 | Device onboarding            | Implemented | Versioned location/notification/camera permission flow                                                                                                                |
 | Theme and responsive UI      | Implemented | Stored company branding plus one role-aware four-group floating mobile shell and Dashboard FAB                                                                        |
 | Schema diagnostics           | Foundation  | Read-only schema-version service; production migration control remains CLI-based                                                                                      |
-| Platform Control Center      | Implemented | `/platform/*` companies, people/Admins, password recovery, global settings/branding, features, usage, audit, security, and health controls for explicit System Admins |
+| Platform Control Center      | Implemented | `/platform/*` companies, people/Admins, password recovery, global settings/branding, features, usage, and health controls for explicit System Admins                  |
 | Company feature controls     | Implemented | Platform-first enabled/disabled state, override locks, tenant inherit/enabled/disabled state, centralized UI/route/API/action enforcement                             |
-| Central audit center         | Implemented | Login/logout, security denial, historical activity, full filters, pagination, CSV, and Excel exports                                                                  |
 | Release management           | Implemented | Published release history, optional/mandatory update dialog, PWA refresh, System Admin controls, maintenance state, and gated post-deploy automation                  |
 
 ## Important boundaries

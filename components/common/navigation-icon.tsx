@@ -1,5 +1,4 @@
 import {
-  Activity,
   Bell,
   Building2,
   CalendarDays,
@@ -22,10 +21,8 @@ import type { ComponentType } from "react";
 import type { NavigationIconKey } from "@/lib/navigation/navigation-engine";
 
 const icons = {
-  activity: Activity,
   announcement: Megaphone,
   attendance: Gauge,
-  audit: ShieldCheck,
   building: Building2,
   calendar: CalendarDays,
   company: Building2,
@@ -39,7 +36,6 @@ const icons = {
   reports: ChartNoAxesCombined,
   resources: FolderKanban,
   roles: ShieldCheck,
-  security: ShieldCheck,
   settings: SlidersHorizontal,
   system_health: HeartPulse,
   users: UsersRound,

@@ -1,6 +1,5 @@
 import "server-only";
 
-import { logActivity } from "@/features/activity/utils/activity-log";
 import { requireCurrentEmployeeContext } from "@/features/auth/services/current-employee-context.service";
 import {
   ATTENDANCE_SELFIES_BUCKET,
@@ -77,18 +76,6 @@ export const AttendanceSelfieService = {
       throw new Error("Unable to upload attendance selfie.");
     }
 
-    await logActivity({
-      companyId: employee.companyId,
-      module: "attendance",
-      action: "updated",
-      entityType: "attendance_records",
-      description: `Uploaded ${input.phase} selfie for attendance`,
-      metadata: {
-        employeeId: employee.employeeId,
-        storagePath,
-        phase: input.phase,
-      },
-    });
 
     return {
       path: storagePath,

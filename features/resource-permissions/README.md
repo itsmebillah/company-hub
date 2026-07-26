@@ -17,7 +17,6 @@ Admin selects a resource and replaces its permission state. Service deletes old 
 
 ## Dependencies
 
-Resources, roles, employees, notifications, activity logs.
 
 ## Rules
 

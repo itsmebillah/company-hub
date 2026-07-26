@@ -67,7 +67,6 @@ export async function AppLayout({ children }: AppLayoutProps) {
     >
       <div className="app-shell flex min-h-svh flex-col">
         <AppHeader
-          showProfile
           notificationSummary={notificationSummary}
           notificationScope={notificationScope}
           enabledFeatures={enabledFeatureKeys}

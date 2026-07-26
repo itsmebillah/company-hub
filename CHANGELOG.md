@@ -4,6 +4,15 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
 
 ## Unreleased
 
+### Removed
+
+- Retired the Activity Log and Platform Audit features, including their routes, exports, navigation, service hooks, dashboard consumers, settings, database types, and tables through migration `0041`.
+
+### Changed
+
+- Made all mutation, authentication, authorization, reporting, release, and platform-control workflows independent of logging side effects.
+- Standardized employee resource cards to four mobile columns with two-line titles, removed the duplicate Profile shortcut, and kept Logout directly on the shared profile page.
+
 ### Documentation
 
 - Added the frozen sprint handover with completed work, deliberately postponed scope, unresolved monitoring items, and the exact recommended continuation order.
@@ -46,7 +55,6 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
 
 - Renamed the tenant authority from `Admin` to `Company Admin` without changing stable `/admin/*` URLs or the completed System Admin control plane.
 - Added middleware Company Admin authorization and effective-feature checks inside privileged Server Actions, notification actions, media actions, and export/template handlers.
-- Fixed cross-company employee-detail access and added exact-confirmation, company-scoped employee initial-password reset with security auditing.
 - Replaced broad administrator Storage mutation policies with company-prefixed shared-media and same-company employee-object authorization; Company Admins cannot mutate global `system-assets`.
 - Scoped Company Admin storage metrics and announcement upload paths to the authenticated company.
 - Protected the Company Admin authority role from deactivation and reserved platform role names from tenant role creation.
@@ -71,15 +79,12 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
 ### Security
 
 - Added throwing Admin guards to privileged server mutations and explicit role checks to employee export/template route handlers.
-- Captured authenticated actor identity for centralized audit events, recorded password resets, and neutralized spreadsheet-formula prefixes in audit exports.
 - Replaced committed example credentials with safe placeholders; historical credential rotation remains an operational follow-up.
 - Verified all 17 migrated credentials without exposing Employee IDs/passwords, private attendance bucket behavior, Realtime, middleware, and wrong-role redirects.
 
 ### Added
 
-- Added Platform Architecture v2 with an explicit global-vs-tenant authority boundary, cross-company people/Admin directory, audited initial-password reset, platform settings/branding, archived company lifecycle, confirmed soft deletion, expanded dashboard metrics, quick actions, and recent companies.
 - Added migration `0035_platform_architecture_v2.sql` with the default-deny singleton `platform_settings` table, archived platform company status, and schema telemetry advancement.
-- Added the System Admin Platform Control Center with company lifecycle management, platform/company feature controls, aggregate feature usage, health metrics, centralized audit/security/login logs, company-scoped audit access, responsive routes, and fail-closed middleware enforcement.
 - Added migration `0030_platform_control_center.sql` with explicit platform administrators, 14 feature definitions, company overrides, audit telemetry, daily usage aggregation, a security-invoker overview, default-deny RLS, and caller-derived authorization RPCs.
 - Added migration `0031_platform_security_and_schema_version.sql` to advance runtime schema telemetry and explicitly revoke anonymous execution from notification/schema helpers.
 - Added migration `0032_schema_version_invoker.sql` so constant-only runtime schema telemetry no longer executes with definer privileges.

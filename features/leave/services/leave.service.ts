@@ -2,7 +2,6 @@ import "server-only";
 
 import { redirect } from "next/navigation";
 
-import { logActivity } from "@/features/activity/utils/activity-log";
 import { requireCurrentCompanyId } from "@/features/auth/services/current-company-context.service";
 import { requireCurrentEmployeeContext } from "@/features/auth/services/current-employee-context.service";
 import { NotificationService } from "@/features/notifications/services/notification.service";
@@ -414,14 +413,6 @@ export const LeaveService = {
       throw new Error("Unable to submit leave request.");
     }
 
-    await logActivity({
-      companyId: employee.company_id,
-      module: "leave",
-      action: "created",
-      entityType: "leave_requests",
-      entityId: data.id,
-      description: `${employee.name} submitted a leave request`,
-    });
 
     if (employee.manager_id) {
       await NotificationService.create({
@@ -513,16 +504,6 @@ export const LeaveService = {
       message: "Your leave request was approved.",
       actionUrl: "/leave",
     });
-    await logActivity({
-      companyId: approver.company_id,
-      module: "leave",
-      action: nextValues ? "updated" : "approved",
-      entityType: "leave_requests",
-      entityId: id,
-      description: nextValues
-        ? `${approver.name} updated and approved a leave request`
-        : `${approver.name} approved a leave request`,
-    });
   },
 
   async rejectLeaveRequest(id: string, reason: string) {
@@ -568,14 +549,6 @@ export const LeaveService = {
       message: "Your leave request was rejected.",
       actionUrl: "/leave",
     });
-    await logActivity({
-      companyId: approver.company_id,
-      module: "leave",
-      action: "rejected",
-      entityType: "leave_requests",
-      entityId: id,
-      description: `${approver.name} rejected a leave request`,
-    });
   },
 
   async cancelLeaveRequest(id: string) {
@@ -593,13 +566,5 @@ export const LeaveService = {
       throw new Error("Unable to cancel leave request.");
     }
 
-    await logActivity({
-      companyId: employee.company_id,
-      module: "leave",
-      action: "cancelled",
-      entityType: "leave_requests",
-      entityId: id,
-      description: `${employee.name} cancelled a leave request`,
-    });
   },
 };

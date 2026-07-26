@@ -39,15 +39,6 @@ export type DashboardPieSlice = {
   color: string;
 };
 
-export type DashboardRecentActivityItem = {
-  id: string;
-  title: string;
-  description: string;
-  time: string;
-  module: string;
-  action: string;
-};
-
 export type DashboardData = {
   companyName: string;
   companyLogo: string | null;
@@ -77,9 +68,7 @@ export type DashboardData = {
     attendanceTrend: DashboardChartPoint[];
     leaveStatusBreakdown: DashboardChartPoint[];
     employeeStatusDistribution: DashboardPieSlice[];
-    activityTrend: DashboardChartPoint[];
   };
-  recentActivity: DashboardRecentActivityItem[];
   liveAnnouncements: AnnouncementListItem[];
   quickResourceCategories: EmployeePortalCategory[];
   health: {

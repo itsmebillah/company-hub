@@ -11,7 +11,6 @@ This backlog is ordered by risk and production value. Items require an owner and
 ## P1 — Reliability and security
 
 - **PLATFORM-001:** Explicitly provision the first approved System Admin in `platform_admins`; migration `0030` deliberately does not auto-promote a company Admin.
-- **AUDIT-001:** Define retention/archival for `platform_audit_logs` and `feature_usage_daily`, then add monitored alert thresholds.
 
 - **OBS-001:** Add structured, redacted server logging and production error monitoring.
 - **AUTH-002:** Decide whether controlled invitation/employee-claim registration should be introduced; unsupported `/register` requests currently return to login.
@@ -20,7 +19,6 @@ This backlog is ordered by risk and production value. Items require an owner and
 - **SEC-003:** Add rate limiting/abuse protection for login, registration, notification tracking, and cron endpoints.
 - **DB-001:** Add automated migration drift and security-advisor checks.
 - **OPS-002:** Document and test backup restoration and disaster recovery.
-- **DATA-001:** Define retention for activity logs, notification events, import staging, and storage objects.
 
 ## P2 — Quality and product completion
 
@@ -35,7 +33,6 @@ This backlog is ordered by risk and production value. Items require an owner and
 
 ## P3 — Enhancements
 
-- PDF export for filtered Platform Audit Center results; CSV/XLSX are implemented.
 - Unique-user feature analytics and configurable usage-retention windows.
 
 - Leave balance/accrual rules.

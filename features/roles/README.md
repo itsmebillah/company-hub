@@ -17,7 +17,6 @@ Company Admin opens roles. Missing tenant system roles are repaired. Active role
 
 ## Dependencies
 
-Companies, employees, permissions, activity logs.
 
 ## Rules
 

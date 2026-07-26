@@ -17,7 +17,6 @@ Admin loads active employees, views hierarchy, and changes managers through vali
 
 ## Dependencies
 
-Employees, roles, activity logs.
 
 ## Rules
 
