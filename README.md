@@ -2,9 +2,11 @@
 
 Role-aware company operations software for employee self-service, workforce administration, and platform governance.
 
+![Company Hub social preview](assets/social-preview/company-hub-social-preview.png)
+
 [Live application](https://company-hub-zeta.vercel.app) | [Architecture](ARCHITECTURE.md) | [Product requirements](PRODUCT_REQUIREMENTS.md) | [Project status](PROJECT_STATE.md)
 
-![Company Hub dashboard](dashboard-desktop.png)
+![Company Hub dashboard](assets/screenshots/dashboard-desktop.png)
 
 ## Overview
 
@@ -30,7 +32,7 @@ See [FEATURES.md](FEATURES.md) for the detailed implementation map and [KNOWN_IS
 
 | Desktop | Tablet | Mobile |
 | --- | --- | --- |
-| ![Desktop dashboard](dashboard-desktop.png) | ![Tablet dashboard](dashboard-tablet.png) | ![Mobile dashboard](dashboard-mobile.png) |
+| ![Desktop dashboard](assets/screenshots/dashboard-desktop.png) | ![Tablet dashboard](assets/screenshots/dashboard-tablet.png) | ![Mobile dashboard](assets/screenshots/dashboard-mobile.png) |
 
 Additional before-and-after UI regression captures are stored in [`docs/screenshots`](docs/screenshots).
 
@@ -135,3 +137,9 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md), [CODING_STANDARDS.md](CODING_STANDARDS.
 ## License
 
 No open-source license is currently declared. The source is publicly visible, but reuse rights are not granted until a license is added by the repository owner.
+
+---
+
+**Md. Masum Billah** | Data Analyst, Automation Developer, and Business Intelligence Specialist
+
+[Portfolio](https://itsmebillah.github.io/) | [GitHub](https://github.com/itsmebillah) | [Email](mailto:itsmbillah@gmail.com) | [Live Demo](https://company-hub-zeta.vercel.app) | [Documentation](ARCHITECTURE.md) | [Related: Sales Intelligence Platform](https://github.com/itsmebillah/Sales-Dashboard)
