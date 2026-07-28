@@ -1,36 +1,137 @@
 # Company Hub
 
-Company Hub is a role-aware internal operations portal built with Next.js 15, React 19, TypeScript, Tailwind CSS, and Supabase. It combines employee self-service, a one-company Company Admin control plane, and an explicit System Admin Platform Control Center for global company lifecycle, feature availability, usage, audit, security, and health.
+Role-aware company operations software for employee self-service, workforce administration, and platform governance.
 
-## Quick start
+[Live application](https://company-hub-zeta.vercel.app) | [Architecture](ARCHITECTURE.md) | [Product requirements](PRODUCT_REQUIREMENTS.md) | [Project status](PROJECT_STATE.md)
+
+![Company Hub dashboard](dashboard-desktop.png)
+
+## Overview
+
+Company Hub brings common internal operations into one application. Employees can manage attendance, leave, announcements, calendars, and shared resources. Company administrators manage people, policies, roles, locations, and company settings. A separately authorized platform control center manages company lifecycle, feature availability, releases, and system health.
+
+The project is designed around explicit tenant boundaries and role-based access. Supabase provides authentication, PostgreSQL data storage, Row Level Security, realtime notifications, and file storage; Next.js provides the application and server-side control plane.
+
+## Implemented Capabilities
+
+- Employee authentication, profile management, and password recovery
+- GPS-aware attendance, work-mode policies, working hours, and reporting
+- Leave types, balances, requests, approvals, and employee self-service
+- Employee directory, import/export, hierarchy, roles, and permissions
+- Announcements, celebrations, company calendar, and realtime notifications
+- Resource library with categories, visibility rules, and file storage
+- Company branding, locations, attendance policy, and feature settings
+- System-admin company lifecycle, feature control, releases, schema health, and maintenance state
+- Responsive layouts, theme support, offline status, and PWA foundations
+
+See [FEATURES.md](FEATURES.md) for the detailed implementation map and [KNOWN_ISSUES.md](KNOWN_ISSUES.md) for current limitations.
+
+## Screenshots
+
+| Desktop | Tablet | Mobile |
+| --- | --- | --- |
+| ![Desktop dashboard](dashboard-desktop.png) | ![Tablet dashboard](dashboard-tablet.png) | ![Mobile dashboard](dashboard-mobile.png) |
+
+Additional before-and-after UI regression captures are stored in [`docs/screenshots`](docs/screenshots).
+
+## Architecture
+
+```mermaid
+flowchart LR
+    Browser[Next.js client] --> App[Next.js App Router]
+    App --> Actions[Server actions and services]
+    Actions --> Auth[Supabase Auth]
+    Actions --> DB[(PostgreSQL + RLS)]
+    Actions --> Storage[Supabase Storage]
+    DB --> Realtime[Realtime notifications]
+    Realtime --> Browser
+    Cron[Vercel cron] --> Actions
+```
+
+The codebase follows feature-oriented modules. Pages compose feature services, repositories, actions, and UI components; database migrations define the security and business-data contracts. Global platform access is provisioned explicitly and is not inherited from company-admin access.
+
+For design decisions and boundaries, read [ARCHITECTURE.md](ARCHITECTURE.md), [DATABASE.md](DATABASE.md), [AUTH.md](AUTH.md), and [DECISIONS.md](DECISIONS.md).
+
+## Technology Stack
+
+| Layer | Technology |
+| --- | --- |
+| Application | Next.js 15, React 19, TypeScript |
+| Styling | Tailwind CSS, Radix UI primitives |
+| Backend | Supabase Auth, PostgreSQL, Realtime, Storage |
+| Validation and import | TypeScript services, SheetJS |
+| Testing | ESLint, TypeScript, Playwright, axe-core |
+| Delivery | Vercel, GitHub Actions, Supabase CLI |
+
+## Local Development
+
+### Prerequisites
+
+- Node.js 20 or later
+- npm
+- A Supabase project for local or test use
+- Supabase CLI when applying migrations locally
+
+### Setup
 
 ```powershell
-npm install
+git clone https://github.com/itsmebillah/company-hub.git
+Set-Location company-hub
+npm ci
 Copy-Item .env.example .env.local
 npm run dev
 ```
 
-The application requires a configured Supabase project. See [DEVELOPMENT.md](DEVELOPMENT.md), [DATABASE.md](DATABASE.md), and [AUTH.md](AUTH.md) before first launch.
+Populate `.env.local` using the keys documented in `.env.example`. Use a development Supabase project and never expose the service-role key to browser code.
 
-## Required checks
+Open `http://localhost:3000`. First-time environments use the bootstrap setup flow described in [DEVELOPMENT.md](DEVELOPMENT.md).
+
+## Database Setup
+
+Migrations in [`supabase/migrations`](supabase/migrations) define the schema, policies, functions, storage rules, notification foundations, and platform-control capabilities. Apply them in numeric order to a clean development project.
+
+```powershell
+npx supabase link --project-ref <project-ref>
+npx supabase db push
+```
+
+Review [DATABASE.md](DATABASE.md) and [SECURITY.md](SECURITY.md) before connecting the application to any environment containing real employee data.
+
+## Verification
 
 ```powershell
 npm run lint
 npm run typecheck
 npm run build
+npm run test:e2e
 ```
 
-## Documentation
+Lint and TypeScript checks pass on the audited revision. A production build also compiles successfully; static page generation requires the Supabase variables from `.env.example`. End-to-end tests require an isolated configured environment and the test identities documented in [TESTING.md](TESTING.md).
 
-- Current status, risks, and handover: [PROJECT_STATE.md](PROJECT_STATE.md), [KNOWN_ISSUES.md](KNOWN_ISSUES.md), [NEXT_SPRINT.md](NEXT_SPRINT.md)
-- Product scope: [PRODUCT_REQUIREMENTS.md](PRODUCT_REQUIREMENTS.md), [BUSINESS_RULES.md](BUSINESS_RULES.md), [FEATURES.md](FEATURES.md), [ROADMAP.md](ROADMAP.md)
-- System design: [ARCHITECTURE.md](ARCHITECTURE.md), [DATABASE.md](DATABASE.md), [API.md](API.md), [AUTH.md](AUTH.md)
-- Engineering workflow: [DEVELOPMENT.md](DEVELOPMENT.md), [TESTING.md](TESTING.md), [CODING_STANDARDS.md](CODING_STANDARDS.md)
-- Operations: [DEPLOYMENT.md](DEPLOYMENT.md), [SECURITY.md](SECURITY.md), [TROUBLESHOOTING.md](TROUBLESHOOTING.md), [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md)
-- Governance: [AGENTS.md](AGENTS.md), [CONTRIBUTING.md](CONTRIBUTING.md), [DECISIONS.md](DECISIONS.md), [CHANGELOG.md](CHANGELOG.md)
+## Project Structure
 
-## Current backend
+```text
+app/                 Routes, layouts, server endpoints, and route groups
+components/          Shared layout and UI components
+features/            Domain modules with actions, services, repositories, and UI
+lib/                 Auth, Supabase, configuration, navigation, and utilities
+supabase/migrations/ Ordered database and security changes
+tests/e2e/           Playwright user-flow and accessibility tests
+docs/screenshots/    Versioned visual-regression evidence
+```
 
-The repository is linked to Supabase project `jjfktbgfwvekhlvyjlww`. Migrations `0001` through `0040` define the current production schema and security model. No Company Admin is automatically a System Admin; global access requires explicit provisioning. Never commit `.env.local` or service-role credentials.
+## Deployment
 
-The current application version is `0.2.0`. Production-ready deployments publish the matching changelog entry to the release database and GitHub through `.github/workflows/automatic-release.yml` after all quality gates and the Vercel production check pass.
+The production path uses Vercel for the Next.js application and Supabase for managed backend services. Releases are gated by code checks, database compatibility, and environment configuration. Follow [DEPLOYMENT.md](DEPLOYMENT.md) and [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md); do not infer deployment state from migration files alone.
+
+## Roadmap
+
+Current priorities and deferred work are maintained in [NEXT_SPRINT.md](NEXT_SPRINT.md), [ROADMAP.md](ROADMAP.md), and [BACKLOG.md](BACKLOG.md). Completed changes are recorded in [CHANGELOG.md](CHANGELOG.md).
+
+## Contributing and Security
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md), [CODING_STANDARDS.md](CODING_STANDARDS.md), and [SECURITY.md](SECURITY.md) before proposing changes. Do not include employee data, production credentials, service-role keys, or production database exports in issues or commits.
+
+## License
+
+No open-source license is currently declared. The source is publicly visible, but reuse rights are not granted until a license is added by the repository owner.
