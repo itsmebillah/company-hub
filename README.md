@@ -4,6 +4,11 @@ Role-aware company operations software for employee self-service, workforce admi
 
 ![Company Hub social preview](assets/social-preview/company-hub-social-preview.png)
 
+[![Status](https://img.shields.io/badge/status-active-15803d?style=flat-square)](PROJECT_STATE.md)
+[![Framework](https://img.shields.io/badge/framework-Next.js-111827?style=flat-square)](#technology-stack)
+[![Language](https://img.shields.io/badge/language-TypeScript-2563eb?style=flat-square)](#technology-stack)
+[![Backend](https://img.shields.io/badge/backend-Supabase-15803d?style=flat-square)](#architecture)
+
 [Live application](https://company-hub-zeta.vercel.app) | [Architecture](ARCHITECTURE.md) | [Product requirements](PRODUCT_REQUIREMENTS.md) | [Project status](PROJECT_STATE.md)
 
 ![Company Hub dashboard](assets/screenshots/dashboard-desktop.png)
