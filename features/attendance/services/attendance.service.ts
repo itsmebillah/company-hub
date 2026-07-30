@@ -2,27 +2,25 @@ import "server-only";
 
 import { redirect } from "next/navigation";
 
-import { ATTENDANCE_RULES } from "@/features/attendance/constants/attendance-options";
 import { AttendanceRepository } from "@/features/attendance/repositories/attendance.repository";
+import { AttendanceAutomationService } from "@/features/attendance/services/attendance-automation.service";
+import { AttendanceInputService } from "@/features/attendance/services/attendance-input.service";
 import { AttendancePolicyService } from "@/features/attendance/services/attendance-policy.service";
 import { AttendanceReverseGeocodeService } from "@/features/attendance/services/attendance-reverse-geocode.service";
 import { AttendanceSelfieService } from "@/features/attendance/services/attendance-selfie.service";
+import { AttendanceWorkflowValidationService } from "@/features/attendance/services/attendance-workflow-validation.service";
 import type {
   AdminAttendanceOverview,
   AttendanceCheckInput,
   AttendanceListFilters,
   AttendanceListResult,
-  AttendanceRecord,
-  AttendanceSettingsValues,
-  AttendanceType,
   EmployeeAttendanceSummary,
   TodayAttendance,
 } from "@/features/attendance/types/attendance.types";
 import { requireCurrentEmployeeContext } from "@/features/auth/services/current-employee-context.service";
 import { requireCurrentCompanyId } from "@/features/auth/services/current-company-context.service";
 import { CalendarService } from "@/features/company-calendar/services/calendar.service";
-import { NotificationService } from "@/features/notifications/services/notification.service";
-import { formatAppTime, getAppDateString, getAppDateTime } from "@/lib/datetime";
+import { getAppDateString } from "@/lib/datetime";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 function getTodayDate() {
@@ -31,101 +29,6 @@ function getTodayDate() {
 
 function getDateFromTimestamp(value: string) {
   return getAppDateString(value);
-}
-
-type CheckInPolicyResult = {
-  lateMinutes: number;
-  status: "present" | "late";
-  officeStartTimeSnapshot: string | null;
-  officeGracePeriodMinutesSnapshot: number | null;
-};
-
-function getOfficeStartDateTime(
-  attendanceDate: string,
-  settings: AttendanceSettingsValues,
-) {
-  return getAppDateTime(attendanceDate, settings.officeStartTime);
-}
-
-function getEarlyCheckInDateTime(
-  attendanceDate: string,
-  settings: AttendanceSettingsValues,
-) {
-  return new Date(
-    getOfficeStartDateTime(attendanceDate, settings).getTime() -
-      settings.allowEarlyCheckInMinutes * 60000,
-  );
-}
-
-function getLateThresholdDateTime(
-  attendanceDate: string,
-  settings: AttendanceSettingsValues,
-) {
-  return new Date(
-    getOfficeStartDateTime(attendanceDate, settings).getTime() +
-      settings.officeGracePeriodMinutes * 60000,
-  );
-}
-
-function evaluateCheckInPolicy(input: {
-  attendanceDate: string;
-  checkIn: string;
-  attendanceType: AttendanceType | null | undefined;
-  settings: AttendanceSettingsValues;
-}): CheckInPolicyResult {
-  if (input.attendanceType !== "office") {
-    return {
-      lateMinutes: 0,
-      status: "present",
-      officeStartTimeSnapshot: null,
-      officeGracePeriodMinutesSnapshot: null,
-    };
-  }
-
-  const checkInTime = new Date(input.checkIn).getTime();
-  const earlyCheckInOpensAt = getEarlyCheckInDateTime(
-    input.attendanceDate,
-    input.settings,
-  ).getTime();
-
-  if (checkInTime < earlyCheckInOpensAt) {
-    throw new Error(
-      `Office check-in opens at ${formatAppTime(getEarlyCheckInDateTime(input.attendanceDate, input.settings))}.`,
-    );
-  }
-
-  const lateThresholdTime = getLateThresholdDateTime(
-    input.attendanceDate,
-    input.settings,
-  ).getTime();
-  const lateMinutes = Math.max(
-    Math.floor((checkInTime - lateThresholdTime) / 60000),
-    0,
-  );
-
-  return {
-    lateMinutes,
-    status: lateMinutes > 0 ? "late" : "present",
-    officeStartTimeSnapshot: input.settings.officeStartTime,
-    officeGracePeriodMinutesSnapshot: input.settings.officeGracePeriodMinutes,
-  };
-}
-
-function getCheckOutStatus(record: AttendanceRecord, workingMinutes: number) {
-  if (workingMinutes < ATTENDANCE_RULES.halfDayWorkingMinutes) {
-    return "half_day";
-  }
-
-  return record.lateMinutes > 0 ? "late" : "present";
-}
-
-function getWorkingMinutes(checkIn: string, checkOut: string) {
-  return Math.max(
-    Math.floor(
-      (new Date(checkOut).getTime() - new Date(checkIn).getTime()) / 60000,
-    ),
-    0,
-  );
 }
 
 async function getCurrentEmployee() {
@@ -176,7 +79,9 @@ export const AttendanceService = {
     };
   },
 
-  async getAdminOverview(companyIdOverride?: string): Promise<AdminAttendanceOverview> {
+  async getAdminOverview(
+    companyIdOverride?: string,
+  ): Promise<AdminAttendanceOverview> {
     const companyId = companyIdOverride ?? (await getActiveCompanyId());
     const today = getTodayDate();
 
@@ -268,7 +173,7 @@ export const AttendanceService = {
       _input.gps,
       policySettings,
     );
-    evaluateCheckInPolicy({
+    AttendanceWorkflowValidationService.evaluateCheckInPolicy({
       attendanceDate,
       checkIn: new Date().toISOString(),
       attendanceType: result.attendanceType,
@@ -291,6 +196,7 @@ export const AttendanceService = {
   },
 
   async checkIn(input: AttendanceCheckInput = {}) {
+    const normalizedInput = AttendanceInputService.normalize(input);
     const employee = await getCurrentEmployee();
     const serverTimestamp = new Date().toISOString();
     const attendanceDate = getDateFromTimestamp(serverTimestamp);
@@ -323,21 +229,32 @@ export const AttendanceService = {
       employee.company_id,
       employee.id,
       employee.work_mode,
-      input.gps,
+      normalizedInput.gps,
       policySettings,
     );
 
-    if (policySettings.requireSelfie && !input.selfiePath) {
+    if (policySettings.requireSelfie && !normalizedInput.selfiePath) {
       throw new Error("Attendance selfie is required before check-in.");
     }
 
+    const selfiePath = normalizedInput.selfiePath
+      ? await AttendanceSelfieService.requireOwnedReference({
+          path: normalizedInput.selfiePath,
+          companyId: employee.company_id,
+          employeeId: employee.employee_id,
+          attendanceDate,
+          phase: "checkin",
+        })
+      : null;
+
     const attendanceType = policyValidation.attendanceType ?? "office";
-    const checkInPolicy = evaluateCheckInPolicy({
-      attendanceDate,
-      checkIn: serverTimestamp,
-      attendanceType,
-      settings: policySettings,
-    });
+    const checkInPolicy =
+      AttendanceWorkflowValidationService.evaluateCheckInPolicy({
+        attendanceDate,
+        checkIn: serverTimestamp,
+        attendanceType,
+        settings: policySettings,
+      });
     const reverseGeocode = policyValidation.gps
       ? await AttendanceReverseGeocodeService.reverseLookup({
           latitude: policyValidation.gps.latitude,
@@ -347,7 +264,7 @@ export const AttendanceService = {
     const gpsWithAddress = policyValidation.gps
       ? {
           ...policyValidation.gps,
-          address: input.gps?.address ?? reverseGeocode.address ?? null,
+          address: reverseGeocode.address ?? null,
         }
       : null;
     const record = await AttendanceRepository.createCheckIn({
@@ -360,30 +277,23 @@ export const AttendanceService = {
       officeStartTimeSnapshot: checkInPolicy.officeStartTimeSnapshot,
       officeGracePeriodMinutesSnapshot:
         checkInPolicy.officeGracePeriodMinutesSnapshot,
-      notes: input.notes?.trim() || null,
+      notes: normalizedInput.notes,
       gps: gpsWithAddress,
       locationId: policyValidation.location?.id ?? null,
       distanceMeters: policyValidation.distanceMeters ?? null,
       workMode: employee.work_mode,
       attendanceType,
-      selfiePath: input.selfiePath ?? null,
-      deviceInfo: input.deviceInfo ?? null,
+      selfiePath,
+      deviceInfo: normalizedInput.deviceInfo,
     });
 
-
-    await NotificationService.create({
-      companyId: employee.company_id,
-      employeeId: employee.id,
-      type: "attendance",
-      title: "Attendance completed",
-      message: `Check-in recorded for ${attendanceDate}.`,
-      actionUrl: "/attendance",
-    });
+    await AttendanceAutomationService.attendanceCreated(record);
 
     return record;
   },
 
   async checkOut(input: AttendanceCheckInput = {}) {
+    const normalizedInput = AttendanceInputService.normalize(input);
     const employee = await getCurrentEmployee();
     const serverTimestamp = new Date().toISOString();
     const attendanceDate = getDateFromTimestamp(serverTimestamp);
@@ -407,7 +317,7 @@ export const AttendanceService = {
       employee.company_id,
       employee.id,
       employee.work_mode,
-      input.gps,
+      normalizedInput.gps,
       policySettings,
     );
     const reverseGeocode = policyValidation.gps
@@ -419,33 +329,43 @@ export const AttendanceService = {
     const gpsWithAddress = policyValidation.gps
       ? {
           ...policyValidation.gps,
-          address: input.gps?.address ?? reverseGeocode.address ?? null,
+          address: reverseGeocode.address ?? null,
         }
       : null;
-    const workingMinutes = getWorkingMinutes(record.checkIn, serverTimestamp);
+    const workingMinutes =
+      AttendanceWorkflowValidationService.getWorkingMinutes(
+        record.checkIn,
+        serverTimestamp,
+      );
+    const selfiePath = normalizedInput.selfiePath
+      ? await AttendanceSelfieService.requireOwnedReference({
+          path: normalizedInput.selfiePath,
+          companyId: employee.company_id,
+          employeeId: employee.employee_id,
+          attendanceDate,
+          phase: "checkout",
+        })
+      : null;
     const updatedRecord = await AttendanceRepository.updateCheckOut({
       id: record.id,
+      companyId: employee.company_id,
+      employeeId: employee.id,
       checkOut: serverTimestamp,
       workingMinutes,
-      status: getCheckOutStatus(record, workingMinutes),
+      status: AttendanceWorkflowValidationService.getCheckOutStatus(
+        record,
+        workingMinutes,
+      ),
       gps: gpsWithAddress,
       locationId: policyValidation.location?.id ?? null,
       distanceMeters: policyValidation.distanceMeters ?? null,
       workMode: record.workMode ?? employee.work_mode,
       attendanceType: record.attendanceType ?? policyValidation.attendanceType,
-      selfiePath: input.selfiePath ?? null,
-      deviceInfo: input.deviceInfo ?? null,
+      selfiePath,
+      deviceInfo: normalizedInput.deviceInfo,
     });
 
-
-    await NotificationService.create({
-      companyId: employee.company_id,
-      employeeId: employee.id,
-      type: "attendance",
-      title: "Attendance completed",
-      message: `Check-out recorded for ${attendanceDate}.`,
-      actionUrl: "/attendance",
-    });
+    await AttendanceAutomationService.attendanceCompleted(updatedRecord);
 
     return updatedRecord;
   },

@@ -33,6 +33,13 @@ import { formatAppDate, formatAppTime } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
 
 const MAX_SELFIE_SIZE_BYTES = 5 * 1024 * 1024;
+const SUPPORTED_SELFIE_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/heic",
+  "image/heif",
+]);
 
 type EmployeeAttendanceCardProps = {
   attendance: TodayAttendance;
@@ -298,10 +305,10 @@ export function EmployeeAttendanceCard({
       return;
     }
 
-    if (!file.type.startsWith("image/")) {
+    if (!SUPPORTED_SELFIE_TYPES.has(file.type)) {
       setSelfieFile(null);
       setSelfiePreviewUrl("");
-      setSelfieError("Please capture a valid selfie image.");
+      setSelfieError("Please capture a JPG, PNG, WebP, HEIC, or HEIF selfie.");
       return;
     }
 

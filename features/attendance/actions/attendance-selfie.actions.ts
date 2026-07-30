@@ -27,7 +27,7 @@ export async function uploadAttendanceSelfieAction(formData: FormData) {
     return {
       ok: true as const,
       message: "Attendance selfie uploaded.",
-      path: result.path,
+      path: result.objectPath,
     };
   } catch (error) {
     return {

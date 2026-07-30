@@ -233,6 +233,10 @@ export const AttendanceRepository = {
       .select(attendanceRecordSelect)
       .single();
 
+    if (error?.code === "23505") {
+      throw new Error("You have already checked in today.");
+    }
+
     if (error || !data) {
       console.error("[AttendanceRepository] Unable to check in.", error);
       throw new Error("Unable to check in.");
@@ -243,6 +247,8 @@ export const AttendanceRepository = {
 
   async updateCheckOut(input: {
     id: string;
+    companyId: string;
+    employeeId: string;
     checkOut: string;
     status: AttendanceStatus;
     workingMinutes: number;
@@ -275,16 +281,25 @@ export const AttendanceRepository = {
         check_out_location_id: input.locationId ?? null,
         check_out_distance_meters: input.distanceMeters ?? null,
         ...(input.workMode ? { work_mode: input.workMode } : {}),
-        ...(input.attendanceType ? { attendance_type: input.attendanceType } : {}),
+        ...(input.attendanceType
+          ? { attendance_type: input.attendanceType }
+          : {}),
         updated_at: input.checkOut,
       })
       .eq("id", input.id)
+      .eq("company_id", input.companyId)
+      .eq("employee_id", input.employeeId)
+      .is("check_out", null)
       .select(attendanceRecordSelect)
-      .single();
+      .maybeSingle();
 
-    if (error || !data) {
+    if (error) {
       console.error("[AttendanceRepository] Unable to check out.", error);
       throw new Error("Unable to check out.");
+    }
+
+    if (!data) {
+      throw new Error("You have already checked out today.");
     }
 
     return toRecord(data);

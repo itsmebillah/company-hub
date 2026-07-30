@@ -78,7 +78,6 @@ route/page
   → Supabase client
 ```
 
-
 Client components do not import the service-role client. The browser client is used for session-aware Auth, profile storage upload, notification realtime, and other explicitly policy-protected operations.
 
 ## Supabase clients
@@ -102,7 +101,9 @@ Validation → Auth user creation → employee insertion → activity/notificati
 
 ### Attendance
 
-Current employee/company context → policy and work-mode resolution → server-time/GPS/geofence validation → optional selfie storage → attendance insert/update → activity/notification. Office-time and work-mode snapshots preserve historical interpretation. Offline actions are queued in browser local storage and replayed online.
+Current employee/company context → policy and work-mode resolution → server-time/GPS/geofence validation → provider-neutral selfie storage → conditional attendance insert/update → best-effort automation events. Office-time and work-mode snapshots preserve historical interpretation. Offline actions are queued in browser local storage and replayed online.
+
+`AttendanceSelfieStorage` isolates the current private Supabase bucket from attendance business logic and reserves a future Google Drive adapter without enabling it. `AttendanceCreated`, `AttendanceUpdated`, and `AttendanceCompleted` contracts provide an integration seam. They remain process-local and non-durable; guaranteed synchronization requires an approved transactional outbox migration before external adapters are enabled.
 
 ### Resource/announcement visibility
 

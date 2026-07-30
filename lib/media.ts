@@ -104,6 +104,7 @@ export function buildAttendanceSelfiePath(input: {
   employeeId: string;
   attendanceDate: string;
   phase: "checkin" | "checkout";
+  objectId?: string;
   extension?: string;
 }) {
   const [year, month, day] = input.attendanceDate.split("-");
@@ -115,6 +116,6 @@ export function buildAttendanceSelfiePath(input: {
     year,
     month,
     day,
-    `${input.phase}.${extension}`,
+    `${input.phase}${input.objectId ? `-${input.objectId}` : ""}.${extension}`,
   ].join("/");
 }

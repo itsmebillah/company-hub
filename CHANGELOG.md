@@ -4,6 +4,17 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
 
 ## Unreleased
 
+### Phase 4 attendance automation foundation
+
+- Audited check-in, checkout, GPS/geofence policy, selfie evidence, duplicate prevention, tenant isolation, offline replay, and existing test coverage.
+- Added a provider-neutral attendance selfie storage contract with the current private Supabase Storage adapter; no Google Drive integration was implemented.
+- Hardened selfie uploads with current-date and phase-state checks, supported MIME/signature validation, immutable unique paths, and write-time ownership validation.
+- Bounded attendance notes/device metadata and stopped accepting client-provided addresses as location evidence.
+- Made checkout persistence conditional on company, employee, and incomplete state to prevent concurrent overwrite.
+- Added `AttendanceCreated`, `AttendanceUpdated`, and `AttendanceCompleted` contracts with best-effort notification handling so secondary failures do not misreport successful attendance writes.
+- Extracted server-time, late-status, and working-minute rules into a focused workflow validation service.
+- Documented the future transactional outbox, attachment metadata, sync/retry fields, and current offline/orphan-media limitations without creating or applying a migration.
+
 ### Phase 1 stabilization
 
 - Removed non-functional Employee "More actions" controls from desktop and mobile employee lists.

@@ -883,6 +883,15 @@ test("attendance accepts a phone-sized image and rejects oversized files", async
   await expect(page.getByAltText("Attendance selfie preview")).toBeVisible();
 
   await input.setInputFiles({
+    name: "attendance-selfie.svg",
+    mimeType: "image/svg+xml",
+    buffer: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"/>'),
+  });
+  await expect(
+    page.getByText("Please capture a JPG, PNG, WebP, HEIC, or HEIF selfie."),
+  ).toBeVisible();
+
+  await input.setInputFiles({
     name: "attendance-selfie-too-large.png",
     mimeType: "image/png",
     buffer: Buffer.alloc(5 * 1024 * 1024 + 1, 1),
