@@ -4,6 +4,25 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
 
 ## Unreleased
 
+### Phase 1 stabilization
+
+- Removed non-functional Employee "More actions" controls from desktop and mobile employee lists.
+- Made Employee activation/deactivation controls wait for the real server result, disable during the pending operation, and avoid manufactured success responses.
+- Required tenant-scoped Employee update/status mutations to confirm that a row was changed before reporting success.
+- Aligned custom-role manager validation between Employee forms and hierarchy management while preserving self/circular hierarchy rejection.
+- Bounded Employee list page sizes from URL input and improved the Employee modal with native required fields, autocomplete, pending-state controls, dialog semantics, sticky controls, mobile viewport sizing, and safe-area spacing.
+- Recorded the approved operational use of the company's existing Google account; ownership migration is not required, and temporary public sharing must be reverted before production use.
+
+### Phase 2 infrastructure hardening
+
+- Replaced the Playwright branded-Chrome dependency with portable bundled Chromium and made Edge an explicit optional project.
+- Changed Playwright server readiness to the database-independent web manifest and split smoke, public, and authenticated commands.
+- Added explicit QA project/account validation, project-ref matching, and mutation opt-in so authenticated tests cannot silently select arbitrary linked-project users.
+- Added `.env.test.example`, Node/npm runtime pinning, and a secret-free pull-request quality workflow plus a protected manual authenticated-QA job.
+- Lazy-loaded the `xlsx` parser when an Employee Import file is selected to reduce initial route work without changing import behavior.
+- Reduced Employee Import first-load JS from approximately 232 kB to 122 kB in the production build.
+- Documented the Phase 2 migration, dependency, security, performance, QA, and technical-debt decisions. Migration `0041` remains unapplied and is recommended for amendment before application.
+
 ### Removed
 
 - Retired the Activity Log and Platform Audit features, including their routes, exports, navigation, service hooks, dashboard consumers, settings, database types, and tables through migration `0041`.

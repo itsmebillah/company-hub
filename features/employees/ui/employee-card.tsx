@@ -1,19 +1,19 @@
-import { MoreHorizontal, Pencil, Power } from "lucide-react";
+import { Pencil, Power } from "lucide-react";
 
 import { ProfilePhoto } from "@/components/common/profile-photo";
 import { Button } from "@/components/ui/button";
 import { EmployeeStatusBadge } from "@/features/employees/ui/employee-status-badge";
 import { EmployeeWorkModeBadge } from "@/features/employees/ui/employee-work-mode-badge";
 import type { EmployeeUiRecord } from "@/features/employees/ui/employee-management.types";
-import type { EmployeeActionState } from "@/features/employees/types/employee.types";
 import { RoleBadge } from "@/features/employees/ui/role-badge";
 
 type EmployeeCardProps = {
   employee: EmployeeUiRecord;
   onView: (employee: EmployeeUiRecord) => void;
   onEdit: (employee: EmployeeUiRecord) => void;
-  onActivate: (id: string) => Promise<EmployeeActionState>;
-  onDeactivate: (id: string) => Promise<EmployeeActionState>;
+  onActivate: (id: string) => void;
+  onDeactivate: (id: string) => void;
+  isStatusPending: boolean;
 };
 
 export function EmployeeCard({
@@ -22,9 +22,10 @@ export function EmployeeCard({
   onEdit,
   onActivate,
   onDeactivate,
+  isStatusPending,
 }: EmployeeCardProps) {
   return (
-    <article className="rounded-xl border bg-card p-4 shadow-sm">
+    <article className="bg-card rounded-xl border p-4 shadow-sm">
       <div className="flex items-start gap-3">
         <ProfilePhoto
           src={employee.photoUrl}
@@ -33,7 +34,7 @@ export function EmployeeCard({
         />
         <div className="min-w-0 flex-1">
           <h3 className="truncate font-semibold">{employee.name}</h3>
-          <p className="text-sm text-muted-foreground">{employee.employeeId}</p>
+          <p className="text-muted-foreground text-sm">{employee.employeeId}</p>
         </div>
         <EmployeeStatusBadge status={employee.status} />
       </div>
@@ -61,20 +62,29 @@ export function EmployeeCard({
         </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-4 gap-2">
-        <Button type="button" variant="outline" className="col-span-2" onClick={() => onView(employee)}>
+      <div className="mt-4 grid grid-cols-3 gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          className="col-span-2"
+          onClick={() => onView(employee)}
+        >
           View
         </Button>
-        <Button type="button" size="icon" variant="outline" onClick={() => onEdit(employee)} aria-label="Edit employee">
+        <Button
+          type="button"
+          size="icon"
+          variant="outline"
+          onClick={() => onEdit(employee)}
+          aria-label="Edit employee"
+        >
           <Pencil className="size-4" aria-hidden="true" />
-        </Button>
-        <Button type="button" size="icon" variant="outline" aria-label="More actions">
-          <MoreHorizontal className="size-4" aria-hidden="true" />
         </Button>
         <Button
           type="button"
           variant="outline"
-          className="col-span-4"
+          className="col-span-3"
+          disabled={isStatusPending}
           onClick={() =>
             employee.status === "active"
               ? onDeactivate(employee.id)

@@ -12,7 +12,7 @@ No unresolved application-critical defect was reproduced in the 2026-07-20 harde
 
 ### Browser coverage is not part of the automatic release gate
 
-The automatic release workflow runs install, lint, typecheck, build, migration parity, database lint, and production HTTP verification. Full authenticated Playwright coverage is still workstation-run because the linked data fixtures are not isolated for CI. Unit tests and isolated service/database integration tests remain absent.
+Pull requests now run install, lint, typecheck, build, and database-independent Chromium smoke coverage. The automatic release workflow additionally runs migration parity, database lint, and production HTTP verification. Full authenticated Playwright coverage remains a protected manual QA job until the isolated project, explicit synthetic accounts, secrets, and cleanup monitoring are configured. Unit tests and isolated service/database integration tests remain absent.
 
 ### Dependency audit findings
 
@@ -38,9 +38,17 @@ The Supabase CLI is installed, but schema dump/local stack commands requiring Do
 
 ## Low
 
-### Edge browser unavailable on the current workstation
+### Local browser installation is required
 
-The 48-check Playwright suite retains its Edge project and the preceding foundation build passed it, but Edge is no longer installed on this workstation. `playwright install msedge` was attempted on 2026-07-22 and requires elevated installer privileges. All 24 Chrome production-build checks pass; rerun the Edge project after workstation installation.
+Playwright now uses its portable Chromium project rather than branded Chrome, but each workstation must run `npx playwright install chromium` once. Authenticated coverage additionally requires the isolated QA environment contract. A missing browser or QA configuration is an infrastructure failure, not an application regression.
+
+### Windows Playwright web-server teardown can hang
+
+The Phase 2 Chromium smoke assertions both pass, but the Playwright process does not exit after its managed Next production server is stopped on this Windows workstation. The runner now uses the direct Next CLI, a manifest readiness probe, and graceful shutdown; the remaining hang requires targeted Playwright/Windows process-tree investigation. Validate the new Ubuntu quality workflow separately before making it required.
+
+### Edge coverage is optional
+
+The baseline uses bundled Chromium. Set `PLAYWRIGHT_INCLUDE_EDGE=true` only on a workstation/runner with Edge installed (or provide `EDGE_EXECUTABLE_PATH`). Edge remains supplemental coverage and does not block portable baseline checks.
 
 ### PowerShell npm shim
 

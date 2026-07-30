@@ -54,7 +54,9 @@ function wouldCreateCircularHierarchy(
   managerId: string,
   employees: HierarchyEmployee[],
 ) {
-  const employeeById = new Map(employees.map((employee) => [employee.id, employee]));
+  const employeeById = new Map(
+    employees.map((employee) => [employee.id, employee]),
+  );
   let current = employeeById.get(managerId);
 
   while (current) {
@@ -62,7 +64,9 @@ function wouldCreateCircularHierarchy(
       return true;
     }
 
-    current = current.managerId ? employeeById.get(current.managerId) : undefined;
+    current = current.managerId
+      ? employeeById.get(current.managerId)
+      : undefined;
   }
 
   return false;
@@ -78,7 +82,7 @@ export async function validateManagerChange(input: ChangeManagerInput) {
 
   const requiredManagerRole = getAllowedManagerRole(employee.roleName);
 
-  if (!requiredManagerRole) {
+  if (requiredManagerRole === null) {
     if (input.managerId) {
       throw new Error(`${employee.roleName} cannot have a manager.`);
     }
@@ -86,8 +90,14 @@ export async function validateManagerChange(input: ChangeManagerInput) {
     return { employee, manager: null };
   }
 
+  if (requiredManagerRole && !input.managerId) {
+    throw new Error(
+      `${employee.roleName} must report to ${requiredManagerRole}.`,
+    );
+  }
+
   if (!input.managerId) {
-    throw new Error(`${employee.roleName} must report to ${requiredManagerRole}.`);
+    return { employee, manager: null };
   }
 
   if (input.employeeId === input.managerId) {
@@ -100,11 +110,15 @@ export async function validateManagerChange(input: ChangeManagerInput) {
     throw new Error("Manager was not found.");
   }
 
-  if (manager.roleName !== requiredManagerRole) {
-    throw new Error(`${employee.roleName} must report to ${requiredManagerRole}.`);
+  if (requiredManagerRole && manager.roleName !== requiredManagerRole) {
+    throw new Error(
+      `${employee.roleName} must report to ${requiredManagerRole}.`,
+    );
   }
 
-  if (wouldCreateCircularHierarchy(input.employeeId, input.managerId, employees)) {
+  if (
+    wouldCreateCircularHierarchy(input.employeeId, input.managerId, employees)
+  ) {
     throw new Error("Circular hierarchy is not allowed.");
   }
 
@@ -137,7 +151,11 @@ export async function bulkReassignEmployees(input: BulkReassignInput) {
     throw new Error("Select at least one employee.");
   }
 
-  if (selectedEmployees.some((employee) => !["TSO", "SR"].includes(employee.roleName))) {
+  if (
+    selectedEmployees.some(
+      (employee) => !["TSO", "SR"].includes(employee.roleName),
+    )
+  ) {
     throw new Error("Bulk reassign supports TSO and SR employees only.");
   }
 

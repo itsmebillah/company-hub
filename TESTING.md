@@ -2,8 +2,11 @@
 
 ## Current state
 
-The 2026-07-26 P0 stabilization run passed all 25 Chrome checks against an optimized `next start` runtime. It verifies the System Admin mobile Me/logout panel, Company Admin and Employee profile Account/logout controls, the `/register` login redirect, all platform routes including Release Management, lazy broken-image fallback for Quick Links, and the existing role/feature/storage/realtime/responsive/accessibility matrix. The local runner now uses the canonical `localhost` origin so middleware redirects retain host-only Auth cookies. Redacted profile before/after evidence is stored under `docs/screenshots/stabilization/`.
+Phase 2 makes Playwright-managed Chromium the portable default instead of requiring a branded Chrome installation. Edge is optional through `PLAYWRIGHT_INCLUDE_EDGE=true`. Server readiness uses `/manifest.webmanifest`, so a transient Supabase failure does not prevent the runner from recognizing a ready Next.js server.
 
+Authenticated tests no longer discover arbitrary active accounts. They require an isolated QA project, explicit Company Admin and employee IDs, an exact project-ref match, and `PLAYWRIGHT_ALLOW_QA_MUTATIONS=true`. See [.env.test.example](.env.test.example) and [docs/PHASE_2_INFRASTRUCTURE.md](docs/PHASE_2_INFRASTRUCTURE.md).
+
+The 2026-07-26 P0 stabilization run passed all 25 Chrome checks against an optimized `next start` runtime. It verifies the System Admin mobile Me/logout panel, Company Admin and Employee profile Account/logout controls, the `/register` login redirect, all platform routes including Release Management, lazy broken-image fallback for Quick Links, and the existing role/feature/storage/realtime/responsive/accessibility matrix. The local runner now uses the canonical `localhost` origin so middleware redirects retain host-only Auth cookies. Redacted profile before/after evidence is stored under `docs/screenshots/stabilization/`.
 
 The 2026-07-26 P0 mobile regression audit used real Chrome with an Android mobile user agent, touch input, portrait viewports at 320/360/375/390/414px, and a 667x375 landscape viewport. Company Admin, Employee, and a disposable System Admin were exercised through Dashboard, all four navigation panels, Theme/Profile/Notification controls where available, scrolling, and PWA assets. Durable assertions verify exact FAB centering, a reserved center lane, unclipped navigation labels, non-wrapping header actions, and zero horizontal overflow. Before/after evidence is preserved under `docs/screenshots/ui-regression/`.
 
@@ -23,6 +26,9 @@ npm.cmd run typecheck
 npm.cmd run format:check
 npm.cmd run build
 npm.cmd run test:e2e
+npm.cmd run test:e2e:smoke
+npm.cmd run test:e2e:public
+npm.cmd run test:e2e:authenticated
 ./node_modules/.bin/supabase.cmd db lint --linked --level warning
 ./node_modules/.bin/supabase.cmd db advisors --linked --type security
 ```
@@ -83,6 +89,8 @@ For every changed workflow verify:
 - Logs and responses contain no secrets/internal identity fields.
 
 ## CI quality gate
+
+`.github/workflows/quality.yml` now runs secret-free pull-request install, lint, typecheck, build, and database-independent Chromium smoke checks. Its authenticated job is manual and uses the protected `qa` environment; it must not become automatic until isolated QA secrets/accounts and cleanup monitoring are configured.
 
 A pull request should eventually require:
 

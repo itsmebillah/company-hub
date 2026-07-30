@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { getQaEnvironment } from "./helpers/qa-environment";
 import { expect, test, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
@@ -84,14 +85,9 @@ async function dismissOnboarding(page: Page) {
 }
 
 test.beforeAll(async () => {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const qa = getQaEnvironment();
 
-  if (!url || !serviceRoleKey) {
-    throw new Error("Supabase test environment is not configured.");
-  }
-
-  supabase = createClient(url, serviceRoleKey, {
+  supabase = createClient(qa.supabaseUrl, qa.serviceRoleKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
   const [
@@ -102,7 +98,8 @@ test.beforeAll(async () => {
       .from("employees")
       .select("id, employee_id, role_id, company_id, auth_user_id")
       .eq("status", "active")
-      .not("auth_user_id", "is", null),
+      .not("auth_user_id", "is", null)
+      .in("employee_id", [qa.adminEmployeeId, qa.employeeEmployeeId]),
     supabase.from("roles").select("id, name").eq("status", "active"),
   ]);
 
@@ -116,11 +113,26 @@ test.beforeAll(async () => {
       .filter((role) => role.name === "Company Admin")
       .map((role) => role.id),
   );
-  const admin = rows.find((row) => adminRoleIds.has(row.role_id));
-  const employee = rows.find((row) => !adminRoleIds.has(row.role_id));
+  const admin = rows.find(
+    (row) =>
+      row.employee_id === qa.adminEmployeeId && adminRoleIds.has(row.role_id),
+  );
+  const employee = rows.find(
+    (row) =>
+      row.employee_id === qa.employeeEmployeeId &&
+      !adminRoleIds.has(row.role_id),
+  );
 
   if (!admin || !employee) {
-    throw new Error("Company Admin and employee QA accounts are required.");
+    throw new Error(
+      "Configured active Company Admin and employee QA accounts were not found with the required roles and Auth linkage.",
+    );
+  }
+
+  if (admin.company_id !== employee.company_id) {
+    throw new Error(
+      "Configured Company Admin and employee QA accounts must belong to the same QA company.",
+    );
   }
 
   accounts = {
@@ -196,7 +208,9 @@ test("explicit System Admin can use responsive platform routes", async ({
       .click();
     const meDialog = page.getByRole("dialog");
     await expect(meDialog.getByRole("heading", { name: "Me" })).toBeVisible();
-    await expect(meDialog.getByRole("button", { name: "Log out" })).toBeVisible();
+    await expect(
+      meDialog.getByRole("button", { name: "Log out" }),
+    ).toBeVisible();
     await meDialog.getByRole("button", { name: "Close menu" }).click();
 
     await page.goto(
@@ -412,8 +426,9 @@ test("Quick Links render custom images, favicons, built-in icons, and clickable 
           .getByRole("heading", { name: "Quick Resource Links" })
           .locator("..")
           .locator("xpath=following-sibling::div[1]")
-          .evaluate((element) =>
-            getComputedStyle(element).gridTemplateColumns.split(" ").length,
+          .evaluate(
+            (element) =>
+              getComputedStyle(element).gridTemplateColumns.split(" ").length,
           );
         expect(gridColumns, `${width}px Quick Links columns`).toBe(4);
       }
@@ -506,7 +521,9 @@ test("Company Admin login, tenant scope, password reset, routes, and authorizati
       "Application error",
     );
     if (route === "/admin/profile") {
-      await expect(page.getByRole("heading", { name: "Account" })).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: "Account" }),
+      ).toBeVisible();
       await expect(page.getByRole("button", { name: "Log out" })).toBeVisible();
     }
   }

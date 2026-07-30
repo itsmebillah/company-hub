@@ -2,6 +2,10 @@
   "name": "company-hub",
   "version": "0.2.0",
   "private": true,
+  "engines": {
+    "node": "24.x",
+    "npm": "11.x"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -11,6 +15,9 @@
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test",
+    "test:e2e:smoke": "playwright test tests/e2e/public-routes.spec.ts --project=chromium --grep \"PWA assets|notification tracking\"",
+    "test:e2e:public": "playwright test tests/e2e/public-routes.spec.ts --project=chromium",
+    "test:e2e:authenticated": "playwright test tests/e2e/authenticated-flows.spec.ts --project=chromium",
     "test:e2e:headed": "playwright test --headed",
     "release:publish": "node scripts/publish-release.mjs"
   },

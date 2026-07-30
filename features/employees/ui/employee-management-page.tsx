@@ -38,12 +38,17 @@ type EmployeeManagementPageProps = {
   };
   loadError?: string;
   onCreate: (values: EmployeeFormValues) => Promise<EmployeeActionState>;
-  onUpdate: (id: string, values: EmployeeFormValues) => Promise<EmployeeActionState>;
+  onUpdate: (
+    id: string,
+    values: EmployeeFormValues,
+  ) => Promise<EmployeeActionState>;
   onActivate: (id: string) => Promise<EmployeeActionState>;
   onDeactivate: (id: string) => Promise<EmployeeActionState>;
 };
 
-function toUiRecord(employee: EmployeeListResult["employees"][number]): EmployeeUiRecord {
+function toUiRecord(
+  employee: EmployeeListResult["employees"][number],
+): EmployeeUiRecord {
   return {
     id: employee.id,
     employeeId: employee.employeeId,
@@ -71,7 +76,8 @@ function buildExportHref(filters: EmployeeManagementPageProps["filters"]) {
   if (filters.status) params.set("status", filters.status);
   if (filters.managerId) params.set("managerId", filters.managerId);
   if (filters.workMode) params.set("workMode", filters.workMode);
-  if (filters.sort && filters.sort !== "newest") params.set("sort", filters.sort);
+  if (filters.sort && filters.sort !== "newest")
+    params.set("sort", filters.sort);
 
   const query = params.toString();
 
@@ -91,14 +97,21 @@ export function EmployeeManagementPage({
 }: EmployeeManagementPageProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [selectedEmployee, setSelectedEmployee] = useState<EmployeeUiRecord | null>(null);
+  const [selectedEmployee, setSelectedEmployee] =
+    useState<EmployeeUiRecord | null>(null);
   const [formMode, setFormMode] = useState<EmployeeFormMode | null>(null);
-  const [editingEmployee, setEditingEmployee] = useState<EmployeeUiRecord | null>(null);
+  const [editingEmployee, setEditingEmployee] =
+    useState<EmployeeUiRecord | null>(null);
   const [actionMessage, setActionMessage] = useState("");
   const employees = result.employees.map(toUiRecord);
   const exportHref = buildExportHref(filters);
 
-  function updateFilters(nextFilters: Partial<EmployeeManagementPageProps["filters"]> & { page?: number; pageSize?: number }) {
+  function updateFilters(
+    nextFilters: Partial<EmployeeManagementPageProps["filters"]> & {
+      page?: number;
+      pageSize?: number;
+    },
+  ) {
     const params = new URLSearchParams();
     const merged = { ...filters, ...nextFilters };
 
@@ -107,7 +120,8 @@ export function EmployeeManagementPage({
     if (merged.status) params.set("status", merged.status);
     if (merged.managerId) params.set("managerId", merged.managerId);
     if (merged.workMode) params.set("workMode", merged.workMode);
-    if (merged.sort && merged.sort !== "newest") params.set("sort", merged.sort);
+    if (merged.sort && merged.sort !== "newest")
+      params.set("sort", merged.sort);
     params.set("page", String(nextFilters.page ?? 1));
     params.set("pageSize", String(nextFilters.pageSize ?? result.pageSize));
 
@@ -124,7 +138,10 @@ export function EmployeeManagementPage({
     setFormMode("edit");
   }
 
-  async function runStatusAction(action: (id: string) => Promise<EmployeeActionState>, id: string) {
+  function runStatusAction(
+    action: (id: string) => Promise<EmployeeActionState>,
+    id: string,
+  ) {
     setActionMessage("");
     startTransition(async () => {
       const result = await action(id);
@@ -141,7 +158,7 @@ export function EmployeeManagementPage({
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Employees</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Manage all company employees
           </p>
         </div>
@@ -184,25 +201,20 @@ export function EmployeeManagementPage({
       />
 
       {loadError ? (
-        <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+        <div className="border-destructive/30 bg-destructive/10 text-destructive rounded-lg border p-3 text-sm">
           {loadError}
         </div>
       ) : null}
 
       {employees.length > 0 ? (
-        <div className="overflow-hidden rounded-xl border bg-card">
+        <div className="bg-card overflow-hidden rounded-xl border">
           <EmployeeTable
             employees={employees}
             onView={setSelectedEmployee}
             onEdit={openEditModal}
-            onActivate={async (id) => {
-              await runStatusAction(onActivate, id);
-              return { ok: true, message: "Employee activated." };
-            }}
-            onDeactivate={async (id) => {
-              await runStatusAction(onDeactivate, id);
-              return { ok: true, message: "Employee deactivated." };
-            }}
+            onActivate={(id) => runStatusAction(onActivate, id)}
+            onDeactivate={(id) => runStatusAction(onDeactivate, id)}
+            isStatusPending={isPending}
           />
           <Pagination
             page={result.page}
@@ -227,10 +239,12 @@ export function EmployeeManagementPage({
       )}
 
       {isPending ? (
-        <p className="text-sm text-muted-foreground">Updating employee status...</p>
+        <p className="text-muted-foreground text-sm">
+          Updating employee status...
+        </p>
       ) : null}
       {actionMessage ? (
-        <p className="text-sm text-muted-foreground">{actionMessage}</p>
+        <p className="text-muted-foreground text-sm">{actionMessage}</p>
       ) : null}
 
       {formMode ? (
@@ -246,7 +260,10 @@ export function EmployeeManagementPage({
               : (values) =>
                   editingEmployee
                     ? onUpdate(editingEmployee.id, values)
-                    : Promise.resolve({ ok: false, message: "Employee was not selected." })
+                    : Promise.resolve({
+                        ok: false,
+                        message: "Employee was not selected.",
+                      })
           }
         />
       ) : null}

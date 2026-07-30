@@ -114,18 +114,31 @@ export function EmployeeForm({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 px-4 py-6 backdrop-blur-sm">
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border bg-card shadow-soft">
-        <div className="flex items-center justify-between border-b px-5 py-4">
+    <div className="bg-background/80 fixed inset-0 z-50 flex items-center justify-center overflow-y-auto px-3 py-[max(1rem,env(safe-area-inset-top))] backdrop-blur-sm sm:px-4">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="employee-form-title"
+        className="bg-card shadow-soft max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto rounded-2xl border"
+      >
+        <div className="bg-card sticky top-0 z-10 flex items-center justify-between border-b px-4 py-4 sm:px-5">
           <div>
-            <h2 className="text-lg font-semibold">
+            <h2 id="employee-form-title" className="text-lg font-semibold">
               {mode === "create" ? "Create Employee" : "Edit Employee"}
             </h2>
-            <p className="text-sm text-muted-foreground">
-              {mode === "create" ? "Add an employee record." : "Update employee record."}
+            <p className="text-muted-foreground text-sm">
+              {mode === "create"
+                ? "Add an employee record."
+                : "Update employee record."}
             </p>
           </div>
-          <Button type="button" size="icon" variant="ghost" onClick={onClose} aria-label="Close">
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            onClick={onClose}
+            aria-label="Close"
+          >
             <X className="size-4" aria-hidden="true" />
           </Button>
         </div>
@@ -139,47 +152,117 @@ export function EmployeeForm({
                 updateValue("employeeId", event.target.value.toUpperCase())
               }
               disabled={isSubmitting || isEditMode}
+              required
+              autoComplete="username"
               autoCapitalize="characters"
-              className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
+              className="bg-background focus-visible:ring-ring h-11 w-full rounded-md border px-3 outline-none focus-visible:ring-2 disabled:opacity-60"
             />
             {isEditMode ? (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Employee ID is the login ID and cannot be changed.
               </p>
             ) : null}
           </label>
           <label className="space-y-2">
             <span className="text-sm font-medium">Full Name</span>
-            <input value={values.name} onChange={(event) => updateValue("name", event.target.value)} className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+            <input
+              value={values.name}
+              onChange={(event) => updateValue("name", event.target.value)}
+              className="bg-background focus-visible:ring-ring h-11 w-full rounded-md border px-3 outline-none focus-visible:ring-2"
+              required
+              autoComplete="name"
+              disabled={isSubmitting}
+            />
           </label>
           <label className="space-y-2">
             <span className="text-sm font-medium">Phone</span>
-            <input value={values.phone} onChange={(event) => updateValue("phone", event.target.value)} className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+            <input
+              type="tel"
+              value={values.phone}
+              onChange={(event) => updateValue("phone", event.target.value)}
+              className="bg-background focus-visible:ring-ring h-11 w-full rounded-md border px-3 outline-none focus-visible:ring-2"
+              required
+              autoComplete="tel"
+              disabled={isSubmitting}
+            />
           </label>
           <label className="space-y-2">
             <span className="text-sm font-medium">Email</span>
-            <input type="email" value={values.email} onChange={(event) => updateValue("email", event.target.value)} className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+            <input
+              type="email"
+              value={values.email}
+              onChange={(event) => updateValue("email", event.target.value)}
+              className="bg-background focus-visible:ring-ring h-11 w-full rounded-md border px-3 outline-none focus-visible:ring-2"
+              autoComplete="email"
+              disabled={isSubmitting}
+            />
           </label>
           <label className="space-y-2">
             <span className="text-sm font-medium">Date of Birth</span>
-            <input type="date" value={values.dateOfBirth} onChange={(event) => updateValue("dateOfBirth", event.target.value)} className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+            <input
+              type="date"
+              value={values.dateOfBirth}
+              onChange={(event) =>
+                updateValue("dateOfBirth", event.target.value)
+              }
+              className="bg-background focus-visible:ring-ring h-11 w-full rounded-md border px-3 outline-none focus-visible:ring-2"
+              required
+              disabled={isSubmitting}
+            />
           </label>
           <label className="space-y-2">
             <span className="text-sm font-medium">Joining Date</span>
-            <input type="date" value={values.joiningDate} onChange={(event) => updateValue("joiningDate", event.target.value)} className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+            <input
+              type="date"
+              value={values.joiningDate}
+              onChange={(event) =>
+                updateValue("joiningDate", event.target.value)
+              }
+              className="bg-background focus-visible:ring-ring h-11 w-full rounded-md border px-3 outline-none focus-visible:ring-2"
+              required
+              disabled={isSubmitting}
+            />
           </label>
           <label className="space-y-2">
             <span className="text-sm font-medium">Role</span>
-            <select value={values.roleId} onChange={(event) => updateValue("roleId", event.target.value)} className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            <select
+              value={values.roleId}
+              onChange={(event) => updateValue("roleId", event.target.value)}
+              className="bg-background focus-visible:ring-ring h-11 w-full rounded-md border px-3 outline-none focus-visible:ring-2"
+              required
+              disabled={isSubmitting}
+            >
               <option value="">Select role</option>
-              {roles.map((role) => <option key={role.id} value={role.id}>{role.name}</option>)}
+              {roles.map((role) => (
+                <option key={role.id} value={role.id}>
+                  {role.name}
+                </option>
+              ))}
             </select>
           </label>
           <label className="space-y-2">
             <span className="text-sm font-medium">Reports To</span>
-            <select value={values.managerId} onChange={(event) => updateValue("managerId", event.target.value)} disabled={!selectedRole || allowedManagerRole === null} className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60">
-              <option value="">{allowedManagerRole === null ? "No reporting manager" : allowedManagerRole ? `Select ${allowedManagerRole}` : "Select manager"}</option>
-              {managerOptions.map((manager) => <option key={manager.id} value={manager.id}>{manager.name}</option>)}
+            <select
+              value={values.managerId}
+              onChange={(event) => updateValue("managerId", event.target.value)}
+              disabled={
+                isSubmitting || !selectedRole || allowedManagerRole === null
+              }
+              required={Boolean(allowedManagerRole)}
+              className="bg-background focus-visible:ring-ring h-11 w-full rounded-md border px-3 outline-none focus-visible:ring-2 disabled:opacity-60"
+            >
+              <option value="">
+                {allowedManagerRole === null
+                  ? "No reporting manager"
+                  : allowedManagerRole
+                    ? `Select ${allowedManagerRole}`
+                    : "Select manager"}
+              </option>
+              {managerOptions.map((manager) => (
+                <option key={manager.id} value={manager.id}>
+                  {manager.name}
+                </option>
+              ))}
             </select>
           </label>
           <label className="space-y-2">
@@ -192,7 +275,8 @@ export function EmployeeForm({
                   event.target.value as EmployeeFormValues["workMode"],
                 )
               }
-              className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="bg-background focus-visible:ring-ring h-11 w-full rounded-md border px-3 outline-none focus-visible:ring-2"
+              disabled={isSubmitting}
             >
               {EMPLOYEE_WORK_MODE_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -203,7 +287,17 @@ export function EmployeeForm({
           </label>
           <label className="space-y-2">
             <span className="text-sm font-medium">Status</span>
-            <select value={values.status} onChange={(event) => updateValue("status", event.target.value as EmployeeFormValues["status"])} className="h-11 w-full rounded-md border bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            <select
+              value={values.status}
+              onChange={(event) =>
+                updateValue(
+                  "status",
+                  event.target.value as EmployeeFormValues["status"],
+                )
+              }
+              className="bg-background focus-visible:ring-ring h-11 w-full rounded-md border px-3 outline-none focus-visible:ring-2"
+              disabled={isSubmitting}
+            >
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
               <option value="archived">Archived</option>
@@ -211,16 +305,28 @@ export function EmployeeForm({
           </label>
 
           {message ? (
-            <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive md:col-span-2">
-              <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+            <div className="border-destructive/30 bg-destructive/10 text-destructive flex items-start gap-2 rounded-md border p-3 text-sm md:col-span-2">
+              <AlertCircle
+                className="mt-0.5 size-4 shrink-0"
+                aria-hidden="true"
+              />
               <p>{message}</p>
             </div>
           ) : null}
 
           <div className="flex justify-end gap-3 border-t pt-4 md:col-span-2">
-            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : null}
+              {isSubmitting ? (
+                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+              ) : null}
               Save
             </Button>
           </div>

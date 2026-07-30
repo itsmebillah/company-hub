@@ -18,7 +18,8 @@ Company Admin creates an employee. The service validates company role/manager, d
 
 ## Dependencies
 
+Supabase Auth, employees, roles, hierarchy rules, current-company context, and the Company Admin authorization boundary.
 
 ## Rules
 
-Employee ID is normalized uppercase and immutable after creation. Deactivation is a soft update.
+Employee ID is normalized uppercase and immutable after creation. Deactivation is a soft update. Tenant-scoped updates must verify that a row was actually changed before returning success. Built-in roles enforce their reporting level; custom roles may optionally use a same-company active manager, with self/circular relationships rejected.

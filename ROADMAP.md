@@ -7,7 +7,7 @@ The roadmap prioritizes safe production operation before additional product brea
 - Sanitize `.env.example`; rotate exposed or uncertain Supabase credentials.
 - Link the repository to the intended Vercel project and configure Preview/Production environments.
 - Create the first real Admin through the bootstrap flow and verify login/logout/password update.
-- Add CI for install, format check, lint, typecheck, tests, and build.
+- Extend the committed pull-request quality workflow with a repository formatting baseline, isolated authenticated QA, migration parity, and secret scanning.
 - Establish automated unit and integration coverage for critical business rules.
 - Triage dependency vulnerabilities and document accepted residual risk.
 - Remove or complete visible placeholder screens and panels.

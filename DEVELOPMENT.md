@@ -3,6 +3,7 @@
 ## Prerequisites
 
 - Git.
+- Node.js 24 and npm 11. `.nvmrc` and `package.json#engines` define the shared local/CI baseline.
 - Node.js and npm. Latest verified locally: Node 24.16.0, npm 11.13.0. The repository does not yet pin an engine version; align local and CI versions before production.
 - Access to the Supabase project or a dedicated development project.
 - Supabase CLI and Vercel CLI are installed as project dev dependencies.
@@ -40,6 +41,8 @@ Open `http://localhost:3000`. On a fresh database with no active Company Admin, 
 PowerShell may block `npm.ps1`; use `npm.cmd` if `npm` reports an execution-policy error.
 
 ## Standard commands
+
+For browser checks, install the portable baseline once with `npx playwright install chromium`. Use `npm.cmd run test:e2e:smoke` for database-independent infrastructure checks. Authenticated tests require an ignored `.env.test.local` created from `.env.test.example` and an isolated QA project.
 
 ```powershell
 npm.cmd run lint

@@ -1,4 +1,4 @@
-import { MoreHorizontal, Pencil, Power } from "lucide-react";
+import { Pencil, Power } from "lucide-react";
 
 import { ProfilePhoto } from "@/components/common/profile-photo";
 import { Button } from "@/components/ui/button";
@@ -6,15 +6,15 @@ import { EmployeeCard } from "@/features/employees/ui/employee-card";
 import { EmployeeStatusBadge } from "@/features/employees/ui/employee-status-badge";
 import { EmployeeWorkModeBadge } from "@/features/employees/ui/employee-work-mode-badge";
 import type { EmployeeUiRecord } from "@/features/employees/ui/employee-management.types";
-import type { EmployeeActionState } from "@/features/employees/types/employee.types";
 import { RoleBadge } from "@/features/employees/ui/role-badge";
 
 type EmployeeTableProps = {
   employees: EmployeeUiRecord[];
   onView: (employee: EmployeeUiRecord) => void;
   onEdit: (employee: EmployeeUiRecord) => void;
-  onActivate: (id: string) => Promise<EmployeeActionState>;
-  onDeactivate: (id: string) => Promise<EmployeeActionState>;
+  onActivate: (id: string) => void;
+  onDeactivate: (id: string) => void;
+  isStatusPending: boolean;
 };
 
 export function EmployeeTable({
@@ -23,13 +23,14 @@ export function EmployeeTable({
   onEdit,
   onActivate,
   onDeactivate,
+  isStatusPending,
 }: EmployeeTableProps) {
   return (
     <>
-      <div className="hidden overflow-hidden rounded-xl border bg-card shadow-sm lg:block">
+      <div className="bg-card hidden overflow-hidden rounded-xl border shadow-sm lg:block">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[980px] text-left text-sm">
-            <thead className="border-b bg-muted/50 text-muted-foreground">
+            <thead className="bg-muted/50 text-muted-foreground border-b">
               <tr>
                 <th className="px-4 py-3 font-medium">Profile</th>
                 <th className="px-4 py-3 font-medium">Employee ID</th>
@@ -54,22 +55,39 @@ export function EmployeeTable({
                       iconClassName="size-4"
                     />
                   </td>
-                  <td className="px-4 py-3 font-medium">{employee.employeeId}</td>
+                  <td className="px-4 py-3 font-medium">
+                    {employee.employeeId}
+                  </td>
                   <td className="px-4 py-3">{employee.name}</td>
-                  <td className="px-4 py-3"><RoleBadge role={employee.role} /></td>
+                  <td className="px-4 py-3">
+                    <RoleBadge role={employee.role} />
+                  </td>
                   <td className="px-4 py-3">
                     <EmployeeWorkModeBadge workMode={employee.workMode} />
                   </td>
                   <td className="px-4 py-3">{employee.reportsTo || "None"}</td>
                   <td className="px-4 py-3">{employee.phone}</td>
                   <td className="px-4 py-3">{employee.joiningDate}</td>
-                  <td className="px-4 py-3"><EmployeeStatusBadge status={employee.status} /></td>
+                  <td className="px-4 py-3">
+                    <EmployeeStatusBadge status={employee.status} />
+                  </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <Button type="button" size="sm" variant="outline" onClick={() => onView(employee)}>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => onView(employee)}
+                      >
                         View
                       </Button>
-                      <Button type="button" size="icon" variant="ghost" onClick={() => onEdit(employee)} aria-label="Edit employee">
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => onEdit(employee)}
+                        aria-label="Edit employee"
+                      >
                         <Pencil className="size-4" aria-hidden="true" />
                       </Button>
                       <Button
@@ -81,6 +99,7 @@ export function EmployeeTable({
                             ? "Deactivate employee"
                             : "Activate employee"
                         }
+                        disabled={isStatusPending}
                         onClick={() =>
                           employee.status === "active"
                             ? onDeactivate(employee.id)
@@ -88,9 +107,6 @@ export function EmployeeTable({
                         }
                       >
                         <Power className="size-4" aria-hidden="true" />
-                      </Button>
-                      <Button type="button" size="icon" variant="ghost" aria-label="More actions">
-                        <MoreHorizontal className="size-4" aria-hidden="true" />
                       </Button>
                     </div>
                   </td>
@@ -110,6 +126,7 @@ export function EmployeeTable({
             onEdit={onEdit}
             onActivate={onActivate}
             onDeactivate={onDeactivate}
+            isStatusPending={isStatusPending}
           />
         ))}
       </div>

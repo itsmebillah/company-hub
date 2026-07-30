@@ -13,11 +13,10 @@ Reporting hierarchy management and reassignment.
 
 ## Flow
 
-Admin loads active employees, views hierarchy, and changes managers through validated actions.
+Company Admin loads active employees, views hierarchy, and changes managers through validated actions.
 
 ## Dependencies
 
-
 ## Rules
 
-Prevent self-manager, circular hierarchy, and invalid role reporting.
+Prevent self-manager, circular hierarchy, and invalid role reporting. Built-in roles follow the configured reporting chain; custom roles may have an optional same-company active manager.

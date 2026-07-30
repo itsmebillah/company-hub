@@ -24,7 +24,10 @@ const emptyEmployeeListResult = (
   filters: EmployeeListFilters,
 ): EmployeeListResult => {
   const page = Math.max(filters.page ?? 1, 1);
-  const pageSize = Math.max(filters.pageSize ?? DEFAULT_PAGE_SIZE, 1);
+  const pageSize = Math.min(
+    Math.max(filters.pageSize ?? DEFAULT_PAGE_SIZE, 1),
+    100,
+  );
 
   return {
     employees: [],
@@ -55,7 +58,9 @@ function assertStatus(status: string): asserts status is EmployeeStatus {
   }
 }
 
-function assertWorkMode(workMode: string): asserts workMode is EmployeeWorkMode {
+function assertWorkMode(
+  workMode: string,
+): asserts workMode is EmployeeWorkMode {
   if (!["office", "field", "hybrid"].includes(workMode)) {
     throw new Error("Invalid employee work mode.");
   }
@@ -64,7 +69,7 @@ function assertWorkMode(workMode: string): asserts workMode is EmployeeWorkMode 
 function isAuthEmailConflict(message: string | undefined) {
   return Boolean(
     message?.toLowerCase().includes("already") ||
-      message?.toLowerCase().includes("registered"),
+    message?.toLowerCase().includes("registered"),
   );
 }
 
@@ -118,7 +123,9 @@ export async function getEmployeeRoles(): Promise<EmployeeRoleOption[]> {
   }));
 }
 
-export async function getEmployeeManagerOptions(): Promise<EmployeeManagerOption[]> {
+export async function getEmployeeManagerOptions(): Promise<
+  EmployeeManagerOption[]
+> {
   const supabase = createSupabaseAdminClient();
   const companyId = await getActiveCompanyId();
 
@@ -174,7 +181,10 @@ export async function listEmployees(
   }
 
   const page = Math.max(filters.page ?? 1, 1);
-  const pageSize = Math.max(filters.pageSize ?? DEFAULT_PAGE_SIZE, 1);
+  const pageSize = Math.min(
+    Math.max(filters.pageSize ?? DEFAULT_PAGE_SIZE, 1),
+    100,
+  );
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
   const search = filters.search?.trim();
@@ -281,7 +291,7 @@ export async function listEmployees(
       roleName: roleById.get(employee.role_id) ?? "Unknown",
       managerId: employee.manager_id,
       managerName: employee.manager_id
-        ? managerById.get(employee.manager_id)?.name ?? null
+        ? (managerById.get(employee.manager_id)?.name ?? null)
         : null,
       workMode: employee.work_mode,
       directReportsCount: directReportCountById.get(employee.id) ?? 0,
@@ -295,7 +305,9 @@ export async function listEmployees(
   };
 }
 
-export async function getEmployeeDetails(id: string): Promise<EmployeeDetails | null> {
+export async function getEmployeeDetails(
+  id: string,
+): Promise<EmployeeDetails | null> {
   const supabase = createSupabaseAdminClient();
   const companyId = await requireCurrentCompanyId();
   const { data, error } = await supabase
@@ -315,11 +327,12 @@ export async function getEmployeeDetails(id: string): Promise<EmployeeDetails | 
     getEmployeeRoles(),
     getEmployeeManagerOptions(),
   ]);
-  const { count: directReportsCount, error: directReportsError } = await supabase
-    .from("employees")
-    .select("id", { count: "exact", head: true })
-    .eq("manager_id", id)
-    .eq("company_id", companyId);
+  const { count: directReportsCount, error: directReportsError } =
+    await supabase
+      .from("employees")
+      .select("id", { count: "exact", head: true })
+      .eq("manager_id", id)
+      .eq("company_id", companyId);
 
   if (directReportsError) {
     logEmployeeServiceError(
@@ -341,7 +354,7 @@ export async function getEmployeeDetails(id: string): Promise<EmployeeDetails | 
     photoUrl: data.photo_url,
     roleName: roleById.get(data.role_id) ?? "Unknown",
     managerName: data.manager_id
-      ? managerById.get(data.manager_id)?.name ?? null
+      ? (managerById.get(data.manager_id)?.name ?? null)
       : null,
     directReportsCount: directReportsCount ?? 0,
     status: data.status,
@@ -356,7 +369,10 @@ export async function getEmployeeDetails(id: string): Promise<EmployeeDetails | 
   };
 }
 
-async function validateEmployeeInput(values: EmployeeFormValues, currentId?: string) {
+async function validateEmployeeInput(
+  values: EmployeeFormValues,
+  currentId?: string,
+) {
   const roles = await getEmployeeRoles();
   const role = roles.find((item) => item.id === values.roleId);
 
@@ -495,7 +511,6 @@ export async function createEmployee(values: EmployeeFormValues) {
     throw new Error("Unable to create employee.");
   }
 
-
   return {
     id: data.id,
     employeeId,
@@ -505,12 +520,13 @@ export async function createEmployee(values: EmployeeFormValues) {
 export async function updateEmployee(id: string, values: EmployeeFormValues) {
   const supabase = createSupabaseAdminClient();
   const companyId = await requireCurrentCompanyId();
-  const { data: existingEmployee, error: existingEmployeeError } = await supabase
-    .from("employees")
-    .select("employee_id, company_id")
-    .eq("id", id)
-    .eq("company_id", companyId)
-    .single();
+  const { data: existingEmployee, error: existingEmployeeError } =
+    await supabase
+      .from("employees")
+      .select("employee_id, company_id")
+      .eq("id", id)
+      .eq("company_id", companyId)
+      .single();
 
   if (existingEmployeeError || !existingEmployee) {
     throw new Error("Employee was not found.");
@@ -524,7 +540,7 @@ export async function updateEmployee(id: string, values: EmployeeFormValues) {
     id,
   );
 
-  const { error } = await supabase
+  const { data: updatedEmployee, error } = await supabase
     .from("employees")
     .update({
       name: values.name.trim(),
@@ -538,24 +554,30 @@ export async function updateEmployee(id: string, values: EmployeeFormValues) {
       status: values.status,
     })
     .eq("id", id)
-    .eq("company_id", companyId);
+    .eq("company_id", companyId)
+    .select("id")
+    .maybeSingle();
 
-  if (error) {
+  if (error || !updatedEmployee) {
     throw new Error("Unable to update employee.");
   }
-
 }
 
-export async function setEmployeeStatus(id: string, status: Extract<EmployeeStatus, "active" | "inactive">) {
+export async function setEmployeeStatus(
+  id: string,
+  status: Extract<EmployeeStatus, "active" | "inactive">,
+) {
   const supabase = createSupabaseAdminClient();
   const companyId = await requireCurrentCompanyId();
-  const { error } = await supabase
+  const { data: updatedEmployee, error } = await supabase
     .from("employees")
     .update({ status })
     .eq("id", id)
-    .eq("company_id", companyId);
+    .eq("company_id", companyId)
+    .select("id")
+    .maybeSingle();
 
-  if (error) {
+  if (error || !updatedEmployee) {
     throw new Error("Unable to update employee status.");
   }
 }

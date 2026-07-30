@@ -51,11 +51,7 @@ function parseWorkMode(workMode: string | undefined): EmployeeWorkMode | "all" {
 }
 
 function parseSort(sort: string | undefined): EmployeeListSort {
-  if (
-    sort === "employee_id" ||
-    sort === "name" ||
-    sort === "work_mode"
-  ) {
+  if (sort === "employee_id" || sort === "name" || sort === "work_mode") {
     return sort;
   }
 
@@ -81,8 +77,8 @@ export default async function AdminUsersPage({
   const params = await searchParams;
   const page = Number(params.page ?? "1");
   const pageSize = Number(params.pageSize ?? "10");
-  const normalizedPage = Number.isFinite(page) ? page : 1;
-  const normalizedPageSize = Number.isFinite(pageSize) ? pageSize : 10;
+  const normalizedPage = Number.isInteger(page) && page > 0 ? page : 1;
+  const normalizedPageSize = [5, 10, 20].includes(pageSize) ? pageSize : 10;
   let loadError = "";
   let roles: EmployeeRoleOption[] = [];
   let managers: EmployeeManagerOption[] = [];

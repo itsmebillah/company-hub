@@ -18,6 +18,10 @@ Company Hub uses defense in depth: authenticated sessions, server-side role/comp
 
 ## Secrets
 
+- Pull-request quality checks use no repository secrets. Their build-only values are explicit placeholders.
+- Mutation-enabled browser tests load real credentials only from ignored `.env.test.local` or the protected GitHub `qa` environment. They require a matching project ref and explicit mutation opt-in.
+- Never configure production Supabase credentials as QA test credentials.
+
 Required secrets are `SUPABASE_SERVICE_ROLE_KEY` and `CRON_SECRET`; the Supabase anonymous key is public by design but should still be environment-configured. `.env.local` is ignored. `.env.example` must contain safe placeholders only.
 
 `.env.example` contains safe placeholders. Any service-role key that may have entered Git history must still be treated as compromised until rotation is independently confirmed across local machines and Vercel.
@@ -60,7 +64,6 @@ Quick Link media uploads are Company Admin-only and company-scoped. The server v
 - Raw Supabase errors are replaced with bounded messages.
 - React rendering supplies default output escaping; any future rich HTML requires sanitization.
 - Browser permissions are requested in a user-visible onboarding flow.
-
 
 The service worker caches only immutable public assets. Activation removes legacy page-cache generations so authenticated HTML cannot survive logout/account switching in Cache Storage.
 

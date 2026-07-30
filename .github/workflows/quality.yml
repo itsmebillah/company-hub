@@ -1,0 +1,67 @@
+name: Pull request quality
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static-quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_PUBLIC_APP_URL: http://localhost:3100
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+      SUPABASE_SERVICE_ROLE_KEY: ci-placeholder-service-role-key
+      CRON_SECRET: ci-placeholder-cron-secret
+      PLAYWRIGHT_USE_PRODUCTION: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e:smoke
+
+  authenticated-qa:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: qa
+    env:
+      NEXT_PUBLIC_APP_URL: http://localhost:3100
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.QA_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.QA_SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.QA_SUPABASE_SERVICE_ROLE_KEY }}
+      CRON_SECRET: ${{ secrets.QA_CRON_SECRET }}
+      PLAYWRIGHT_QA_PROJECT_REF: ${{ secrets.QA_SUPABASE_PROJECT_REF }}
+      PLAYWRIGHT_QA_ADMIN_EMPLOYEE_ID: ${{ secrets.QA_ADMIN_EMPLOYEE_ID }}
+      PLAYWRIGHT_QA_EMPLOYEE_ID: ${{ secrets.QA_EMPLOYEE_ID }}
+      PLAYWRIGHT_ALLOW_QA_MUTATIONS: "true"
+      PLAYWRIGHT_USE_PRODUCTION: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e:authenticated

@@ -1,6 +1,6 @@
 # Project State
 
-Last verified: 2026-07-26
+Last verified: 2026-07-30
 
 ## Summary
 
@@ -42,6 +42,16 @@ The quality-hardening baseline is deployable: privileged mutation boundaries, pr
 
 ## Current quality signals
 
+- Phase 2 infrastructure hardening uses Playwright-managed Chromium by default, an optional Edge project, a Supabase-independent readiness probe, explicit isolated-QA account/project validation, and an affirmative mutation opt-in.
+- Pull requests now have a secret-free quality workflow for install, lint, typecheck, build, and database-independent browser smoke coverage. Authenticated QA is a protected manual job until the isolated project and secrets are configured and proven deterministic.
+- Node 24/npm 11 are pinned through `.nvmrc` and package engines. Employee Import defers loading `xlsx` until a file is selected.
+- The Phase 2 production build reduced Employee Import first-load JS from about 232 kB to 122 kB. Lint, typecheck, build, and Playwright discovery pass; both portable-Chromium smoke assertions pass, although the Windows runner still hangs during managed web-server teardown.
+- Migration `0041` remains unapplied. Review found no live application dependency, but it should be amended before application to advance `get_app_schema_version()` and followed by type regeneration.
+
+- Phase 1 stabilization baseline: dependency install, lint, strict typecheck, and production build pass. Employee status/update false-success handling, custom-role hierarchy consistency, dead action controls, page-size bounding, and mobile modal usability were hardened without schema changes.
+- The 2026-07-30 browser run was inconclusive because the configured Chrome channel is absent and linked Supabase reads failed intermittently during the Edge run; two infrastructure-independent PWA/API checks passed before the run timed out.
+- The company's existing operational Google account is the approved owner for Drive and Sheets resources. No ownership migration is required. Resources are private by default; temporary public sharing for development/review must be reverted and verified afterward.
+
 - Lint: zero errors and zero warnings; dynamic company media now uses dimensioned Next images where appropriate.
 - Typecheck: zero errors.
 - Production build: successful.
@@ -63,7 +73,7 @@ The quality-hardening baseline is deployable: privileged mutation boundaries, pr
 See [KNOWN_ISSUES.md](KNOWN_ISSUES.md) for details. The highest-priority blockers are:
 
 1. Rotate any Supabase credential that may have appeared in Git history; `.env.example` is now sanitized.
-2. Add CI for install, lint, typecheck, Playwright, build, migration parity, and secret scanning.
+2. Configure and prove the isolated authenticated-QA environment, then add authenticated Playwright, migration parity, and secret scanning to required pull-request gates.
 3. Replace or formally accept the unresolved `xlsx` and Next.js/PostCSS advisories.
 4. Formally review the eight intentionally authenticated definer helpers, decide the leaked-password-protection policy, and finish the repository formatting baseline.
 

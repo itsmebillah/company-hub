@@ -1,11 +1,12 @@
-import { read, utils } from "xlsx";
-
 import type {
   EmployeeImportFileType,
   EmployeeImportRowDraft,
 } from "@/features/employee-import/types/employee-import.types";
 
-const HEADER_ALIASES: Record<string, keyof Omit<EmployeeImportRowDraft, "rowNumber">> = {
+const HEADER_ALIASES: Record<
+  string,
+  keyof Omit<EmployeeImportRowDraft, "rowNumber">
+> = {
   "employee id": "employeeId",
   employee_id: "employeeId",
   employeeid: "employeeId",
@@ -55,14 +56,13 @@ function normalizeCell(value: unknown) {
   return String(value).trim();
 }
 
-export async function parseEmployeeImportFile(
-  file: File,
-): Promise<{
+export async function parseEmployeeImportFile(file: File): Promise<{
   fileType: EmployeeImportFileType;
   rows: EmployeeImportRowDraft[];
 }> {
   const fileType = getFileType(file.name);
   const buffer = await file.arrayBuffer();
+  const { read, utils } = await import("xlsx");
   const workbook = read(buffer, {
     type: "array",
     cellDates: true,
@@ -75,7 +75,9 @@ export async function parseEmployeeImportFile(
   }
 
   const sheet = workbook.Sheets[sheetName];
-  const values = utils.sheet_to_json<(string | number | boolean | Date | null)[]>(sheet, {
+  const values = utils.sheet_to_json<
+    (string | number | boolean | Date | null)[]
+  >(sheet, {
     header: 1,
     defval: "",
     blankrows: false,
@@ -121,7 +123,9 @@ export async function parseEmployeeImportFile(
       return draft;
     })
     .filter((row) =>
-      Object.entries(row).some(([key, value]) => key === "rowNumber" || value !== ""),
+      Object.entries(row).some(
+        ([key, value]) => key === "rowNumber" || value !== "",
+      ),
     );
 
   return { fileType, rows };

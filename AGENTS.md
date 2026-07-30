@@ -51,7 +51,7 @@ npm run typecheck
 npm run build
 ```
 
-Test the affected success path, validation failure, authorization denial, empty state, and rollback/cleanup behavior. Do not claim automated coverage: this repository currently has no committed test runner or CI workflow.
+Test the affected success path, validation failure, authorization denial, empty state, and rollback/cleanup behavior. Report exactly which committed Playwright/CI checks ran and distinguish them from absent unit/service integration coverage or environment-blocked tests.
 
 ## Change discipline
 

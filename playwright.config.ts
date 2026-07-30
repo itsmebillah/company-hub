@@ -1,14 +1,51 @@
 import { defineConfig, devices } from "@playwright/test";
 import { loadEnvConfig } from "@next/env";
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
 
 loadEnvConfig(process.cwd());
+
+const testEnvironmentPath = resolve(process.cwd(), ".env.test.local");
+
+if (existsSync(testEnvironmentPath)) {
+  process.loadEnvFile(testEnvironmentPath);
+}
 
 const playwrightPort = process.env.PLAYWRIGHT_PORT ?? "3100";
 const baseURL =
   process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${playwrightPort}`;
+const nodeExecutable = JSON.stringify(process.execPath);
+const nextCli = "node_modules/next/dist/bin/next";
 const serverCommand = process.env.PLAYWRIGHT_USE_PRODUCTION
-  ? `npm.cmd run start -- --hostname localhost --port ${playwrightPort}`
-  : `npm.cmd run dev -- --hostname localhost --port ${playwrightPort}`;
+  ? `${nodeExecutable} ${nextCli} start --hostname localhost --port ${playwrightPort}`
+  : `${nodeExecutable} ${nextCli} dev --hostname localhost --port ${playwrightPort}`;
+const includeEdge = process.env.PLAYWRIGHT_INCLUDE_EDGE === "true";
+
+const projects = [
+  {
+    name: "chromium",
+    use: {
+      ...devices["Desktop Chrome"],
+    },
+  },
+  ...(includeEdge
+    ? [
+        {
+          name: "edge",
+          use: {
+            ...devices["Desktop Edge"],
+            ...(process.env.EDGE_EXECUTABLE_PATH
+              ? {
+                  launchOptions: {
+                    executablePath: process.env.EDGE_EXECUTABLE_PATH,
+                  },
+                }
+              : { channel: "msedge" as const }),
+          },
+        },
+      ]
+    : []),
+];
 
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -28,32 +65,15 @@ export default defineConfig({
     ? undefined
     : {
         command: serverCommand,
-        url: baseURL,
+        url: `${baseURL}/manifest.webmanifest`,
         reuseExistingServer: true,
         timeout: 120_000,
+        gracefulShutdown: {
+          signal: "SIGINT",
+          timeout: 5_000,
+        },
         stdout: "pipe",
         stderr: "pipe",
       },
-  projects: [
-    {
-      name: "chrome",
-      use: {
-        ...devices["Desktop Chrome"],
-        channel: "chrome",
-      },
-    },
-    {
-      name: "edge",
-      use: {
-        ...devices["Desktop Edge"],
-        ...(process.env.EDGE_EXECUTABLE_PATH
-          ? {
-              launchOptions: {
-                executablePath: process.env.EDGE_EXECUTABLE_PATH,
-              },
-            }
-          : { channel: "msedge" }),
-      },
-    },
-  ],
+  projects,
 });
