@@ -1,7 +1,9 @@
 # Live Location Tracking — Product Phase 5
 
-**Priority:** High  
-**Status:** Planned; not implemented  
+**Priority:** High
+
+**Status:** Planned; not implemented
+
 **Dependency:** Phase 4 attendance and durable automation completion
 
 ## Objective
