@@ -1,5 +1,19 @@
 # Architecture Decision Log
 
+## ADR-014 — Split Google authentication by provider responsibility
+
+**Status:** Accepted; OAuth activation pending owner consent
+
+Use the dedicated service account for Sheets synchronization and OAuth 2.0
+offline access delegated by the operational Google account for Drive uploads.
+An ordinary My Drive cannot assign storage quota to service-account-created
+files; the live upload probe returned `storageQuotaExceeded` even though the
+service account was an editor. OAuth makes the operational account the upload
+owner while preserving unattended server operation through a refresh token.
+Do not use domain-wide delegation, account passwords, or public-link access.
+All credentials remain server-only and are rotated through protected runtime
+environments.
+
 ## ADR-013 â€” Company Admin is the canonical tenant authority
 
 The historical tenant role `Admin` is migrated in place to `Company Admin`; stable `/admin/*` URLs and internal component names remain compatibility details. Company Admin authorization requires an active employee, active role, active company, matching company scope on service-role operations, and an enabled effective feature for feature-owned mutations. System Admin remains exclusively represented by `platform_admins`. Tenant role creation reserves platform authority names, and shared Storage media uses company-ID path prefixes.

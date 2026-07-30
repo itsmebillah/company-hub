@@ -12,6 +12,15 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
 - Applied non-destructive migration `0042` to advance runtime schema telemetry
   without rewriting the already-applied `0041` migration; linked history,
   schema diff, database lint, and live RPC verification now agree on `0042`.
+- Added an inactive, server-only split Google authentication foundation: OAuth
+  2.0 offline access for operational-account Drive uploads and the existing
+  service account for Sheets. It includes bounded API retries,
+  upload/write/readback cleanup, safe environment placeholders, a credential-
+  redacted verifier, and a state-validated one-time local authorization helper.
+- Verified the restricted operational Drive folder end to end using OAuth
+  offline access, verified Sheets synchronization remains service-account based,
+  removed all temporary test artifacts, and configured the OAuth credentials as
+  Sensitive Production variables without storing credential files in Git.
 
 ### Phase 4 attendance automation foundation
 

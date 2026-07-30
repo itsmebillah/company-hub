@@ -35,6 +35,15 @@ The database unique constraint on `(employee_id, attendance_date)` is the final 
 
 Uploads accept only JPG, PNG, WebP, HEIC, or HEIF files up to 5 MB and validate file signatures. Upload and persistence paths are checked independently. Existing stored paths remain readable; no file migration is performed.
 
+The server-only Google integration foundation uses OAuth offline access for
+Drive, a dedicated service account for Sheets, bounded retries, redacted
+provider errors, explicit approved resource IDs, and a self-cleaning
+`npm run verify:google` check. It is not yet selected as the
+attendance provider because the current attendance schema cannot persist the
+provider and external Drive file ID or serve private Drive media through an
+authorized application route. Activating it requires the separately approved
+attachment/outbox migration and credentialed verification.
+
 ## Automation and future sync
 
 The current dispatcher provides stable event contracts for future adapters but is intentionally best-effort and process-local. It is suitable for non-critical notifications, not guaranteed external synchronization.

@@ -24,6 +24,16 @@ Company Hub uses defense in depth: authenticated sessions, server-side role/comp
 
 Required secrets are `SUPABASE_SERVICE_ROLE_KEY` and `CRON_SECRET`; the Supabase anonymous key is public by design but should still be environment-configured. `.env.local` is ignored. `.env.example` must contain safe placeholders only.
 
+Google Sheets uses a dedicated service account with no domain-wide delegation.
+Google Drive uses OAuth 2.0 offline access delegated by the operational account;
+its client secret and refresh token are server-only. Google credential files,
+private keys, client secrets, refresh tokens, and access tokens must never appear
+in client bundles, logs, Markdown, migrations, or test output. Production stores
+individual credential values as sensitive Vercel environment variables. Local
+credential file paths may point outside the repository from an ignored local env
+file. The resource IDs are configuration, not authorization. See
+`docs/GOOGLE_INTEGRATION_SETUP.md` for provisioning and rotation.
+
 `.env.example` contains safe placeholders. Any service-role key that may have entered Git history must still be treated as compromised until rotation is independently confirmed across local machines and Vercel.
 
 Never place secrets in:

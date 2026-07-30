@@ -1,6 +1,6 @@
 # Project State
 
-Last verified: 2026-07-30
+Last verified: 2026-07-31
 
 ## Summary
 
@@ -46,6 +46,14 @@ The quality-hardening baseline is deployable: privileged mutation boundaries, pr
 
 - Phase 4 attendance hardening introduces provider-neutral selfie storage, immutable validated selfie references, conditional checkout writes, and best-effort attendance automation events. Supabase remains the source of truth; no Google integration or migration was implemented.
 - Durable reporting sync remains deferred pending approval of a transactional outbox and attachment metadata schema. Current event delivery is intentionally process-local and suitable only for non-critical side effects.
+- The inactive Google integration foundation now separates OAuth 2.0 offline
+  access for operational-account Drive uploads from service-account Sheets
+  synchronization. Both clients use bounded retries, redacted errors, explicit
+  resource IDs, and a self-cleaning end-to-end verifier. Restricted sharing,
+  operational-account Drive upload/readback, service-account Sheets
+  write/readback, metadata synchronization, and artifact cleanup are verified.
+  The OAuth values are configured as Sensitive Production variables in Vercel;
+  attendance activation still requires the approved attachment/outbox schema.
 - The Phase 4 install, lint, typecheck, and production build pass. Non-mutating Brave checks pass for browser launch, PWA manifest, signed-out attendance routing, and 375px overflow. Authoritative Supabase runtime connectivity and schema-version status are verified; full attendance mutations remain blocked only by the absent isolated-QA account contract.
 
 - Phase 2 infrastructure hardening uses Playwright-managed Chromium by default, an optional Edge project, a Supabase-independent readiness probe, explicit isolated-QA account/project validation, and an affirmative mutation opt-in.
