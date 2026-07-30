@@ -40,6 +40,19 @@ The roadmap prioritizes safe production operation before additional product brea
 
 ## Future candidates
 
+### Product Phase 5 — Real-time live location tracking
+
+- Implement duty-bound tracking sessions that start only after check-in and stop
+  immediately after checkout.
+- Add immutable route history, derived current location, tenant-scoped live map,
+  replay, distance/stops, and geofence enter/exit events.
+- Decide native background tracking versus explicitly foreground-only web
+  tracking before schema or client implementation.
+- Complete privacy, consent, retention, labor-policy, battery, offline, and
+  device-matrix reviews before production activation.
+
+Detailed scope and acceptance gates: [Live Location Tracking](docs/LIVE_LOCATION_TRACKING.md).
+
 - Employee documents UI and lifecycle management.
 - Push-provider integration beyond browser/native notification foundations.
 - Analytics and operational trend reporting.

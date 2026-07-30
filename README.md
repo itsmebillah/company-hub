@@ -37,6 +37,11 @@ The project is designed around explicit tenant boundaries and role-based access.
 
 See [FEATURES.md](FEATURES.md) for the detailed implementation map and [KNOWN_ISSUES.md](KNOWN_ISSUES.md) for current limitations.
 
+Product Phase 5 live location tracking is planned but not implemented. Its
+duty-bound privacy contract and native-background versus foreground-only web
+decision are documented in
+[the feature specification](docs/LIVE_LOCATION_TRACKING.md).
+
 ## Screenshots
 
 | Desktop                                                        | Tablet                                                       | Mobile                                                       |

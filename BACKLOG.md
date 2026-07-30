@@ -10,6 +10,13 @@ This backlog is ordered by risk and production value. Items require an owner and
 
 ## P1 — Reliability and security
 
+- **LOCATION-001:** Product Phase 5 live location tracking. Decide native
+  background service versus foreground-only web behavior; approve privacy,
+  consent, retention, and labor-policy controls; then design tenant-isolated
+  tracking sessions, immutable route history, current-location projection,
+  realtime admin map, and geofence events. See
+  [the feature specification](docs/LIVE_LOCATION_TRACKING.md).
+
 - **PLATFORM-001:** Explicitly provision the first approved System Admin in `platform_admins`; migration `0030` deliberately does not auto-promote a company Admin.
 
 - **OBS-001:** Add structured, redacted server logging and production error monitoring.

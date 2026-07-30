@@ -37,3 +37,10 @@ transactional outbox migration requires explicit approval before activation.
   attendance success, validation, authorization, cleanup, and Brave coverage.
 - Activate durable Sheets synchronization only after retry, idempotency, tenant
   isolation, and operational recovery behavior are verified.
+
+## Planned milestone
+
+Product Phase 5 adds duty-bound live location tracking after Phase 4. Its native
+background versus foreground-only web architecture, privacy/retention policy,
+and migration require explicit approval before implementation. See
+`docs/LIVE_LOCATION_TRACKING.md`.

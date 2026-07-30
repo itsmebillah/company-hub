@@ -4,6 +4,14 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
 
 ## Unreleased
 
+### Planned
+
+- Added the Product Phase 5 live-location specification covering duty-bound
+  lifecycle, immutable routes, current-location projection, realtime/geofence
+  boundaries, privacy/retention controls, battery/offline behavior, and the
+  required native-versus-foreground architecture decision. No tracking code or
+  migration was introduced.
+
 ### Infrastructure alignment
 
 - Added a credential-redacted Supabase Session pooler preflight to production

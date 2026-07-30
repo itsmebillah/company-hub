@@ -113,6 +113,13 @@ Drive nor enqueue synchronization. Drive activation must not be represented as
 complete until provider metadata, external file identity, durable retry state,
 private media delivery, and cleanup behavior are implemented and migrated.
 
+Product Phase 5 proposes duty-bound live location tracking. It must model a
+server-authorized tracking session separately from attendance history, store
+append-only points with a derived current-location projection, and expose only
+tenant-scoped current state through realtime. Reliable screen-off/background
+polling requires an approved native mobile architecture; the web/PWA path must
+otherwise be described and tested as foreground-only.
+
 ### Resource/announcement visibility
 
 Employee context drives server-side filtering by company, lifecycle status, publication window, role/employee targeting, and active permissions. Client filtering is only presentation.

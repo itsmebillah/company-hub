@@ -178,6 +178,10 @@ Exit criteria: domain-owner sign-off, performance targets, privacy review, data-
 
 ### Phase 5 - Drive media pilot
 
+This phase number belongs to the Google integration workstream. Product Phase 5
+live location tracking is tracked separately in `ROADMAP.md` and
+`docs/LIVE_LOCATION_TRACKING.md`; neither designation replaces the other.
+
 - Implement one provider-neutral attachment domain with secure asynchronous finalization.
 - Validate upload, checksum, access denial, retry, orphan cleanup, deletion, retention, and outage behavior.
 - Preserve existing Supabase media until migration verification is complete.
