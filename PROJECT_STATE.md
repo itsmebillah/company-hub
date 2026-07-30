@@ -13,10 +13,12 @@ The quality-hardening baseline is deployable: privileged mutation boundaries, pr
 - Next.js 15 App Router, React 19, strict TypeScript, Tailwind CSS 4.
 - Node.js 24.16.0 and npm 11.13.0 used for the latest verification.
 - Supabase CLI 2.109.1 and Vercel CLI 56.5.0 installed as dev dependencies.
-- Supabase project `jjfktbgfwvekhlvyjlww` linked and active.
-- Migrations `0001` through `0040` applied remotely with exact local/remote parity.
-- Local migration `0041` removes the retired logging tables, enums, denial-log functions, and retention setting; linked verification and application are pending sufficient Supabase project privileges.
-- 29 public application tables with RLS enabled; platform-control and draft release rows are default-deny to browser roles.
+- Supabase project `jjfktbgfwvekhlvyjlww` is the authoritative Company Hub
+  project and the local CLI is linked to it.
+- Migrations `0001` through `0042` are applied remotely with exact local/remote
+  history and declarative schema parity. Migration `0042` non-destructively
+  advances runtime schema-version reporting after the audit-system removal.
+- 27 public application tables with RLS enabled; platform-control and draft release rows are default-deny to browser roles.
 - Fourteen platform features are cataloged. Existing companies inherit enabled modules and `future_modules` starts disabled.
 - No System Admin is auto-provisioned. `platform_admins` remains empty until the owner explicitly approves an existing active Auth identity.
 - Exact restored content parity for 1,748 application rows across all 22 tables; all application IDs and hierarchy references were preserved.
@@ -44,13 +46,15 @@ The quality-hardening baseline is deployable: privileged mutation boundaries, pr
 
 - Phase 4 attendance hardening introduces provider-neutral selfie storage, immutable validated selfie references, conditional checkout writes, and best-effort attendance automation events. Supabase remains the source of truth; no Google integration or migration was implemented.
 - Durable reporting sync remains deferred pending approval of a transactional outbox and attachment metadata schema. Current event delivery is intentionally process-local and suitable only for non-critical side effects.
-- The Phase 4 install, lint, typecheck, and production build pass. Non-mutating Brave checks pass for browser launch, PWA manifest, signed-out attendance routing, and 375px overflow; full attendance mutations remain environment-blocked by absent isolated-QA configuration and external Supabase REST connectivity.
+- The Phase 4 install, lint, typecheck, and production build pass. Non-mutating Brave checks pass for browser launch, PWA manifest, signed-out attendance routing, and 375px overflow. Authoritative Supabase runtime connectivity and schema-version status are verified; full attendance mutations remain blocked only by the absent isolated-QA account contract.
 
 - Phase 2 infrastructure hardening uses Playwright-managed Chromium by default, an optional Edge project, a Supabase-independent readiness probe, explicit isolated-QA account/project validation, and an affirmative mutation opt-in.
 - Pull requests now have a secret-free quality workflow for install, lint, typecheck, build, and database-independent browser smoke coverage. Authenticated QA is a protected manual job until the isolated project and secrets are configured and proven deterministic.
 - Node 24/npm 11 are pinned through `.nvmrc` and package engines. Employee Import defers loading `xlsx` until a file is selected.
 - The Phase 2 production build reduced Employee Import first-load JS from about 232 kB to 122 kB. Lint, typecheck, build, and Playwright discovery pass; both portable-Chromium smoke assertions pass, although the Windows runner still hangs during managed web-server teardown.
-- Migration `0041` remains unapplied. Review found no live application dependency, but it should be amended before application to advance `get_app_schema_version()` and followed by type regeneration.
+- Migration `0041` is applied remotely: its retired tables and denial-log RPCs
+  are absent. Migration `0042` corrects telemetry without rewriting applied
+  history, and live `get_app_schema_version()` reports `0042`.
 
 - Phase 1 stabilization baseline: dependency install, lint, strict typecheck, and production build pass. Employee status/update false-success handling, custom-role hierarchy consistency, dead action controls, page-size bounding, and mobile modal usability were hardened without schema changes.
 - The 2026-07-30 browser run was inconclusive because the configured Chrome channel is absent and linked Supabase reads failed intermittently during the Edge run; two infrastructure-independent PWA/API checks passed before the run timed out.

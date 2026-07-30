@@ -4,6 +4,15 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
 
 ## Unreleased
 
+### Infrastructure alignment
+
+- Linked the Supabase CLI to the authoritative Company Hub project and verified
+  remote migration history through `0041`, live audit-object removal, and a
+  clean database lint result.
+- Applied non-destructive migration `0042` to advance runtime schema telemetry
+  without rewriting the already-applied `0041` migration; linked history,
+  schema diff, database lint, and live RPC verification now agree on `0042`.
+
 ### Phase 4 attendance automation foundation
 
 - Audited check-in, checkout, GPS/geofence policy, selfie evidence, duplicate prevention, tenant isolation, offline replay, and existing test coverage.
@@ -32,7 +41,7 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
 - Added `.env.test.example`, Node/npm runtime pinning, and a secret-free pull-request quality workflow plus a protected manual authenticated-QA job.
 - Lazy-loaded the `xlsx` parser when an Employee Import file is selected to reduce initial route work without changing import behavior.
 - Reduced Employee Import first-load JS from approximately 232 kB to 122 kB in the production build.
-- Documented the Phase 2 migration, dependency, security, performance, QA, and technical-debt decisions. Migration `0041` remains unapplied and is recommended for amendment before application.
+- Documented the Phase 2 migration, dependency, security, performance, QA, and technical-debt decisions. Subsequent live verification confirmed that migration `0041` was applied without advancing runtime schema telemetry; applied migration `0042` corrects that omission additively.
 
 ### Removed
 

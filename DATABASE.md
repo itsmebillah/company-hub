@@ -2,7 +2,7 @@
 
 ## Source of truth
 
-`supabase/migrations/` is the canonical schema history. Migrations `0001`–`0040` are applied to project `jjfktbgfwvekhlvyjlww`; migration `0041` removes the retired logging tables and related database objects and is pending remote application. Never edit an applied migration; add the next ordered migration.
+`supabase/migrations/` is the canonical schema history. Migrations `0001`–`0042` are applied to project `jjfktbgfwvekhlvyjlww` with matching local/remote history and declarative schema. Migration `0042` only advances the runtime schema-version contract after the applied audit-system removal. Never edit an applied migration; add the next ordered migration.
 
 `platform_features.state` is authoritative. `allow_company_override` determines whether `company_features.company_state` (`inherit`, `enabled`, or `disabled`) participates in resolution. `is_feature_enabled_for_company` and `can_access_any_feature` expose the canonical platform-first decision to server and middleware callers. `platform_feature_company_summary` supplies aggregate override counts without exposing tenant configuration rows.
 

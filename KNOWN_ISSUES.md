@@ -46,9 +46,9 @@ Playwright now uses its portable Chromium project rather than branded Chrome, bu
 
 The Phase 2 Chromium smoke assertions both pass, but the Playwright process does not exit after its managed Next production server is stopped on this Windows workstation. The runner now uses the direct Next CLI, a manifest readiness probe, and graceful shutdown; the remaining hang requires targeted Playwright/Windows process-tree investigation. Validate the new Ubuntu quality workflow separately before making it required.
 
-### Local Supabase connectivity blocks authenticated attendance verification
+### Isolated QA accounts block authenticated attendance mutation verification
 
-During Phase 4, both credential-redacted anonymous and service-role REST probes failed before receiving an HTTP response. Brave could launch, load the PWA manifest, enforce the signed-out attendance boundary, and verify mobile overflow, but the login render could not complete its company-setup lookup. Full check-in, checkout, GPS, selfie, duplicate, and error-path verification remains blocked until external connectivity and the isolated QA contract are available. This is an environment/infrastructure limitation; no production data should be used as a substitute.
+Authoritative Supabase connectivity, migration parity, declarative schema parity, and runtime schema-version reporting are verified. Brave can launch, load the PWA manifest, enforce the signed-out attendance boundary, and verify mobile overflow. Full check-in, checkout, GPS, selfie, duplicate, and error-path verification still requires the isolated QA account/project contract; production identities and data must not be used as substitutes.
 
 ### Edge coverage is optional
 
