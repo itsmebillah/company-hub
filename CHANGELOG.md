@@ -9,6 +9,12 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
 - Added a credential-redacted Supabase Session pooler preflight to production
   releases so malformed, wrong-project, placeholder, DNS, and TCP failures are
   distinguished before migration verification runs.
+- Verified the complete production release workflow through GitHub Release
+  `v0.2.0` and corrected Windows-pipeline BOM encoding in encrypted GitHub
+  Supabase secrets without exposing their values.
+- Confirmed with production evidence that attendance selfies currently persist
+  only to Supabase Storage and that no Drive upload or queue executes from the
+  attendance workflow; documented the exact activation boundary.
 
 - Linked the Supabase CLI to the authoritative Company Hub project and verified
   remote migration history through `0041`, live audit-object removal, and a

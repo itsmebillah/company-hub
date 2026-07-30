@@ -50,6 +50,14 @@ The Phase 2 Chromium smoke assertions both pass, but the Playwright process does
 
 Authoritative Supabase connectivity, migration parity, declarative schema parity, and runtime schema-version reporting are verified. Brave can launch, load the PWA manifest, enforce the signed-out attendance boundary, and verify mobile overflow. Full check-in, checkout, GPS, selfie, duplicate, and error-path verification still requires the isolated QA account/project contract; production identities and data must not be used as substitutes.
 
+Attendance selfies remain intentionally bound to
+`SupabaseAttendanceSelfieStorage`. The OAuth Drive client is credentialed and
+independently verified, but it is not called by selfie upload, attendance
+persistence, or the process-local automation handlers. There is no durable sync
+queue. Activating Drive safely requires the approved attachment metadata/outbox
+migration, private media delivery, retry and idempotency behavior, and orphan
+cleanup.
+
 ### Edge coverage is optional
 
 The baseline uses bundled Chromium. Set `PLAYWRIGHT_INCLUDE_EDGE=true` only on a workstation/runner with Edge installed (or provide `EDGE_EXECUTABLE_PATH`). Edge remains supplemental coverage and does not block portable baseline checks.

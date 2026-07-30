@@ -24,6 +24,9 @@ The project is designed around explicit tenant boundaries and role-based access.
 
 - Employee authentication, profile management, and password recovery
 - GPS-aware attendance, work-mode policies, working hours, and reporting
+- Provider-neutral attendance media with private Supabase Storage active and a
+  separately verified Google Drive OAuth foundation awaiting schema-approved
+  activation
 - Leave types, balances, requests, approvals, and employee self-service
 - Employee directory, import/export, hierarchy, roles, and permissions
 - Announcements, celebrations, company calendar, and realtime notifications

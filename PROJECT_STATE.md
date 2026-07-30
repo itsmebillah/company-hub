@@ -54,6 +54,11 @@ The quality-hardening baseline is deployable: privileged mutation boundaries, pr
   write/readback, metadata synchronization, and artifact cleanup are verified.
   The OAuth values are configured as Sensitive Production variables in Vercel;
   attendance activation still requires the approved attachment/outbox schema.
+- Production attendance pipeline inspection confirms the configured selfie
+  provider is Supabase Storage. Ten recent attendance rows contained three
+  selfie references; all three private objects were present in the Supabase
+  bucket, and the approved Drive folder contained no files. No Drive call,
+  queue, or Drive automation handler exists in the attendance write path.
 - The Phase 4 install, lint, typecheck, and production build pass. Non-mutating Brave checks pass for browser launch, PWA manifest, signed-out attendance routing, and 375px overflow. Authoritative Supabase runtime connectivity and schema-version status are verified; full attendance mutations remain blocked only by the absent isolated-QA account contract.
 
 - Phase 2 infrastructure hardening uses Playwright-managed Chromium by default, an optional Edge project, a Supabase-independent readiness probe, explicit isolated-QA account/project validation, and an affirmative mutation opt-in.
@@ -77,7 +82,10 @@ The quality-hardening baseline is deployable: privileged mutation boundaries, pr
 - Supabase Security Advisor: no RLS-disabled or anonymous-definer warnings. Twelve warnings remain: eleven intentionally authenticated caller-derived/RLS helper RPCs and the project-level leaked-password-protection setting.
 - npm audit: 44 total findings after current registry advisories; most are development-only Vercel/ESLint transitive findings. Production scope contains 4 high findings through bundled Next.js/PostCSS/Sharp and `xlsx`; npm reports no safe compatible fix and suggests an invalid Next.js downgrade. Do not force-fix.
 - Automated tests: Playwright route, Auth, authorization, mobile, PWA, Storage, attendance, export, and Realtime coverage is committed. Unit/service integration coverage is still absent.
-- CI/CD workflow: the production `deployment_status` workflow gates release publication on install, lint, typecheck, build, migration parity, database lint, and production HTTP verification. Required repository secrets must be configured before its first run.
+- CI/CD workflow: the production `deployment_status` workflow passes install,
+  lint, typecheck, build, credential-redacted Session pooler validation,
+  migration parity, database lint, production HTTP verification, synchronized
+  release history, and GitHub Release creation.
 - Vercel CLI: authenticated and linked to `company-hub`; all five required environment variable names are present for Production and Preview. Values were not printed during verification.
 - Production deployment for the canonical password flow is Ready at `company-hub-zeta.vercel.app`; public pages return 200 and protected routes redirect to login.
 - Authenticated Company Admin/employee runtime covers canonical-password login, session restoration, logout, dashboards, major route surfaces, middleware denial, tenant isolation, feature denial, and responsive layouts.

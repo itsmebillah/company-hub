@@ -18,17 +18,20 @@ This file tracks milestone completion and active delivery work. See
 - Google infrastructure foundation: operational-account OAuth offline access for
   Drive, service-account Sheets access, restricted-resource verification,
   end-to-end temporary upload/metadata synchronization, and cleanup.
+- Production release automation: Session pooler validation, migration parity,
+  database lint, production HTTP verification, synchronized database release
+  history, and GitHub Release `v0.2.0` are passing.
 
 ## Active milestone
 
-Phase 4 activation is in progress. The production release workflow is being
-hardened with credential-redacted Session pooler validation. Attendance still
-uses Supabase Storage until the attachment metadata and transactional outbox
-migration is reviewed and explicitly approved.
+Phase 4 activation is in progress. Production evidence confirms attendance
+selfies still use Supabase Storage: all three sampled recent references resolved
+there, while the approved Drive folder had no files. This is intentional current
+provider selection, not a failed Drive request. The attachment metadata and
+transactional outbox migration requires explicit approval before activation.
 
 ## Next milestone gates
 
-- Complete the production release workflow and synchronized GitHub Release.
 - Prepare the attachment/outbox migration and rollback plan for explicit review.
 - Activate the Drive selfie provider only after schema approval and full
   attendance success, validation, authorization, cleanup, and Brave coverage.

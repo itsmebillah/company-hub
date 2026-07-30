@@ -105,6 +105,14 @@ Current employee/company context → policy and work-mode resolution → server-
 
 `AttendanceSelfieStorage` isolates the current private Supabase bucket from attendance business logic and reserves a future Google Drive adapter without enabling it. `AttendanceCreated`, `AttendanceUpdated`, and `AttendanceCompleted` contracts provide an integration seam. They remain process-local and non-durable; guaranteed synchronization requires an approved transactional outbox migration before external adapters are enabled.
 
+The credentialed `GoogleDriveClient` is infrastructure only and has no
+attendance call site. The current upload action writes the object to Supabase
+before the attendance action validates and stores its object path. Automation
+handlers are awaited best-effort notification handlers; they neither upload to
+Drive nor enqueue synchronization. Drive activation must not be represented as
+complete until provider metadata, external file identity, durable retry state,
+private media delivery, and cleanup behavior are implemented and migrated.
+
 ### Resource/announcement visibility
 
 Employee context drives server-side filtering by company, lifecycle status, publication window, role/employee targeting, and active permissions. Client filtering is only presentation.
