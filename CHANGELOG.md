@@ -6,6 +6,10 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
 
 ### Infrastructure alignment
 
+- Added a credential-redacted Supabase Session pooler preflight to production
+  releases so malformed, wrong-project, placeholder, DNS, and TCP failures are
+  distinguished before migration verification runs.
+
 - Linked the Supabase CLI to the authoritative Company Hub project and verified
   remote migration history through `0041`, live audit-object removal, and a
   clean database lint result.

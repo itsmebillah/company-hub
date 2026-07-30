@@ -5,11 +5,12 @@ Role-aware company operations software for employee self-service, workforce admi
 ![Company Hub social preview](assets/social-preview/company-hub-social-preview.png)
 
 [![Status](https://img.shields.io/badge/status-active-15803d?style=flat-square)](PROJECT_STATE.md)
+[![Production version](https://img.shields.io/badge/version-0.2.0-2563eb?style=flat-square)](CHANGELOG.md)
 [![Framework](https://img.shields.io/badge/framework-Next.js-111827?style=flat-square)](#technology-stack)
 [![Language](https://img.shields.io/badge/language-TypeScript-2563eb?style=flat-square)](#technology-stack)
 [![Backend](https://img.shields.io/badge/backend-Supabase-15803d?style=flat-square)](#architecture)
 
-[Live application](https://company-hub-zeta.vercel.app) | [Architecture](ARCHITECTURE.md) | [Product requirements](PRODUCT_REQUIREMENTS.md) | [Project status](PROJECT_STATE.md)
+[Live application](https://company-hub-zeta.vercel.app) | [Architecture](ARCHITECTURE.md) | [Product requirements](PRODUCT_REQUIREMENTS.md) | [Milestones](PROJECT_STATUS.md) | [Technical state](PROJECT_STATE.md)
 
 ![Company Hub dashboard](assets/screenshots/dashboard-desktop.png)
 
@@ -35,8 +36,8 @@ See [FEATURES.md](FEATURES.md) for the detailed implementation map and [KNOWN_IS
 
 ## Screenshots
 
-| Desktop | Tablet | Mobile |
-| --- | --- | --- |
+| Desktop                                                        | Tablet                                                       | Mobile                                                       |
+| -------------------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | ![Desktop dashboard](assets/screenshots/dashboard-desktop.png) | ![Tablet dashboard](assets/screenshots/dashboard-tablet.png) | ![Mobile dashboard](assets/screenshots/dashboard-mobile.png) |
 
 Additional before-and-after UI regression captures are stored in [`docs/screenshots`](docs/screenshots).
@@ -61,14 +62,14 @@ For design decisions and boundaries, read [ARCHITECTURE.md](ARCHITECTURE.md), [D
 
 ## Technology Stack
 
-| Layer | Technology |
-| --- | --- |
-| Application | Next.js 15, React 19, TypeScript |
-| Styling | Tailwind CSS, Radix UI primitives |
-| Backend | Supabase Auth, PostgreSQL, Realtime, Storage |
-| Validation and import | TypeScript services, SheetJS |
-| Testing | ESLint, TypeScript, Playwright, axe-core |
-| Delivery | Vercel, GitHub Actions, Supabase CLI |
+| Layer                 | Technology                                   |
+| --------------------- | -------------------------------------------- |
+| Application           | Next.js 15, React 19, TypeScript             |
+| Styling               | Tailwind CSS, Radix UI primitives            |
+| Backend               | Supabase Auth, PostgreSQL, Realtime, Storage |
+| Validation and import | TypeScript services, SheetJS                 |
+| Testing               | ESLint, TypeScript, Playwright, axe-core     |
+| Delivery              | Vercel, GitHub Actions, Supabase CLI         |
 
 ## Local Development
 

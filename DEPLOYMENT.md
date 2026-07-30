@@ -1,5 +1,25 @@
 # Deployment
 
+## Production release environment
+
+The `production` GitHub environment must contain these encrypted secrets:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `CRON_SECRET`
+- `SUPABASE_DB_URL`
+
+`SUPABASE_DB_URL` must be the authoritative project's Session pooler URI on
+port 5432. GitHub-hosted runners must not use the direct IPv6 database URI.
+Keep the complete value encrypted; never place it in repository variables,
+workflow YAML, logs, issues, or documentation.
+
+Before migration parity and database lint, the automatic release runs
+`scripts/validate-supabase-db-url.mjs`. It validates the URI structure,
+authoritative project username, password presence, DNS, and TCP reachability
+without logging connection details or credentials.
+
 ## Target platform
 
 The intended topology is Vercel for Next.js and scheduled cron, with Supabase providing PostgreSQL, Auth, Storage, and Realtime. `vercel.json` schedules the celebrations endpoint daily at `0 18 * * *` UTC.

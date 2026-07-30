@@ -42,11 +42,13 @@ jobs:
 
       - name: Verify migration parity and database lint
         run: |
+          node scripts/validate-supabase-db-url.mjs
           npx supabase migration list --db-url "$SUPABASE_DB_URL"
           npx supabase db push --db-url "$SUPABASE_DB_URL" --dry-run
           npx supabase db lint --db-url "$SUPABASE_DB_URL" --level error
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          SUPABASE_PROJECT_REF: jjfktbgfwvekhlvyjlww
 
       - name: Verify production deployment
         run: curl --fail --silent --show-error --location "$DEPLOYMENT_URL/login" > /dev/null
