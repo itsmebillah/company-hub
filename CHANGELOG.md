@@ -13,7 +13,7 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
   cleanup audit records, RLS, indexes, triggers, and historical backfill.
 - Added an OAuth-backed permanent Drive storage adapter with attachment-level
   idempotency keys and upload recovery after partial failures.
-- Added an authenticated hourly media worker, immediate post-response delivery,
+- Added an authenticated daily recovery worker, immediate post-response delivery,
   secure Company Admin media proxy, Drive sync badges, and permanent-file links.
 - Added operational processors and credential-redacted verification for Drive
   metadata, retained cache objects, outbox completion, and retention timing.

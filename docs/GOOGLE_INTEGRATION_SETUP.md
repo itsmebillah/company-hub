@@ -14,7 +14,9 @@ npm run process:attendance-media
 npm run verify:attendance-media
 ```
 
-The Vercel cron calls `/api/cron/attendance-media` hourly. Successful Drive
+The Vercel Hobby cron calls `/api/cron/attendance-media` once daily. New
+attendance also schedules an immediate post-response delivery attempt, while
+the daily sweep provides durable retry and cleanup recovery. Successful Drive
 verification starts a 72-hour Supabase cache-retention window. Do not manually
 delete cache objects or Drive files; use the worker and cleanup audit records.
 
