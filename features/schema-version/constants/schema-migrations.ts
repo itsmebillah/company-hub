@@ -41,4 +41,5 @@ export const SCHEMA_MIGRATION_MANIFEST = [
   "0040_maintenance_status_invoker.sql",
   "0041_remove_audit_systems.sql",
   "0042_schema_version_after_audit_removal.sql",
+  "0043_attendance_media_sync.sql",
 ] as const;

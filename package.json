@@ -1,6 +1,6 @@
 {
   "name": "company-hub",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "engines": {
     "node": "24.x",
@@ -21,6 +21,9 @@
     "test:e2e:headed": "playwright test --headed",
     "authorize:google-drive": "node --conditions=react-server --import tsx scripts/authorize-google-drive.ts",
     "verify:google": "node --conditions=react-server --import tsx scripts/verify-google-integrations.ts",
+    "process:attendance-media": "node --conditions=react-server --import tsx scripts/process-attendance-media.ts",
+    "verify:attendance-media": "node --conditions=react-server --import tsx scripts/verify-attendance-media.ts",
+    "verify:brave": "node scripts/verify-brave.mjs",
     "release:publish": "node scripts/publish-release.mjs"
   },
   "dependencies": {

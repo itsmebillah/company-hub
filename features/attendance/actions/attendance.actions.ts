@@ -1,13 +1,27 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 
+import { AttendanceMediaSyncService } from "@/features/attendance/services/attendance-media-sync.service";
 import { AttendanceService } from "@/features/attendance/services/attendance.service";
 import type {
   AttendanceActionState,
   AttendanceCheckInput,
 } from "@/features/attendance/types/attendance.types";
 import { FeatureAccessService } from "@/features/platform-control/services/feature-access.service";
+
+function scheduleAttendanceMediaSync() {
+  after(async () => {
+    try {
+      await AttendanceMediaSyncService.run({ syncLimit: 2, cleanupLimit: 0 });
+    } catch (error) {
+      console.error("[AttendanceAction] Deferred media worker failed.", {
+        errorType: error instanceof Error ? error.name : "unknown_error",
+      });
+    }
+  });
+}
 
 export async function prepareCheckInAction(
   input: AttendanceCheckInput = {},
@@ -45,6 +59,7 @@ export async function checkInAction(
   try {
     await FeatureAccessService.requireForCurrentCompany("attendance");
     await AttendanceService.checkIn(input);
+    scheduleAttendanceMediaSync();
     revalidatePath("/attendance");
     revalidatePath("/dashboard");
     revalidatePath("/admin/dashboard");
@@ -73,6 +88,7 @@ export async function checkOutAction(
   try {
     await FeatureAccessService.requireForCurrentCompany("attendance");
     await AttendanceService.checkOut(input);
+    scheduleAttendanceMediaSync();
     revalidatePath("/attendance");
     revalidatePath("/dashboard");
     revalidatePath("/admin/dashboard");

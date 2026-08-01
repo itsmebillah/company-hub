@@ -4,7 +4,7 @@
 
 Employee check-in/check-out, server-time policy enforcement, GPS/geofence validation, selfie evidence, offline replay, and Company Admin attendance review.
 
-Supabase remains the operational source of truth. No Google Drive upload or Google Sheets synchronization is implemented.
+Supabase remains the operational source of truth. Selfies synchronize to the restricted operational Google Drive; Google Sheets reporting remains deferred.
 
 ## Structure
 
@@ -31,24 +31,21 @@ The database unique constraint on `(employee_id, attendance_date)` is the final 
 
 ## Selfie storage
 
-`AttendanceSelfieStorage` isolates attendance logic from provider APIs. `SupabaseAttendanceSelfieStorage` is the only configured provider. It stores private objects with unique paths and creates short-lived read URLs for authorized Company Admin detail views.
+`AttendanceSelfieStorage` owns the temporary private Supabase cache. `AttendancePermanentStorage` owns permanent media and is implemented by the OAuth-backed Google Drive adapter. Attendance persistence never waits for Drive.
 
 Uploads accept only JPG, PNG, WebP, HEIC, or HEIF files up to 5 MB and validate file signatures. Upload and persistence paths are checked independently. Existing stored paths remain readable; no file migration is performed.
 
-The server-only Google integration foundation uses OAuth offline access for
+The server-only Google integration uses OAuth offline access for
 Drive, a dedicated service account for Sheets, bounded retries, redacted
 provider errors, explicit approved resource IDs, and a self-cleaning
 `npm run verify:google` check. It is not yet selected as the
-attendance provider because the current attendance schema cannot persist the
-provider and external Drive file ID or serve private Drive media through an
-authorized application route. Activating it requires the separately approved
-attachment/outbox migration and credentialed verification.
+permanent provider. Authorized Company Admin previews stream through the application; raw credentials and provider errors are never exposed.
 
 ## Automation and future sync
 
-The current dispatcher provides stable event contracts for future adapters but is intentionally best-effort and process-local. It is suitable for non-critical notifications, not guaranteed external synchronization.
+The event dispatcher remains best-effort for non-media notifications. Media uses the durable `integration_outbox`, atomic leases, retry backoff, and Drive attachment idempotency metadata.
 
-Production Google synchronization requires an approved migration for a transactional outbox, retry/lease state, provider metadata, external file IDs, attempt counts, last error, and sync timestamps. No sync row or external call is created in this phase.
+After Drive verification, Supabase retains the object for 72 hours. Cleanup re-verifies the permanent file before removing only the cache object and records the outcome; attendance rows, metadata, and Drive files are never deleted.
 
 ## Offline behavior
 

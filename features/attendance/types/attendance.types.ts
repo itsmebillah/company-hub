@@ -195,6 +195,10 @@ export type AttendanceDetailRecord = AttendanceListItem;
 export type AttendanceDetail = AttendanceDetailRecord & {
   checkInSelfieUrl: string | null;
   checkOutSelfieUrl: string | null;
+  checkInSelfieSyncStatus: string | null;
+  checkOutSelfieSyncStatus: string | null;
+  checkInSelfieDriveUrl: string | null;
+  checkOutSelfieDriveUrl: string | null;
 };
 
 export type AdminAttendanceOverview = {

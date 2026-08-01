@@ -2,6 +2,8 @@
 
 ## Source of truth
 
+Migrations through `0043` are applied to the authoritative project with matching local/remote history. Migration `0043` adds attendance media metadata, durable outbox delivery, and cleanup contracts.
+
 `supabase/migrations/` is the canonical schema history. Migrations `0001`–`0042` are applied to project `jjfktbgfwvekhlvyjlww` with matching local/remote history and declarative schema. Migration `0042` only advances the runtime schema-version contract after the applied audit-system removal. Never edit an applied migration; add the next ordered migration.
 
 `platform_features.state` is authoritative. `allow_company_override` determines whether `company_features.company_state` (`inherit`, `enabled`, or `disabled`) participates in resolution. `is_feature_enabled_for_company` and `can_access_any_feature` expose the canonical platform-first decision to server and middleware callers. `platform_feature_company_summary` supplies aggregate override counts without exposing tenant configuration rows.
@@ -17,13 +19,25 @@ The live verified catalog contains 27 public tables and the security-invoker `pl
 | Organization        | `companies`, `company_settings`, `roles`, `employees`                           | Tenant, branding/policy, roles, employee identity/hierarchy                      |
 | Resources           | `resource_categories`, `resources`, `resource_permissions`                      | Resource catalog and public/role/employee visibility                             |
 | Announcements       | `announcements`, `announcement_roles`, `announcement_employees`                 | Scheduled content and targeting                                                  |
-| Attendance          | `attendance_records`, `company_locations`, `employee_location_access`           | Daily records, GPS locations, assignments, policy snapshots                      |
+| Attendance          | `attendance_records`, `attendance_attachments`, `attendance_media_cleanup_logs`, `company_locations`, `employee_location_access` | Daily records, durable media metadata, cleanup audit, GPS, and policy snapshots |
+| Integrations        | `integration_outbox` | Leased, idempotent external-delivery work |
 | Leave/calendar      | `leave_types`, `leave_requests`, `holiday_calendars`, `holiday_events`          | Leave workflow and working-day context                                           |
 | Import              | `employee_import_jobs`, `employee_import_rows`                                  | Durable bulk-import staging and outcomes                                         |
 | Celebrations        | `employee_celebration_events`                                                   | Per-year birthday/anniversary generation deduplication                           |
 | Platform control    | `platform_admins`, `platform_settings`, `platform_features`, `company_features` | Explicit global authorization, global configuration, and two-level feature state |
 
 ## Key relationships
+
+Attendance media extension:
+
+```mermaid
+erDiagram
+  ATTENDANCE_RECORDS ||--o{ ATTENDANCE_ATTACHMENTS : captures
+  ATTENDANCE_ATTACHMENTS ||--|| INTEGRATION_OUTBOX : delivers
+  ATTENDANCE_ATTACHMENTS ||--o{ ATTENDANCE_MEDIA_CLEANUP_LOGS : audits
+  COMPANIES ||--o{ ATTENDANCE_ATTACHMENTS : owns
+  EMPLOYEES ||--o{ ATTENDANCE_ATTACHMENTS : appears_in
+```
 
 ```text
 companies

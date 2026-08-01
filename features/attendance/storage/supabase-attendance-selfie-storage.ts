@@ -63,6 +63,26 @@ export const SupabaseAttendanceSelfieStorage: AttendanceSelfieStorage = {
     return data.some((object) => object.name === fileName);
   },
 
+  async download(objectPath) {
+    const supabase = createSupabaseAdminClient();
+    const { data, error } = await supabase.storage
+      .from(ATTENDANCE_SELFIES_BUCKET)
+      .download(objectPath);
+
+    if (error || !data) {
+      console.error(
+        "[SupabaseAttendanceSelfieStorage] Unable to download selfie.",
+        { objectPath, errorCode: error?.name ?? "missing_object" },
+      );
+      throw new Error("Unable to read attendance selfie cache.");
+    }
+
+    return {
+      data: await data.arrayBuffer(),
+      contentType: data.type || "application/octet-stream",
+    };
+  },
+
   async createReadUrl(objectPath, expiresInSeconds) {
     const supabase = createSupabaseAdminClient();
     const { data, error } = await supabase.storage

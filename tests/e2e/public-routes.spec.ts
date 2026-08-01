@@ -120,6 +120,15 @@ test("notification tracking rejects signed-out requests", async ({
   expect(response.status()).toBe(401);
 });
 
+test("attendance media rejects signed-out requests", async ({ request }) => {
+  const response = await request.get(
+    `/api/attendance/selfies/${crypto.randomUUID()}`,
+  );
+
+  expect(response.status()).toBe(403);
+  expect(await response.json()).toEqual({ message: "Forbidden." });
+});
+
 test("login has no automated WCAG A/AA violations", async ({ page }) => {
   await page.goto("/login", { waitUntil: "networkidle" });
   const results = await new AxeBuilder({ page })

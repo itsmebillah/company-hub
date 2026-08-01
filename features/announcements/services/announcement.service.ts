@@ -58,7 +58,7 @@ function toListItem(row: {
   status: AnnouncementStatus;
   created_at: string;
   updated_at: string;
-  target_audience?: "company" | "roles" | "employees" | null;
+  target_audience?: string | null;
   roleIds?: string[];
   employeeIds?: string[];
 }): AnnouncementListItem {
@@ -71,7 +71,10 @@ function toListItem(row: {
     publishFrom: row.publish_from ?? "",
     publishUntil: row.publish_until ?? "",
     status: row.status,
-    targetAudience: row.target_audience ?? "company",
+    targetAudience:
+      row.target_audience === "roles" || row.target_audience === "employees"
+        ? row.target_audience
+        : "company",
     roleIds: row.roleIds ?? [],
     employeeIds: row.employeeIds ?? [],
     createdAt: row.created_at,

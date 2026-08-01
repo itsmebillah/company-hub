@@ -4,6 +4,34 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
 
 ## Unreleased
 
+## [0.3.0] - 2026-07-31
+
+### Added
+
+- Added migration `0043` with tenant-scoped attendance attachment metadata, a
+  transactional outbox, atomic leased job claims, bounded exponential retry,
+  cleanup audit records, RLS, indexes, triggers, and historical backfill.
+- Added an OAuth-backed permanent Drive storage adapter with attachment-level
+  idempotency keys and upload recovery after partial failures.
+- Added an authenticated hourly media worker, immediate post-response delivery,
+  secure Company Admin media proxy, Drive sync badges, and permanent-file links.
+- Added operational processors and credential-redacted verification for Drive
+  metadata, retained cache objects, outbox completion, and retention timing.
+
+### Changed
+
+- Attendance saves remain independent of Drive availability. Supabase Storage is
+  now a temporary recovery cache and is retained for exactly three days after a
+  verified Drive sync before eligible cleanup.
+- Synchronized all three historical attendance selfies to the restricted
+  operational Drive folder with no failures; a second worker pass was a no-op.
+
+### Security
+
+- Attendance media remains private. Company Admin previews are tenant-authorized
+  server streams, credentials never reach the browser, and cleanup never removes
+  the permanent Drive file, attendance record, or attachment metadata.
+
 ### Planned
 
 - Added the Product Phase 5 live-location specification covering duty-bound

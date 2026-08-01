@@ -15,9 +15,12 @@ The quality-hardening baseline is deployable: privileged mutation boundaries, pr
 - Supabase CLI 2.109.1 and Vercel CLI 56.5.0 installed as dev dependencies.
 - Supabase project `jjfktbgfwvekhlvyjlww` is the authoritative Company Hub
   project and the local CLI is linked to it.
-- Migrations `0001` through `0042` are applied remotely with exact local/remote
-  history and declarative schema parity. Migration `0042` non-destructively
+- Migrations `0001` through `0043` are applied remotely with exact local/remote
+  history. Migration `0042` non-destructively
   advances runtime schema-version reporting after the audit-system removal.
+- Migration `0043` activates durable attendance media delivery. Three historical
+  attachments are verified in restricted Drive, the outbox has zero pending
+  rows, and all source cache objects remain inside their 72-hour retention.
 - 27 public application tables with RLS enabled; platform-control and draft release rows are default-deny to browser roles.
 - Fourteen platform features are cataloged. Existing companies inherit enabled modules and `future_modules` starts disabled.
 - No System Admin is auto-provisioned. `platform_admins` remains empty until the owner explicitly approves an existing active Auth identity.
@@ -44,8 +47,11 @@ The quality-hardening baseline is deployable: privileged mutation boundaries, pr
 
 ## Current quality signals
 
-- Phase 4 attendance hardening introduces provider-neutral selfie storage, immutable validated selfie references, conditional checkout writes, and best-effort attendance automation events. Supabase remains the source of truth; no Google integration or migration was implemented.
-- Durable reporting sync remains deferred pending approval of a transactional outbox and attachment metadata schema. Current event delivery is intentionally process-local and suitable only for non-critical side effects.
+- Phase 4 attendance hardening now includes durable selfie delivery through a
+  transactional outbox, leased retries, idempotent Drive recovery, secure media
+  delivery, and verified delayed cache cleanup. Supabase remains source of truth.
+- Durable Google Sheets reporting sync remains deferred. The attendance event
+  dispatcher is still process-local for non-media side effects.
 - The inactive Google integration foundation now separates OAuth 2.0 offline
   access for operational-account Drive uploads from service-account Sheets
   synchronization. Both clients use bounded retries, redacted errors, explicit

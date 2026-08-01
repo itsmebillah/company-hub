@@ -90,6 +90,7 @@ async function main() {
     console.log("sheets_write_readback=verified");
 
     const uploaded = await GoogleDriveClient.uploadSelfie({
+      attachmentId: testId,
       objectPath: `integration-verification/${testId}.png`,
       data: TEST_PNG.buffer.slice(
         TEST_PNG.byteOffset,

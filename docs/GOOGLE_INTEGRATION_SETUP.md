@@ -1,5 +1,23 @@
 # Google Integration Setup
 
+Attendance Drive delivery is active. Production requires all Drive OAuth,
+Sheets service-account, resource-ID, Supabase server, and `CRON_SECRET`
+variables documented in `.env.example`. Store values only in local ignored env
+files and Vercel encrypted environment variables; never store credential JSON
+inside this repository.
+
+Operational checks:
+
+```powershell
+npm run verify:google
+npm run process:attendance-media
+npm run verify:attendance-media
+```
+
+The Vercel cron calls `/api/cron/attendance-media` hourly. Successful Drive
+verification starts a 72-hour Supabase cache-retention window. Do not manually
+delete cache objects or Drive files; use the worker and cleanup audit records.
+
 Company Hub uses two server-only identities:
 
 - Google Drive: OAuth 2.0 offline access delegated by the operational Google

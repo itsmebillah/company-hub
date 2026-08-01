@@ -5,7 +5,7 @@ Role-aware company operations software for employee self-service, workforce admi
 ![Company Hub social preview](assets/social-preview/company-hub-social-preview.png)
 
 [![Status](https://img.shields.io/badge/status-active-15803d?style=flat-square)](PROJECT_STATE.md)
-[![Production version](https://img.shields.io/badge/version-0.2.0-2563eb?style=flat-square)](CHANGELOG.md)
+[![Production version](https://img.shields.io/badge/version-0.3.0-2563eb?style=flat-square)](CHANGELOG.md)
 [![Framework](https://img.shields.io/badge/framework-Next.js-111827?style=flat-square)](#technology-stack)
 [![Language](https://img.shields.io/badge/language-TypeScript-2563eb?style=flat-square)](#technology-stack)
 [![Backend](https://img.shields.io/badge/backend-Supabase-15803d?style=flat-square)](#architecture)
@@ -24,9 +24,8 @@ The project is designed around explicit tenant boundaries and role-based access.
 
 - Employee authentication, profile management, and password recovery
 - GPS-aware attendance, work-mode policies, working hours, and reporting
-- Provider-neutral attendance media with private Supabase Storage active and a
-  separately verified Google Drive OAuth foundation awaiting schema-approved
-  activation
+- Durable attendance selfie delivery to restricted Google Drive, with private
+  Supabase Storage retained as a verified three-day recovery cache
 - Leave types, balances, requests, approvals, and employee self-service
 - Employee directory, import/export, hierarchy, roles, and permissions
 - Announcements, celebrations, company calendar, and realtime notifications
@@ -58,7 +57,11 @@ flowchart LR
     App --> Actions[Server actions and services]
     Actions --> Auth[Supabase Auth]
     Actions --> DB[(PostgreSQL + RLS)]
-    Actions --> Storage[Supabase Storage]
+    Actions --> Storage[Supabase Storage cache]
+    DB --> Outbox[Transactional media outbox]
+    Outbox --> Worker[Retry and cleanup worker]
+    Worker --> Drive[Restricted Google Drive]
+    Worker --> Storage
     DB --> Realtime[Realtime notifications]
     Realtime --> Browser
     Cron[Vercel cron] --> Actions

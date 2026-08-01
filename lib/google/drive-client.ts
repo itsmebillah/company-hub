@@ -10,6 +10,9 @@ export type GoogleDriveFileMetadata = {
   parents?: string[];
   size?: string;
   md5Checksum?: string;
+  webViewLink?: string;
+  trashed?: boolean;
+  appProperties?: Record<string, string>;
 };
 
 export type GoogleDriveAccessMetadata = GoogleDriveFileMetadata & {
@@ -59,6 +62,7 @@ export const GoogleDriveClient = {
   },
 
   async uploadSelfie(input: {
+    attachmentId: string;
     objectPath: string;
     data: ArrayBuffer;
     contentType: string;
@@ -70,6 +74,7 @@ export const GoogleDriveClient = {
         name: fileName,
         parents: [driveSelfiesFolderId],
         appProperties: {
+          companyHubAttachmentId: input.attachmentId,
           companyHubObjectPath: input.objectPath,
           companyHubDomain: "attendance_selfie",
         },
@@ -78,7 +83,7 @@ export const GoogleDriveClient = {
       contentType: input.contentType,
     });
     const response = await googleApiFetch(
-      "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true&fields=id,name,mimeType,parents,size,md5Checksum",
+      "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true&fields=id,name,mimeType,parents,size,md5Checksum,webViewLink,trashed,appProperties",
       {
         method: "POST",
         headers: { "Content-Type": `multipart/related; boundary=${boundary}` },
@@ -91,11 +96,43 @@ export const GoogleDriveClient = {
 
   async getFile(fileId: string) {
     const response = await googleApiFetch(
-      `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?supportsAllDrives=true&fields=id,name,mimeType,parents,size,md5Checksum`,
+      `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?supportsAllDrives=true&fields=id,name,mimeType,parents,size,md5Checksum,webViewLink,trashed,appProperties`,
       {},
       "drive-oauth",
     );
     return (await response.json()) as GoogleDriveFileMetadata;
+  },
+
+  async findAttendanceAttachment(attachmentId: string) {
+    const { driveSelfiesFolderId } = getGoogleIntegrationConfig();
+    const escapedAttachmentId = attachmentId.replaceAll("'", "\\'");
+    const escapedFolderId = driveSelfiesFolderId.replaceAll("'", "\\'");
+    const query = encodeURIComponent(
+      `'${escapedFolderId}' in parents and trashed = false and appProperties has { key='companyHubAttachmentId' and value='${escapedAttachmentId}' }`,
+    );
+    const response = await googleApiFetch(
+      `https://www.googleapis.com/drive/v3/files?q=${query}&pageSize=2&spaces=drive&fields=files(id,name,mimeType,parents,size,md5Checksum,webViewLink,trashed,appProperties)`,
+      {},
+      "drive-oauth",
+    );
+    const result = (await response.json()) as {
+      files?: GoogleDriveFileMetadata[];
+    };
+
+    return result.files?.[0] ?? null;
+  },
+
+  async downloadFile(fileId: string) {
+    const response = await googleApiFetch(
+      `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media&supportsAllDrives=true`,
+      {},
+      "drive-oauth",
+    );
+
+    return {
+      data: await response.arrayBuffer(),
+      contentType: response.headers.get("content-type") ?? "application/octet-stream",
+    };
   },
 
   async removeFile(fileId: string) {

@@ -101,6 +101,20 @@ Validation → Auth user creation → employee insertion → activity/notificati
 
 ### Attendance
 
+#### Durable attendance media
+
+Attendance writes first persist the private Supabase cache path and attendance
+record. Migration `0043` creates attachment metadata and an outbox row in that
+same database transaction. An immediate post-response attempt and an hourly
+worker deliver the object to restricted Google Drive using atomic leases,
+exponential retry, Drive app-property idempotency, and partial-upload recovery.
+
+Company Admin previews use a tenant-authorized server route. It prefers the
+permanent Drive object after synchronization and falls back to the retained
+cache while delivery is pending. After Drive re-verification, cleanup waits 72
+hours and removes only the Supabase object. Attendance records, metadata, and
+Drive files are never deleted by cleanup.
+
 Current employee/company context → policy and work-mode resolution → server-time/GPS/geofence validation → provider-neutral selfie storage → conditional attendance insert/update → best-effort automation events. Office-time and work-mode snapshots preserve historical interpretation. Offline actions are queued in browser local storage and replayed online.
 
 `AttendanceSelfieStorage` isolates the current private Supabase bucket from attendance business logic and reserves a future Google Drive adapter without enabling it. `AttendanceCreated`, `AttendanceUpdated`, and `AttendanceCompleted` contracts provide an integration seam. They remain process-local and non-durable; guaranteed synchronization requires an approved transactional outbox migration before external adapters are enabled.

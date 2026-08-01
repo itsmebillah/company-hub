@@ -20,6 +20,15 @@ The latest audit reports 44 total findings, primarily through development-only V
 
 ## Medium
 
+### Historical migrations do not fully reproduce the linked schema
+
+`supabase db diff --linked` completes but emits a broad destructive diff across
+historical foreign keys, policies, views, functions, indexes, and the `pg_net`
+extension. Migration history and database lint pass through `0043`; this is a
+pre-existing canonical-history reproducibility gap, not an `0043` runtime
+failure. Never apply the generated destructive diff. Reconcile the historical
+migration baseline in an isolated project before claiming declarative parity.
+
 ### Isolated production authorization event requires monitoring
 
 One `POST /login` request returned 500 immediately after the 2026-07-26 deployment, with the bundled stack originating at the `requireCompanyAdmin` guard. The event could not be reproduced: subsequent complete Company Admin and Employee login, dashboard, authorization, profile, and logout checks passed, followed by an empty 30-minute production error-log check. Preserve request/action identifiers if it recurs and diagnose against that evidence; do not weaken the guard or make a speculative authorization change.

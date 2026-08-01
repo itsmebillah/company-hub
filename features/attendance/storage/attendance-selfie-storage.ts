@@ -19,6 +19,11 @@ export interface AttendanceSelfieStorage {
 
   exists(objectPath: string): Promise<boolean>;
 
+  download(objectPath: string): Promise<{
+    data: ArrayBuffer;
+    contentType: string;
+  }>;
+
   createReadUrl(
     objectPath: string,
     expiresInSeconds: number,

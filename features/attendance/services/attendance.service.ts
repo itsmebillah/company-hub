@@ -3,6 +3,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 
 import { AttendanceRepository } from "@/features/attendance/repositories/attendance.repository";
+import { AttendanceMediaSyncRepository } from "@/features/attendance/repositories/attendance-media-sync.repository";
 import { AttendanceAutomationService } from "@/features/attendance/services/attendance-automation.service";
 import { AttendanceInputService } from "@/features/attendance/services/attendance-input.service";
 import { AttendancePolicyService } from "@/features/attendance/services/attendance-policy.service";
@@ -378,19 +379,18 @@ export const AttendanceService = {
       return null;
     }
 
-    const [checkInSelfieUrl, checkOutSelfieUrl] = await Promise.all([
-      record.checkInSelfiePath
-        ? AttendanceSelfieService.getSignedUrl(record.checkInSelfiePath)
-        : Promise.resolve(null),
-      record.checkOutSelfiePath
-        ? AttendanceSelfieService.getSignedUrl(record.checkOutSelfiePath)
-        : Promise.resolve(null),
-    ]);
+    const attachments = await AttendanceMediaSyncRepository.findByAttendance(id, companyId);
+    const checkInAttachment = attachments.find((item) => item.phase === "check_in") ?? null;
+    const checkOutAttachment = attachments.find((item) => item.phase === "check_out") ?? null;
 
     return {
       ...record,
-      checkInSelfieUrl,
-      checkOutSelfieUrl,
+      checkInSelfieUrl: checkInAttachment ? `/api/attendance/selfies/${checkInAttachment.id}` : null,
+      checkOutSelfieUrl: checkOutAttachment ? `/api/attendance/selfies/${checkOutAttachment.id}` : null,
+      checkInSelfieSyncStatus: checkInAttachment?.sync_status ?? null,
+      checkOutSelfieSyncStatus: checkOutAttachment?.sync_status ?? null,
+      checkInSelfieDriveUrl: checkInAttachment?.drive_url ?? null,
+      checkOutSelfieDriveUrl: checkOutAttachment?.drive_url ?? null,
     };
   },
 };

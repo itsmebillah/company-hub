@@ -89,6 +89,8 @@ export default async function AdminAttendanceDetailPage({
           address={record.checkInAddress}
           source={record.checkInLocationSource}
           selfieUrl={record.checkInSelfieUrl}
+          selfieSyncStatus={record.checkInSelfieSyncStatus}
+          selfieDriveUrl={record.checkInSelfieDriveUrl}
           browser={record.checkInDeviceBrowser}
           platform={record.checkInDevicePlatform}
         />
@@ -103,6 +105,8 @@ export default async function AdminAttendanceDetailPage({
           address={record.checkOutAddress}
           source={record.checkOutLocationSource}
           selfieUrl={record.checkOutSelfieUrl}
+          selfieSyncStatus={record.checkOutSelfieSyncStatus}
+          selfieDriveUrl={record.checkOutSelfieDriveUrl}
           browser={record.checkOutDeviceBrowser}
           platform={record.checkOutDevicePlatform}
         />
@@ -152,6 +156,8 @@ function LocationPanel({
   address,
   source,
   selfieUrl,
+  selfieSyncStatus,
+  selfieDriveUrl,
   browser,
   platform,
 }: {
@@ -165,6 +171,8 @@ function LocationPanel({
   address: string | null;
   source: string | null;
   selfieUrl: string | null;
+  selfieSyncStatus: string | null;
+  selfieDriveUrl: string | null;
   browser: string | null;
   platform: string | null;
 }) {
@@ -234,7 +242,14 @@ function LocationPanel({
       </dl>
 
       <div className="bg-background mt-4 rounded-lg border p-3">
-        <p className="text-muted-foreground text-sm">Selfie</p>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-muted-foreground text-sm">Selfie</p>
+          {selfieSyncStatus ? (
+            <span className="bg-secondary text-secondary-foreground rounded-full px-2.5 py-1 text-xs font-semibold capitalize">
+              Drive: {selfieSyncStatus}
+            </span>
+          ) : null}
+        </div>
         {selfieUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -245,6 +260,17 @@ function LocationPanel({
         ) : (
           <p className="mt-2 text-sm font-semibold">No selfie captured.</p>
         )}
+        {selfieDriveUrl ? (
+          <a
+            href={selfieDriveUrl}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="hover:bg-muted mt-3 inline-flex min-h-11 items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium"
+          >
+            <ExternalLink className="size-4" aria-hidden="true" />
+            Open in Google Drive
+          </a>
+        ) : null}
       </div>
     </article>
   );
