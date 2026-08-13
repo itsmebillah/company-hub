@@ -10,6 +10,7 @@ export async function verifyGoogleSheetsSync() {
   ]);
   const { GoogleSheetsClient } = await import("@/lib/google/sheets-client");
   const supabase = createSupabaseAdminClient();
+  await GoogleSheetsSyncService.run({ jobLimit: 1, reconciliationLimit: 0 });
   const { data: destinations, error: destinationError } = await supabase
     .from("reporting_destinations")
     .select("id,company_id,spreadsheet_id,sheet_name")
