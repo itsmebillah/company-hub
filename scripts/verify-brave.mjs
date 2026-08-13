@@ -97,6 +97,12 @@ try {
       const response = await page.goto(`${baseUrl}${path}`, {
         waitUntil: "domcontentloaded",
       });
+      await page.waitForFunction(
+        () => document.querySelectorAll("main").length === 1,
+        undefined,
+        { timeout: 15_000 },
+      );
+      await page.waitForTimeout(500);
       if (response?.status() !== 200) throw new Error(`Admin route failed: ${path}`);
       if ((await page.locator("body").innerText()).includes("Application error")) {
         throw new Error(`Admin route rendered an error: ${path}`);
