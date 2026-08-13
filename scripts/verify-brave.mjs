@@ -1,4 +1,9 @@
 import { chromium } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
+import { loadEnvConfig } from "@next/env";
+import { createClient } from "@supabase/supabase-js";
+
+loadEnvConfig(process.cwd());
 
 const executablePath =
   process.env.BRAVE_EXECUTABLE_PATH ??
@@ -26,6 +31,77 @@ try {
   );
   if (media.status() !== 403) throw new Error("Attendance media authorization boundary failed.");
   if (runtimeErrors.length > 0) throw new Error("Brave reported a runtime page error.");
+
+  if (process.env.BRAVE_PRODUCTION_AUTH === "true") {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const companyId = process.env.GOOGLE_SHEETS_REPORTING_COMPANY_ID;
+    if (!supabaseUrl || !serviceRoleKey || !companyId) {
+      throw new Error("Production Brave authentication configuration is incomplete.");
+    }
+    const supabase = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+    const { data: roles, error: roleError } = await supabase
+      .from("roles")
+      .select("id")
+      .eq("company_id", companyId)
+      .eq("name", "Company Admin")
+      .eq("status", "active");
+    if (roleError || roles.length !== 1) {
+      throw new Error("Exactly one active Company Admin role is required.");
+    }
+    const { data: admins, error: adminError } = await supabase
+      .from("employees")
+      .select("employee_id")
+      .eq("company_id", companyId)
+      .eq("role_id", roles[0].id)
+      .eq("status", "active")
+      .not("auth_user_id", "is", null);
+    if (adminError || admins.length !== 1) {
+      throw new Error("Exactly one active Company Admin login is required.");
+    }
+
+    await page.goto(`${baseUrl}/login`);
+    await page.locator("#employee-id").fill(admins[0].employee_id);
+    await page.locator("#password").fill(admins[0].employee_id);
+    await page.getByRole("button", { name: "Login" }).click();
+    await page.waitForURL((url) => !url.pathname.endsWith("/login"), {
+      timeout: 20_000,
+    });
+    const onboardingClose = page.getByRole("button", {
+      name: "Close permission onboarding",
+    });
+    if (await onboardingClose.isVisible().catch(() => false)) {
+      await onboardingClose.click();
+    }
+
+    for (const path of [
+      "/admin/dashboard",
+      "/admin/calendar",
+      "/admin/attendance",
+      "/admin/attendance/reports",
+    ]) {
+      const response = await page.goto(`${baseUrl}${path}`, {
+        waitUntil: "domcontentloaded",
+      });
+      if (response?.status() !== 200) throw new Error(`Admin route failed: ${path}`);
+      if ((await page.locator("body").innerText()).includes("Application error")) {
+        throw new Error(`Admin route rendered an error: ${path}`);
+      }
+      const violations = await new AxeBuilder({ page }).analyze();
+      if (violations.violations.length > 0) {
+        throw new Error(`Accessibility verification failed: ${path}`);
+      }
+      const routeOverflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      );
+      if (routeOverflow > 1) throw new Error(`Responsive overflow failed: ${path}`);
+    }
+    console.log("brave_admin_routes=verified");
+    console.log("brave_reporting_flow=verified");
+    console.log("brave_accessibility=verified");
+  }
 
   console.log("brave_browser=verified");
   console.log("attendance_authorization=verified");

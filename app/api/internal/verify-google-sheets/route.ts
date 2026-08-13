@@ -10,6 +10,31 @@ export async function POST(request: Request) {
   }
 
   try {
+    const body = (await request.json().catch(() => ({}))) as { scope?: unknown };
+    if (body.scope === "drive") {
+      const { createSupabaseAdminClient } = await import("@/lib/supabase/admin");
+      const { GoogleDriveAttendancePermanentStorage } = await import(
+        "@/features/attendance/storage/google-drive-attendance-permanent-storage"
+      );
+      const { data, error } = await createSupabaseAdminClient()
+        .from("attendance_attachments")
+        .select("drive_file_id")
+        .eq("sync_status", "synced")
+        .not("drive_file_id", "is", null);
+      if (error) throw new Error("Unable to load Drive verification records.");
+      for (const attachment of data) {
+        if (!attachment.drive_file_id) continue;
+        await GoogleDriveAttendancePermanentStorage.verify(
+          attachment.drive_file_id,
+        );
+      }
+      return NextResponse.json({
+        verified: true,
+        provider: "google_drive",
+        readableFiles: data.length,
+      });
+    }
+
     const { verifyGoogleSheetsSync } =
       await import("@/scripts/verify-google-sheets-sync");
     await verifyGoogleSheetsSync();
