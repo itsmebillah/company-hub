@@ -17,6 +17,7 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
 - Calendar mutations now schedule bounded post-response Sheets delivery while remaining independent of Google availability.
 - Integration health stays quiet when healthy and creates one Company Admin Update only after automatic recovery reaches a terminal failure.
 - Advanced production schema telemetry to `0044` and documented `GOOGLE_SHEETS_REPORTING_COMPANY_ID` as the explicit tenant binding.
+- Expanded the Brave release check to cover authenticated Company Admin dashboard, calendar/reporting, attendance, responsive layout, runtime errors, and accessibility. Production Sheets verification passed; the independent Drive regression check identified an expired OAuth refresh credential requiring operational-account renewal.
 
 ### Documentation
 

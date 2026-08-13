@@ -1,9 +1,9 @@
 import { chromium } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-import { loadEnvConfig } from "@next/env";
+import nextEnv from "@next/env";
 import { createClient } from "@supabase/supabase-js";
 
-loadEnvConfig(process.cwd());
+nextEnv.loadEnvConfig(process.cwd());
 
 const executablePath =
   process.env.BRAVE_EXECUTABLE_PATH ??
@@ -12,7 +12,8 @@ const baseUrl = process.env.BRAVE_BASE_URL ?? "http://127.0.0.1:3000";
 
 const browser = await chromium.launch({ executablePath, headless: true });
 try {
-  const page = await browser.newPage({ viewport: { width: 375, height: 812 } });
+  const context = await browser.newContext({ viewport: { width: 375, height: 812 } });
+  const page = await context.newPage();
   const runtimeErrors = [];
   page.on("pageerror", (error) => runtimeErrors.push(error.message));
 
@@ -58,17 +59,28 @@ try {
       .eq("role_id", roles[0].id)
       .eq("status", "active")
       .not("auth_user_id", "is", null);
-    if (adminError || admins.length !== 1) {
-      throw new Error("Exactly one active Company Admin login is required.");
+    if (adminError || admins.length === 0) {
+      throw new Error("An active Company Admin login is required.");
     }
 
-    await page.goto(`${baseUrl}/login`);
-    await page.locator("#employee-id").fill(admins[0].employee_id);
-    await page.locator("#password").fill(admins[0].employee_id);
-    await page.getByRole("button", { name: "Login" }).click();
-    await page.waitForURL((url) => !url.pathname.endsWith("/login"), {
-      timeout: 20_000,
-    });
+    let signedIn = false;
+    for (const admin of admins) {
+      await page.context().clearCookies();
+      await page.goto(`${baseUrl}/login`);
+      await page.locator("#employee-id").fill(admin.employee_id);
+      await page.locator("#password").fill(admin.employee_id);
+      await page.getByRole("button", { name: "Login" }).click();
+      signedIn = await page
+        .waitForURL((url) => !url.pathname.endsWith("/login"), {
+          timeout: 8_000,
+        })
+        .then(() => true)
+        .catch(() => false);
+      if (signedIn) break;
+    }
+    if (!signedIn) {
+      throw new Error("No Company Admin retained the disposable default QA credential.");
+    }
     const onboardingClose = page.getByRole("button", {
       name: "Close permission onboarding",
     });
@@ -91,7 +103,11 @@ try {
       }
       const violations = await new AxeBuilder({ page }).analyze();
       if (violations.violations.length > 0) {
-        throw new Error(`Accessibility verification failed: ${path}`);
+        throw new Error(
+          `Accessibility verification failed: ${path} (${violations.violations
+            .map((violation) => violation.id)
+            .join(",")})`,
+        );
       }
       const routeOverflow = await page.evaluate(
         () => document.documentElement.scrollWidth - document.documentElement.clientWidth,

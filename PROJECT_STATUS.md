@@ -40,6 +40,8 @@ All three historical selfie references were verified in restricted Drive at mile
 
 ## Active gates
 
+- Renew the production Google Drive OAuth consent/refresh token, then re-verify all four stored selfie references and cache-cleanup recovery. Phase 4.1 Sheets and Brave gates passed, but the broader production regression gate remains open until Drive authentication is restored.
+
 - Prove the isolated authenticated-QA environment and cleanup discipline.
 - Approve Sheets data contracts, privacy allowlists, protected ranges, freshness SLA, and operational ownership.
 - Resolve or formally accept dependency advisories through compatibility-tested maintenance; never force a breaking audit fix.

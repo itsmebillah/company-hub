@@ -12,6 +12,10 @@ No unresolved application-critical defect was reproduced in the latest documente
 
 ## High
 
+### Production Google Drive OAuth requires renewal
+
+The 2026-08-13 Phase 4.1 regression check verified four attendance attachments as durably synced with Drive IDs, but all four live readability checks stopped at OAuth token acquisition. Production logs report the redacted `drive-oauth` authentication category; no file request or deletion occurred. This matches the documented seven-day refresh-token expiry risk while the external OAuth app remains in Testing. The operational Google account must renew consent and the production refresh token must be rotated, then all four references and cleanup recovery must be re-verified. Do not delete or recreate the existing Drive files.
+
 ### Authenticated browser and lower-level coverage are incomplete
 
 Pull requests run install, lint, typecheck, build, and database-independent Chromium smoke coverage. The release workflow additionally runs database connection validation, migration parity, database lint, and production HTTP verification. Full authenticated mutation coverage remains a protected manual job until the isolated Supabase project, synthetic accounts, mutation opt-in, and cleanup monitoring are configured. No committed unit/service integration runner exists.
@@ -34,9 +38,9 @@ Do not run `npm audit fix --force`. Reassess `xlsx` replacement, bound workbook 
 
 `supabase db diff --linked` completes but emits a broad destructive diff across historical foreign keys, policies, views, functions, indexes, and the `pg_net` extension. Migration history and database lint pass through `0043`; this is a pre-existing canonical-history reproducibility gap, not an `0043` runtime failure. Never apply the generated destructive diff. Reconcile the historical baseline in an isolated project first.
 
-### Durable Google Sheets synchronization is not implemented
+### Additional Google Sheets datasets are not approved
 
-Service-account authentication, the approved workbook configuration, bounded Google API retries, raw read/write helpers, and a self-cleaning verification script exist. There is no production dataset contract, durable Sheets event, worker, lease/retry state, watermark, tombstone flow, reconciliation ledger, freshness alert, or scheduled Sheets sync. Sheets must remain documented as a derived inactive reporting foundation until those controls pass isolated verification.
+Durable Holidays synchronization is active and production-verified. Employees, Leave, and Attendance remain excluded until separate privacy allowlists, row contracts, consumer access, and retention rules are approved.
 
 ### Integration governance remains incomplete
 
