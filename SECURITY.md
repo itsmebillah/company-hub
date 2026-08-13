@@ -25,6 +25,7 @@ Company Hub uses defense in depth: authenticated sessions, server-side role/comp
 Required secrets are `SUPABASE_SERVICE_ROLE_KEY` and `CRON_SECRET`; the Supabase anonymous key is public by design but should still be environment-configured. `.env.local` is ignored. `.env.example` must contain safe placeholders only.
 
 Google Sheets uses a dedicated service account with no domain-wide delegation.
+The Holidays projection is restricted to one explicitly configured company/workbook destination. Browser roles cannot read reporting destinations or outbox state; server-only service-role code performs delivery. No Employee, Leave, or Attendance fields are approved for Sheets.
 Google Drive uses OAuth 2.0 offline access delegated by the operational account;
 its client secret and refresh token are server-only. Google credential files,
 private keys, client secrets, refresh tokens, and access tokens must never appear

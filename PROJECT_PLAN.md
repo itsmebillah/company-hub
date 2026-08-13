@@ -1,8 +1,8 @@
 # Company Hub Project Plan
 
-Status: reconciled after the completed Phase 4.0.3 attendance-media milestone on 2026-08-13
+Status: reconciled after the completed Phase 4.1 durable Google Sheets milestone on 2026-08-13
 
-Authority: Supabase remains the operational source of truth. Google Drive is the permanent attendance-selfie archive, while Google Sheets remains a planned derived reporting system.
+Authority: Supabase remains the operational source of truth. Google Drive is the permanent attendance-selfie archive, while Google Sheets is the derived Holidays reporting system.
 
 This plan records delivery status and the next approved sequence. It extends, but does not replace, [PROJECT_STATE.md](PROJECT_STATE.md), [PROJECT_STATUS.md](PROJECT_STATUS.md), [ARCHITECTURE.md](ARCHITECTURE.md), [ROADMAP.md](ROADMAP.md), or [PRODUCT_VISION_2027.md](PRODUCT_VISION_2027.md). A planned item is not authorization to implement, migrate, deploy, or change an external resource.
 
@@ -37,7 +37,7 @@ Verified 72-hour Supabase cache cleanup
 Supabase operational data
           |
           v
-Google Sheets reporting projection (PLANNED, not active)
+Durable Google Sheets Holidays projection (ACTIVE)
 ```
 
 Core rules:
@@ -89,25 +89,22 @@ All three historical selfie references were synchronized and verified in restric
 
 ## Next integration milestone
 
-### Durable Google Sheets synchronization — PLANNED
+### Durable Google Sheets synchronization — COMPLETE
 
-Current foundation:
+Implemented contract:
 
 - Server-only service-account authentication is implemented.
 - The approved workbook ID is explicit configuration.
 - Spreadsheet metadata, temporary tab creation, raw value write/readback, and cleanup are verified by `npm run verify:google`.
 - Shared Google API retry and error-redaction infrastructure is available.
 
-Not implemented:
+Expansion boundaries:
 
-- No production reporting dataset is synchronized.
-- No domain field allowlist, row contract, protected raw-tab contract, or consumer access matrix is approved.
-- No durable Sheets enqueue path, reporting event type, sync ledger, watermark, tombstone, or reconciliation record exists.
-- The current `integration_outbox` constraint is attendance-media-specific; reuse requires an additive migration, not an undocumented payload convention.
-- No Sheets worker, scheduled recovery route, health signal, freshness SLA, or production rollback runbook exists.
-- No isolated tests cover replay, duplicate delivery, deletion, tenant isolation, provider outage, or row drift.
+- Holidays is the only approved production dataset and uses the explicit columns documented in `features/reporting-sync/README.md`.
+- Employees, Leave, and Attendance have no approved field allowlist or consumer access contract.
+- Migration `0044`, the leased worker, secured schedule, reconciliation, failure health, and isolated unit coverage implement the durable contract.
 
-### Required work
+### Completed work
 
 1. **Governed workbook contract**
    - Approve the initial low-risk domain, preferably Holidays.

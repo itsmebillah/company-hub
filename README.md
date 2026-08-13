@@ -5,7 +5,7 @@ Role-aware company operations software for employee self-service, workforce admi
 ![Company Hub social preview](assets/social-preview/company-hub-social-preview.png)
 
 [![Status](https://img.shields.io/badge/status-active-15803d?style=flat-square)](PROJECT_STATE.md)
-[![Production version](https://img.shields.io/badge/version-0.3.0-2563eb?style=flat-square)](CHANGELOG.md)
+[![Production version](https://img.shields.io/badge/version-0.4.0-2563eb?style=flat-square)](CHANGELOG.md)
 [![Framework](https://img.shields.io/badge/framework-Next.js-111827?style=flat-square)](#technology-stack)
 [![Language](https://img.shields.io/badge/language-TypeScript-2563eb?style=flat-square)](#technology-stack)
 [![Backend](https://img.shields.io/badge/backend-Supabase-15803d?style=flat-square)](#architecture)
@@ -34,7 +34,7 @@ The project is designed around explicit tenant boundaries and role-based access.
 - System-admin company lifecycle, feature control, releases, schema health, and maintenance state
 - Responsive layouts, theme support, offline status, and PWA foundations
 
-Google Sheets service-account access and self-cleaning API verification are implemented, but durable production reporting synchronization is not. That is the next integration milestone.
+Durable Google Sheets synchronization projects the governed Holidays dataset from Supabase through a leased outbox worker with idempotent batched writes, retry recovery, reconciliation, and actionable failure alerts.
 
 See [FEATURES.md](FEATURES.md) for the detailed implementation map and [KNOWN_ISSUES.md](KNOWN_ISSUES.md) for current limitations.
 
@@ -82,7 +82,7 @@ For design decisions and boundaries, read [ARCHITECTURE.md](ARCHITECTURE.md), [D
 | Application           | Next.js 15, React 19, TypeScript             |
 | Styling               | Tailwind CSS, Radix UI primitives            |
 | Backend               | Supabase Auth, PostgreSQL, Realtime, Storage |
-| Derived integrations  | Google Drive; Google Sheets foundation       |
+| Derived integrations  | Google Drive; durable Google Sheets Holidays |
 | Validation and import | TypeScript services, SheetJS                 |
 | Testing               | ESLint, TypeScript, Playwright, axe-core     |
 | Delivery              | Vercel, GitHub Actions, Supabase CLI         |

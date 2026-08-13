@@ -11,6 +11,16 @@ export type GoogleAuthenticationProvider =
 const RETRYABLE_STATUS_CODES = new Set([429, 500, 502, 503, 504]);
 const MAX_ATTEMPTS = 3;
 
+export class GoogleApiError extends Error {
+  constructor(
+    public readonly safeCode:
+      "google_authentication_failed" | "google_api_failed",
+  ) {
+    super(safeCode);
+    this.name = "GoogleApiError";
+  }
+}
+
 function getOperationName(input: string, method: string) {
   const url = new URL(input);
 
@@ -56,10 +66,18 @@ export async function googleApiFetch(
   authenticationProvider: GoogleAuthenticationProvider,
 ): Promise<Response> {
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
-    const token =
-      authenticationProvider === "drive-oauth"
-        ? await getGoogleDriveAccessToken()
-        : await getGoogleSheetsAccessToken();
+    let token: string;
+    try {
+      token =
+        authenticationProvider === "drive-oauth"
+          ? await getGoogleDriveAccessToken()
+          : await getGoogleSheetsAccessToken();
+    } catch {
+      console.error("[GoogleApiClient] Google authentication failed.", {
+        provider: authenticationProvider,
+      });
+      throw new GoogleApiError("google_authentication_failed");
+    }
     const headers = new Headers(init.headers);
     headers.set("Authorization", `Bearer ${token}`);
 
@@ -83,11 +101,11 @@ export async function googleApiFetch(
         operation: getOperationName(input, method),
         reason: await getGoogleErrorReason(response),
       });
-      throw new Error("Google integration request failed.");
+      throw new GoogleApiError("google_api_failed");
     }
 
     await wait(250 * 2 ** (attempt - 1) + Math.floor(Math.random() * 100));
   }
 
-  throw new Error("Google integration request failed.");
+  throw new GoogleApiError("google_api_failed");
 }

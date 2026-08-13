@@ -3,16 +3,17 @@ import "server-only";
 import { googleApiFetch } from "@/lib/google/api-client";
 import { getGoogleIntegrationConfig } from "@/lib/google/config";
 
-function spreadsheetUrl(path = "") {
+function spreadsheetUrl(path = "", spreadsheetId?: string) {
   const { reportingSpreadsheetId } = getGoogleIntegrationConfig();
-  return `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(reportingSpreadsheetId)}${path}`;
+  return `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId ?? reportingSpreadsheetId)}${path}`;
 }
 
 export const GoogleSheetsClient = {
-  async getSpreadsheet() {
+  async getSpreadsheet(spreadsheetId?: string) {
     const response = await googleApiFetch(
       spreadsheetUrl(
         "?fields=spreadsheetId,properties(title,timeZone),sheets(properties(sheetId,title,index))",
+        spreadsheetId,
       ),
       {},
       "sheets-service-account",
@@ -26,9 +27,9 @@ export const GoogleSheetsClient = {
     };
   },
 
-  async addSheet(title: string) {
+  async addSheet(title: string, spreadsheetId?: string) {
     const response = await googleApiFetch(
-      spreadsheetUrl(":batchUpdate"),
+      spreadsheetUrl(":batchUpdate", spreadsheetId),
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -52,10 +53,15 @@ export const GoogleSheetsClient = {
     return { sheetId: properties.sheetId, title: properties.title ?? title };
   },
 
-  async writeValues(range: string, values: unknown[][]) {
+  async writeValues(
+    range: string,
+    values: unknown[][],
+    spreadsheetId?: string,
+  ) {
     await googleApiFetch(
       spreadsheetUrl(
         `/values/${encodeURIComponent(range)}?valueInputOption=RAW`,
+        spreadsheetId,
       ),
       {
         method: "PUT",
@@ -66,10 +72,11 @@ export const GoogleSheetsClient = {
     );
   },
 
-  async readValues(range: string) {
+  async readValues(range: string, spreadsheetId?: string) {
     const response = await googleApiFetch(
       spreadsheetUrl(
         `/values/${encodeURIComponent(range)}?majorDimension=ROWS`,
+        spreadsheetId,
       ),
       {},
       "sheets-service-account",
@@ -77,9 +84,69 @@ export const GoogleSheetsClient = {
     return (await response.json()) as { range?: string; values?: unknown[][] };
   },
 
-  async removeSheet(sheetId: number) {
+  async clearValues(range: string, spreadsheetId?: string) {
     await googleApiFetch(
-      spreadsheetUrl(":batchUpdate"),
+      spreadsheetUrl(
+        `/values/${encodeURIComponent(range)}:clear`,
+        spreadsheetId,
+      ),
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{}",
+      },
+      "sheets-service-account",
+    );
+  },
+
+  async batchWriteValues(
+    data: Array<{ range: string; values: unknown[][] }>,
+    spreadsheetId?: string,
+  ) {
+    if (data.length === 0) return;
+    await googleApiFetch(
+      spreadsheetUrl("/values:batchUpdate", spreadsheetId),
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ valueInputOption: "RAW", data }),
+      },
+      "sheets-service-account",
+    );
+  },
+
+  async batchClearValues(ranges: string[], spreadsheetId?: string) {
+    if (ranges.length === 0) return;
+    await googleApiFetch(
+      spreadsheetUrl("/values:batchClear", spreadsheetId),
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ranges }),
+      },
+      "sheets-service-account",
+    );
+  },
+
+  async batchUpdate(
+    requests: Array<Record<string, unknown>>,
+    spreadsheetId?: string,
+  ) {
+    if (requests.length === 0) return;
+    await googleApiFetch(
+      spreadsheetUrl(":batchUpdate", spreadsheetId),
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ requests }),
+      },
+      "sheets-service-account",
+    );
+  },
+
+  async removeSheet(sheetId: number, spreadsheetId?: string) {
+    await googleApiFetch(
+      spreadsheetUrl(":batchUpdate", spreadsheetId),
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

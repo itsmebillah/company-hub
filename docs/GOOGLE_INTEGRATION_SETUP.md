@@ -6,12 +6,17 @@ variables documented in `.env.example`. Store values only in local ignored env
 files and Vercel encrypted environment variables; never store credential JSON
 inside this repository.
 
+Durable Sheets delivery is active for the governed Holidays dataset. Supabase remains authoritative; Sheets failures never roll back calendar writes.
+
 Operational checks:
 
 ```powershell
 npm run verify:google
 npm run process:attendance-media
 npm run verify:attendance-media
+npm run configure:google-sheets
+npm run process:google-sheets
+npm run verify:google-sheets
 ```
 
 The Vercel Hobby cron calls `/api/cron/attendance-media` once daily. New
@@ -75,6 +80,7 @@ uploading either JSON file:
 - `GOOGLE_SERVICE_ACCOUNT_EMAIL`
 - `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY`
 - `GOOGLE_SHEETS_REPORTING_SPREADSHEET_ID`
+- `GOOGLE_SHEETS_REPORTING_COMPANY_ID`
 
 After any credential rotation, redeploy and repeat the self-cleaning verifier.
 Revoking the operational account's OAuth grant invalidates the Drive refresh

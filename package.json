@@ -1,6 +1,6 @@
 {
   "name": "company-hub",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "engines": {
     "node": "24.x",
@@ -19,8 +19,12 @@
     "test:e2e:public": "playwright test tests/e2e/public-routes.spec.ts --project=chromium",
     "test:e2e:authenticated": "playwright test tests/e2e/authenticated-flows.spec.ts --project=chromium",
     "test:e2e:headed": "playwright test --headed",
+    "test:unit": "node --conditions=react-server --import tsx --test tests/unit/**/*.test.ts",
     "authorize:google-drive": "node --conditions=react-server --import tsx scripts/authorize-google-drive.ts",
     "verify:google": "node --conditions=react-server --import tsx scripts/verify-google-integrations.ts",
+    "configure:google-sheets": "node --conditions=react-server --import tsx scripts/configure-google-sheets-reporting.ts",
+    "process:google-sheets": "node --conditions=react-server --import tsx scripts/process-google-sheets-sync.ts",
+    "verify:google-sheets": "node --conditions=react-server --import tsx scripts/run-google-sheets-verification.ts",
     "process:attendance-media": "node --conditions=react-server --import tsx scripts/process-attendance-media.ts",
     "verify:attendance-media": "node --conditions=react-server --import tsx scripts/verify-attendance-media.ts",
     "verify:brave": "node scripts/verify-brave.mjs",

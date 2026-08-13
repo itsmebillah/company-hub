@@ -2,6 +2,8 @@
 
 Last reconciled: 2026-08-13
 
+Phase 4.1 note: SHEETS-001 through SHEETS-006 are complete (Holidays contract, migration `0044`, batched adapter, leased worker, secure schedule, retry/recovery, reconciliation, quiet health, terminal Updates alerts, tests, and production verification tooling). Future dataset expansion requires new privacy allowlists.
+
 Items are ordered by production risk and value. Every item requires an owner, acceptance criteria, and explicit implementation authorization.
 
 ## P0 — Release and governance blockers

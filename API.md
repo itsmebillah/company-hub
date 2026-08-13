@@ -20,10 +20,11 @@ Company Hub is not a public REST API product. Its primary mutation interface is 
 | `GET /admin/users/import/template`           | Import template                    | None                                         | CSV download     | Explicit Company Admin and employee-directory checks                              |
 | `GET /api/cron/celebrations`                 | Generate scheduled celebrations    | `Authorization: Bearer <CRON_SECRET>`        | JSON run summary | Bearer secret in production                                                       |
 | `GET /api/cron/attendance-media`             | Retry Drive delivery/cache cleanup | `Authorization: Bearer <CRON_SECRET>`        | JSON run summary | Bearer secret in production                                                       |
+| `GET /api/cron/google-sheets`                | Deliver/reconcile Holidays report  | `Authorization: Bearer <CRON_SECRET>`        | JSON run summary | Bearer secret in production                                                       |
 | `GET /api/attendance/selfies/[attachmentId]` | Stream authorized attendance media | Attachment ID                                | Image stream     | Company Admin check plus current-company attachment scope                         |
 | `POST /api/notifications/track`              | Mark notification delivered/opened | Notification ID plus delivered/opened event  | `204`            | Authenticated ownership scope; signed-out callers receive `401`                   |
 
-Vercel calls `/api/cron/celebrations` at `0 18 * * *` UTC and `/api/cron/attendance-media` at `0 19 * * *` UTC. Both fail closed on the bearer secret in production.
+Vercel calls `/api/cron/celebrations` at `0 18 * * *` UTC, `/api/cron/attendance-media` at `0 19 * * *` UTC, and `/api/cron/google-sheets` at `0 20 * * *` UTC. All fail closed on the bearer secret in production.
 
 ## Server action inventory
 

@@ -49,7 +49,7 @@ Supabase operational source of truth
            ▼
 Durable integration worker
   ├─ restricted Google Drive permanent attendance media
-  └─ Google Sheets reporting projection (planned; not active)
+  └─ Google Sheets Holidays projection (durable derived reporting)
 ```
 
 ## Repository topology
@@ -135,7 +135,7 @@ otherwise be described and tested as foreground-only.
 
 The server-only Sheets client uses a dedicated service account and the shared bounded Google API retry/error-redaction layer. It can inspect the approved workbook and perform self-cleaning verification writes, but no production business dataset is synchronized.
 
-The planned production design must add governed row contracts, a forward-only durable event/outbox extension, leased retries, deterministic bounded upserts, deletion/tombstone semantics, reconciliation, freshness state, and isolated tenant tests. It should reuse the proven attendance-media processing patterns without treating the media-specific outbox payload and constraints as a generic contract prematurely. Sheets remains a derived reporting layer and cannot authorize or mutate operational HR workflows.
+Migration `0044` adds the governed Holidays row contract, a forward-only outbox extension, leased retries, deterministic bounded upserts, deletion semantics, reconciliation, health state, and isolated tenant tests. Sheets remains a derived reporting layer and cannot authorize or mutate operational HR workflows.
 
 ### Client direction
 
@@ -161,7 +161,7 @@ Server services create rows and track state. `notifications` is in `supabase_rea
 
 - Service-role-heavy data access makes service authorization correctness critical.
 - Playwright protects critical runtime, role, route, responsive, Storage, Realtime, attendance, export, and PWA boundaries in portable Chromium, with Edge optional. Isolated authenticated mutation coverage and lower-level unit/service integration coverage remain open.
-- Durable Google Sheets synchronization, reconciliation, and freshness health are planned but not implemented.
+- Durable Google Sheets Holidays synchronization, reconciliation, and actionable failure health are implemented. Additional datasets remain unapproved.
 - Browser-local offline state has limited durability and recovery UX.
 - Several oversized service/component files should be split only with behavior-preserving tests.
 

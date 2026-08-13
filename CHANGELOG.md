@@ -4,6 +4,20 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
 
 ## Unreleased
 
+## [0.4.0] - 2026-08-13
+
+### Added
+
+- Added migration `0044` with tenant-bound reporting destinations, a Holidays tenant key, transactional reporting events, leased claim/complete/fail/retry RPCs, terminal failure state, reconciliation health, RLS, and reporting indexes.
+- Added a governed Holidays Google Sheets projection with protected schema headers, deterministic UUID row identity, grouped batch writes, delete cleanup, duplicate repair, and daily reconciliation.
+- Added secured Sheets processing, configuration, and self-cleaning production verification commands plus unit coverage for success, retry, terminal alerts, replay, stale leases, drift, and tenant isolation.
+
+### Changed
+
+- Calendar mutations now schedule bounded post-response Sheets delivery while remaining independent of Google availability.
+- Integration health stays quiet when healthy and creates one Company Admin Update only after automatic recovery reaches a terminal failure.
+- Advanced production schema telemetry to `0044` and documented `GOOGLE_SHEETS_REPORTING_COMPANY_ID` as the explicit tenant binding.
+
 ### Documentation
 
 - Reconciled project state, status, plan, architecture, audit, risks, roadmap,

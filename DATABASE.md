@@ -2,9 +2,9 @@
 
 ## Source of truth
 
-Migrations through `0043` are applied to the authoritative project with matching local/remote history. Migration `0043` adds attendance media metadata, durable outbox delivery, and cleanup contracts.
+Migrations through `0044` are applied to the authoritative project with matching local/remote history. Migration `0044` adds tenant-bound reporting destinations, the Holidays tenant key, durable Sheets triggers, leased recovery RPCs, reconciliation health, RLS, and reporting indexes.
 
-`supabase/migrations/` is the canonical schema history. Migrations `0001`–`0043` are applied to project `jjfktbgfwvekhlvyjlww` with matching local/remote history. Runtime `get_app_schema_version()` reports `0043`. Never edit or renumber an applied migration; the next ordered migration is `0044`.
+`supabase/migrations/` is the canonical schema history. Migrations `0001`–`0044` are applied to project `jjfktbgfwvekhlvyjlww` with matching local/remote history. Runtime `get_app_schema_version()` reports `0044`. Never edit or renumber an applied migration; the next ordered migration is `0045`.
 
 `platform_features.state` is authoritative. `allow_company_override` determines whether `company_features.company_state` (`inherit`, `enabled`, or `disabled`) participates in resolution. `is_feature_enabled_for_company` and `can_access_any_feature` expose the canonical platform-first decision to server and middleware callers. `platform_feature_company_summary` supplies aggregate override counts without exposing tenant configuration rows.
 

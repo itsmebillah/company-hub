@@ -418,6 +418,7 @@ export const CalendarService = {
       .from("holiday_events")
       .insert({
         calendar_id: values.calendarId,
+        company_id: companyId,
         title: values.title.trim(),
         holiday_type: values.holidayType,
         date: values.date,
@@ -431,7 +432,6 @@ export const CalendarService = {
     if (error || !data) {
       throw new Error("Unable to create holiday.");
     }
-
   },
 
   async updateEvent(id: string, values: HolidayEventFormValues) {
@@ -458,7 +458,6 @@ export const CalendarService = {
     if (error) {
       throw new Error("Unable to update holiday.");
     }
-
   },
 
   async archiveEvent(id: string) {
@@ -473,7 +472,6 @@ export const CalendarService = {
     if (error) {
       throw new Error("Unable to archive holiday.");
     }
-
   },
 
   async prepareHolidayReminder(eventId: string) {

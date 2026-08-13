@@ -1,9 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 
 import { CalendarService } from "@/features/company-calendar/services/calendar.service";
 import { requireCompanyAdmin } from "@/features/auth/services/authorization.service";
+import { GoogleSheetsSyncService } from "@/features/reporting-sync/services/google-sheets-sync.service";
 import type {
   CalendarActionState,
   HolidayCalendarFormValues,
@@ -11,6 +13,21 @@ import type {
 } from "@/features/company-calendar/types/calendar.types";
 
 const ADMIN_CALENDAR_PATH = "/admin/calendar";
+
+function scheduleGoogleSheetsSync() {
+  after(async () => {
+    try {
+      await GoogleSheetsSyncService.run({
+        jobLimit: 5,
+        reconciliationLimit: 0,
+      });
+    } catch (error) {
+      console.error("[CalendarAction] Deferred Sheets worker failed.", {
+        errorType: error instanceof Error ? error.name : "unknown_error",
+      });
+    }
+  });
+}
 
 function failure(error: unknown, fallback: string): CalendarActionState {
   return {
@@ -39,6 +56,7 @@ export async function updateHolidayCalendarAction(
   try {
     await requireCompanyAdmin("calendar");
     await CalendarService.updateCalendar(id, values);
+    scheduleGoogleSheetsSync();
     revalidatePath(ADMIN_CALENDAR_PATH);
     return { ok: true, message: "Calendar updated." };
   } catch (error) {
@@ -52,6 +70,7 @@ export async function archiveHolidayCalendarAction(
   try {
     await requireCompanyAdmin("calendar");
     await CalendarService.archiveCalendar(id);
+    scheduleGoogleSheetsSync();
     revalidatePath(ADMIN_CALENDAR_PATH);
     return { ok: true, message: "Calendar archived." };
   } catch (error) {
@@ -78,6 +97,7 @@ export async function createHolidayEventAction(
   try {
     await requireCompanyAdmin("calendar");
     await CalendarService.createEvent(values);
+    scheduleGoogleSheetsSync();
     revalidatePath(ADMIN_CALENDAR_PATH);
     revalidatePath("/calendar");
     return { ok: true, message: "Holiday created." };
@@ -93,6 +113,7 @@ export async function updateHolidayEventAction(
   try {
     await requireCompanyAdmin("calendar");
     await CalendarService.updateEvent(id, values);
+    scheduleGoogleSheetsSync();
     revalidatePath(ADMIN_CALENDAR_PATH);
     revalidatePath("/calendar");
     return { ok: true, message: "Holiday updated." };
@@ -107,6 +128,7 @@ export async function archiveHolidayEventAction(
   try {
     await requireCompanyAdmin("calendar");
     await CalendarService.archiveEvent(id);
+    scheduleGoogleSheetsSync();
     revalidatePath(ADMIN_CALENDAR_PATH);
     revalidatePath("/calendar");
     return { ok: true, message: "Holiday archived." };

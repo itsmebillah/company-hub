@@ -6,20 +6,20 @@ Status labels describe implementation truth: **COMPLETE**, **IN PROGRESS**, **PL
 
 ## Completed foundation
 
+- **COMPLETE — Phase 4.1 Google Sheets:** migration `0044`, governed Holidays contract, tenant-bound destinations, durable retries, deterministic batched projection, reconciliation, and Updates-based failure health.
+
 - **COMPLETE — Production hardening:** tenant authorization, RLS, private media, schema telemetry, responsive/PWA foundations, and release automation.
 - **COMPLETE — Integration foundation:** separate Drive OAuth and Sheets service-account identities, bounded API retries, redacted provider errors, explicit resource IDs, and self-cleaning verification.
 - **COMPLETE — Phase 4.0.3 attendance media:** migration `0043`, provider-neutral metadata, transactional outbox, leased retries, idempotent Drive recovery, secure reads, historical backfill, and verified 72-hour cache cleanup.
 
 ## Next integration milestone
 
-### Durable Google Sheets synchronization — PLANNED
+### Durable Google Sheets synchronization — COMPLETE
 
-- Approve the first low-risk reporting contract, field allowlist, row grain, company scope, timezone, deletion semantics, and freshness SLA.
-- Add a forward-only durable event/ledger design using migration `0044` or later.
-- Expand the Sheets adapter with bounded deterministic upserts, header/schema validation, quota handling, and protected raw-range safeguards.
-- Add a leased background worker, authenticated schedule, retries, recovery, reconciliation, and actionable freshness/failure state.
-- Pilot Holidays before Employees, Leave, or Attendance.
-- Prove idempotency, no-op replay, tenant isolation, provider outage, deletion, row drift, and rollback in an isolated environment.
+- Holidays is the approved first low-risk projection with immutable UUID row keys and an explicit field allowlist.
+- Migration `0044` extends the durable integration outbox with leased retries and recoverable terminal failures.
+- The adapter validates protected headers, batches targeted writes, clears duplicates/deletions, and reconciles drift.
+- Employees, Leave, and Attendance remain gated on separate privacy and domain-owner approval.
 
 ## Reliability and governance — PLANNED
 

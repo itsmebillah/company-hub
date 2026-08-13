@@ -24,7 +24,7 @@ without logging connection details or credentials.
 
 The intended topology is Vercel for Next.js and scheduled cron, with Supabase providing PostgreSQL, Auth, Storage, and Realtime. `vercel.json` schedules celebrations daily at `0 18 * * *` UTC and attendance-media retry/cleanup daily at `0 19 * * *` UTC.
 
-The repository is linked to the existing `company-hub` Vercel project. Production version `v0.3.0` requires migrations through `0043`, the Supabase application variables, `CRON_SECRET`, and the server-only Google Drive/Sheets variables documented in `.env.example` and [docs/GOOGLE_INTEGRATION_SETUP.md](docs/GOOGLE_INTEGRATION_SETUP.md). Values remain encrypted and must never be printed. Provision System Admin access explicitly and separately.
+The repository is linked to the existing `company-hub` Vercel project. Production version `v0.4.0` requires migrations through `0044`, the Supabase application variables, `CRON_SECRET`, and the server-only Google Drive/Sheets variables documented in `.env.example` and [docs/GOOGLE_INTEGRATION_SETUP.md](docs/GOOGLE_INTEGRATION_SETUP.md). Values remain encrypted and must never be printed. Provision System Admin access explicitly and separately.
 
 ## Automatic release publication
 

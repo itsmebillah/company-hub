@@ -2,25 +2,26 @@
 
 Last repository reconciliation: 2026-08-13
 
-Production milestone evidence: 2026-07-31, version `v0.3.0`
+Production milestone evidence: 2026-08-13, version `v0.4.0`
 
 ## Summary
 
 Company Hub is a functional Next.js/Supabase employee operations portal with separate Employee, Company Admin, and explicit System Admin workflows. Company Admin is the highest authority inside one company; System Admin is an explicit global authorization outside tenant roles.
 
-Supabase is the operational source of truth. Attendance selfies use restricted Google Drive as permanent storage and private Supabase Storage as a temporary recovery cache. Google Sheets authentication and API verification exist, but durable reporting synchronization is not implemented.
+Supabase is the operational source of truth. Attendance selfies use restricted Google Drive as permanent storage and private Supabase Storage as a temporary recovery cache. Google Sheets is a derived, durable Holidays reporting projection and never an operational authority.
 
 ## Authoritative baseline
 
 - Next.js 15 App Router, React 19, strict TypeScript, and Tailwind CSS 4.
 - Node.js 24 and npm 11 are pinned by repository configuration.
 - Supabase project `jjfktbgfwvekhlvyjlww` is the authoritative linked project.
-- Migrations `0001` through `0043` are applied with matching local/remote history.
-- Runtime `get_app_schema_version()` reports `0043`.
+- Migrations `0001` through `0044` are applied with matching local/remote history.
+- Runtime `get_app_schema_version()` reports `0044`.
 - Migration `0041` removed the Activity Log and Platform Audit systems.
 - Migration `0042` advanced schema telemetry after that removal.
 - Migration `0043` added provider-neutral attendance attachments, the durable integration outbox, leased retry/recovery RPCs, cleanup records, RLS, indexes, triggers, historical backfill, and schema-version reporting.
-- The next migration number is `0044`; applied migrations must not be modified or renumbered.
+- Migration `0044` adds reporting destinations, the Holidays tenant key, durable Sheets events, leased retry/recovery, reconciliation health, RLS, and indexes.
+- The next migration number is `0045`; applied migrations must not be modified or renumbered.
 - Application tables use RLS. Integration tables added by `0043` default-deny browser roles and are accessed through authorized server-only code.
 - No System Admin is auto-provisioned. `platform_admins` remains empty until the owner explicitly approves an active Auth identity.
 
@@ -38,7 +39,7 @@ Supabase is the operational source of truth. Attendance selfies use restricted G
 
 ## Phase 4.0.3 attendance media — COMPLETE
 
-Production version: `v0.3.0`
+Production version: `v0.4.0`
 
 Production flow:
 
@@ -67,8 +68,8 @@ At milestone completion, all three historical attendance selfie references were 
 ### Google Sheets — FOUNDATION ONLY
 
 - A dedicated service account, explicit workbook configuration, bounded Google API retries, redacted errors, and a self-cleaning read/write verifier are implemented.
-- No production domain projection, durable Sheets event, worker, watermark, reconciliation ledger, freshness health signal, or scheduled Sheets synchronization exists.
-- The next integration milestone is production-grade durable Sheets synchronization, beginning with an approved low-risk dataset contract.
+- The governed Holidays dataset uses UUID row identity, protected schema headers, durable leased delivery, bounded retry, deletion handling, duplicate repair, and daily reconciliation.
+- Terminal failures create one Company Admin Update; healthy synchronization adds no dashboard clutter. Employees, Leave, and Attendance remain unapproved.
 
 ## Quality signals from this reconciliation
 
@@ -102,11 +103,11 @@ Do not run `npm audit fix --force`. Audit counts are time-sensitive and must be 
 5. Authenticated `SECURITY DEFINER` helpers and leaked-password protection require formal policy review.
 6. Repository-wide formatting and unit/service integration coverage remain incomplete.
 7. The browser-local offline attendance queue can be cleared and has limited recovery controls.
-8. Google Sheets durable synchronization is planned, not active.
+8. Google Sheets durable Holidays synchronization is active; additional datasets require separate approval.
 
 ## Planned direction
 
-- Durable Google Sheets synchronization is the next integration milestone.
+- Durable Google Sheets Holidays synchronization is complete; further datasets require separate approval.
 - Product Phase 5 duty-bound live location is planned but not implemented; native Android background tracking is the preferred direction.
 - Internal operational messaging, smart Updates-based health, conditional dashboard cards, and a Flutter employee client are planned/future work.
 - Strategic direction is maintained in [PRODUCT_VISION_2027.md](PRODUCT_VISION_2027.md).
