@@ -1,116 +1,122 @@
 # Project State
 
-Last verified: 2026-07-31
+Last repository reconciliation: 2026-08-13
+
+Production milestone evidence: 2026-07-31, version `v0.3.0`
 
 ## Summary
 
-Company Hub is a functional Next.js/Supabase operations portal with employee, Company Admin, and explicit System Admin workflows. Company Admin is the highest authority inside exactly one company; System Admin remains an explicit global authorization outside tenant roles.
+Company Hub is a functional Next.js/Supabase employee operations portal with separate Employee, Company Admin, and explicit System Admin workflows. Company Admin is the highest authority inside one company; System Admin is an explicit global authorization outside tenant roles.
 
-The quality-hardening baseline is deployable: privileged mutation boundaries, private attendance media, PWA caching, schema-version telemetry, and cross-browser smoke coverage are verified. CI, dependency advisories, historical secret rotation, and broader unit/integration coverage remain release-governance work.
+Supabase is the operational source of truth. Attendance selfies use restricted Google Drive as permanent storage and private Supabase Storage as a temporary recovery cache. Google Sheets authentication and API verification exist, but durable reporting synchronization is not implemented.
 
-## Verified baseline
+## Authoritative baseline
 
-- Next.js 15 App Router, React 19, strict TypeScript, Tailwind CSS 4.
-- Node.js 24.16.0 and npm 11.13.0 used for the latest verification.
-- Supabase CLI 2.109.1 and Vercel CLI 56.5.0 installed as dev dependencies.
-- Supabase project `jjfktbgfwvekhlvyjlww` is the authoritative Company Hub
-  project and the local CLI is linked to it.
-- Migrations `0001` through `0043` are applied remotely with exact local/remote
-  history. Migration `0042` non-destructively
-  advances runtime schema-version reporting after the audit-system removal.
-- Migration `0043` activates durable attendance media delivery. Three historical
-  attachments are verified in restricted Drive, the outbox has zero pending
-  rows, and all source cache objects remain inside their 72-hour retention.
-- 27 public application tables with RLS enabled; platform-control and draft release rows are default-deny to browser roles.
-- Fourteen platform features are cataloged. Existing companies inherit enabled modules and `future_modules` starts disabled.
-- No System Admin is auto-provisioned. `platform_admins` remains empty until the owner explicitly approves an existing active Auth identity.
-- Exact restored content parity for 1,748 application rows across all 22 tables; all application IDs and hierarchy references were preserved.
-- Nine storage buckets, 11 storage-object policies, four checksum-verified objects, and notification realtime publication.
-- 17 Auth identities recreated with matching email, metadata, confirmation state, and employee linkage. All 17 passwords are synchronized to the canonical Employee-ID-derived policy and individually verified; no Auth emails changed and no duplicate users were created.
-- `npm install`, lint, typecheck, and production build pass.
-- Company Admin uses the canonical `Company Admin` tenant role, middleware authorization, action-level feature checks, tenant-scoped service-role queries, protected password reset, and company-aware Storage policies. `/admin/*` paths remain stable compatibility URLs.
+- Next.js 15 App Router, React 19, strict TypeScript, and Tailwind CSS 4.
+- Node.js 24 and npm 11 are pinned by repository configuration.
+- Supabase project `jjfktbgfwvekhlvyjlww` is the authoritative linked project.
+- Migrations `0001` through `0043` are applied with matching local/remote history.
+- Runtime `get_app_schema_version()` reports `0043`.
+- Migration `0041` removed the Activity Log and Platform Audit systems.
+- Migration `0042` advanced schema telemetry after that removal.
+- Migration `0043` added provider-neutral attendance attachments, the durable integration outbox, leased retry/recovery RPCs, cleanup records, RLS, indexes, triggers, historical backfill, and schema-version reporting.
+- The next migration number is `0044`; applied migrations must not be modified or renumbered.
+- Application tables use RLS. Integration tables added by `0043` default-deny browser roles and are accessed through authorized server-only code.
+- No System Admin is auto-provisioned. `platform_admins` remains empty until the owner explicitly approves an active Auth identity.
 
 ## Implemented product areas
 
-- Employee ID login, first-admin bootstrap, session and role routing.
-- Employee, role, hierarchy, bulk import, profile, and password management.
-- Resource categories, resources, audience permissions, and an employee portal with visual Quick Links. Quick Links support uploaded PNG/JPG/SVG/WebP artwork, non-blocking origin favicons, named built-in icons, and a default fallback without changing existing resource records.
-- Targeted announcements, notification summaries/tracking, browser/native notifications, realtime delivery.
-- GPS-aware attendance, locations, work modes, attendance policy/settings, offline queue, selfies, admin attendance, reports, CSV/XLSX/PDF exports.
-- Leave types, employee requests, approval/rejection/cancellation.
-- Holiday calendars and events.
-- Company branding/settings, dashboard summaries, audit activity, celebrations cron.
-- Responsive admin/employee shells, theme support, PWA install flow, service worker, permission onboarding.
-- A single configuration-driven mobile navigation shell serves every role: four fixed groups plus a separate, centered 64px Dashboard FAB, with a reserved center lane and centralized role and effective-feature filtering.
-- Company branding is resolved at the authenticated shell and propagated through shared CSS tokens, logo, metadata, favicon, manifest, and PWA theme color.
-- Release Management stores semantic versions, notes, deployment/commit provenance, user receipts, optional/mandatory update policy, and maintenance state. Version `0.2.0` introduces the automated post-deployment publishing workflow.
+- Employee-ID login, bootstrap, session and role routing, profile, password management, and protected reset flows.
+- Employee lifecycle, roles, hierarchy, bulk import/export, and tenant-scoped administration.
+- Resource categories, resources, audience permissions, Quick Links, and visual/icon fallbacks.
+- Targeted announcements, notification summaries/tracking, realtime delivery, browser notifications, and celebration processing.
+- GPS-aware attendance, locations, work modes, server-time validation, offline replay, selfies, Company Admin review, reports, and CSV/XLSX/PDF exports.
+- Leave types, employee requests, approval/rejection/cancellation, calendars, and holidays.
+- Company branding/settings, feature controls, release management, maintenance state, and responsive role-aware navigation.
+- System Admin company lifecycle, people, feature, settings, release, and health surfaces.
+- Pull-request quality and production-release workflows.
 
-## Current quality signals
+## Phase 4.0.3 attendance media — COMPLETE
 
-- Phase 4 attendance hardening now includes durable selfie delivery through a
-  transactional outbox, leased retries, idempotent Drive recovery, secure media
-  delivery, and verified delayed cache cleanup. Supabase remains source of truth.
-- Durable Google Sheets reporting sync remains deferred. The attendance event
-  dispatcher is still process-local for non-media side effects.
-- The inactive Google integration foundation now separates OAuth 2.0 offline
-  access for operational-account Drive uploads from service-account Sheets
-  synchronization. Both clients use bounded retries, redacted errors, explicit
-  resource IDs, and a self-cleaning end-to-end verifier. Restricted sharing,
-  operational-account Drive upload/readback, service-account Sheets
-  write/readback, metadata synchronization, and artifact cleanup are verified.
-  The OAuth values are configured as Sensitive Production variables in Vercel;
-  attendance activation still requires the approved attachment/outbox schema.
-- Production attendance pipeline inspection confirms the configured selfie
-  provider is Supabase Storage. Ten recent attendance rows contained three
-  selfie references; all three private objects were present in the Supabase
-  bucket, and the approved Drive folder contained no files. No Drive call,
-  queue, or Drive automation handler exists in the attendance write path.
-- The Phase 4 install, lint, typecheck, and production build pass. Non-mutating Brave checks pass for browser launch, PWA manifest, signed-out attendance routing, and 375px overflow. Authoritative Supabase runtime connectivity and schema-version status are verified; full attendance mutations remain blocked only by the absent isolated-QA account contract.
+Production version: `v0.3.0`
 
-- Phase 2 infrastructure hardening uses Playwright-managed Chromium by default, an optional Edge project, a Supabase-independent readiness probe, explicit isolated-QA account/project validation, and an affirmative mutation opt-in.
-- Pull requests now have a secret-free quality workflow for install, lint, typecheck, build, and database-independent browser smoke coverage. Authenticated QA is a protected manual job until the isolated project and secrets are configured and proven deterministic.
-- Node 24/npm 11 are pinned through `.nvmrc` and package engines. Employee Import defers loading `xlsx` until a file is selected.
-- The Phase 2 production build reduced Employee Import first-load JS from about 232 kB to 122 kB. Lint, typecheck, build, and Playwright discovery pass; both portable-Chromium smoke assertions pass, although the Windows runner still hangs during managed web-server teardown.
-- Migration `0041` is applied remotely: its retired tables and denial-log RPCs
-  are absent. Migration `0042` corrects telemetry without rewriting applied
-  history, and live `get_app_schema_version()` reports `0042`.
+Production flow:
 
-- Phase 1 stabilization baseline: dependency install, lint, strict typecheck, and production build pass. Employee status/update false-success handling, custom-role hierarchy consistency, dead action controls, page-size bounding, and mobile modal usability were hardened without schema changes.
-- The 2026-07-30 browser run was inconclusive because the configured Chrome channel is absent and linked Supabase reads failed intermittently during the Edge run; two infrastructure-independent PWA/API checks passed before the run timed out.
-- The company's existing operational Google account is the approved owner for Drive and Sheets resources. No ownership migration is required. Resources are private by default; temporary public sharing for development/review must be reverted and verified afterward.
+```text
+Employee selfie
+  -> private Supabase Storage recovery cache
+  -> attendance row + attachment metadata + transactional outbox
+  -> immediate attempt and scheduled leased worker
+  -> restricted Google Drive permanent file
+  -> verified cleanup of the Supabase cache after 72 hours
+```
 
-- Lint: zero errors and zero warnings; dynamic company media now uses dimensioned Next images where appropriate.
-- Typecheck: zero errors.
-- Production build: successful.
-- Prettier check: failed; 353 files currently differ from configured formatting.
-- Database lint: no schema errors.
-- Runtime schema status uses the least-privilege `get_app_schema_version()` contract from migration `0029`; the invalid `supabase_migrations` PostgREST request and `PGRST106` log are removed.
-- Supabase Security Advisor: no RLS-disabled or anonymous-definer warnings. Twelve warnings remain: eleven intentionally authenticated caller-derived/RLS helper RPCs and the project-level leaked-password-protection setting.
-- npm audit: 44 total findings after current registry advisories; most are development-only Vercel/ESLint transitive findings. Production scope contains 4 high findings through bundled Next.js/PostCSS/Sharp and `xlsx`; npm reports no safe compatible fix and suggests an invalid Next.js downgrade. Do not force-fix.
-- Automated tests: Playwright route, Auth, authorization, mobile, PWA, Storage, attendance, export, and Realtime coverage is committed. Unit/service integration coverage is still absent.
-- CI/CD workflow: the production `deployment_status` workflow passes install,
-  lint, typecheck, build, credential-redacted Session pooler validation,
-  migration parity, database lint, production HTTP verification, synchronized
-  release history, and GitHub Release creation.
-- Vercel CLI: authenticated and linked to `company-hub`; all five required environment variable names are present for Production and Preview. Values were not printed during verification.
-- Production deployment for the canonical password flow is Ready at `company-hub-zeta.vercel.app`; public pages return 200 and protected routes redirect to login.
-- Authenticated Company Admin/employee runtime covers canonical-password login, session restoration, logout, dashboards, major route surfaces, middleware denial, tenant isolation, feature denial, and responsive layouts.
-- The P0 stabilization pass removed production-facing placeholder panels, redirects unsupported `/register` access to login, added a clear Account/logout card to Employee and Company Admin profiles, verified System Admin logout in the mobile Me panel, and preserved redacted before/after evidence under `docs/screenshots/stabilization/`.
-- The 2026-07-26 checkpoint found no disposable QA companies, resource categories, resources, or platform administrators; migration history remains exactly `0001` through `0040`. The frozen handover and recommended continuation order are recorded in [NEXT_SPRINT.md](NEXT_SPRINT.md).
+Attendance persistence does not wait for Drive. Upload recovery uses attachment-level idempotency, expiring leases, bounded retry, partial-upload lookup, and redacted errors. Company Admin media reads are tenant-authorized server streams that prefer Drive and fall back to the retained cache while needed. Cleanup re-verifies the permanent object and removes only the cache object.
 
-## Release blockers
+At milestone completion, all three historical attendance selfie references were verified in restricted Drive and the outbox had zero pending rows. The daily Vercel cron provides recovery and cleanup; new attendance also schedules a small immediate post-response delivery attempt.
 
-See [KNOWN_ISSUES.md](KNOWN_ISSUES.md) for details. The highest-priority blockers are:
+## Google integration state
 
-1. Rotate any Supabase credential that may have appeared in Git history; `.env.example` is now sanitized.
-2. Configure and prove the isolated authenticated-QA environment, then add authenticated Playwright, migration parity, and secret scanning to required pull-request gates.
-3. Replace or formally accept the unresolved `xlsx` and Next.js/PostCSS advisories.
-4. Formally review the eight intentionally authenticated definer helpers, decide the leaked-password-protection policy, and finish the repository formatting baseline.
+### Google Drive — ACTIVE
+
+- OAuth 2.0 offline access uses the approved operational Google account.
+- Restricted Drive is the permanent attendance-selfie archive.
+- Supabase Storage is the temporary 72-hour recovery cache after verified sync.
+- Durable metadata, outbox, retry, recovery, secure reads, and cleanup are implemented.
+
+### Google Sheets — FOUNDATION ONLY
+
+- A dedicated service account, explicit workbook configuration, bounded Google API retries, redacted errors, and a self-cleaning read/write verifier are implemented.
+- No production domain projection, durable Sheets event, worker, watermark, reconciliation ledger, freshness health signal, or scheduled Sheets synchronization exists.
+- The next integration milestone is production-grade durable Sheets synchronization, beginning with an approved low-risk dataset contract.
+
+## Quality signals from this reconciliation
+
+- Dependency installation: successful.
+- ESLint: passed with zero reported warnings/errors.
+- Strict TypeScript: passed after regenerating Next route types.
+- Production build: passed on Next.js `15.5.22`.
+- Markdown local-link/path verification: required before publishing this reconciliation.
+- Playwright browser flows were not rerun for this documentation-only milestone; committed coverage includes public routes and protected authenticated flows, while isolated mutation coverage remains incomplete.
+- No committed unit/service integration test runner exists.
+- Repository-wide Prettier debt remains documented; bulk formatting is outside this milestone.
+
+## Dependency security
+
+The 2026-08-13 installation audit reported 36 findings: 1 low, 11 moderate, 23 high, and 1 critical across production and development dependencies.
+
+The production-only audit reported five high-severity affected packages/paths:
+
+- `nanoid`: a non-breaking `npm audit fix` is reported as available, but compatibility and lockfile changes require a separate dependency-maintenance change.
+- Next.js-bundled `postcss` and `sharp`: npm proposes a breaking Next.js 16 upgrade; do not force this change without framework compatibility verification.
+- `xlsx`: prototype-pollution and ReDoS advisories have no available upstream fix. Employee import loads the parser only after a file is selected, but uploaded workbooks remain untrusted input and require bounded size/row handling and operational risk acceptance or a replacement plan.
+
+Do not run `npm audit fix --force`. Audit counts are time-sensitive and must be rechecked during dependency maintenance.
+
+## Active release and operational risks
+
+1. Historical Supabase credential rotation remains unconfirmed.
+2. Full authenticated Playwright coverage still requires an isolated QA project, explicit synthetic accounts, mutation opt-in, and cleanup monitoring.
+3. Historical migrations do not fully reproduce the linked schema in an isolated declarative diff; never apply the broad destructive generated diff.
+4. Production dependency advisories require a compatibility-tested maintenance decision.
+5. Authenticated `SECURITY DEFINER` helpers and leaked-password protection require formal policy review.
+6. Repository-wide formatting and unit/service integration coverage remain incomplete.
+7. The browser-local offline attendance queue can be cleared and has limited recovery controls.
+8. Google Sheets durable synchronization is planned, not active.
+
+## Planned direction
+
+- Durable Google Sheets synchronization is the next integration milestone.
+- Product Phase 5 duty-bound live location is planned but not implemented; native Android background tracking is the preferred direction.
+- Internal operational messaging, smart Updates-based health, conditional dashboard cards, and a Flutter employee client are planned/future work.
+- Strategic direction is maintained in [PRODUCT_VISION_2027.md](PRODUCT_VISION_2027.md).
 
 ## Canonical references
 
-- Scope: [PRODUCT_REQUIREMENTS.md](PRODUCT_REQUIREMENTS.md)
-- Feature status: [FEATURES.md](FEATURES.md)
+- Delivery plan: [PROJECT_PLAN.md](PROJECT_PLAN.md)
+- Milestone status: [PROJECT_STATUS.md](PROJECT_STATUS.md)
+- Product direction: [PRODUCT_VISION_2027.md](PRODUCT_VISION_2027.md)
 - Architecture: [ARCHITECTURE.md](ARCHITECTURE.md)
 - Data model: [DATABASE.md](DATABASE.md)
+- Risks: [KNOWN_ISSUES.md](KNOWN_ISSUES.md)
 - Operational readiness: [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md)

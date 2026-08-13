@@ -2,7 +2,7 @@
 
 ## Platform control plane
 
-`app/(platform)/platform` is a separate System Admin route group. Its server pages call `features/platform-control`, which revalidates the explicit platform identity before privileged Supabase access. System Admin is represented by `platform_admins`, not by a company role: this keeps global authority above and outside the tenant hierarchy while preserving the existing Employee-ID login flow. The control plane owns cross-company people, company lifecycle, global settings/branding, features, health, and audit. Company Admin feature and audit pages reuse platform-control services only through authenticated company scope. Middleware independently enforces company lifecycle, Company Admin membership, and feature availability; navigation and dashboard filtering mirror, but do not replace, authorization.
+`app/(platform)/platform` is a separate System Admin route group. Its server pages call `features/platform-control`, which revalidates the explicit platform identity before privileged Supabase access. System Admin is represented by `platform_admins`, not by a company role: this keeps global authority above and outside the tenant hierarchy while preserving the existing Employee-ID login flow. The control plane owns cross-company people, company lifecycle, global settings/branding, features, health, and releases. The former Activity Log and Platform Audit systems were removed by migration `0041`. Middleware independently enforces company lifecycle, Company Admin membership, and feature availability; navigation and dashboard filtering mirror, but do not replace, authorization.
 
 ## Company administration plane
 
@@ -40,11 +40,16 @@ Next.js App Router on Vercel
   └─ server-only services and repositories
            │
            ▼
-Supabase
+Supabase operational source of truth
   ├─ PostgreSQL + RLS
   ├─ Auth
-  ├─ Storage
+  ├─ private Storage recovery cache
   └─ Realtime
+           │
+           ▼
+Durable integration worker
+  ├─ restricted Google Drive permanent attendance media
+  └─ Google Sheets reporting projection (planned; not active)
 ```
 
 ## Repository topology
@@ -59,7 +64,7 @@ Supabase
 
 ## Route groups
 
-- `app/(auth)`: login, setup, and currently-placeholder registration.
+- `app/(auth)`: login and setup; unsupported public registration returns to login.
 - `app/(admin)`: Company Admin-only pages. The layout validates an active Company Admin session and loads company settings, schema status, attendance configuration, and enabled notifications.
 - `app/(app)`: active employee workspace routes.
 - `app/api`: celebration cron and notification tracking.
@@ -117,15 +122,7 @@ Drive files are never deleted by cleanup.
 
 Current employee/company context → policy and work-mode resolution → server-time/GPS/geofence validation → provider-neutral selfie storage → conditional attendance insert/update → best-effort automation events. Office-time and work-mode snapshots preserve historical interpretation. Offline actions are queued in browser local storage and replayed online.
 
-`AttendanceSelfieStorage` isolates the current private Supabase bucket from attendance business logic and reserves a future Google Drive adapter without enabling it. `AttendanceCreated`, `AttendanceUpdated`, and `AttendanceCompleted` contracts provide an integration seam. They remain process-local and non-durable; guaranteed synchronization requires an approved transactional outbox migration before external adapters are enabled.
-
-The credentialed `GoogleDriveClient` is infrastructure only and has no
-attendance call site. The current upload action writes the object to Supabase
-before the attendance action validates and stores its object path. Automation
-handlers are awaited best-effort notification handlers; they neither upload to
-Drive nor enqueue synchronization. Drive activation must not be represented as
-complete until provider metadata, external file identity, durable retry state,
-private media delivery, and cleanup behavior are implemented and migrated.
+`AttendanceSelfieStorage` isolates the temporary private Supabase cache from attendance business logic. `AttendancePermanentStorage` isolates permanent media and is implemented by the OAuth-backed Google Drive adapter. The `integration_outbox` is durable for attendance media; non-media `AttendanceCreated`, `AttendanceUpdated`, and `AttendanceCompleted` notification handlers remain process-local and best-effort.
 
 Product Phase 5 proposes duty-bound live location tracking. It must model a
 server-authorized tracking session separately from attendance history, store
@@ -133,6 +130,16 @@ append-only points with a derived current-location projection, and expose only
 tenant-scoped current state through realtime. Reliable screen-off/background
 polling requires an approved native mobile architecture; the web/PWA path must
 otherwise be described and tested as foreground-only.
+
+### Google Sheets reporting
+
+The server-only Sheets client uses a dedicated service account and the shared bounded Google API retry/error-redaction layer. It can inspect the approved workbook and perform self-cleaning verification writes, but no production business dataset is synchronized.
+
+The planned production design must add governed row contracts, a forward-only durable event/outbox extension, leased retries, deterministic bounded upserts, deletion/tombstone semantics, reconciliation, freshness state, and isolated tenant tests. It should reuse the proven attendance-media processing patterns without treating the media-specific outbox payload and constraints as a generic contract prematurely. Sheets remains a derived reporting layer and cannot authorize or mutate operational HR workflows.
+
+### Client direction
+
+The Next.js application remains the permanent Admin client and the current Employee web/PWA. A future Flutter Android employee client is planned for capabilities that require reliable native background behavior, especially duty-bound location tracking. It must reuse the existing backend, roles, business rules, and authorization model; it is not a separate platform. See [PRODUCT_VISION_2027.md](PRODUCT_VISION_2027.md).
 
 ### Resource/announcement visibility
 
@@ -146,14 +153,15 @@ Server services create rows and track state. `notifications` is in `supabase_rea
 
 - **Errors:** technical details are logged server-side; UI receives bounded messages.
 - **Caching:** protected/auth routes are `no-store`; actions use `revalidatePath`.
-- **Media:** database fields store object paths; shared helpers build public URLs.
+- **Media:** database fields store private cache paths and immutable provider IDs. Signed or controlled delivery URLs are produced only at authorized read time.
 - **Time:** attendance uses server timestamps; company settings carry timezone/date-format preferences.
 - **PWA:** manifest, service worker, install prompt, permission onboarding, and offline attendance queue.
 
 ## Architectural risks
 
 - Service-role-heavy data access makes service authorization correctness critical.
-- Playwright protects critical runtime, role, route, responsive, Storage, Realtime, attendance, export, and PWA boundaries in Chrome and Edge. CI and lower-level unit/service integration coverage remain open.
+- Playwright protects critical runtime, role, route, responsive, Storage, Realtime, attendance, export, and PWA boundaries in portable Chromium, with Edge optional. Isolated authenticated mutation coverage and lower-level unit/service integration coverage remain open.
+- Durable Google Sheets synchronization, reconciliation, and freshness health are planned but not implemented.
 - Browser-local offline state has limited durability and recovery UX.
 - Several oversized service/component files should be split only with behavior-preserving tests.
 

@@ -1,233 +1,200 @@
 # Company Hub Project Plan
 
-Status: planning baseline created during Phase 0 audit on 2026-07-30
-Authority: Supabase remains the operational source of truth; Google Drive and Google Sheets are derived supporting systems
+Status: reconciled after the completed Phase 4.0.3 attendance-media milestone on 2026-08-13
 
-Operational assumption approved for Phase 1: Company Hub uses the company's existing operational Google account and Drive/Sheets workspace. No ownership migration is required. Resources are private by default; temporary public sharing is allowed only for development/review and must be reverted and verified afterward.
+Authority: Supabase remains the operational source of truth. Google Drive is the permanent attendance-selfie archive, while Google Sheets remains a planned derived reporting system.
 
-This plan extends the existing architecture and roadmap. It does not replace [ARCHITECTURE.md](ARCHITECTURE.md), [ROADMAP.md](ROADMAP.md), [BACKLOG.md](BACKLOG.md), or [PROJECT_STATE.md](PROJECT_STATE.md), and it does not authorize implementation, migration, deployment, or external-resource changes.
+This plan records delivery status and the next approved sequence. It extends, but does not replace, [PROJECT_STATE.md](PROJECT_STATE.md), [PROJECT_STATUS.md](PROJECT_STATUS.md), [ARCHITECTURE.md](ARCHITECTURE.md), [ROADMAP.md](ROADMAP.md), or [PRODUCT_VISION_2027.md](PRODUCT_VISION_2027.md). A planned item is not authorization to implement, migrate, deploy, or change an external resource.
 
-## Existing architecture preserved
+## Status legend
 
-Company Hub remains a server-first Next.js App Router application hosted on Vercel and backed by Supabase PostgreSQL, Auth, Storage, RLS, and Realtime. Employee, Company Admin, and System Admin boundaries remain unchanged. Business mutations continue through authenticated server actions/services with current-company resolution and explicit feature authorization.
+- **COMPLETE:** implemented and verified in the authoritative environment.
+- **IN PROGRESS:** approved work has started but its exit criteria are not complete.
+- **PLANNED:** intended next work; implementation has not started or is not authorized.
+- **FUTURE:** directional scope requiring later prioritization and design approval.
+- **BLOCKED:** cannot safely proceed until the stated dependency is resolved.
 
-The long-term extension adds two derived layers:
+## Current architecture
 
 ```text
-Employees and Company Admins
+Employee attendance action
           |
           v
-Next.js server actions/services
+Supabase operational record + private Storage recovery cache
           |
           v
-Supabase operational source of truth
-   |                         |
-   | async reporting events  | async attachment finalization
-   v                         v
-Google Sheets MIS layer   Google Drive managed media
-   |
-   v
-Curated dashboards and scheduled reports
+Transactional integration_outbox
+          |
+          v
+Leased retry/recovery worker
+          |
+          v
+Restricted Google Drive permanent archive
+          |
+          v
+Verified 72-hour Supabase cache cleanup
+
+Supabase operational data
+          |
+          v
+Google Sheets reporting projection (PLANNED, not active)
 ```
 
 Core rules:
 
-- A Google outage must not corrupt Supabase or silently confirm an incomplete operational write.
-- Google Sheets is read-oriented reporting infrastructure, not an operational write authority.
-- Google Drive stores selected business media only where its governance/access model is appropriate.
-- Synchronization is asynchronous, idempotent, observable, replayable, and reconcilable.
-- Tenant isolation, feature controls, retention, and deletion apply across every provider.
+- Attendance persistence never waits for Google Drive or Google Sheets.
+- Google outages must not corrupt Supabase or falsely report an operational write as failed.
+- External synchronization is asynchronous, idempotent, observable, replayable, and reconcilable.
+- Tenant isolation, least privilege, retention, deletion, and redacted errors apply across providers.
+- Google Sheets is read-oriented reporting infrastructure, never an operational write authority.
+- Provider identifiers and object paths are stored; credentials and signed URLs are not.
 
-## Google Drive storage strategy
+## Completed foundation
 
-Official initial folder: [Selfies](https://drive.google.com/drive/folders/1beJRuQVHmAyxxRFcYrTF_XyfRhfjTD6O).
+### Phase 0 - Audit and architecture baseline — COMPLETE
 
-The target strategy is provider-neutral attachment metadata in Supabase with bytes stored in an approved provider. Supabase records should identify the business entity and tenant plus provider, provider file ID, controlled view/reference URL when needed, MIME type, size, checksum, original name, capture time, upload time, owner/uploader, sync status, retention class, and deletion state.
+- Audited the repository, documentation, schema history, Google resources, security boundaries, and integration direction.
+- Established Supabase as the source of truth and approved the existing company operational Google account and workspace.
+- Recorded the provider-neutral media and derived-reporting architecture.
 
-Proposed Drive organization:
+### Phase 1 - Stabilization and governance foundation — COMPLETE WITH OPEN GOVERNANCE ITEMS
 
-```text
-Company Hub/
-  <company-id>/
-    attendance/YYYY/MM/<employee-id>/
-    leave/YYYY/<employee-id>/
-    expenses/YYYY/MM/<employee-id>/
-    visits/YYYY/MM/<employee-id>/
-```
+- Hardened employee mutations, role hierarchy, form behavior, route behavior, and documentation foundations.
+- Restricted production Google resources and separated Drive OAuth from the Sheets service account.
+- Retained credential rotation, privacy/retention ownership, and formal access reviews as active operational work.
 
-Folder names are for operator readability; immutable IDs and Supabase metadata provide identity. Filenames should be deterministic, collision-safe, and free of unnecessary personal data.
+### Phase 2 - Integration and release foundation — COMPLETE
 
-Required controls before use:
+- Added bounded Google API retries, credential-redacted errors, explicit resource IDs, and self-cleaning verification.
+- Added portable Chromium checks, protected authenticated-QA configuration, Node/npm pinning, and pull-request/release workflows.
+- Applied schema alignment migrations `0041` and `0042` without rewriting migration history.
 
-- Use the approved company operational account with documented recovery and access owners.
-- Keep production resources restricted. Any temporary public sharing must have an owner, reason, expiry, and verified reversion.
-- Grant write access only to identities required for the approved integration and administration workflow.
-- Private-by-default objects; no anonymously accessible attendance or HR attachments.
-- Server-side MIME/signature/size validation, checksum verification, upload finalization, and malware/content policy where applicable.
-- Idempotent retry, orphan detection, deletion propagation, retention enforcement, legal hold, access reviews, and auditable operations.
-- A migration and rollback plan for existing Supabase attendance selfie paths.
+### Phase 4.0.3 - Durable attendance media — COMPLETE
 
-Attendance must not be lost if Drive is temporarily unavailable. The approved implementation should either retain a controlled temporary object until Drive finalization or use an outbox-backed upload state that clearly distinguishes operational attendance success from media synchronization status.
+Production version: `v0.3.0`
 
-## Google Sheets reporting layer
+Migration: `0043_attendance_media_sync.sql`
 
-Official workbook: [Database for Company Hub](https://docs.google.com/spreadsheets/d/1Kad8u6CV53AiR6XlTS40Ha9c5gi38AxfzqXKXg0sA80/edit?usp=sharing).
+Implemented flow:
 
-Google Sheets is the Reporting/MIS layer. It receives governed projections from Supabase and supports dashboards, scheduled reports, pivots, and controlled business analysis. It must not be used to approve leave, alter attendance, change employees, or drive authorization unless a future separately approved inbound workflow is designed.
+1. Attendance stores the operational record and private Supabase cache path.
+2. Migration `0043` atomically captures provider-neutral attachment metadata and an outbox event.
+3. An immediate post-response attempt and the authenticated scheduled worker claim jobs with expiring leases.
+4. The Drive adapter uses attachment-level idempotency metadata and recovers partial uploads.
+5. Successful delivery stores the permanent Drive identity and starts the 72-hour cache-retention period.
+6. Cleanup re-verifies Drive readability before deleting only the Supabase cache object.
+7. Attendance rows, attachment metadata, and permanent Drive files are not deleted by cache cleanup.
 
-Target synchronization properties:
+All three historical selfie references were synchronized and verified in restricted Drive, with an empty outbox at milestone completion. This milestone does not implement Google Sheets reporting.
 
-- Stable Supabase UUIDs are the primary reconciliation keys.
-- Incremental changes use source `updated_at` watermarks plus periodic full reconciliation.
-- Upserts are idempotent; deletes use documented soft-delete/tombstone semantics.
-- Batches are bounded for Google quotas and include exponential backoff with jitter.
-- Every run records start/end, domain, watermark, attempted/succeeded/failed counts, error category, retry state, and schema version.
-- Workbook raw tabs are machine-owned and protected; dashboards/formulas use separate curated tabs.
-- Dates/times carry an explicit timezone. The current workbook timezone is `Asia/Dhaka`.
-- Reporting freshness and failed-sync indicators are visible to consumers.
+## Next integration milestone
 
-## HR Reporting Database
+### Durable Google Sheets synchronization — PLANNED
 
-The workbook should begin with a governed data dictionary rather than immediate bulk export. Proposed tabs:
+Current foundation:
 
-| Tab                | Grain                            | Initial scope                                                                | Sensitive-data rule                                                         |
-| ------------------ | -------------------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| `_Data_Dictionary` | One row per field                | Name, type, meaning, source, owner, privacy class                            | No employee values.                                                         |
-| `_Sync_Runs`       | One row per sync run/domain      | Status, watermarks, counts, errors, schema version                           | Admin-only.                                                                 |
-| `_Control`         | One row per dataset/config       | Dataset version, freshness SLA, enabled state                                | Protected.                                                                  |
-| `Employees`        | One row per employee             | IDs, company, role, manager, work mode, lifecycle, approved reporting fields | Exclude Auth IDs/internal email/password data.                              |
-| `Attendance`       | One row per employee/date record | Server times, status, work mode, location references, minutes, sync metadata | Exclude selfie URLs and unnecessary precise coordinates from broad reports. |
-| `Leave`            | One row per request              | Type, dates, days, status, approver reporting key                            | Exclude attachments and free text unless explicitly approved.               |
-| `Holidays`         | One row per calendar event       | Company/calendar/date/title/workday effect                                   | Suitable first pilot.                                                       |
-| `Resources`        | One row per approved resource    | Category/type/status/usage projection                                        | Include only if a reporting use case is approved.                           |
+- Server-only service-account authentication is implemented.
+- The approved workbook ID is explicit configuration.
+- Spreadsheet metadata, temporary tab creation, raw value write/readback, and cleanup are verified by `npm run verify:google`.
+- Shared Google API retry and error-redaction infrastructure is available.
 
-Every domain contract requires owner, purpose, lawful/approved use, field allowlist, row grain, keys, timezone, retention, consumers, refresh SLA, deletion behavior, and reconciliation query.
+Not implemented:
 
-## Reporting workbook vision
+- No production reporting dataset is synchronized.
+- No domain field allowlist, row contract, protected raw-tab contract, or consumer access matrix is approved.
+- No durable Sheets enqueue path, reporting event type, sync ledger, watermark, tombstone, or reconciliation record exists.
+- The current `integration_outbox` constraint is attendance-media-specific; reuse requires an additive migration, not an undocumented payload convention.
+- No Sheets worker, scheduled recovery route, health signal, freshness SLA, or production rollback runbook exists.
+- No isolated tests cover replay, duplicate delivery, deletion, tenant isolation, provider outage, or row drift.
 
-The workbook evolves through three zones:
+### Required work
 
-1. **Raw synchronized tabs:** protected, stable schemas, machine-written values only.
-2. **Curated semantic tabs:** documented formulas/mappings for HR metrics such as headcount, presence, lateness, leave utilization, and holiday calendars.
-3. **Presentation tabs:** manager dashboards, monthly MIS, pivots, charts, and scheduled exports with freshness notices.
+1. **Governed workbook contract**
+   - Approve the initial low-risk domain, preferably Holidays.
+   - Define stable UUID keys, company scope, row grain, typed columns, timezone, privacy classification, deletion semantics, and refresh SLA.
+   - Create protected machine-owned raw tabs separate from curated formulas and dashboards.
 
-Manual edits must never be mixed into raw synchronized ranges. Where HR needs annotations or targets, place them in separate keyed input tabs with explicit ownership and validation. Reporting definitions—present, absent, late, working day, active headcount—must be documented and match operational rules rather than being reinvented in formulas.
+2. **Durable event contract**
+   - Design migration `0044` or later as a forward-only additive change.
+   - Reuse the proven lease/retry/idempotency patterns from attendance media while keeping domain-specific payloads and status transitions explicit.
+   - Capture creates, updates, and deletes without making the source mutation depend on Google.
 
-## Future analytics architecture
+3. **Sheets adapter expansion**
+   - Add bounded batch operations, deterministic row lookup/upsert, schema/header validation, and quota-aware retries.
+   - Never rewrite an entire workbook for routine incremental changes.
+   - Prevent synchronization from overwriting human-owned curated ranges.
 
-Google Sheets is an intentional near-term MIS layer, not necessarily the final analytical warehouse. The design should allow a later transition:
+4. **Worker and recovery**
+   - Add a server-only processor with expiring leases, retry backoff, safe dead-letter behavior, and replay controls.
+   - Add an authenticated scheduled route within hosting limits.
+   - Keep credentials, raw provider errors, and sensitive row values out of logs.
 
-```text
-Supabase operational data
-  -> versioned change/outbox contract
-  -> Google Sheets reporting projection (near term)
-  -> governed warehouse/lakehouse (future scale)
-  -> semantic metrics layer
-  -> BI dashboards and scheduled reports
-```
+5. **Reconciliation and observability**
+   - Record run start/end, dataset, watermarks, attempted/succeeded/failed counts, schema version, freshness, and bounded error categories.
+   - Compare source keys/counts/checksums with the reporting projection and surface unexplained drift.
+   - Expose only actionable integration failures through the Updates area; do not add permanent healthy-system dashboard clutter.
 
-Triggers for moving beyond Sheets include quota pressure, high row counts, concurrent editor conflicts, complex history, row-level analytical security, long refresh times, or the need for reproducible multi-year models. Provider-neutral event contracts and data definitions should make that transition possible without changing operational tables for every dashboard.
+6. **Verification and rollout**
+   - Test success, validation failure, authorization denial, tenant isolation, outage, retry, duplicate, deletion, stale lease, and cleanup behavior in an isolated environment.
+   - Backfill in bounded batches and prove a second run is a no-op.
+   - Require domain-owner sign-off before Employees, Leave, or Attendance projections.
 
-Future analytics should include:
+Exit criteria: repeatable idempotent synchronization, zero unexplained row drift, visible freshness/failure state, protected raw ranges, approved field allowlists, tested recovery, and no effect on operational writes during a Google outage.
 
-- Slowly changing employee/role/manager history where business reporting needs historical truth.
-- Snapshot and event facts for attendance and leave.
-- Metric definitions with owners, tests, and version history.
-- Company/role-aware access, privacy minimization, retention, and auditability.
-- Data-quality checks for uniqueness, referential integrity, freshness, completeness, and reconciliation totals.
-- BI tools consuming curated datasets rather than querying mutable operational UI tables directly.
+## Planned product phases
 
-## Planned phased implementation approach
+### Product Phase 5 - Duty-bound live location — PLANNED
 
-### Phase 0 - Audit and approval
+The dedicated specification is [docs/LIVE_LOCATION_TRACKING.md](docs/LIVE_LOCATION_TRACKING.md). No tracking code or migration exists.
 
-Deliver this plan and [AUDIT_REPORT.md](AUDIT_REPORT.md). No implementation. Approval gates: architecture direction, privacy classification, resource ownership, and prioritized remediation.
+The preferred direction is a Flutter Android employee client using the existing backend. The web/PWA may remain a foreground-only fallback; it must not be represented as capable of guaranteed screen-off tracking. Privacy policy, consent, retention, native-background behavior, battery constraints, and migration design require explicit approval before implementation.
 
-### Phase 1 - System stabilization and governance baseline
+### Internal operational messaging — PLANNED
 
-- Confirm temporary public sharing has been reverted and document recovery/access ownership for the approved operational account.
-- Review workbook sharing/protected ranges and define consumer groups.
-- Approve data classification, retention, deletion, consent, incident response, and credential rotation.
-- Resolve the pending schema/documentation baseline and current security backlog.
+Provide lightweight Admin-to-employee threads with replies, unread/read state, and automatic deletion after 30 days. It is not a permanent archive or a general chat platform. Retention, cleanup, notification, tenant-isolation, and abuse controls must be designed before implementation.
 
-Exit criteria: approved owners and policies; no production public access; named integration identity; documented access matrix.
+### Smart dashboard and system health — PLANNED
 
-### Phase 2 - Integration foundation
+- Hide birthday and work-anniversary cards when their count is zero; visible cards link to the relevant employee list.
+- Keep healthy technical metrics out of the main dashboard.
+- Surface actionable Drive, Sheets, queue, retry, cleanup, freshness, or database problems as a small indicator in Updates, with details inside that area.
 
-- Approve ADRs for provider-neutral attachments and the reporting replica.
-- Add an outbox/sync ledger, idempotency contract, retry/dead-letter behavior, reconciliation, and redacted telemetry.
-- Establish an isolated QA environment and integration tests.
+### Native Android employee application — FUTURE
 
-Exit criteria: failure/replay/duplicate/delete scenarios pass without making Google the operational authority.
+Flutter is the preferred client technology. It must reuse Supabase Auth, the database, existing APIs and business rules, roles, Drive, Sheets, and the current security model. Initial signed-APK distribution may use controlled internal channels while preserving a future Play Store path. See [PRODUCT_VISION_2027.md](PRODUCT_VISION_2027.md).
 
-### Phase 3 - Workbook contract and low-risk pilot
+## Future analytics direction
 
-- Create data dictionary, control, and sync-run structures.
-- Pilot Holidays or another low-risk dataset.
-- Validate quotas, batches, timezones, permissions, protected raw ranges, freshness, and reconciliation.
-
-Exit criteria: repeatable idempotent sync, zero unexplained row drift, visible freshness, and signed-off field allowlist.
-
-### Phase 4 - HR reporting rollout
-
-- Add Employees, Leave, and Attendance projections in that order.
-- Keep sensitive free text, Auth identifiers, secrets, media links, and unnecessary GPS data out of broad reports.
-- Build curated MIS definitions and dashboards separately from raw tabs.
-
-Exit criteria: domain-owner sign-off, performance targets, privacy review, data-quality checks, and rollback/runbook completion.
-
-### Phase 5 - Drive media pilot
-
-This phase number belongs to the Google integration workstream. Product Phase 5
-live location tracking is tracked separately in `ROADMAP.md` and
-`docs/LIVE_LOCATION_TRACKING.md`; neither designation replaces the other.
-
-- Implement one provider-neutral attachment domain with secure asynchronous finalization.
-- Validate upload, checksum, access denial, retry, orphan cleanup, deletion, retention, and outage behavior.
-- Preserve existing Supabase media until migration verification is complete.
-
-Exit criteria: no public media, no lost operational records, deterministic reconciliation, and tested recovery.
-
-### Phase 6 - Migration and domain expansion
-
-- Migrate eligible historical selfies in bounded batches with checksum and access verification.
-- Evaluate leave attachments, expense receipts, and visit photos independently.
-- Decommission redundant Supabase objects only after verified cutover and explicit authorization.
-
-Exit criteria: signed migration reconciliation, retained rollback evidence, and approved deletion of old objects.
-
-### Phase 7 - Analytics scale decision
-
-- Measure workbook size, API quota use, refresh duration, concurrency, and dashboard complexity.
-- Continue with Sheets or introduce a warehouse/semantic layer based on measured thresholds.
+Google Sheets is the near-term MIS projection, not necessarily the final warehouse. Measured quota pressure, row volume, concurrency, historical complexity, analytical security, or refresh duration may trigger a governed warehouse/lakehouse and semantic metrics layer. Provider-neutral event and data contracts should allow that evolution without weakening operational tables.
 
 ## Cross-phase quality gates
 
 Every implementation phase must include:
 
-- Success, validation failure, authorization denial, tenant isolation, provider outage, retry, duplicate, deletion, and cleanup tests.
-- No secrets/internal Auth identity in logs, Sheets, Drive names, URLs, or client bundles.
-- Bounded batch sizes and payloads; documented quota/rate behavior.
-- Documentation updates to architecture, database, API, security, testing, feature README, roadmap/backlog, changelog, and runbooks as applicable.
-- `npm install`, lint, typecheck, build, relevant automated tests, migration dry-run/lint/advisors for database changes, and explicit authorization before applying migrations or changing external resources.
+- Explicit status labels that distinguish current, planned, future, and blocked work.
+- Success, validation failure, authorization denial, tenant isolation, provider outage, retry, duplicate, deletion, and cleanup tests where applicable.
+- No secrets, internal Auth identities, signed URLs, coordinates, or sensitive payloads in logs or client bundles.
+- Bounded payloads and batches, documented quotas, pagination, and selective queries.
+- Accessibility, mobile usability, performance, retention, and rollback review.
+- Updates to architecture, database, API, security, testing, roadmap, backlog, status, changelog, and feature documentation in the same milestone.
+- `npm install`, lint, typecheck, production build, relevant automated tests, migration dry-run/lint/advisors for database changes, and explicit authorization before applying migrations or changing external resources.
 
-## Decisions required before Phase 1 implementation
+## Active decisions and risks
 
-1. Integration identity and recovery owners for the approved operational Google account.
-2. Verification that temporary public sharing is reverted before production use and maintenance of the named administrator list.
-3. Data retention/consent rules for selfies and each attachment class.
-4. Workbook editors/viewers, protected raw-tab model, and reporting field allowlists.
-5. Integration runtime/queue location and operational owner.
-6. Attachment metadata contract and existing-selfie migration policy.
-7. Reporting freshness targets, reconciliation owner, and failure notification channel.
-8. Thresholds for graduating from Google Sheets to a warehouse.
+1. Historical Supabase credential rotation remains unconfirmed.
+2. The isolated authenticated-QA project/accounts and cleanup monitoring are not complete.
+3. Google Sheets field allowlists, protected-range ownership, freshness SLA, and failure-notification ownership require approval.
+4. Selfie and future attachment consent, retention, deletion, legal-hold, and incident procedures require formal ownership.
+5. Production dependency advisories require compatibility-tested maintenance; `xlsx` currently has no upstream fix.
+6. The repository formatting baseline, unit tests, service/database integration tests, and historical migration reproducibility gap remain open.
+7. Native Android background-location policy and the employee tracking privacy contract require explicit approval before Product Phase 5.
 
 ## Success measures
 
-- Zero operational writes lost because Google is unavailable.
-- Zero cross-company or anonymous access to Drive media/reporting rows.
-- Idempotent replay produces no duplicates and reconciliation reports no unexplained drift.
-- Reporting freshness meets the approved SLA and failures are visible/actionable.
-- All synchronized fields have documented source, meaning, owner, privacy class, and retention.
-- Media deletion/retention propagates predictably and is auditable.
-- Workbook dashboards use governed definitions consistent with Supabase business rules.
+- Zero operational writes lost or falsely failed because an external provider is unavailable.
+- Zero anonymous or cross-company access to media, reporting rows, messages, or location data.
+- Idempotent replay creates no duplicates and reconciliation has no unexplained drift.
+- Reporting freshness meets its approved SLA and failures are actionable.
+- Retention and deletion propagate predictably and are auditable.
+- Employee workflows remain fast, mobile-first, offline-aware, and accessible.
+- Documentation never presents planned functionality as implemented.

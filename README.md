@@ -10,7 +10,7 @@ Role-aware company operations software for employee self-service, workforce admi
 [![Language](https://img.shields.io/badge/language-TypeScript-2563eb?style=flat-square)](#technology-stack)
 [![Backend](https://img.shields.io/badge/backend-Supabase-15803d?style=flat-square)](#architecture)
 
-[Live application](https://company-hub-zeta.vercel.app) | [Architecture](ARCHITECTURE.md) | [Product requirements](PRODUCT_REQUIREMENTS.md) | [Milestones](PROJECT_STATUS.md) | [Technical state](PROJECT_STATE.md)
+[Live application](https://company-hub-zeta.vercel.app) | [Architecture](ARCHITECTURE.md) | [Product vision](PRODUCT_VISION_2027.md) | [Milestones](PROJECT_STATUS.md) | [Technical state](PROJECT_STATE.md)
 
 ![Company Hub dashboard](assets/screenshots/dashboard-desktop.png)
 
@@ -34,12 +34,16 @@ The project is designed around explicit tenant boundaries and role-based access.
 - System-admin company lifecycle, feature control, releases, schema health, and maintenance state
 - Responsive layouts, theme support, offline status, and PWA foundations
 
+Google Sheets service-account access and self-cleaning API verification are implemented, but durable production reporting synchronization is not. That is the next integration milestone.
+
 See [FEATURES.md](FEATURES.md) for the detailed implementation map and [KNOWN_ISSUES.md](KNOWN_ISSUES.md) for current limitations.
 
 Product Phase 5 live location tracking is planned but not implemented. Its
 duty-bound privacy contract and native-background versus foreground-only web
 decision are documented in
 [the feature specification](docs/LIVE_LOCATION_TRACKING.md).
+
+The long-term employee-client direction is a Flutter Android application that reuses the existing backend and security model. The Admin web application remains permanent. This and other planned work are explicitly separated from current behavior in [PRODUCT_VISION_2027.md](PRODUCT_VISION_2027.md).
 
 ## Screenshots
 
@@ -78,6 +82,7 @@ For design decisions and boundaries, read [ARCHITECTURE.md](ARCHITECTURE.md), [D
 | Application           | Next.js 15, React 19, TypeScript             |
 | Styling               | Tailwind CSS, Radix UI primitives            |
 | Backend               | Supabase Auth, PostgreSQL, Realtime, Storage |
+| Derived integrations  | Google Drive; Google Sheets foundation       |
 | Validation and import | TypeScript services, SheetJS                 |
 | Testing               | ESLint, TypeScript, Playwright, axe-core     |
 | Delivery              | Vercel, GitHub Actions, Supabase CLI         |
@@ -86,8 +91,8 @@ For design decisions and boundaries, read [ARCHITECTURE.md](ARCHITECTURE.md), [D
 
 ### Prerequisites
 
-- Node.js 20 or later
-- npm
+- Node.js 24.x
+- npm 11.x
 - A Supabase project for local or test use
 - Supabase CLI when applying migrations locally
 

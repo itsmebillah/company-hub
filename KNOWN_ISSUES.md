@@ -1,84 +1,85 @@
 # Known Issues
 
+Last reconciled: 2026-08-13
+
 ## Platform operations
 
-- No first System Admin has been provisioned (`platform_admins` is empty by design). The control center remains inaccessible until the owner explicitly approves an existing active Auth user UUID.
+- No first System Admin has been provisioned (`platform_admins` is empty by design). The control center remains inaccessible until the owner explicitly approves an existing active Auth identity.
 
 ## Critical
 
-No unresolved application-critical defect was reproduced in the 2026-07-20 hardening verification. Historical secret rotation remains an operational action because repository history cannot prove whether prior example values were revoked.
+No unresolved application-critical defect was reproduced in the latest documented production verification. Historical Supabase credential rotation remains an operational action because repository history cannot prove whether prior example values were revoked.
 
 ## High
 
-### Browser coverage is not part of the automatic release gate
+### Authenticated browser and lower-level coverage are incomplete
 
-Pull requests now run install, lint, typecheck, build, and database-independent Chromium smoke coverage. The automatic release workflow additionally runs migration parity, database lint, and production HTTP verification. Full authenticated Playwright coverage remains a protected manual QA job until the isolated project, explicit synthetic accounts, secrets, and cleanup monitoring are configured. Unit tests and isolated service/database integration tests remain absent.
+Pull requests run install, lint, typecheck, build, and database-independent Chromium smoke coverage. The release workflow additionally runs database connection validation, migration parity, database lint, and production HTTP verification. Full authenticated mutation coverage remains a protected manual job until the isolated Supabase project, synthetic accounts, mutation opt-in, and cleanup monitoring are configured. No committed unit/service integration runner exists.
 
-### Dependency audit findings
+### Dependency advisories require compatibility-tested maintenance
 
-The latest audit reports 44 total findings, primarily through development-only Vercel/ESLint tooling. Production scope contains 4 high findings through bundled Next.js/PostCSS/Sharp and `xlsx`. npm currently reports no safe compatible fix for `xlsx` or the bundled Next.js dependencies and suggests an invalid framework downgrade. Do not run `npm audit fix --force`.
+The 2026-08-13 installation audit reported 36 findings: 1 low, 11 moderate, 23 high, and 1 critical across production and development dependencies.
+
+The production-only audit reported five high-severity affected packages/paths:
+
+- `nanoid` reports a non-breaking fix through `npm audit fix`, but the exact lockfile change and application compatibility require a separate reviewed maintenance change.
+- Next.js-bundled `postcss` and `sharp` remain affected; npm proposes a breaking Next.js 16 upgrade.
+- `xlsx` has prototype-pollution and ReDoS advisories with no available upstream fix. The Employee Import route lazy-loads it after file selection, reducing initial exposure but not eliminating untrusted-workbook parsing risk.
+
+Do not run `npm audit fix --force`. Reassess `xlsx` replacement, bound workbook size/rows, and test a supported Next.js upgrade separately. Audit totals are time-sensitive.
 
 ## Medium
 
 ### Historical migrations do not fully reproduce the linked schema
 
-`supabase db diff --linked` completes but emits a broad destructive diff across
-historical foreign keys, policies, views, functions, indexes, and the `pg_net`
-extension. Migration history and database lint pass through `0043`; this is a
-pre-existing canonical-history reproducibility gap, not an `0043` runtime
-failure. Never apply the generated destructive diff. Reconcile the historical
-migration baseline in an isolated project before claiming declarative parity.
+`supabase db diff --linked` completes but emits a broad destructive diff across historical foreign keys, policies, views, functions, indexes, and the `pg_net` extension. Migration history and database lint pass through `0043`; this is a pre-existing canonical-history reproducibility gap, not an `0043` runtime failure. Never apply the generated destructive diff. Reconcile the historical baseline in an isolated project first.
+
+### Durable Google Sheets synchronization is not implemented
+
+Service-account authentication, the approved workbook configuration, bounded Google API retries, raw read/write helpers, and a self-cleaning verification script exist. There is no production dataset contract, durable Sheets event, worker, lease/retry state, watermark, tombstone flow, reconciliation ledger, freshness alert, or scheduled Sheets sync. Sheets must remain documented as a derived inactive reporting foundation until those controls pass isolated verification.
+
+### Integration governance remains incomplete
+
+Formal owners are still required for Google account recovery, credential rotation, workbook editors/viewers, protected ranges, field allowlists, reporting freshness, failure notifications, facial-image retention/consent, deletion, legal hold, and incident response. Production resources must remain restricted.
 
 ### Isolated production authorization event requires monitoring
 
-One `POST /login` request returned 500 immediately after the 2026-07-26 deployment, with the bundled stack originating at the `requireCompanyAdmin` guard. The event could not be reproduced: subsequent complete Company Admin and Employee login, dashboard, authorization, profile, and logout checks passed, followed by an empty 30-minute production error-log check. Preserve request/action identifiers if it recurs and diagnose against that evidence; do not weaken the guard or make a speculative authorization change.
+One `POST /login` returned 500 immediately after the 2026-07-26 deployment, with the bundled stack originating at `requireCompanyAdmin`. The event was not reproduced: subsequent Company Admin and Employee authentication, routing, profile, authorization, and logout checks passed, followed by an empty error-log check. Preserve request/action identifiers if it recurs; do not weaken the guard speculatively.
 
 ### Security Advisor retains reviewed warnings
 
-Authenticated `SECURITY DEFINER` helpers remain executable because middleware, Storage/RLS, notification visibility, and caller-derived audit/usage telemetry require them. Their predicates derive identity from `auth.uid()` and expose no service-role inputs, but each should remain under review. Supabase leaked-password protection is also disabled. Migrations `0031`–`0032` and `0040` removed unnecessary anonymous-definer execution.
+Authenticated `SECURITY DEFINER` helpers remain executable because middleware, Storage/RLS, notification visibility, and caller-derived telemetry require them. Their predicates derive identity from `auth.uid()` and expose no service-role inputs, but each requires continued review. Supabase leaked-password protection is disabled.
 
-### Repository-wide formatting check fails
+### Repository-wide formatting baseline is incomplete
 
-Prettier reports 353 files. A scoped formatting baseline is required; bulk formatting should not be mixed with behavior changes.
+The last documented repository-wide Prettier check reported 353 differing files. Complete formatting as a scoped change; do not mix it with product behavior work.
 
-### Local Supabase stack cannot run without Docker Desktop
+### Local Supabase stack requires Docker Desktop
 
-The Supabase CLI is installed, but schema dump/local stack commands requiring Docker fail until Docker Desktop is installed. Linked remote query, migration, lint, and type generation commands work.
+Schema dump/local-stack commands requiring Docker cannot run until Docker Desktop is available. Linked remote migration, lint, and type-generation commands remain usable.
 
 ## Low
 
-### Local browser installation is required
+### Windows Playwright teardown can hang
 
-Playwright now uses its portable Chromium project rather than branded Chrome, but each workstation must run `npx playwright install chromium` once. Authenticated coverage additionally requires the isolated QA environment contract. A missing browser or QA configuration is an infrastructure failure, not an application regression.
+Portable Chromium smoke assertions pass, but the Playwright process can remain alive after its managed Next server stops on this Windows workstation. Validate the Ubuntu workflow separately before relying on the Windows teardown result.
 
-### Windows Playwright web-server teardown can hang
+### Isolated QA accounts block complete attendance mutation verification
 
-The Phase 2 Chromium smoke assertions both pass, but the Playwright process does not exit after its managed Next production server is stopped on this Windows workstation. The runner now uses the direct Next CLI, a manifest readiness probe, and graceful shutdown; the remaining hang requires targeted Playwright/Windows process-tree investigation. Validate the new Ubuntu quality workflow separately before making it required.
-
-### Isolated QA accounts block authenticated attendance mutation verification
-
-Authoritative Supabase connectivity, migration parity, declarative schema parity, and runtime schema-version reporting are verified. Brave can launch, load the PWA manifest, enforce the signed-out attendance boundary, and verify mobile overflow. Full check-in, checkout, GPS, selfie, duplicate, and error-path verification still requires the isolated QA account/project contract; production identities and data must not be used as substitutes.
-
-Attendance selfies remain intentionally bound to
-`SupabaseAttendanceSelfieStorage`. The OAuth Drive client is credentialed and
-independently verified, but it is not called by selfie upload, attendance
-persistence, or the process-local automation handlers. There is no durable sync
-queue. Activating Drive safely requires the approved attachment metadata/outbox
-migration, private media delivery, retry and idempotency behavior, and orphan
-cleanup.
+Full check-in, checkout, GPS, selfie, duplicate, provider-outage, retry, and error-path verification requires the isolated QA contract. Production identities and records must not be used as substitutes.
 
 ### Edge coverage is optional
 
-The baseline uses bundled Chromium. Set `PLAYWRIGHT_INCLUDE_EDGE=true` only on a workstation/runner with Edge installed (or provide `EDGE_EXECUTABLE_PATH`). Edge remains supplemental coverage and does not block portable baseline checks.
+Bundled Chromium is the baseline. Set `PLAYWRIGHT_INCLUDE_EDGE=true` only where Edge is installed or `EDGE_EXECUTABLE_PATH` is provided.
 
 ### PowerShell npm shim
 
-The machine execution policy blocks `npm.ps1`. Use `npm.cmd` in PowerShell or adjust policy through approved workstation administration.
+The workstation execution policy blocks `npm.ps1`. Use `npm.cmd` or an approved workstation policy change.
 
-### Offline queue is browser-local
+### Offline attendance queue is browser-local
 
-Queued attendance actions use local storage and can be lost when browser storage is cleared. Failed items have limited user recovery controls.
+Queued attendance actions use browser storage and can be lost if storage is cleared. Failed items have limited inspect/retry/discard controls, and selfie-required attendance still needs a network connection for evidence upload.
 
-### Generated/local artifacts require routine cleanup
+### Generated artifacts require routine cleanup
 
-`.next/`, `tsconfig.tsbuildinfo`, Playwright output, and Supabase CLI state are locally generated and must not be treated as product source or committed. Checkpoint cleanup removed tracked/runtime logs and disposable verification output while preserving the verified migration backup archives and required Supabase link metadata.
+`.next/`, `tsconfig.tsbuildinfo`, Playwright output, Supabase CLI state, logs, exports, and disposable verification data are not product source and must not be committed.

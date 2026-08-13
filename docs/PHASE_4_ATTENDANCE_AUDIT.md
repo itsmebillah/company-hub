@@ -2,11 +2,13 @@
 
 Audit date: 2026-07-30
 
+Status: historical pre-activation audit. Its media architecture findings were resolved by production version `v0.3.0` and migration `0043`. Current truth is maintained in [PROJECT_STATE.md](../PROJECT_STATE.md).
+
 ## Scope
 
 The audit covered employee and Company Admin routes, server actions, attendance/policy/selfie services, repositories, offline replay, database migrations `0009`, `0010`, `0017`, `0018`, `0021`, `0022`, and `0023`, generated types, and committed Playwright coverage.
 
-## Current workflow
+## Workflow at audit time
 
 The authenticated employee page loads today's server-derived attendance record and policy. The client requests geolocation, sends coordinates and device metadata to a feature-authorized server action, and optionally uploads a selfie before check-in or checkout. Server services resolve the active employee/company again, evaluate calendar, work-mode, GPS, accuracy, geofence, and time rules, then persist through the service-role repository. Offline actions are stored locally and replayed through the same server actions.
 
@@ -36,17 +38,17 @@ The main service contained server-time calculations alongside identity, policy, 
 
 Attendance notes and device strings were written without explicit length limits, and a client-provided address could override reverse-geocoded display data. Phase 4 bounds optional text metadata and uses server-side reverse-geocode output only. Coordinates remain the authoritative location evidence.
 
-### Medium — Automation events are not durable
+### Medium — Automation events were not durable at audit time
 
-The Phase 4 event contracts are process-local. A server interruption after attendance persistence can lose downstream work. This is documented and intentionally deferred until a transactional outbox migration is reviewed and approved.
+At audit time, all Phase 4 event contracts were process-local. Migration `0043` subsequently made attendance-media delivery durable through `integration_outbox`. Non-media notification events remain process-local and best-effort.
 
-### Medium — Sync metadata has no safe current persistence model
+### Medium — Sync metadata lacked a safe persistence model at audit time
 
-The live schema has no reporting sync/outbox or attachment-provider records. Adding status columns directly to attendance would not model check-in and checkout attachments cleanly. Recommended future design: an attendance outbox table plus attachment metadata records containing provider, object path, external file ID, status, attempt count, next attempt, last error, and last sync timestamp.
+Resolved for attendance media by migration `0043`, which added provider-neutral attachment records, permanent Drive identity, sync/cache status, attempt state, leases, errors, timestamps, and the durable media outbox. Durable Google Sheets reporting still requires a separately governed event and reconciliation contract.
 
-### Medium — Orphan selfie cleanup is not automated
+### Medium — Orphan selfie cleanup before attendance persistence remains limited
 
-A valid unique selfie may remain private in storage if the subsequent attendance action fails. Automatic deletion is unsafe without a durable attachment/claim record because a retry may still reference the object. Add age-based orphan reconciliation only with the future attachment metadata model.
+A valid unique selfie may still remain private in the temporary cache if upload succeeds but the subsequent attendance action never persists a record, because migration `0043` captures attachment metadata from persisted attendance paths. Synchronized attachment cleanup is automated and verified; pre-persistence orphan reconciliation remains separate future work.
 
 ### Medium — Offline queue durability and recovery are limited
 
@@ -71,9 +73,9 @@ Committed tests cover routes, responsiveness, accessibility, image selection lim
 - Selfie objects are private and read through short-lived signed URLs.
 - Phase 4 adds write-time selfie ownership validation and conditional checkout isolation.
 
-## Migration decision
+## Historical migration decision and resolution
 
-No migration was created or applied. Migration `0041` is still pending review/amendment, and durable sync preparation needs explicit schema approval. TypeScript contracts describe the intended provider/sync vocabulary without pretending that delivery state is currently durable.
+No migration was created during the original audit. Subsequently, `0041` removed the retired audit systems, `0042` advanced telemetry, and `0043` implemented durable attendance media. All are applied in the authoritative environment, and runtime schema telemetry reports `0043`.
 
 ## Verification status
 
@@ -83,10 +85,10 @@ No migration was created or applied. Migration `0041` is still pending review/am
 - Full Brave mutation coverage for check-in, checkout, GPS, selfie upload, duplicate prevention, and error recovery was not run. The isolated QA project reference, designated accounts, mutation opt-in, and `.env.test.local` are not configured. Production data was not used as a substitute.
 - No unit/service integration runner is committed, so extracted validation, storage, concurrency, and event boundaries are covered by lint/type/build but not lower-level automated behavioral tests.
 
-## Recommended follow-up order
+## Reconciled follow-up order
 
 1. Provision and prove the isolated authenticated QA environment.
-2. Add deterministic reversible attendance workflow tests.
-3. Review and approve a transactional outbox plus attachment metadata migration.
-4. Implement an outbox worker with idempotency, leases, retry policy, and monitoring.
-5. Add Google Drive and Google Sheets adapters behind the existing contracts in separate approved phases.
+2. Add deterministic reversible attendance and media-recovery tests.
+3. Monitor scheduled retry/cleanup and pre-persistence orphan behavior.
+4. Implement durable Google Sheets synchronization as a separate approved milestone.
+5. Keep Product Phase 5 live location unimplemented until native/background and privacy decisions are approved.

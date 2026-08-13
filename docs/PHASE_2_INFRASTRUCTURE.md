@@ -4,6 +4,8 @@ Review date: 2026-07-30
 Scope: testing, QA isolation, migration `0041`, dependencies, code quality, security, and performance
 Boundary: no Google integration, business module, architecture redesign, migration application, deployment, commit, or push
 
+Status: historical pre-application review. Migration `0041` was later applied, migration `0042` advanced schema telemetry, and migration `0043` activated durable attendance media. Do not follow the historical amendment/application instructions below; applied migrations must never be modified. Current state is [PROJECT_STATE.md](../PROJECT_STATE.md).
+
 ## Engineering decisions
 
 1. Bundled Playwright Chromium is the portable default. Branded Edge is opt-in through `PLAYWRIGHT_INCLUDE_EDGE=true`; it supplements rather than blocks the baseline.
@@ -52,9 +54,9 @@ Required safeguards for authenticated tests:
 
 Production credentials must never be copied into `.env.test.local`. The existing linked production-like project is not an acceptable target for mutation-enabled CI.
 
-## Migration 0041 review
+## Historical migration 0041 review
 
-### Status and purpose
+### State at review time
 
 - Migrations `0001`-`0040` are documented as remotely applied.
 - `0041_remove_audit_systems.sql` is local and unapplied.
@@ -73,11 +75,11 @@ The migration correctly drops denial functions before `platform_audit_logs`, dro
 - Unknown remote-only dependencies cannot be excluded without linked dry-run/introspection.
 - Removing denial/audit storage reduces forensic history; replacement application/hosting telemetry and retention ownership should be explicit.
 
-### Decision
+### Historical decision — superseded
 
-**Retain, but modify before application. Do not apply as currently written.** Because `0041` is not applied remotely, it may be amended before first application without violating forward-only history. The required amendment is to advance the least-privilege schema-version function to `0041`, matching migrations `0035`-`0040`.
+At review time, the recommendation was to retain but amend `0041` before application. That window is closed: `0041` is applied and must not be edited. Additive migration `0042` corrected telemetry, and `0043` now reports runtime schema version `0043`.
 
-Before any separately authorized application:
+The original pre-application checklist below is retained only as historical audit evidence and is not an active instruction:
 
 1. Back up/export the two retired audit tables if retention is required.
 2. Run linked migration history and `supabase db push --linked --dry-run`.
@@ -153,7 +155,7 @@ Remaining risks: historical credential rotation is unconfirmed; leaked-password 
 1. Provision the isolated QA Supabase project and protected CI environment; seed only explicit synthetic QA accounts.
 2. Run the manual authenticated-QA job, audit cleanup, then promote it to a required check only when deterministic.
 3. Add a unit runner and pure-rule coverage, followed by isolated service/database tests.
-4. Amend and dry-run migration `0041`; apply only in a separately approved database phase.
+4. Historical item completed additively: `0041` was applied, `0042` corrected telemetry, and neither applied migration may now be edited.
 5. Prototype and benchmark an `xlsx` replacement behind existing parser/export interfaces.
 6. Upgrade Next/PostCSS/Sharp together in a dedicated framework-maintenance change.
 7. Add structured redacted logging/correlation IDs and production error monitoring.

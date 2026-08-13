@@ -28,12 +28,12 @@ This file applies to the entire repository. Treat implementation, migrations, an
 - An employee has one role; hierarchy uses `employees.manager_id`.
 - Resource and announcement visibility is enforced server-side.
 - Application tables have RLS enabled. New tables require RLS and explicit policy decisions in the same migration.
-- Store storage object paths in database columns, not signed URLs.
+- Store provider object paths or immutable external file IDs in database columns, not signed URLs.
 - Use server timestamps for attendance and server-side GPS validation.
 
 ## Database changes
 
-- Add a new ordered file after the canonical applied range `0001`–`0040`; never rewrite a migration already applied remotely.
+- Add the next ordered file after the canonical applied range `0001`–`0043`; the next migration is `0044`. Never rewrite or renumber a migration already applied remotely.
 - Make migrations deterministic and safe for the current live schema.
 - Add indexes for foreign keys and high-frequency filters.
 - Verify with `supabase db push --linked --dry-run`, then apply only with explicit authorization.

@@ -5,6 +5,7 @@ This file is retained as a stable entry point for older links. The synchronized 
 ## Canonical documents
 
 - Product scope and acceptance outcomes: [PRODUCT_REQUIREMENTS.md](../PRODUCT_REQUIREMENTS.md)
+- Strategic product direction: [PRODUCT_VISION_2027.md](../PRODUCT_VISION_2027.md)
 - Current feature inventory: [FEATURES.md](../FEATURES.md)
 - Current readiness and risk: [PROJECT_STATE.md](../PROJECT_STATE.md), [KNOWN_ISSUES.md](../KNOWN_ISSUES.md)
 - Architecture and durable decisions: [ARCHITECTURE.md](../ARCHITECTURE.md), [DECISIONS.md](../DECISIONS.md)
@@ -28,8 +29,8 @@ This file is retained as a stable entry point for older links. The synchronized 
 
 ## Current implementation baseline
 
-Company Hub includes Auth/bootstrap, employees/import/hierarchy/roles, resources/permissions, announcements, notifications/realtime, attendance/GPS/selfies/reports/offline sync, leave, holiday calendars, settings, profile, audit logs, celebrations, responsive shells, themes, and PWA foundations.
+Company Hub includes Auth/bootstrap, employees/import/hierarchy/roles, resources/permissions, announcements, notifications/realtime, attendance/GPS/selfies/reports/offline sync, durable Drive media, leave, holiday calendars, settings, profile, celebrations, responsive shells, themes, and PWA foundations. The former Activity Log and Platform Audit systems were removed by migration `0041`.
 
-The linked Supabase project is `jjfktbgfwvekhlvyjlww`, with migrations `0001`–`0028`. The current release is still pre-production because secret hygiene, automated tests/CI, Vercel linking, and a real Admin account remain unresolved.
+The linked Supabase project is `jjfktbgfwvekhlvyjlww`, with migrations `0001`–`0043` applied and runtime schema telemetry at `0043`. Production version is `v0.3.0`; active risks are maintained in [KNOWN_ISSUES.md](../KNOWN_ISSUES.md).
 
 When this file conflicts with a focused canonical document, the focused document and current implementation win. Resolve the inconsistency in the same change.

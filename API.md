@@ -12,16 +12,18 @@ Company Hub is not a public REST API product. Its primary mutation interface is 
 
 ## HTTP routes
 
-| Method/path                             | Purpose                            | Input                                        | Success          | Authorization                                                                     |
-| --------------------------------------- | ---------------------------------- | -------------------------------------------- | ---------------- | --------------------------------------------------------------------------------- |
-| `GET /admin/attendance/reports/details` | Employee attendance detail         | Report filters plus required `employeeId`    | JSON detail      | Report service checks Company Admin access, report feature, and company           |
-| `GET /admin/attendance/reports/export`  | Attendance export                  | Filters plus `format` (`csv`, `xlsx`, `pdf`) | Download         | Report service checks Company Admin access, report feature, and company           |
-| `GET /admin/users/export`               | Employee CSV export                | Search, status, role, manager, mode, sort    | UTF-8 CSV        | Explicit Company Admin and employee-directory checks plus current-company scoping |
-| `GET /admin/users/import/template`      | Import template                    | None                                         | CSV download     | Explicit Company Admin and employee-directory checks                              |
-| `GET /api/cron/celebrations`            | Generate scheduled celebrations    | `Authorization: Bearer <CRON_SECRET>`        | JSON run summary | Bearer secret in production                                                       |
-| `POST /api/notifications/track`         | Mark notification delivered/opened | Notification ID plus delivered/opened event  | `204`            | Authenticated ownership scope; signed-out callers receive `401`                   |
+| Method/path                                  | Purpose                            | Input                                        | Success          | Authorization                                                                     |
+| -------------------------------------------- | ---------------------------------- | -------------------------------------------- | ---------------- | --------------------------------------------------------------------------------- |
+| `GET /admin/attendance/reports/details`      | Employee attendance detail         | Report filters plus required `employeeId`    | JSON detail      | Report service checks Company Admin access, report feature, and company           |
+| `GET /admin/attendance/reports/export`       | Attendance export                  | Filters plus `format` (`csv`, `xlsx`, `pdf`) | Download         | Report service checks Company Admin access, report feature, and company           |
+| `GET /admin/users/export`                    | Employee CSV export                | Search, status, role, manager, mode, sort    | UTF-8 CSV        | Explicit Company Admin and employee-directory checks plus current-company scoping |
+| `GET /admin/users/import/template`           | Import template                    | None                                         | CSV download     | Explicit Company Admin and employee-directory checks                              |
+| `GET /api/cron/celebrations`                 | Generate scheduled celebrations    | `Authorization: Bearer <CRON_SECRET>`        | JSON run summary | Bearer secret in production                                                       |
+| `GET /api/cron/attendance-media`             | Retry Drive delivery/cache cleanup | `Authorization: Bearer <CRON_SECRET>`        | JSON run summary | Bearer secret in production                                                       |
+| `GET /api/attendance/selfies/[attachmentId]` | Stream authorized attendance media | Attachment ID                                | Image stream     | Company Admin check plus current-company attachment scope                         |
+| `POST /api/notifications/track`              | Mark notification delivered/opened | Notification ID plus delivered/opened event  | `204`            | Authenticated ownership scope; signed-out callers receive `401`                   |
 
-The Vercel cron schedule calls `/api/cron/celebrations` at `0 18 * * *` UTC, corresponding to Bangladesh midnight when UTC+6 applies.
+Vercel calls `/api/cron/celebrations` at `0 18 * * *` UTC and `/api/cron/attendance-media` at `0 19 * * *` UTC. Both fail closed on the bearer secret in production.
 
 ## Server action inventory
 
@@ -29,14 +31,14 @@ The Vercel cron schedule calls `/api/cron/celebrations` at `0 18 * * *` UTC, cor
 
 - `createCompanyAction`: System Admin; atomically creates company, default roles, and settings.
 - `updateCompanyStatusAction`: System Admin; active/inactive/suspended/archived/deleted lifecycle state, with exact-name confirmation for soft deletion.
-- `resetPlatformEmployeePasswordAction`: System Admin; exact Employee-ID confirmation and audited reset to the canonical initial password.
+- `resetPlatformEmployeePasswordAction`: System Admin; exact Employee-ID confirmation and reset to the canonical initial password.
 - `updatePlatformSettingsAction`: System Admin; global branding and operational defaults.
 - `updatePlatformFeatureAction`: System Admin; authoritative global enable/disable plus company-override lock.
 - `updateCompanyFeatureAction`: System Admin; selected-company `inherit`/`enabled`/`disabled` state.
 - `updateOwnCompanyFeatureAction`: Company Admin; current-company state only when platform override is allowed and never bypasses platform disable.
 - Release actions: System Admin update of publication, popup, mandatory-update, maintenance, and release metadata; ordinary users may acknowledge only their own published release.
 
-Middleware calls caller-derived `can_access_company_platform`, `can_access_any_feature`, `record_feature_usage`, and denial-log RPCs. These RPCs do not expose platform records. Any-of checks are required for the shared Resources/Quick Links/Knowledge Hub route family.
+Middleware calls caller-derived `can_access_company_platform`, `can_access_any_feature`, and `record_feature_usage`. These RPCs do not expose platform records. Any-of checks are required for the shared Resources/Quick Links/Knowledge Hub route family.
 
 ### Auth
 

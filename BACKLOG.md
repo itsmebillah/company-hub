@@ -1,51 +1,69 @@
 # Engineering Backlog
 
-This backlog is ordered by risk and production value. Items require an owner and acceptance criteria before implementation.
+Last reconciled: 2026-08-13
 
-## P0 — Release blockers
+Items are ordered by production risk and value. Every item requires an owner, acceptance criteria, and explicit implementation authorization.
 
-- **SEC-001:** Rotate any Supabase credential that may have appeared in repository history; safe placeholders are now committed.
-- **CI-001:** Add pull-request checks for format, lint, typecheck, tests, and build.
-- **DEP-001:** Replace or formally accept the production `xlsx` and bundled Next.js/PostCSS/Sharp high advisories.
+## P0 — Release and governance blockers
+
+- **SEC-001:** Confirm rotation of any Supabase credential that may have appeared in repository history.
+- **DEP-001:** Perform compatibility-tested dependency maintenance. Validate the available `nanoid` fix, plan a supported Next.js/PostCSS/Sharp upgrade, and replace or formally accept `xlsx` risk because no upstream fix is available. Never use `npm audit fix --force`.
+- **QA-001:** Establish the isolated Supabase QA project, synthetic identities, mutation opt-in, deterministic cleanup, and protected authenticated test secrets.
+- **GOV-001:** Approve Google account recovery owners, credential rotation, media consent/retention/deletion, incident response, workbook access, field allowlists, protected ranges, freshness SLA, and failure-notification ownership.
+
+## P1 — Next integration milestone
+
+- **SHEETS-001:** Approve a governed Holidays reporting contract with stable IDs, company scope, typed columns, timezone, deletion semantics, privacy classification, and reconciliation rules.
+- **SHEETS-002:** Design forward-only migration `0044` or later for durable reporting events/runs. Reuse attendance-media lease/retry patterns without overloading media-only payload constraints.
+- **SHEETS-003:** Expand `GoogleSheetsClient` with bounded batch operations, deterministic row upserts, header/schema validation, quota-aware behavior, and protected raw-range safeguards.
+- **SHEETS-004:** Add the server-only worker, authenticated schedule, expiring leases, retry/dead-letter behavior, replay, tombstones, watermarks, reconciliation, and rollback runbook.
+- **SHEETS-005:** Surface actionable freshness, failed-sync, retry, and drift state inside Updates; healthy systems should not occupy dashboard space.
+- **SHEETS-006:** Prove success, duplicate replay, stale lease, provider outage, deletion, tenant isolation, row drift, and no-op reruns in isolated tests before production activation.
 
 ## P1 — Reliability and security
 
-- **LOCATION-001:** Product Phase 5 live location tracking. Decide native
-  background service versus foreground-only web behavior; approve privacy,
-  consent, retention, and labor-policy controls; then design tenant-isolated
-  tracking sessions, immutable route history, current-location projection,
-  realtime admin map, and geofence events. See
-  [the feature specification](docs/LIVE_LOCATION_TRACKING.md).
+- **PLATFORM-001:** Explicitly provision the first approved System Admin in `platform_admins`; migrations deliberately do not auto-promote a Company Admin.
+- **OBS-001:** Add structured redacted logging, correlation IDs, and production error monitoring for Auth, cron, imports, Storage, Drive, Sheets, and offline replay.
+- **SEC-002:** Review exposed authenticated `SECURITY DEFINER` helpers and leaked-password protection without breaking RLS, Storage, Realtime, or middleware contracts.
+- **SEC-003:** Add rate limiting and replay protection for login, notification tracking, cron, and future integration/location endpoints.
+- **DB-001:** Reconcile historical migration reproducibility in an isolated project and automate safe drift/advisor checks.
+- **OPS-002:** Document and test backup restoration, disaster recovery, integration credential recovery, and incident ownership.
 
-- **PLATFORM-001:** Explicitly provision the first approved System Admin in `platform_admins`; migration `0030` deliberately does not auto-promote a company Admin.
+## P1 — Product Phase 5
 
-- **OBS-001:** Add structured, redacted server logging and production error monitoring.
-- **AUTH-002:** Decide whether controlled invitation/employee-claim registration should be introduced; unsupported `/register` requests currently return to login.
-- **SEC-002:** Review whether storage authorization helpers should move to a non-exposed schema to eliminate remaining advisor warnings.
-- **SEC-004:** Revoke anonymous execution of `can_receive_notification`, review all three exposed `SECURITY DEFINER` helpers, and reduce the current four advisor warnings without breaking storage/realtime policies.
-- **SEC-003:** Add rate limiting/abuse protection for login, registration, notification tracking, and cron endpoints.
-- **DB-001:** Add automated migration drift and security-advisor checks.
-- **OPS-002:** Document and test backup restoration and disaster recovery.
+- **LOCATION-001:** Approve Flutter/native Android background tracking versus a clearly limited foreground-only web fallback.
+- **LOCATION-002:** Approve duty-only tracking privacy, consent, retention, deletion, labor policy, device support, battery use, and incident response.
+- **LOCATION-003:** After approval, design tenant-isolated sessions, immutable route history, current-location projection, admin live map, replay, geofence events, adaptive intervals, bounded offline queue, and supported mock-location signals. See [docs/LIVE_LOCATION_TRACKING.md](docs/LIVE_LOCATION_TRACKING.md).
 
-## P2 — Quality and product completion
+## P2 — Product and experience
 
-- **TEST-002:** Extend Playwright with destructive-flow coverage using isolated fixtures: bootstrap, employee creation/import, attendance submission, leave approval, and targeted announcements.
-- **A11Y-001:** Run axe/manual keyboard and screen-reader audits.
-- **QA-001:** Establish and enforce a scoped Prettier baseline; the current repository-wide check reports 353 files.
-- **PERF-001:** Add pagination/cursor limits to large exports and operational lists.
-- **OFFLINE-001:** Add user controls to inspect, retry, or discard failed offline attendance items.
-- **NOTIF-001:** Decide whether an external push provider is required.
-- **DOC-001:** Add employee-document and leave-attachment lifecycle UI or remove unused buckets until needed.
-- **DOC-002:** Add feature READMEs for celebrations, device onboarding, offline sync, and PWA, and remove/update the disconnected `home-login` documentation.
+- **MSG-001:** Design lightweight internal operational messaging with Admin messages, employee replies, unread/read state, notification integration, tenant isolation, rate limits, and verified automatic deletion after 30 days.
+- **DASH-001:** Hide birthday and work-anniversary cards when counts are zero; visible cards link to the corresponding employees.
+- **HEALTH-001:** Keep healthy integration metrics out of the main dashboard and use a small Updates indicator only for actionable failures.
+- **ANDROID-001:** Define the Flutter client architecture, shared API/auth contracts, local encrypted cache, offline queues, branding system, accessibility, and native release process.
+- **ANDROID-002:** Design controlled signed-APK distribution plus trusted optional/mandatory update checks using backend release metadata, signed artifacts, and checksums.
+- **OFFLINE-001:** Add inspect/retry/discard controls for failed browser-local attendance items and make queued-versus-submitted status explicit.
+- **AUTH-002:** Decide whether controlled invitation or employee-claim registration is required; unsupported public registration currently returns to login.
+- **DOC-001:** Define employee-document and leave-attachment lifecycle or retire unused storage surfaces until approved.
 
-## P3 — Enhancements
+## P2 — Quality and maintainability
 
-- Unique-user feature analytics and configurable usage-retention windows.
+- **TEST-001:** Add unit and service/database integration coverage for authorization, attendance, retry/lease behavior, cleanup, and reporting contracts.
+- **TEST-002:** Extend isolated Playwright coverage for bootstrap, employee import, attendance, leave approval, announcements, and integration failure states.
+- **A11Y-001:** Run keyboard, screen-reader, axe, and native accessibility audits.
+- **FORMAT-001:** Establish a scoped Prettier baseline; do not mix repository-wide formatting with behavior work.
+- **PERF-001:** Add cursor pagination and bounded generation to large operational lists, exports, and future reporting batches.
+- **DEBT-001:** Split oversized services/components only behind behavior-preserving tests.
+
+## P3 — Future and optional
 
 - Leave balance/accrual rules.
 - Attendance correction/approval workflow.
-- Rich announcement editor and sanitization model.
+- Rich announcement editing with an approved sanitization model.
 - Advanced analytics and scheduled reports.
-- Multi-company administration beyond current company isolation.
+- Warehouse/semantic layer after measured Sheets thresholds are exceeded.
+- External push provider beyond browser notification foundations.
+- Play Store distribution after native signing, privacy, support, and release readiness.
+- AI assistance only after purpose, access, audit, and privacy controls are approved.
 
-Completed items should move to [CHANGELOG.md](CHANGELOG.md), not remain checked off indefinitely.
+Completed work moves to [CHANGELOG.md](CHANGELOG.md). Strategic direction is maintained in [PRODUCT_VISION_2027.md](PRODUCT_VISION_2027.md).

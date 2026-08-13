@@ -16,8 +16,8 @@ Supabase remains the operational source of truth. Selfies synchronize to the res
 - `services/attendance-workflow-validation.service.ts`: server-time check-in and working-time/status rules.
 - `services/attendance-automation.service.ts`: best-effort `AttendanceCreated`, `AttendanceUpdated`, and `AttendanceCompleted` event dispatch.
 - `services/attendance-selfie.service.ts`: authenticated selfie lifecycle and reference validation.
-- `storage/`: provider-neutral selfie contract and the current Supabase Storage adapter.
-- `types/`: attendance, automation-event, and future sync metadata contracts.
+- `storage/`: provider-neutral temporary-cache and permanent-media contracts, with Supabase Storage and Google Drive adapters.
+- `types/`: attendance, automation-event, and media-sync contracts.
 
 ## Write flow
 
@@ -33,15 +33,14 @@ The database unique constraint on `(employee_id, attendance_date)` is the final 
 
 `AttendanceSelfieStorage` owns the temporary private Supabase cache. `AttendancePermanentStorage` owns permanent media and is implemented by the OAuth-backed Google Drive adapter. Attendance persistence never waits for Drive.
 
-Uploads accept only JPG, PNG, WebP, HEIC, or HEIF files up to 5 MB and validate file signatures. Upload and persistence paths are checked independently. Existing stored paths remain readable; no file migration is performed.
+Uploads accept only JPG, PNG, WebP, HEIC, or HEIF files up to 5 MB and validate file signatures. Upload and persistence paths are checked independently. Migration `0043` backfilled existing selfie references into provider-neutral attachment metadata, and the production recovery worker synchronized the three historical objects to Drive.
 
 The server-only Google integration uses OAuth offline access for
 Drive, a dedicated service account for Sheets, bounded retries, redacted
 provider errors, explicit approved resource IDs, and a self-cleaning
-`npm run verify:google` check. It is not yet selected as the
-permanent provider. Authorized Company Admin previews stream through the application; raw credentials and provider errors are never exposed.
+`npm run verify:google` check. Google Drive is the permanent attendance-selfie provider. Authorized Company Admin previews stream through the application; raw credentials and provider errors are never exposed. Google Sheets production reporting synchronization remains deferred.
 
-## Automation and future sync
+## Automation and synchronization
 
 The event dispatcher remains best-effort for non-media notifications. Media uses the durable `integration_outbox`, atomic leases, retry backoff, and Drive attachment idempotency metadata.
 

@@ -4,7 +4,7 @@
 
 **Status:** Planned; not implemented
 
-**Dependency:** Phase 4 attendance and durable automation completion
+**Dependency:** Phase 4 attendance and durable media automation are complete; privacy and native-client architecture approval remain outstanding
 
 ## Objective
 
@@ -17,17 +17,16 @@ must reject and avoid collecting updates outside that server-authorized window.
 
 A browser or installed PWA cannot reliably guarantee 30–60 second location
 updates after the screen locks, the browser is suspended, or the operating
-system applies background limits. Production acceptance therefore requires one
-of these explicitly approved operating modes:
+system applies background limits. The preferred production direction is a Flutter Android employee client with a native foreground-location service. Final approval must choose one of these accurately described operating modes:
 
 1. A native mobile application with foreground-location service, persistent
    tracking indicator, OS permissions, and platform-specific battery controls.
 2. Foreground-only web tracking with a clearly documented limitation that live
    updates stop when the page or browser is suspended.
 
-Do not claim complete background tracking from the web application without
-device-matrix evidence. Battery level is optional because browser/device support
-is inconsistent.
+Do not claim complete background tracking from the web application. A web/PWA implementation is a foreground fallback unless future device-matrix evidence and platform guarantees prove otherwise. Battery level is optional because browser/device support is inconsistent.
+
+The native client must reuse the existing Company Hub backend, roles, business rules, and security model. See [PRODUCT_VISION_2027.md](../PRODUCT_VISION_2027.md).
 
 ## Tracking contract
 

@@ -4,6 +4,21 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
 
 ## Unreleased
 
+### Documentation
+
+- Reconciled project state, status, plan, architecture, audit, risks, roadmap,
+  backlog, README, and engineering guidance with production version `v0.3.0`
+  and runtime schema version `0043`.
+- Added `PRODUCT_VISION_2027.md` with explicit current, planned, future, and
+  optional boundaries for durable Sheets sync, Flutter Android, duty-bound live
+  location, secure APK updates, internal messaging, smart health, and dashboard
+  visibility.
+- Recorded durable Google Sheets synchronization as the next integration
+  milestone and documented its exact missing event, worker, reconciliation,
+  privacy, observability, and isolated-test controls.
+- Updated dependency risk to the 2026-08-13 audits without applying breaking or
+  forceful dependency changes.
+
 ## [0.3.0] - 2026-07-31
 
 ### Added
@@ -48,9 +63,9 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
 - Verified the complete production release workflow through GitHub Release
   `v0.2.0` and corrected Windows-pipeline BOM encoding in encrypted GitHub
   Supabase secrets without exposing their values.
-- Confirmed with production evidence that attendance selfies currently persist
-  only to Supabase Storage and that no Drive upload or queue executes from the
-  attendance workflow; documented the exact activation boundary.
+- Recorded the pre-activation production diagnosis that attendance selfies then
+  persisted only to Supabase Storage, establishing the boundary later completed
+  by migration `0043` and the active Drive worker.
 
 - Linked the Supabase CLI to the authoritative Company Hub project and verified
   remote migration history through `0041`, live audit-object removal, and a
@@ -71,7 +86,9 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
 ### Phase 4 attendance automation foundation
 
 - Audited check-in, checkout, GPS/geofence policy, selfie evidence, duplicate prevention, tenant isolation, offline replay, and existing test coverage.
-- Added a provider-neutral attendance selfie storage contract with the current private Supabase Storage adapter; no Google Drive integration was implemented.
+- Added the pre-activation provider-neutral attendance selfie storage contract
+  and private Supabase Storage adapter; the later `0043` milestone activated
+  Google Drive delivery.
 - Hardened selfie uploads with current-date and phase-state checks, supported MIME/signature validation, immutable unique paths, and write-time ownership validation.
 - Bounded attendance notes/device metadata and stopped accepting client-provided addresses as location evidence.
 - Made checkout persistence conditional on company, employee, and incomplete state to prevent concurrent overwrite.

@@ -1,47 +1,42 @@
 # Next Sprint Handover
 
-Checkpoint date: 2026-07-26
+Checkpoint date: 2026-08-13
 
-This document freezes the current Company Hub implementation at the end of the stabilization sprint. It is a handover for planning only; no item below is authorization to begin implementation.
+Status: planning handover only; no item authorizes implementation, migration, deployment, or an external-resource change.
 
-## Done
+## Completed baseline
 
-- Stabilized the Employee, Company Admin, and System Admin account/logout experience with a visible, touch-friendly Account section where applicable.
-- Preserved the single role-aware mobile navigation architecture while correcting Dashboard FAB balance, center-lane spacing, clipped labels, header action alignment, and mobile overflow regressions.
-- Removed production-facing placeholders, misleading prepared-state labels, unsupported registration entry, dead dashboard components, temporary test code, and disposable QA data.
-- Retained the completed platform control, hierarchical feature control, Quick Links, release-management, Company Admin, authentication, Storage, Realtime, PWA, and tenant-isolation architecture without expanding product scope.
-- Replaced raw company-branding images with dimensioned Next.js images and reached zero lint warnings.
-- Updated compatible patch dependencies and retained documented exceptions where the package registry offers no safe compatible remediation.
-- Verified the production-build Chrome suite across Employee, Company Admin, disposable System Admin, feature denial, private Storage, Realtime, PWA, accessibility, and responsive widths from 320px through 1024px.
-- Verified the canonical Vercel deployment, public routes, protected redirects, authenticated Company Admin and Employee sessions, dashboards, authorization boundaries, and logout behavior.
-- Verified the linked Supabase project has exact migration parity for `0001` through `0040`, no database-lint errors, and no disposable QA records left by verification.
-- Synchronized `PROJECT_STATE.md`, `KNOWN_ISSUES.md`, `BACKLOG.md`, `TESTING.md`, and `CHANGELOG.md` with the stabilized implementation.
+- Production version `v0.3.0` and migrations through `0043` are the current baseline.
+- Runtime `get_app_schema_version()` reports `0043`; the next migration is `0044`.
+- Attendance media uses provider-neutral attachment metadata, a transactional outbox, expiring leases, retries, idempotent Google Drive recovery, authorized reads, historical backfill, and verified 72-hour Supabase cache cleanup.
+- Google Drive is the permanent attendance-selfie archive. Supabase Storage is the temporary private recovery cache.
+- Google Sheets service-account authentication, API access, and self-cleaning verification exist, but no production dataset is synchronized.
+- Pull-request quality and automatic production-release workflows are committed.
+- Current state, plan, status, architecture, risks, roadmap, backlog, audit, README, and product vision are reconciled.
 
-## In progress
+## Recommended next milestone
 
-- Monitor one non-reproduced Vercel runtime event observed immediately after deployment: `POST /login` returned 500 from the `requireCompanyAdmin` authorization guard. Subsequent complete Company Admin and Employee login/logout smoke tests passed, and the following 30-minute production error-log check was empty. Capture the Vercel request ID and Server Action identifier if it recurs before changing behavior.
-- Full Edge execution remains blocked by the workstation's missing Edge installation and required elevation. The Edge Playwright project remains committed.
-- Authenticated browser tests are not yet part of the automatic release gate because production-linked fixtures are intentionally not mutated by CI.
-- Repository-wide Prettier normalization remains intentionally separate from behavior work.
+### Durable Google Sheets synchronization — PLANNED
 
-## Postponed
+1. Approve a low-risk Holidays dataset contract, field allowlist, keys, company scope, timezone, deletion behavior, protected ranges, and freshness SLA.
+2. Design forward-only migration `0044` or later for durable reporting events/runs, reusing proven lease/retry/idempotency patterns without overloading the media-only contract.
+3. Add bounded deterministic Sheets upserts, schema/header validation, quotas, tombstones, and protection against overwriting curated ranges.
+4. Add a server-only worker, authenticated schedule, replay/recovery, reconciliation, and actionable Updates health.
+5. Prove outage independence, duplicates, stale leases, deletion, tenant isolation, row drift, no-op reruns, and rollback in an isolated environment.
 
-- UI polish.
-- Mobile UX improvements.
-- Branding improvements.
-- Navigation improvements.
-- Release Center enhancements.
-- Audit retention policy and archival automation.
-- Dependency updates that require a controlled framework or library migration.
-- Image optimization warnings and broader remote/user-media optimization beyond the dimensioned images completed in this sprint.
-- Remaining technical debt, including isolated unit/service integration coverage, repository formatting, CI browser isolation, historical credential rotation confirmation, and reviewed dependency/security-advisor exceptions.
+## Parallel quality gates
 
-## Next recommended order
+- Establish isolated authenticated QA accounts, mutation opt-in, cleanup monitoring, and lower-level service/database tests.
+- Confirm historical credential rotation and formal Google/privacy governance ownership.
+- Perform compatibility-tested dependency maintenance; never run `npm audit fix --force`.
+- Reconcile historical migration reproducibility in an isolated project.
+- Establish the repository formatting baseline in a separate mechanical change.
 
-1. Reproduce or close the isolated production Server Action authorization event using request IDs and deployment source maps; make no code change unless evidence identifies a deterministic cause.
-2. Establish an isolated QA data environment for authenticated Chrome/Edge CI, then add those browser checks to the release gate.
-3. Complete the security maintenance decision set: historical credential rotation confirmation, leaked-password-protection policy, and the documented authenticated helper review.
-4. Plan compatible replacements or upgrades for `xlsx` and the remaining Next.js/PostCSS/Sharp advisory chain; do not force an incompatible audit fix.
-5. Establish the repository-wide formatting baseline in a dedicated mechanical change.
-7. Continue Release Center work only after the quality and security gates above are complete.
-8. Perform measured UI, mobile UX, branding, and navigation polish last, preserving the frozen architecture and existing business rules.
+## Planned after the integration milestone
+
+- Product Phase 5 duty-bound live location, preferring native Android background tracking and treating web/PWA as foreground fallback.
+- Lightweight internal operational messaging with verified 30-day deletion.
+- Smart Updates-based system health and conditional birthday/anniversary cards.
+- Future Flutter Android employee application reusing the existing backend and security model.
+
+See [PROJECT_PLAN.md](PROJECT_PLAN.md), [ROADMAP.md](ROADMAP.md), and [PRODUCT_VISION_2027.md](PRODUCT_VISION_2027.md).

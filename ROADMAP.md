@@ -1,62 +1,68 @@
 # Roadmap
 
-The roadmap prioritizes safe production operation before additional product breadth. Status is based on the current implementation, not historical sprint intent.
+Last reconciled: 2026-08-13
 
-## Phase 0 — Production gate
+Status labels describe implementation truth: **COMPLETE**, **IN PROGRESS**, **PLANNED**, **FUTURE**, or **BLOCKED**. Product direction is detailed in [PRODUCT_VISION_2027.md](PRODUCT_VISION_2027.md).
 
-- Sanitize `.env.example`; rotate exposed or uncertain Supabase credentials.
-- Link the repository to the intended Vercel project and configure Preview/Production environments.
-- Create the first real Admin through the bootstrap flow and verify login/logout/password update.
-- Extend the committed pull-request quality workflow with a repository formatting baseline, isolated authenticated QA, migration parity, and secret scanning.
-- Establish automated unit and integration coverage for critical business rules.
-- Triage dependency vulnerabilities and document accepted residual risk.
-- Remove or complete visible placeholder screens and panels.
-- Validate backup, restore, migration rollback, and incident ownership.
+## Completed foundation
 
-## Phase 1 — Reliability and observability
+- **COMPLETE — Production hardening:** tenant authorization, RLS, private media, schema telemetry, responsive/PWA foundations, and release automation.
+- **COMPLETE — Integration foundation:** separate Drive OAuth and Sheets service-account identities, bounded API retries, redacted provider errors, explicit resource IDs, and self-cleaning verification.
+- **COMPLETE — Phase 4.0.3 attendance media:** migration `0043`, provider-neutral metadata, transactional outbox, leased retries, idempotent Drive recovery, secure reads, historical backfill, and verified 72-hour cache cleanup.
 
-- Add structured server logging with request/correlation IDs and redaction.
-- Add production error monitoring and alerting for cron, Auth, imports, storage, and failed offline sync.
-- Add database performance baselines, slow-query review, and index monitoring.
-- Add idempotency protection to cron and externally retryable mutations where needed.
-- Add health/readiness endpoints that do not disclose secrets.
+## Next integration milestone
 
-## Phase 2 — Product completeness
+### Durable Google Sheets synchronization — PLANNED
 
-- Replace the `/register` placeholder with a supported registration/invitation decision.
-- Finish dashboard activity/system-status panels and settings-center placeholder capabilities.
-- Decide and implement leave balance/accrual rules if required by the business.
-- Complete richer announcement editing or explicitly retain plain-text content.
-- Add admin-visible offline sync diagnostics and retry controls.
-- Add attendance correction/approval workflow if operationally required.
+- Approve the first low-risk reporting contract, field allowlist, row grain, company scope, timezone, deletion semantics, and freshness SLA.
+- Add a forward-only durable event/ledger design using migration `0044` or later.
+- Expand the Sheets adapter with bounded deterministic upserts, header/schema validation, quota handling, and protected raw-range safeguards.
+- Add a leased background worker, authenticated schedule, retries, recovery, reconciliation, and actionable freshness/failure state.
+- Pilot Holidays before Employees, Leave, or Attendance.
+- Prove idempotency, no-op replay, tenant isolation, provider outage, deletion, row drift, and rollback in an isolated environment.
 
-## Phase 3 — Scale and governance
+## Reliability and governance — PLANNED
 
-- Formalize multi-company tenancy tests and administrative boundaries.
-- Add pagination or cursor strategies to all large datasets and exports.
-- Add accessibility audits and cross-browser/device matrices.
-- Add data export/deletion processes and documented retention compliance.
-- Introduce release environments, migration rehearsal, and automated smoke tests.
+- Confirm historical credential rotation and formal Google account recovery ownership.
+- Approve media/reporting privacy classification, retention, deletion, consent, incident response, workbook access, and protected-range ownership.
+- Establish the isolated authenticated-QA project and lower-level unit/service/database tests.
+- Reconcile historical migration reproducibility in an isolated Supabase project.
+- Add structured redacted correlation, integration health, and actionable alerting.
+- Establish a scoped formatting baseline and compatibility-tested dependency maintenance.
 
-## Future candidates
+## Product Phase 5: duty-bound live location — PLANNED
 
-### Product Phase 5 — Real-time live location tracking
+- Use native Android background location as the preferred direction; document any web/PWA mode as foreground-only.
+- Start tracking only after successful check-in and stop immediately at checkout.
+- Add tenant-scoped current location, immutable route history, replay, accuracy, geofence events, adaptive intervals, bounded offline replay, and supported mock-location signals.
+- Approve privacy, consent, labor policy, retention, deletion, battery, device-matrix, and incident controls before schema work.
 
-- Implement duty-bound tracking sessions that start only after check-in and stop
-  immediately after checkout.
-- Add immutable route history, derived current location, tenant-scoped live map,
-  replay, distance/stops, and geofence enter/exit events.
-- Decide native background tracking versus explicitly foreground-only web
-  tracking before schema or client implementation.
-- Complete privacy, consent, retention, labor-policy, battery, offline, and
-  device-matrix reviews before production activation.
+Detailed specification: [docs/LIVE_LOCATION_TRACKING.md](docs/LIVE_LOCATION_TRACKING.md).
 
-Detailed scope and acceptance gates: [Live Location Tracking](docs/LIVE_LOCATION_TRACKING.md).
+## Employee native application — FUTURE
 
-- Employee documents UI and lifecycle management.
-- Push-provider integration beyond browser/native notification foundations.
-- Analytics and operational trend reporting.
-- Chat or collaboration capabilities.
-- AI assistant features only after data access, audit, and privacy controls are defined.
+- Build a Flutter Android client that reuses the existing backend, Auth, roles, business rules, Drive, Sheets, release metadata, and security model.
+- Preserve Company Hub branding while following native Android interaction, permissions, accessibility, and lifecycle patterns.
+- Support controlled signed-APK distribution first and a future Play Store path.
+- Add trusted optional and mandatory updates backed by signed artifacts, checksums, and minimum-supported-version metadata.
 
-Items should move into [BACKLOG.md](BACKLOG.md) with acceptance criteria before implementation.
+## Internal operational messaging — PLANNED
+
+- Add lightweight Company Admin-to-employee threads, replies, unread/read state, and notifications.
+- Automatically expire and delete messages after 30 days.
+- Keep the feature tenant-isolated, storage-minimal, rate-limited, and explicitly non-archival.
+
+## Smart Admin experience — PLANNED
+
+- Surface only actionable Drive, Sheets, queue, retry, cleanup, freshness, or database problems through a small Updates indicator.
+- Keep the main dashboard free of persistent healthy-system metrics.
+- Hide birthday and work-anniversary cards when counts are zero; link visible cards to relevant employee lists.
+
+## Scale and analytics — FUTURE
+
+- Add pagination/cursors and bounded generation to all large lists, exports, and reporting projections.
+- Measure Sheets quotas, row volume, refresh duration, concurrency, and governance limits.
+- Introduce a governed warehouse/lakehouse and semantic metrics layer only when measured thresholds justify it.
+- Add data export/deletion processes, retention compliance, accessibility audits, and broader device matrices.
+
+Items need an owner and acceptance criteria in [BACKLOG.md](BACKLOG.md) before implementation. Completed milestones belong in [CHANGELOG.md](CHANGELOG.md), not as unchecked future work.

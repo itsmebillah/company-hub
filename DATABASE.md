@@ -4,7 +4,7 @@
 
 Migrations through `0043` are applied to the authoritative project with matching local/remote history. Migration `0043` adds attendance media metadata, durable outbox delivery, and cleanup contracts.
 
-`supabase/migrations/` is the canonical schema history. Migrations `0001`–`0042` are applied to project `jjfktbgfwvekhlvyjlww` with matching local/remote history and declarative schema. Migration `0042` only advances the runtime schema-version contract after the applied audit-system removal. Never edit an applied migration; add the next ordered migration.
+`supabase/migrations/` is the canonical schema history. Migrations `0001`–`0043` are applied to project `jjfktbgfwvekhlvyjlww` with matching local/remote history. Runtime `get_app_schema_version()` reports `0043`. Never edit or renumber an applied migration; the next ordered migration is `0044`.
 
 `platform_features.state` is authoritative. `allow_company_override` determines whether `company_features.company_state` (`inherit`, `enabled`, or `disabled`) participates in resolution. `is_feature_enabled_for_company` and `can_access_any_feature` expose the canonical platform-first decision to server and middleware callers. `platform_feature_company_summary` supplies aggregate override counts without exposing tenant configuration rows.
 
@@ -14,17 +14,17 @@ The live verified catalog contains 27 public tables and the security-invoker `pl
 
 ## Domain tables
 
-| Domain              | Tables                                                                          | Purpose                                                                          |
-| ------------------- | ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| Organization        | `companies`, `company_settings`, `roles`, `employees`                           | Tenant, branding/policy, roles, employee identity/hierarchy                      |
-| Resources           | `resource_categories`, `resources`, `resource_permissions`                      | Resource catalog and public/role/employee visibility                             |
-| Announcements       | `announcements`, `announcement_roles`, `announcement_employees`                 | Scheduled content and targeting                                                  |
-| Attendance          | `attendance_records`, `attendance_attachments`, `attendance_media_cleanup_logs`, `company_locations`, `employee_location_access` | Daily records, durable media metadata, cleanup audit, GPS, and policy snapshots |
-| Integrations        | `integration_outbox` | Leased, idempotent external-delivery work |
-| Leave/calendar      | `leave_types`, `leave_requests`, `holiday_calendars`, `holiday_events`          | Leave workflow and working-day context                                           |
-| Import              | `employee_import_jobs`, `employee_import_rows`                                  | Durable bulk-import staging and outcomes                                         |
-| Celebrations        | `employee_celebration_events`                                                   | Per-year birthday/anniversary generation deduplication                           |
-| Platform control    | `platform_admins`, `platform_settings`, `platform_features`, `company_features` | Explicit global authorization, global configuration, and two-level feature state |
+| Domain           | Tables                                                                                                                           | Purpose                                                                          |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Organization     | `companies`, `company_settings`, `roles`, `employees`                                                                            | Tenant, branding/policy, roles, employee identity/hierarchy                      |
+| Resources        | `resource_categories`, `resources`, `resource_permissions`                                                                       | Resource catalog and public/role/employee visibility                             |
+| Announcements    | `announcements`, `announcement_roles`, `announcement_employees`                                                                  | Scheduled content and targeting                                                  |
+| Attendance       | `attendance_records`, `attendance_attachments`, `attendance_media_cleanup_logs`, `company_locations`, `employee_location_access` | Daily records, durable media metadata, cleanup audit, GPS, and policy snapshots  |
+| Integrations     | `integration_outbox`                                                                                                             | Leased, idempotent external-delivery work                                        |
+| Leave/calendar   | `leave_types`, `leave_requests`, `holiday_calendars`, `holiday_events`                                                           | Leave workflow and working-day context                                           |
+| Import           | `employee_import_jobs`, `employee_import_rows`                                                                                   | Durable bulk-import staging and outcomes                                         |
+| Celebrations     | `employee_celebration_events`                                                                                                    | Per-year birthday/anniversary generation deduplication                           |
+| Platform control | `platform_admins`, `platform_settings`, `platform_features`, `company_features`                                                  | Explicit global authorization, global configuration, and two-level feature state |
 
 ## Key relationships
 
@@ -95,7 +95,6 @@ Platform-control tables expose no direct `anon` or `authenticated` grants. Brows
 ## Platform feature resolution
 
 Availability is `active company AND enabled platform feature AND company override not disabled`. Missing company overrides inherit enabled for backward compatibility. A platform-disabled feature cannot be re-enabled by a company. Future states (`beta`, `hidden`, `deprecated`) are stored additively but treated as disabled by the current application.
-
 
 ## Realtime
 
