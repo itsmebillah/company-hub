@@ -12,6 +12,8 @@ Role-aware company operations software for employee self-service, workforce admi
 
 [Live application](https://company-hub-zeta.vercel.app) | [Architecture](ARCHITECTURE.md) | [Product vision](PRODUCT_VISION_2027.md) | [Milestones](PROJECT_STATUS.md) | [Technical state](PROJECT_STATE.md)
 
+Public application routes are `/` (product homepage), `/privacy` (Privacy Policy), and `/terms` (Terms of Service). The employee workspace remains behind `/login` and the existing protected route boundaries.
+
 ![Company Hub dashboard](assets/screenshots/dashboard-desktop.png)
 
 ## Overview

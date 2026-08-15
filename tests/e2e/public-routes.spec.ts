@@ -45,7 +45,14 @@ function collectRuntimeFailures(page: Page) {
 test("public entry points render without runtime errors", async ({ page }) => {
   const failures = collectRuntimeFailures(page);
 
-  for (const route of ["/", "/login", "/setup", "/releases"] as const) {
+  for (const route of [
+    "/",
+    "/privacy",
+    "/terms",
+    "/login",
+    "/setup",
+    "/releases",
+  ] as const) {
     const response = await page.goto(route, { waitUntil: "networkidle" });
     expect(response?.status(), route).toBe(200);
     await expect(page.locator("body"), route).toBeVisible();
@@ -55,6 +62,48 @@ test("public entry points render without runtime errors", async ({ page }) => {
   }
 
   expect(failures).toEqual([]);
+});
+
+test("public homepage presents product and legal navigation", async ({
+  page,
+}) => {
+  await page.goto("/", { waitUntil: "networkidle" });
+
+  await expect(
+    page.getByRole("heading", {
+      level: 1,
+      name: /employee operations, attendance, and reporting/i,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Login to Company Hub" }).first(),
+  ).toHaveAttribute("href", "/login");
+  await expect(
+    page.getByRole("link", { name: "Privacy Policy" }).last(),
+  ).toHaveAttribute("href", "/privacy");
+  await expect(
+    page.getByRole("link", { name: "Terms of Service" }),
+  ).toHaveAttribute("href", "/terms");
+});
+
+test("public legal pages describe Google data use", async ({ page }) => {
+  await page.goto("/privacy", { waitUntil: "networkidle" });
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Privacy Policy",
+  );
+  await expect(
+    page.getByRole("heading", { name: /Google Drive access/i }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: /Google Sheets access/i }),
+  ).toBeVisible();
+  await expect(page.getByText(/72-hour recovery period/i)).toBeVisible();
+  await expect(page.getByText(/Limited Use requirements/i)).toBeVisible();
+
+  await page.goto("/terms", { waitUntil: "networkidle" });
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Terms of Service",
+  );
 });
 
 test("protected routes redirect signed-out users to login", async ({
@@ -137,3 +186,14 @@ test("login has no automated WCAG A/AA violations", async ({ page }) => {
 
   expect(results.violations).toEqual([]);
 });
+
+for (const route of ["/", "/privacy", "/terms"] as const) {
+  test(`${route} has no automated WCAG A/AA violations`, async ({ page }) => {
+    await page.goto(route, { waitUntil: "networkidle" });
+    const results = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+      .analyze();
+
+    expect(results.violations).toEqual([]);
+  });
+}

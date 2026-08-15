@@ -55,6 +55,7 @@ Durable integration worker
 ## Repository topology
 
 - `app/`: route groups, pages, layouts, route handlers, metadata, loading and error boundaries.
+- `app/page.tsx`, `app/privacy`, and `app/terms` compose the data-free public site from `features/public-site`; they link into `/login` without weakening authenticated route or API protection.
 - `components/`: shared shells, navigation, primitives, theme and common presentation.
 - `features/`: domain modules with actions, services, repositories, components, types, constants, and local README files.
 - `lib/`: Supabase clients, environment access, auth/navigation helpers, date/media utilities.

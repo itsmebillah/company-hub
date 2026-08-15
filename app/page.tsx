@@ -1,21 +1,14 @@
-import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 
-import { hasBootstrapAdmin } from "@/features/auth/services/bootstrap.service";
-import { getPostLoginRedirectPath } from "@/features/auth/services/redirect.service";
-import { getCurrentSessionProfile } from "@/features/auth/services/session.service";
+import { PublicHomePage } from "@/features/public-site/components/public-home-page";
 
-export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "Secure employee operations",
+  description:
+    "Company Hub is a secure workspace for employee operations, attendance, reporting, and protected attendance media.",
+  robots: { index: true, follow: true },
+};
 
-export default async function HomePage() {
-  const profile = await getCurrentSessionProfile();
-
-  if (profile?.status === "active") {
-    redirect(getPostLoginRedirectPath(profile.roleName));
-  }
-
-  if (await hasBootstrapAdmin()) {
-    redirect("/login");
-  }
-
-  redirect("/setup");
+export default function HomePage() {
+  return <PublicHomePage />;
 }

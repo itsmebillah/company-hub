@@ -36,6 +36,7 @@ Supabase is the operational source of truth. Attendance selfies use restricted G
 - Company branding/settings, feature controls, release management, maintenance state, and responsive role-aware navigation.
 - System Admin company lifecycle, people, feature, settings, release, and health surfaces.
 - Pull-request quality and production-release workflows.
+- Public product homepage, Privacy Policy, and Terms of Service with an explicit login handoff and documented Google Drive/Sheets data practices.
 
 ## Phase 4.0.3 attendance media — COMPLETE
 

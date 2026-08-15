@@ -4,6 +4,15 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
 
 ## Unreleased
 
+### Added
+
+- Added a public Company Hub homepage with a protected-workspace login call to action, public Privacy Policy, and public Terms of Service.
+- Documented Google Drive OAuth and Google Sheets service-account access, synchronization, retention, security, and Google API Limited Use practices on the public Privacy Policy.
+
+### Security
+
+- Kept employee data, attendance data, dashboards, and authenticated APIs behind the existing authorization boundaries; public pages contain product and legal information only.
+
 ## [0.4.0] - 2026-08-13
 
 ### Added
