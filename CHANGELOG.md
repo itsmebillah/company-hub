@@ -8,6 +8,11 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
 
 - Added a public Company Hub homepage with a protected-workspace login call to action, public Privacy Policy, and public Terms of Service.
 - Documented Google Drive OAuth and Google Sheets service-account access, synchronization, retention, security, and Google API Limited Use practices on the public Privacy Policy.
+- Added a read-only Drive authorization audit for the configured Selfies folder and every stored attendance file, plus least-privilege access regression coverage.
+
+### Changed
+
+- Prepared Drive authorization to use `drive.file`, explicit existing-folder selection through Google Picker, and fail-closed `isAppAuthorized` checks. The reporting spreadsheet remains independently verified through the Sheets service account.
 
 ### Security
 

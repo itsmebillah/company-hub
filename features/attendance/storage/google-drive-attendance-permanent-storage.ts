@@ -6,12 +6,12 @@ import type {
 } from "@/features/attendance/storage/attendance-permanent-storage";
 import type { GoogleDriveFileMetadata } from "@/lib/google/drive-client";
 import { GoogleDriveClient } from "@/lib/google/drive-client";
-import { getGoogleIntegrationConfig } from "@/lib/google/config";
+import { getGoogleDriveStorageConfig } from "@/lib/google/config";
 
 function toPermanentSelfie(
   file: GoogleDriveFileMetadata,
 ): PermanentAttendanceSelfie {
-  const { driveSelfiesFolderId } = getGoogleIntegrationConfig();
+  const { driveSelfiesFolderId } = getGoogleDriveStorageConfig();
 
   if (
     !file.id ||
@@ -39,7 +39,8 @@ export const GoogleDriveAttendancePermanentStorage: AttendancePermanentStorage =
     provider: "google_drive",
 
     async find(attachmentId) {
-      const file = await GoogleDriveClient.findAttendanceAttachment(attachmentId);
+      const file =
+        await GoogleDriveClient.findAttendanceAttachment(attachmentId);
       return file ? toPermanentSelfie(file) : null;
     },
 

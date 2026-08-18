@@ -1,6 +1,6 @@
 # Project State
 
-Last repository reconciliation: 2026-08-13
+Last repository reconciliation: 2026-08-18
 
 Production milestone evidence: 2026-08-13, version `v0.4.0`
 
@@ -65,6 +65,10 @@ At milestone completion, all three historical attendance selfie references were 
 - Restricted Drive is the permanent attendance-selfie archive.
 - Supabase Storage is the temporary 72-hour recovery cache after verified sync.
 - Durable metadata, outbox, retry, recovery, secure reads, and cleanup are implemented.
+- A local-only migration to `drive.file` is implemented with Picker selection
+  of the existing folder and fail-closed `isAppAuthorized` checks. Production
+  remains on the expired full-scope credential until interactive folder/file
+  verification and an explicitly approved cutover are complete.
 
 ### Google Sheets — FOUNDATION ONLY
 

@@ -1,10 +1,10 @@
 import "server-only";
 
 import { googleApiFetch } from "@/lib/google/api-client";
-import { getGoogleIntegrationConfig } from "@/lib/google/config";
+import { getGoogleSheetsConfig } from "@/lib/google/config";
 
 function spreadsheetUrl(path = "", spreadsheetId?: string) {
-  const { reportingSpreadsheetId } = getGoogleIntegrationConfig();
+  const { reportingSpreadsheetId } = getGoogleSheetsConfig();
   return `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId ?? reportingSpreadsheetId)}${path}`;
 }
 

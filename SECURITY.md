@@ -26,8 +26,11 @@ Required secrets are `SUPABASE_SERVICE_ROLE_KEY` and `CRON_SECRET`; the Supabase
 
 Google Sheets uses a dedicated service account with no domain-wide delegation.
 The Holidays projection is restricted to one explicitly configured company/workbook destination. Browser roles cannot read reporting destinations or outbox state; server-only service-role code performs delivery. No Employee, Leave, or Attendance fields are approved for Sheets.
-Google Drive uses OAuth 2.0 offline access delegated by the operational account;
-its client secret and refresh token are server-only. Google credential files,
+Google Drive uses OAuth 2.0 offline access delegated by the operational account
+with the least-privilege `drive.file` scope. The Selfies folder is explicitly
+selected in Google Picker, and folder/file operations require Drive's
+`isAppAuthorized` signal. Its client secret and refresh token are server-only.
+Google credential files,
 private keys, client secrets, refresh tokens, and access tokens must never appear
 in client bundles, logs, Markdown, migrations, or test output. Production stores
 individual credential values as sensitive Vercel environment variables. Local

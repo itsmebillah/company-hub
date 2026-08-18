@@ -5,7 +5,7 @@ import { ReportingSyncRepository } from "@/features/reporting-sync/repositories/
 import { runReportingWorker } from "@/features/reporting-sync/services/reporting-sync.worker";
 import type { ReportingDestination } from "@/features/reporting-sync/types/reporting-sync.types";
 import { NotificationService } from "@/features/notifications/services/notification.service";
-import { getGoogleIntegrationConfig } from "@/lib/google/config";
+import { getGoogleSheetsConfig } from "@/lib/google/config";
 
 async function alertFailure(destination: ReportingDestination) {
   if (!(await ReportingSyncRepository.claimFailureAlert(destination.id)))
@@ -30,7 +30,7 @@ export const GoogleSheetsSyncService = {
     if (!companyId) {
       throw new Error("Google Sheets reporting company is not configured.");
     }
-    const { reportingSpreadsheetId } = getGoogleIntegrationConfig();
+    const { reportingSpreadsheetId } = getGoogleSheetsConfig();
     await ReportingSyncRepository.ensureDestination(
       companyId,
       reportingSpreadsheetId,

@@ -2,10 +2,9 @@ import "server-only";
 
 import { readFileSync } from "node:fs";
 
-export type GoogleIntegrationConfig = {
+export type GoogleSheetsConfig = {
   serviceAccountEmail: string;
   serviceAccountPrivateKey: string;
-  driveSelfiesFolderId: string;
   reportingSpreadsheetId: string;
 };
 
@@ -17,6 +16,15 @@ export type GoogleDriveOAuthClientConfig = {
 
 export type GoogleDriveOAuthConfig = GoogleDriveOAuthClientConfig & {
   refreshToken: string;
+};
+
+export type GoogleDrivePickerConfig = {
+  apiKey: string;
+  appId: string;
+};
+
+export type GoogleDriveStorageConfig = {
+  driveSelfiesFolderId: string;
 };
 
 export const GOOGLE_DRIVE_OAUTH_REDIRECT_URI =
@@ -129,7 +137,20 @@ export function getGoogleDriveOAuthConfig(): GoogleDriveOAuthConfig {
   };
 }
 
-export function getGoogleIntegrationConfig(): GoogleIntegrationConfig {
+export function getGoogleDrivePickerConfig(): GoogleDrivePickerConfig {
+  return {
+    apiKey: requireValue("GOOGLE_DRIVE_PICKER_API_KEY"),
+    appId: requireValue("GOOGLE_DRIVE_PICKER_APP_ID"),
+  };
+}
+
+export function getGoogleDriveStorageConfig(): GoogleDriveStorageConfig {
+  return {
+    driveSelfiesFolderId: requireValue("GOOGLE_DRIVE_SELFIES_FOLDER_ID"),
+  };
+}
+
+export function getGoogleSheetsConfig(): GoogleSheetsConfig {
   const keyFile = process.env.GOOGLE_SERVICE_ACCOUNT_KEY_FILE?.trim();
   const fileCredentials = keyFile ? readServiceAccountFile(keyFile) : null;
   const serviceAccountEmail =
@@ -141,7 +162,6 @@ export function getGoogleIntegrationConfig(): GoogleIntegrationConfig {
     fileCredentials?.serviceAccountPrivateKey ??
     ""
   ).replace(/\\n/g, "\n");
-  const driveSelfiesFolderId = requireValue("GOOGLE_DRIVE_SELFIES_FOLDER_ID");
   const reportingSpreadsheetId = requireValue(
     "GOOGLE_SHEETS_REPORTING_SPREADSHEET_ID",
   );
@@ -163,7 +183,6 @@ export function getGoogleIntegrationConfig(): GoogleIntegrationConfig {
   return {
     serviceAccountEmail,
     serviceAccountPrivateKey,
-    driveSelfiesFolderId,
     reportingSpreadsheetId,
   };
 }

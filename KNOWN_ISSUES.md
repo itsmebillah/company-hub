@@ -1,6 +1,6 @@
 # Known Issues
 
-Last reconciled: 2026-08-13
+Last reconciled: 2026-08-18
 
 ## Platform operations
 
@@ -14,7 +14,7 @@ No unresolved application-critical defect was reproduced in the latest documente
 
 ### Production Google Drive OAuth requires renewal
 
-The 2026-08-13 Phase 4.1 regression check verified four attendance attachments as durably synced with Drive IDs, but all four live readability checks stopped at OAuth token acquisition. Production logs report the redacted `drive-oauth` authentication category; no file request or deletion occurred. This matches the documented seven-day refresh-token expiry risk while the external OAuth app remains in Testing. The operational Google account must renew consent and the production refresh token must be rotated, then all four references and cleanup recovery must be re-verified. Do not delete or recreate the existing Drive files.
+The 2026-08-13 Phase 4.1 regression check verified four attendance attachments as durably synced with Drive IDs, but all four live readability checks stopped at OAuth token acquisition. Production logs report the redacted `drive-oauth` authentication category; no file request or deletion occurred. The local least-privilege `drive.file` migration, Picker flow, and fail-closed `isAppAuthorized` checks are prepared but not cut over. The expired production full-scope grant remains untouched until explicit approval. Before rotation, the operational account must authorize the existing Selfies folder and all four stored references must pass the read-only authorization audit. Do not delete or recreate the existing Drive files.
 
 ### Authenticated browser and lower-level coverage are incomplete
 

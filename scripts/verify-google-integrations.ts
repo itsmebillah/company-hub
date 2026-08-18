@@ -8,10 +8,12 @@ const TEST_PNG = Buffer.from(
 );
 
 async function main() {
-  const { getGoogleIntegrationConfig } = await import("@/lib/google/config");
+  const { getGoogleDriveStorageConfig, getGoogleSheetsConfig } =
+    await import("@/lib/google/config");
   const { GoogleDriveClient } = await import("@/lib/google/drive-client");
   const { GoogleSheetsClient } = await import("@/lib/google/sheets-client");
-  const config = getGoogleIntegrationConfig();
+  const driveConfig = getGoogleDriveStorageConfig();
+  const sheetsConfig = getGoogleSheetsConfig();
   const testId = crypto.randomUUID();
   const sheetTitle = `_Integration_Test_${Date.now()}`;
   let driveFileId: string | null = null;
@@ -20,36 +22,25 @@ async function main() {
   try {
     const folder = await GoogleDriveClient.getSelfiesFolder();
     const spreadsheet = await GoogleSheetsClient.getSpreadsheet();
-    const spreadsheetAccess = await GoogleDriveClient.getFileAccess(
-      config.reportingSpreadsheetId,
+    const hasAnonymousPermission = folder.permissions?.some(
+      (permission) => permission.type === "anyone",
     );
-    const resources = [folder, spreadsheetAccess];
-    const hasAnonymousPermission = resources.some((resource) =>
-      resource.permissions?.some((permission) => permission.type === "anyone"),
-    );
-    const serviceAccountCanEditAll = resources.every((resource) =>
-      resource.permissions?.some(
-        (permission) =>
-          permission.emailAddress === config.serviceAccountEmail &&
-          ["writer", "fileOrganizer", "organizer", "owner"].includes(
-            permission.role ?? "",
-          ),
-      ),
-    );
-    const ownerPresentOnAll = resources.every((resource) =>
-      resource.owners?.some((owner) => Boolean(owner.emailAddress)),
+    const ownerPresent = folder.owners?.some((owner) =>
+      Boolean(owner.emailAddress),
     );
 
     if (
-      folder.id !== config.driveSelfiesFolderId ||
+      folder.id !== driveConfig.driveSelfiesFolderId ||
       hasAnonymousPermission ||
-      !serviceAccountCanEditAll ||
-      !ownerPresentOnAll
+      !ownerPresent ||
+      folder.isAppAuthorized !== true ||
+      folder.capabilities?.canAddChildren !== true ||
+      folder.capabilities?.canEdit !== true
     ) {
       throw new Error("Drive folder access verification failed.");
     }
 
-    if (spreadsheet.spreadsheetId !== config.reportingSpreadsheetId) {
+    if (spreadsheet.spreadsheetId !== sheetsConfig.reportingSpreadsheetId) {
       throw new Error("Spreadsheet access verification failed.");
     }
 
@@ -70,7 +61,7 @@ async function main() {
         testId,
         "google_drive",
         "pending",
-        config.driveSelfiesFolderId,
+        driveConfig.driveSelfiesFolderId,
         "image/png",
         "sheets_verified",
         new Date().toISOString(),
@@ -84,7 +75,7 @@ async function main() {
 
     console.log("google_authentication=verified");
     console.log("restricted_permissions=verified");
-    console.log("owner_and_service_account_editor=verified");
+    console.log("drive_folder_app_authorization=verified");
     console.log("drive_folder_access=verified");
     console.log("sheets_access=verified");
     console.log("sheets_write_readback=verified");
@@ -101,7 +92,7 @@ async function main() {
     driveFileId = uploaded.id;
     const stored = await GoogleDriveClient.getFile(uploaded.id);
 
-    if (!stored.parents?.includes(config.driveSelfiesFolderId)) {
+    if (!stored.parents?.includes(driveConfig.driveSelfiesFolderId)) {
       throw new Error(
         "Drive verification file is outside the approved folder.",
       );
@@ -121,7 +112,7 @@ async function main() {
         testId,
         "google_drive",
         stored.id,
-        config.driveSelfiesFolderId,
+        driveConfig.driveSelfiesFolderId,
         stored.mimeType,
         "verified",
         new Date().toISOString(),

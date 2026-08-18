@@ -10,7 +10,7 @@ import {
   HOLIDAY_SHEET_HEADERS,
   type HolidayProjection,
 } from "@/features/reporting-sync/types/reporting-sync.types";
-import { getGoogleIntegrationConfig } from "@/lib/google/config";
+import { getGoogleSheetsConfig } from "@/lib/google/config";
 import { GoogleSheetsClient } from "@/lib/google/sheets-client";
 
 type Destination = { spreadsheetId: string; sheetName: string };
@@ -68,7 +68,7 @@ async function ensureSheet(destination: Destination) {
   }
 
   if (created && typeof properties.sheetId === "number") {
-    const { serviceAccountEmail } = getGoogleIntegrationConfig();
+    const { serviceAccountEmail } = getGoogleSheetsConfig();
     await GoogleSheetsClient.batchUpdate(
       [
         {

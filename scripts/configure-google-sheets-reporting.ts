@@ -8,13 +8,13 @@ async function main() {
     throw new Error("GOOGLE_SHEETS_REPORTING_COMPANY_ID is required.");
   }
 
-  const [{ createSupabaseAdminClient }, { getGoogleIntegrationConfig }] =
+  const [{ createSupabaseAdminClient }, { getGoogleSheetsConfig }] =
     await Promise.all([
       import("@/lib/supabase/admin"),
       import("@/lib/google/config"),
     ]);
   const supabase = createSupabaseAdminClient();
-  const { reportingSpreadsheetId } = getGoogleIntegrationConfig();
+  const { reportingSpreadsheetId } = getGoogleSheetsConfig();
   const { data: company, error: companyError } = await supabase
     .from("companies")
     .select("id")

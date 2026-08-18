@@ -4,7 +4,7 @@ import { JWT, OAuth2Client } from "google-auth-library";
 
 import {
   getGoogleDriveOAuthConfig,
-  getGoogleIntegrationConfig,
+  getGoogleSheetsConfig,
 } from "@/lib/google/config";
 
 const GOOGLE_SHEETS_SCOPE = "https://www.googleapis.com/auth/spreadsheets";
@@ -14,7 +14,7 @@ let googleDriveAuthClient: OAuth2Client | null = null;
 
 function getGoogleSheetsAuthClient() {
   if (!googleSheetsAuthClient) {
-    const config = getGoogleIntegrationConfig();
+    const config = getGoogleSheetsConfig();
     googleSheetsAuthClient = new JWT({
       email: config.serviceAccountEmail,
       key: config.serviceAccountPrivateKey,

@@ -1,16 +1,21 @@
 # Google Integration Setup
 
-Attendance Drive delivery is active. Production requires all Drive OAuth,
-Sheets service-account, resource-ID, Supabase server, and `CRON_SECRET`
-variables documented in `.env.example`. Store values only in local ignored env
-files and Vercel encrypted environment variables; never store credential JSON
-inside this repository.
+Attendance Drive delivery and durable Holidays reporting use two independent,
+server-only Google identities. Store credentials only in ignored local env files
+and Vercel encrypted environment variables; never commit credential JSON.
 
-Durable Sheets delivery is active for the governed Holidays dataset. Supabase remains authoritative; Sheets failures never roll back calendar writes.
+- Google Drive uses OAuth 2.0 offline access delegated by the operational
+  account with `https://www.googleapis.com/auth/drive.file`. Company Hub can
+  access files it creates and the existing Selfies folder explicitly selected
+  through Google Picker.
+- Google Sheets uses a dedicated service account limited to the configured
+  reporting workbook. Sheets failures never roll back authoritative Supabase
+  calendar writes.
 
 Operational checks:
 
 ```powershell
+npm run audit:google-drive-authorization
 npm run verify:google
 npm run process:attendance-media
 npm run verify:attendance-media
@@ -19,59 +24,54 @@ npm run process:google-sheets
 npm run verify:google-sheets
 ```
 
-The Vercel Hobby cron calls `/api/cron/attendance-media` once daily. New
-attendance also schedules an immediate post-response delivery attempt, while
-the daily sweep provides durable retry and cleanup recovery. Successful Drive
-verification starts a 72-hour Supabase cache-retention window. Do not manually
-delete cache objects or Drive files; use the worker and cleanup audit records.
-
-Company Hub uses two server-only identities:
-
-- Google Drive: OAuth 2.0 offline access delegated by the operational Google
-  account, so that account owns uploaded attendance files.
-- Google Sheets: the dedicated service account, limited to the reporting
-  workbook shared with it.
-
-Neither credential belongs in Git, application logs, client-side code, or
-database rows.
+The daily attendance-media cron and immediate post-response attempt provide
+durable retry and cleanup recovery. Successful Drive verification starts a
+72-hour Supabase cache-retention window. Do not manually delete cache objects or
+Drive files; use the worker and cleanup audit records.
 
 ## One-time Drive OAuth provisioning
 
-1. In the Google Cloud project that owns the existing service account, enable
-   the Google Drive API.
-2. Open **Google Auth Platform** and configure Branding, Audience, and Data
-   Access. Use the company identity and add the operational Google account as a
-   test user while the app is in Testing.
-3. Add the Drive scope `https://www.googleapis.com/auth/drive`. This restricted
-   scope is required because Company Hub must upload into and manage the existing
-   operational Selfies folder without an interactive file picker.
-4. Create an OAuth client with application type **Desktop app**, name it
-   `Company Hub Drive Uploader`, and download its JSON credential to a secure
-   local directory outside this repository.
-5. In the ignored `.env.development.local`, set only the path:
+1. Enable the Google Drive API and Google Picker API in the Google Cloud
+   project.
+2. Configure Google Auth Platform Branding, Audience, and Data Access. While the
+   app is in Testing, add the operational account as a test user.
+3. Add only `https://www.googleapis.com/auth/drive.file`. Do not add the
+   restricted full-Drive scope. The helper does not enable incremental scope
+   inheritance and rejects a token that contains full Drive access.
+4. Create a Desktop OAuth client named `Company Hub Drive Uploader` and store
+   its downloaded JSON outside the repository.
+5. Create a browser API key restricted to the Google Picker API and authorized
+   local use. Record the Google Cloud project number (Picker app ID).
+6. In `.env.development.local`, configure the existing Selfies folder ID plus:
 
    `GOOGLE_DRIVE_OAUTH_CLIENT_FILE=C:\\secure-path\\oauth-client.json`
 
-6. Run `npm run authorize:google-drive`. Open the displayed Google URL, select
-   the operational account, review the Drive permission, and approve it. The
-   helper validates a random OAuth state value, exchanges the callback code, and
-   stores the refresh token in the ignored local env file without printing it.
-7. Run `npm run verify:google`. The verifier checks restricted permissions,
-   uploads and reads a synthetic selfie, writes its metadata to a temporary
-   workbook tab, reads it back, and removes both temporary artifacts.
+   `GOOGLE_DRIVE_PICKER_API_KEY=...`
 
-The initial Company Hub verification completed on 2026-07-31 using the
-operational account for Drive and the service account for Sheets. No temporary
-verification artifacts remain.
+   `GOOGLE_DRIVE_PICKER_APP_ID=...`
 
-For durable unattended production access, move the OAuth app out of Testing
-after completing Google's applicable publishing and restricted-scope review.
-Refresh tokens issued to external test users can expire after seven days.
+7. Run `npm run authorize:google-drive`. Approve `drive.file`, then use Picker
+   to select the existing configured Selfies folder. The helper rejects a
+   different folder, verifies `isAppAuthorized` and write capabilities, and
+   only then stores the refresh token locally. It never creates a replacement
+   folder or prints a token.
+8. Run `npm run audit:google-drive-authorization`. This read-only audit verifies
+   `isAppAuthorized` for the folder and every stored attendance Drive file. A
+   failed existing file requires a separately approved recovery plan; do not
+   delete or recreate it automatically.
+9. Run `npm run verify:google`. It checks the Drive folder, creates and reads a
+   synthetic selfie, verifies Sheets through its service account, and removes
+   both temporary artifacts.
+
+The Drive verifier does not inspect reporting-spreadsheet Drive metadata.
+Google Sheets authorization and verification remain separate.
+
+`drive.file` is a non-sensitive scope. Refresh tokens issued to external test
+users can still expire after seven days until the OAuth app is published.
 
 ## Production environment
 
-Configure these as sensitive Vercel server environment variables, without
-uploading either JSON file:
+Configure these sensitive server variables in Vercel:
 
 - `GOOGLE_DRIVE_OAUTH_CLIENT_ID`
 - `GOOGLE_DRIVE_OAUTH_CLIENT_SECRET`
@@ -82,6 +82,11 @@ uploading either JSON file:
 - `GOOGLE_SHEETS_REPORTING_SPREADSHEET_ID`
 - `GOOGLE_SHEETS_REPORTING_COMPANY_ID`
 
-After any credential rotation, redeploy and repeat the self-cleaning verifier.
-Revoking the operational account's OAuth grant invalidates the Drive refresh
-token and requires repeating the one-time authorization flow.
+Picker API key and app ID are local authorization-helper inputs and must not be
+placed in the production browser bundle.
+
+For the full-Drive-to-`drive.file` cutover, first verify the existing four files
+and folder, then revoke the old grant only with explicit approval, repeat the
+Picker flow, rerun both verification commands, and only then rotate the Vercel
+refresh token and deploy. Revocation invalidates every refresh token for the
+client and is intentionally excluded from automated helpers.

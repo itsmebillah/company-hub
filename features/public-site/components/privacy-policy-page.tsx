@@ -64,9 +64,10 @@ export function PrivacyPolicyPage() {
                 <strong>Purpose.</strong> Company Hub uses Google Drive through
                 OAuth 2.0 access granted by an authorized operational Google
                 account. This access is used to create, locate, verify, read,
-                and manage attendance-media files in the configured restricted
-                Drive location so attendance selfies have durable storage and
-                authorized administrators can review them.
+                and manage attendance-media files that Company Hub creates or
+                that the operational account explicitly authorizes through
+                Google Picker in the configured Selfies folder. Company Hub does
+                not request general access to unrelated Drive content.
               </p>
               <p>
                 <strong>Storage and access.</strong> Google Drive file
@@ -74,7 +75,9 @@ export function PrivacyPolicyPage() {
                 Hub. OAuth credentials remain server-side and are not sent to
                 browsers or stored in employee records. Attendance media is not
                 made public; authorized Company Hub server routes enforce
-                organization and role checks before a preview is returned.
+                organization and role checks before a preview is returned. Each
+                folder and file is checked as app-authorized before metadata
+                access, download, recovery reuse, or verifier cleanup.
               </p>
               <p>
                 <strong>Synchronization and retention.</strong> A private
@@ -83,7 +86,10 @@ export function PrivacyPolicyPage() {
                 recovery period afterward. The verified Drive copy is retained
                 according to the participating organization&apos;s attendance,
                 legal, and records-retention requirements, and may be removed
-                through an authorized operational process.
+                through an authorized operational process. Automated cleanup
+                removes the temporary Company Hub recovery copy, not the
+                permanent attendance file in Drive. A temporary synthetic
+                verifier file is deleted after its verification run.
               </p>
             </>
           ),

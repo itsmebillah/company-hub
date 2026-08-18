@@ -112,14 +112,17 @@ Validation → Auth user creation → employee insertion → activity/notificati
 Attendance writes first persist the private Supabase cache path and attendance
 record. Migration `0043` creates attachment metadata and an outbox row in that
 same database transaction. An immediate post-response attempt and an hourly
-worker deliver the object to restricted Google Drive using atomic leases,
+worker deliver the object to an explicitly app-authorized Google Drive Selfies
+folder using the `drive.file` OAuth scope, atomic leases,
 exponential retry, Drive app-property idempotency, and partial-upload recovery.
 
 Company Admin previews use a tenant-authorized server route. It prefers the
 permanent Drive object after synchronization and falls back to the retained
 cache while delivery is pending. After Drive re-verification, cleanup waits 72
 hours and removes only the Supabase object. Attendance records, metadata, and
-Drive files are never deleted by cleanup.
+Drive files are never deleted by cleanup. The Drive adapter requires
+`isAppAuthorized` for the folder and every stored file before metadata reads,
+downloads, recovery reuse, or verifier-file deletion.
 
 Current employee/company context → policy and work-mode resolution → server-time/GPS/geofence validation → provider-neutral selfie storage → conditional attendance insert/update → best-effort automation events. Office-time and work-mode snapshots preserve historical interpretation. Offline actions are queued in browser local storage and replayed online.
 

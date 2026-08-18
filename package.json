@@ -21,6 +21,8 @@
     "test:e2e:headed": "playwright test --headed",
     "test:unit": "node --conditions=react-server --import tsx --test tests/unit/**/*.test.ts",
     "authorize:google-drive": "node --conditions=react-server --import tsx scripts/authorize-google-drive.ts",
+    "preflight:google-drive-authorization": "node --conditions=react-server --import tsx scripts/authorize-google-drive.ts --preflight",
+    "audit:google-drive-authorization": "node --conditions=react-server --import tsx scripts/verify-google-drive-app-authorization.ts",
     "verify:google": "node --conditions=react-server --import tsx scripts/verify-google-integrations.ts",
     "configure:google-sheets": "node --conditions=react-server --import tsx scripts/configure-google-sheets-reporting.ts",
     "process:google-sheets": "node --conditions=react-server --import tsx scripts/process-google-sheets-sync.ts",
