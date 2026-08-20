@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { spawn } from "node:child_process";
+import { existsSync } from "node:fs";
 import { createServer } from "node:http";
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -20,12 +21,71 @@ function encodeEnvironmentValue(value: string) {
 }
 
 function openDefaultBrowser(url: string) {
+  const requestedBrowser =
+    process.env.GOOGLE_DRIVE_AUTH_BROWSER?.trim().toLowerCase();
+  const bravePaths = [
+    process.env.ProgramFiles
+      ? path.join(
+          process.env.ProgramFiles,
+          "BraveSoftware/Brave-Browser/Application/brave.exe",
+        )
+      : null,
+    process.env["ProgramFiles(x86)"]
+      ? path.join(
+          process.env["ProgramFiles(x86)"],
+          "BraveSoftware/Brave-Browser/Application/brave.exe",
+        )
+      : null,
+    process.env.LOCALAPPDATA
+      ? path.join(
+          process.env.LOCALAPPDATA,
+          "BraveSoftware/Brave-Browser/Application/brave.exe",
+        )
+      : null,
+  ].filter((candidate): candidate is string => Boolean(candidate));
+  const bravePath = bravePaths.find((candidate) => existsSync(candidate));
+  const chromePaths = [
+    process.env.ProgramFiles
+      ? path.join(
+          process.env.ProgramFiles,
+          "Google/Chrome/Application/chrome.exe",
+        )
+      : null,
+    process.env["ProgramFiles(x86)"]
+      ? path.join(
+          process.env["ProgramFiles(x86)"],
+          "Google/Chrome/Application/chrome.exe",
+        )
+      : null,
+    process.env.LOCALAPPDATA
+      ? path.join(
+          process.env.LOCALAPPDATA,
+          "Google/Chrome/Application/chrome.exe",
+        )
+      : null,
+  ].filter((candidate): candidate is string => Boolean(candidate));
+  const chromePath = chromePaths.find((candidate) => existsSync(candidate));
+  const requestedBrowserPath =
+    requestedBrowser === "brave"
+      ? bravePath
+      : requestedBrowser === "chrome"
+        ? chromePath
+        : null;
   const command =
     process.platform === "win32"
-      ? { file: "rundll32.exe", args: ["url.dll,FileProtocolHandler", url] }
+      ? requestedBrowser === "brave" || requestedBrowser === "chrome"
+        ? requestedBrowserPath
+          ? { file: requestedBrowserPath, args: [url] }
+          : null
+        : { file: "rundll32.exe", args: ["url.dll,FileProtocolHandler", url] }
       : process.platform === "darwin"
         ? { file: "open", args: [url] }
         : { file: "xdg-open", args: [url] };
+  if (!command) {
+    throw new Error(
+      "The requested browser is not installed in a supported location.",
+    );
+  }
   const child = spawn(command.file, command.args, {
     detached: true,
     stdio: "ignore",
@@ -142,7 +202,16 @@ async function main() {
           request.method === "GET"
         ) {
           if (requestUrl.searchParams.get("state") !== state) {
-            throw new Error("OAuth callback state validation failed.");
+            response.writeHead(409, {
+              "Content-Type": "text/plain; charset=utf-8",
+            });
+            response.end(
+              "This authorization window has expired. Close it and use the newest Google login window.",
+            );
+            console.warn(
+              "Ignored an expired Google OAuth callback; the active authorization session is still waiting.",
+            );
+            return;
           }
           const providerError = requestUrl.searchParams.get("error");
           const code = requestUrl.searchParams.get("code");
@@ -190,7 +259,19 @@ async function main() {
             state?: string;
             folderId?: string;
           };
-          if (selection.state !== state || !selection.folderId) {
+          if (selection.state !== state) {
+            response.writeHead(409, {
+              "Content-Type": "text/plain; charset=utf-8",
+            });
+            response.end(
+              "This Picker window has expired. Close it and use the newest authorization window.",
+            );
+            console.warn(
+              "Ignored an expired Google Picker callback; the active authorization session is still waiting.",
+            );
+            return;
+          }
+          if (!selection.folderId) {
             throw new Error("Folder selection state validation failed.");
           }
           if (selection.folderId !== driveSelfiesFolderId) {

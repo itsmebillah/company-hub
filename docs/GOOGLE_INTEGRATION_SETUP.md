@@ -55,6 +55,12 @@ Drive files; use the worker and cleanup audit records.
    different folder, verifies `isAppAuthorized` and write capabilities, and
    only then stores the refresh token locally. It never creates a replacement
    folder or prints a token.
+
+   On Windows, the helper opens the system default browser. To use a specific
+   installed browser for the one-time flow, set `GOOGLE_DRIVE_AUTH_BROWSER` to
+   `chrome` or `brave` for that command invocation. Expired OAuth or Picker tabs
+   receive a conflict response and do not terminate the newest active session.
+
 8. Run `npm run audit:google-drive-authorization`. This read-only audit verifies
    `isAppAuthorized` for the folder and every stored attendance Drive file. A
    failed existing file requires a separately approved recovery plan; do not
@@ -90,3 +96,9 @@ and folder, then revoke the old grant only with explicit approval, repeat the
 Picker flow, rerun both verification commands, and only then rotate the Vercel
 refresh token and deploy. Revocation invalidates every refresh token for the
 client and is intentionally excluded from automated helpers.
+
+The local `drive.file` authorization completed on 2026-08-20: the existing
+Selfies folder and all four stored attendance files were app-authorized, media
+downloads succeeded, the self-cleaning verifier passed, and temporary artifacts
+were removed. This does not constitute production cutover; the existing
+production grant and Vercel refresh token remain unchanged pending approval.

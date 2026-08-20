@@ -14,6 +14,10 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
 
 - Prepared Drive authorization to use `drive.file`, explicit existing-folder selection through Google Picker, and fail-closed `isAppAuthorized` checks. The reporting spreadsheet remains independently verified through the Sheets service account.
 
+### Fixed
+
+- Kept the local Drive authorization helper alive when expired OAuth or Picker tabs submit stale state, and added explicit installed Chrome/Brave launch selection for the interactive flow.
+
 ### Security
 
 - Kept employee data, attendance data, dashboards, and authenticated APIs behind the existing authorization boundaries; public pages contain product and legal information only.
