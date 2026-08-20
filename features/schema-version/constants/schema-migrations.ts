@@ -42,4 +42,6 @@ export const SCHEMA_MIGRATION_MANIFEST = [
   "0041_remove_audit_systems.sql",
   "0042_schema_version_after_audit_removal.sql",
   "0043_attendance_media_sync.sql",
+  "0044_durable_google_sheets_sync.sql",
+  "0045_duty_bound_live_location_core.sql",
 ] as const;

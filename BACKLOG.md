@@ -33,8 +33,8 @@ Items are ordered by production risk and value. Every item requires an owner, ac
 
 ## P1 — Product Phase 5
 
-- **LOCATION-001:** Approve Flutter/native Android background tracking versus a clearly limited foreground-only web fallback.
-- **LOCATION-002:** Approve duty-only tracking privacy, consent, retention, deletion, labor policy, device support, battery use, and incident response.
+- **LOCATION-001 — DECIDED:** Flutter Android foreground-location service is the production mode; web/PWA is a foreground-only fallback with no screen-off guarantee.
+- **LOCATION-002 — DESIGN RECORDED, LIMITED OWNER DECISIONS OPEN:** Duty-only collection, lifecycle, own-route access/download, existing-model Admin and supervisor visibility, manual Admin stop, adaptive sampling, native battery behavior, bounded technical offline handling, disclosure, RLS, and permission-denial behavior are locked. Concrete retention/deletion values where technically required, notice acknowledgement, correction/deletion requests, Android device matrix, and incident ownership remain `DECISION REQUIRED`.
 - **LOCATION-003:** After approval, design tenant-isolated sessions, immutable route history, current-location projection, admin live map, replay, geofence events, adaptive intervals, bounded offline queue, and supported mock-location signals. See [docs/LIVE_LOCATION_TRACKING.md](docs/LIVE_LOCATION_TRACKING.md).
 
 ## P2 — Product and experience

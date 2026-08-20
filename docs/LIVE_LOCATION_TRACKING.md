@@ -2,9 +2,12 @@
 
 **Priority:** High
 
-**Status:** Planned; not implemented
+**Status:** Tracking-core migration implemented and validated in isolated QA;
+application collection and production rollout not started
 
-**Dependency:** Phase 4 attendance and durable media automation are complete; privacy and native-client architecture approval remain outstanding
+**Dependency:** Phase 4 attendance and durable media automation are complete;
+native Android is selected, while the explicitly marked privacy and policy
+decisions remain outstanding
 
 ## Objective
 
@@ -13,20 +16,95 @@ while an attendance duty session is active. Successful check-in starts an
 explicit tracking session; successful checkout ends it immediately. The system
 must reject and avoid collecting updates outside that server-authorized window.
 
-## Architecture decision required
+## LOCATION-001 — tracking technology decision
 
 A browser or installed PWA cannot reliably guarantee 30–60 second location
 updates after the screen locks, the browser is suspended, or the operating
-system applies background limits. The preferred production direction is a Flutter Android employee client with a native foreground-location service. Final approval must choose one of these accurately described operating modes:
+system applies background limits.
 
-1. A native mobile application with foreground-location service, persistent
-   tracking indicator, OS permissions, and platform-specific battery controls.
-2. Foreground-only web tracking with a clearly documented limitation that live
-   updates stop when the page or browser is suspended.
+**Decision:** the production mode is a Flutter Android employee client with a
+native foreground-location service. A web/PWA fallback is supported only while
+the tracking page and browser remain active in the foreground.
 
-Do not claim complete background tracking from the web application. A web/PWA implementation is a foreground fallback unless future device-matrix evidence and platform guarantees prove otherwise. Battery level is optional because browser/device support is inconsistent.
+The web fallback does not guarantee updates after screen lock, tab or browser
+suspension, process termination, operating-system background throttling, or
+loss of foreground execution. It must display that limitation before tracking
+begins and whenever delivery is suspended.
+
+Reliable screen-off collection, native lifecycle recovery, platform battery
+controls, an operating-system persistent tracking notification, and supported
+native mock-location signals are Android-only. Android support still requires
+an approved minimum OS/device matrix. Battery level remains optional because
+device support and its approved operational purpose are not yet defined.
+
+While tracking is active, Android must display persistent OS disclosure and the
+application must display a tracking-active state. Web must display an equivalent
+in-application indicator while its foreground tracker is active.
 
 The native client must reuse the existing Company Hub backend, roles, business rules, and security model. See [PRODUCT_VISION_2027.md](../PRODUCT_VISION_2027.md).
+
+## LOCATION-002 — privacy and policy decision record
+
+| Topic | Decision |
+| --- | --- |
+| Duty-only tracking | Location may be collected only during an active server-authorized duty tracking session associated with attendance. Collection outside that session is rejected and must not be stored. |
+| Employee notice and consent | Employees must be prompted to grant required location permission, receive clear duty-only notice, and see persistent active/suspended tracking disclosure. Permission denial produces no points and must never be presented as active tracking. Exact policy text and whether a separate acknowledgement record is required remain **DECISION REQUIRED**. |
+| Start | A successful check-in creates/activates the server tracking session. Client collection starts only after that response, required permission, and active-session confirmation. |
+| Stop | Successful checkout closes the session immediately. Permission denial, session expiry/revocation, employee/company deactivation, or server rejection suspends collection and upload. A Company Admin may manually end tracking when authorized by the existing Company Admin and effective-feature model. |
+| Retention period | Retention follows the existing Company Hub/company administration policy model. No arbitrary default is authorized. A concrete value remains **DECISION REQUIRED** if schema, cleanup, or rollout requires one. |
+| Deletion behavior | Expired points are removed through bounded, auditable cleanup under the configured Company Hub/company policy without deleting attendance records. A concrete deletion SLA, exception handling, and backup propagation remain **DECISION REQUIRED** if required for implementation or rollout. |
+| Employee access/requests | An employee may view and download only their own route history. Correction and deletion-request workflow, approvers, and response SLA remain **DECISION REQUIRED** because no existing workflow implements them. |
+| Admin access | Current and historical location access follows the existing Company Admin, effective-feature, company, and attendance authorization model. System Admin status alone does not imply tenant route access. Manual stop uses the same boundary. |
+| Supervisor access | Direct reports only: a supervisor may view a target employee only when `target.manager_id = supervisor.id`, within the same company and effective feature boundary. Recursive descendants are denied. No parallel hierarchy is introduced. |
+| Tenant isolation | Every session, point, projection, geofence event, query, and stream is company-scoped. Cross-company access is denied. |
+| RLS | Every new table requires RLS, explicit grants, caller-derived identity, tenant predicates, and denial tests. Browser roles must not receive broad history access. |
+| Sampling | Use adaptive sampling: moving updates remain within the planned configurable 30–60 second range and stationary updates slow adaptively. Do not introduce a new fixed product interval unless a technical constraint requires and documents it. Server minimums still prevent abusive polling. |
+| Battery | Use native battery-aware/adaptive behavior without an arbitrary hard battery cutoff. The client must disclose degraded or suspended delivery rather than silently stopping. Device-specific power-management behavior is validated through the supported device matrix. |
+| Supported devices | Flutter Android with a native foreground service is the production target. Exact minimum Android version, supported device matrix, OEM battery-policy guidance, and unsupported-device behavior are **DECISION REQUIRED**. |
+| Offline behavior | Cache only points belonging to the same active duty session. The queue is ordered, encrypted on supported native storage, deduplicated, and discarded/rejected after the session becomes invalid. There is no arbitrary product-level limit; implementation must choose, document, and test technical bounds for safety, memory, storage, and abuse protection. |
+| Incident response | Logs exclude coordinates and route payloads. The operational owner, privacy/security escalation owner, evidence retention, notification threshold, and response SLA are **DECISION REQUIRED**. |
+| Persistent disclosure | Android shows the foreground-service OS notification for the entire tracking period; both clients show an in-app active/suspended state. Tracking must not continue invisibly. |
+| Permission denial/failure | Location permission is required for duty-bound tracking. If denied, tracking cannot operate: explain the failure, create no points, show tracking as inactive/suspended, and provide a permission/settings retry path. Attendance continues to follow the existing approved attendance policy rather than a new tracking-specific attendance rule. |
+
+This record defines product and security boundaries, not legal compliance. No
+labor-law conclusion or jurisdiction-specific employee right is asserted.
+
+### Locked decisions
+
+- Native Flutter/Android foreground-location service is the production mode;
+  web/PWA is foreground-only.
+- Tracking is duty-only, starts after successful check-in, and stops immediately
+  after checkout or an authorized Company Admin manual stop.
+- Employees may view and download only their own route history.
+- Company Admin current/history access and manual controls reuse the existing
+  tenant and effective-feature authorization model.
+- Supervisor visibility is limited to direct reports where
+  `target.manager_id = supervisor.id`; recursive descendants are denied and no
+  new hierarchy is introduced.
+- Sampling is adaptive, battery-aware, and has no arbitrary hard battery cutoff.
+- Offline storage has no arbitrary product limit but remains technically bounded
+  and protected against memory, storage, and abuse risks.
+- Permission denial produces no points and must never appear as active tracking;
+  attendance continues under its existing approved policy.
+- Coordinates never enter logs or reporting sheets, and tenant isolation/RLS
+  remain mandatory.
+
+### Decisions still required
+
+- Exact employee notice text and whether a separate acknowledgement record is
+  required.
+- A concrete retention duration if schema, cleanup, or rollout requires one.
+- Deletion SLA, exception handling, and backup propagation where required.
+- Employee correction/deletion-request workflow, approvers, and SLA.
+- Minimum Android version, supported device/OEM matrix, and unsupported-device
+  behavior.
+- Operational incident owner, privacy/security escalation owner, evidence
+  retention, notification threshold, and response SLA.
+
+The tracking-core `0045` migration can be designed without inventing these
+values: it must use policy/configuration references rather than a hard-coded
+retention duration and must not activate retention cleanup or production
+collection until the required operational values are configured and approved.
 
 ## Tracking contract
 
@@ -76,8 +154,8 @@ observed_at desc)` and `(tracking_session_id, observed_at)`.
 
 Every new table requires RLS, explicit grants, foreign-key/filter indexes,
 retention ownership, and an approved forward-only migration. Exact DDL and ER
-changes are deferred until the native-versus-foreground decision and privacy
-review are approved.
+changes remain deferred until every `DECISION REQUIRED` item that affects
+collection, access, or retention is approved.
 
 ## API and realtime boundaries
 
@@ -95,6 +173,77 @@ review are approved.
 - Route timeline/replay, distance summary, stop duration, and visit history.
 - Configurable geofences with enter/exit events. Automatic attendance actions
   remain a separate future safety-reviewed feature.
+
+## Proposed Phase 5 architecture
+
+```text
+Successful check-in
+  -> server creates one active tracking session
+  -> Android foreground service or foreground-only web client collects points
+  -> authenticated, rate-limited ingestion validates session and payload
+  -> immutable location history
+  -> transactional current-location projection
+  -> tenant-scoped realtime/admin queries
+  -> checkout or revocation closes the session and stops collection
+  -> retention worker removes expired route data under the approved policy
+```
+
+Responsibilities:
+
+- **Database:** sessions, immutable points, current-location projection,
+  geofence events, RLS, indexes, idempotency constraints, retention state, and
+  cleanup audit.
+- **API/server:** session authorization, bounded ingestion, clock/payload/replay
+  checks, tenant-scoped current/history queries, geofence evaluation, and
+  redacted errors.
+- **Web dashboard:** live tenant map, freshness/online state, filters, route
+  timeline/replay, distance, stops, and approved geofence administration.
+- **Flutter Android:** foreground service, runtime permissions, persistent
+  notification, adaptive sampling, native lifecycle recovery, encrypted bounded
+  offline queue, and supported device-integrity signals.
+- **Web fallback:** foreground-only permission, active-state disclosure,
+  adaptive sampling while active, bounded local queue, and explicit suspension
+  messaging.
+- **Background processing:** retention cleanup, stale-session closure,
+  projection/reconciliation repair, and bounded geofence processing where it is
+  not part of ingestion.
+- **Testing:** deterministic route fixtures, authorization/RLS denial, duty
+  boundaries, replay/idempotency, offline expiry, clock skew, retention cleanup,
+  map freshness, geofences, accessibility, battery/performance, Brave foreground
+  behavior, and the approved Android device matrix.
+
+## Proposed migration and API sequence
+
+Migration `0045` is implemented and validated against the isolated QA project
+only. It is not applied to production, and production collection remains
+inactive. Later migrations and application layers remain proposals until their
+own approval gates.
+
+1. **`0045` — tracking core:** tracking sessions, immutable location history,
+   current-location projection, lifecycle/idempotency constraints, indexes,
+   RLS/grants, and schema telemetry.
+2. **`0046` — geofence and retention operations:** geofence events, retention
+   claims/cleanup audit, stale-session handling, and any approved reconciliation
+   functions.
+3. **Later additive migrations only if required:** partitioning, measured scale
+   indexes, or policy changes proven necessary after QA/load evidence. Never
+   rewrite `0045` or `0046` after application.
+
+Proposed server boundaries:
+
+- attendance completion invokes a tracking-session start/stop service;
+- authenticated point ingestion accepts a bounded batch with session ID and
+  idempotency keys;
+- Company Admin and authorized-supervisor current-location queries/streams are
+  tenant- and hierarchy-scoped through the existing permission model;
+- employees may query/download only their own history; Company Admin and
+  authorized-supervisor historical queries require tenant/hierarchy scope,
+  employee/date bounds, pagination, and point limits;
+- an authorized Company Admin stop operation closes the target session through
+  the same tenant/effective-feature boundary used by attendance administration;
+- geofence configuration reuses company locations where the approved model
+  permits, while enter/exit events remain separate immutable records;
+- cleanup and stale-session operations use authenticated scheduled workers.
 
 ## Acceptance gates
 

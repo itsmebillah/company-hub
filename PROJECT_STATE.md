@@ -26,7 +26,12 @@ secrets or automatically repeating Google OAuth.
 - Migration `0042` advanced schema telemetry after that removal.
 - Migration `0043` added provider-neutral attendance attachments, the durable integration outbox, leased retry/recovery RPCs, cleanup records, RLS, indexes, triggers, historical backfill, and schema-version reporting.
 - Migration `0044` adds reporting destinations, the Holidays tenant key, durable Sheets events, leased retry/recovery, reconciliation health, RLS, and indexes.
-- The next migration number is `0045`; applied migrations must not be modified or renumbered.
+- Migration `0045` is implemented and validated only in isolated QA; production
+  remains at `0044`. It adds attendance-bound tracking sessions, immutable
+  idempotent route points, a current-location projection, tenant RLS, and
+  direct-report-only supervisor visibility.
+- The next migration number after production approval of `0045` is `0046`;
+  applied migrations must not be modified or renumbered.
 - Application tables use RLS. Integration tables added by `0043` default-deny browser roles and are accessed through authorized server-only code.
 - No System Admin is auto-provisioned. `platform_admins` remains empty until the owner explicitly approves an active Auth identity.
 

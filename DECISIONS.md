@@ -1,5 +1,29 @@
 # Architecture Decision Log
 
+## ADR-015 — Native Android is the production live-location client
+
+**Status:** Accepted; tracking-core migration implemented in isolated QA only
+
+Duty-bound employee live location will use a Flutter Android client with a
+native foreground-location service as the production mode. The service may run
+only while a server-authorized attendance tracking session is active and must
+show the operating system's persistent tracking notification/disclosure for the
+entire active period.
+
+The existing web/PWA may provide a foreground-only fallback. It may collect and
+submit points only while the relevant page and browser remain active; it must
+not claim reliable delivery after screen lock, browser suspension, process
+termination, or operating-system background throttling. Reliable screen-off
+collection, native lifecycle recovery, platform battery controls, persistent OS
+disclosure, and supported native mock-location signals are Android-only.
+
+Both clients reuse the existing Supabase backend, Employee-ID Auth policy,
+tenant and role model, attendance rules, and server authorization boundaries.
+This decision does not authorize Flutter implementation, schema changes, or
+location collection. Privacy, retention, deletion, employee request handling,
+device support, and incident ownership must satisfy the decisions and open
+items in `docs/LIVE_LOCATION_TRACKING.md` before migration approval.
+
 ## ADR-014 — Split Google authentication by provider responsibility
 
 **Status:** Accepted; OAuth activation pending owner consent

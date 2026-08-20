@@ -38,7 +38,12 @@ All three historical selfie references were verified in restricted Drive at mile
 
 ## Planned product milestones
 
-- **PLANNED — Product Phase 5 live location:** duty-bound tracking, with native Android background location preferred and the web/PWA limited to an accurately described foreground fallback. See [docs/LIVE_LOCATION_TRACKING.md](docs/LIVE_LOCATION_TRACKING.md).
+- **IN PROGRESS — Product Phase 5 live location:** migration `0045` tracking
+  core is implemented and validated in isolated QA only. Flutter collection,
+  ingestion APIs, live map, geofences, replay, production migration, and
+  production activation remain deferred. ADR-015 selects a Flutter Android
+  foreground-location service for production, with web/PWA foreground-only.
+  See [docs/LIVE_LOCATION_TRACKING.md](docs/LIVE_LOCATION_TRACKING.md).
 - **PLANNED — Internal messaging:** lightweight tenant-isolated threads with replies, read state, and verified deletion after 30 days.
 - **PLANNED — Smart Admin experience:** actionable integration health inside Updates and conditional birthday/anniversary cards.
 - **FUTURE — Flutter Android employee client:** reuse the existing backend, security model, business rules, and product identity. See [PRODUCT_VISION_2027.md](PRODUCT_VISION_2027.md).

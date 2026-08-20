@@ -142,9 +142,19 @@ Exit criteria: repeatable idempotent synchronization, zero unexplained row drift
 
 ### Product Phase 5 - Duty-bound live location — PLANNED
 
-The dedicated specification is [docs/LIVE_LOCATION_TRACKING.md](docs/LIVE_LOCATION_TRACKING.md). No tracking code or migration exists.
+The dedicated specification is [docs/LIVE_LOCATION_TRACKING.md](docs/LIVE_LOCATION_TRACKING.md).
+Migration `0045` implements the tracking database core in isolated QA only;
+production, collection clients, ingestion APIs, and tracking UI remain inactive.
 
-The preferred direction is a Flutter Android employee client using the existing backend. The web/PWA may remain a foreground-only fallback; it must not be represented as capable of guaranteed screen-off tracking. Privacy policy, consent, retention, native-background behavior, battery constraints, and migration design require explicit approval before implementation.
+The approved production direction is a Flutter Android employee client using a
+native foreground-location service and the existing backend. The web/PWA is a
+foreground-only fallback and must not be represented as capable of guaranteed
+screen-off tracking. The decision is recorded in ADR-015. Privacy policy,
+notice acknowledgement, concrete retention/deletion values where technically
+required, employee correction/deletion requests, device support, and incident
+ownership contain explicit `DECISION REQUIRED` items in the Phase 5
+specification and must be approved before implementation where they affect the
+first release.
 
 ### Internal operational messaging — PLANNED
 
@@ -184,7 +194,10 @@ Every implementation phase must include:
 4. Selfie and future attachment consent, retention, deletion, legal-hold, and incident procedures require formal ownership.
 5. Production dependency advisories require compatibility-tested maintenance; `xlsx` currently has no upstream fix.
 6. The repository formatting baseline, unit tests, service/database integration tests, and historical migration reproducibility gap remain open.
-7. Native Android background-location policy and the employee tracking privacy contract require explicit approval before Product Phase 5.
+7. Native Android and the core duty/access/battery/offline boundaries are
+   selected. Remaining notice acknowledgement, concrete retention/deletion,
+   employee request, device-matrix, and incident-owner decisions require
+   explicit approval before the affected Product Phase 5 behavior ships.
 
 ## Success measures
 

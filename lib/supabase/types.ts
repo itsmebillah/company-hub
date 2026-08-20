@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5";
+    PostgrestVersion: "14.15";
   };
   public: {
     Tables: {
@@ -912,6 +912,72 @@ export type Database = {
           },
         ];
       };
+      employee_current_locations: {
+        Row: {
+          accuracy_meters: number;
+          battery_percent: number | null;
+          company_id: string;
+          employee_id: string;
+          heading_degrees: number | null;
+          latitude: number;
+          location_history_id: string;
+          longitude: number;
+          observed_at: string;
+          received_at: string;
+          speed_meters_per_second: number | null;
+          tracking_session_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          accuracy_meters: number;
+          battery_percent?: number | null;
+          company_id: string;
+          employee_id: string;
+          heading_degrees?: number | null;
+          latitude: number;
+          location_history_id: string;
+          longitude: number;
+          observed_at: string;
+          received_at: string;
+          speed_meters_per_second?: number | null;
+          tracking_session_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          accuracy_meters?: number;
+          battery_percent?: number | null;
+          company_id?: string;
+          employee_id?: string;
+          heading_degrees?: number | null;
+          latitude?: number;
+          location_history_id?: string;
+          longitude?: number;
+          observed_at?: string;
+          received_at?: string;
+          speed_meters_per_second?: number | null;
+          tracking_session_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "employee_current_locations_point_fk";
+            columns: [
+              "location_history_id",
+              "company_id",
+              "employee_id",
+              "tracking_session_id",
+            ];
+            isOneToOne: false;
+            referencedRelation: "location_history";
+            referencedColumns: [
+              "id",
+              "company_id",
+              "employee_id",
+              "tracking_session_id",
+            ];
+          },
+        ];
+      };
       employee_import_jobs: {
         Row: {
           company_id: string;
@@ -1575,6 +1641,125 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "platform_company_overview";
             referencedColumns: ["id"];
+          },
+        ];
+      };
+      location_history: {
+        Row: {
+          accuracy_meters: number;
+          battery_percent: number | null;
+          company_id: string;
+          created_at: string;
+          employee_id: string;
+          heading_degrees: number | null;
+          id: string;
+          idempotency_key: string;
+          is_mock_location: boolean | null;
+          latitude: number;
+          longitude: number;
+          observed_at: string;
+          received_at: string;
+          speed_meters_per_second: number | null;
+          tracking_session_id: string;
+        };
+        Insert: {
+          accuracy_meters: number;
+          battery_percent?: number | null;
+          company_id: string;
+          created_at?: string;
+          employee_id: string;
+          heading_degrees?: number | null;
+          id?: string;
+          idempotency_key: string;
+          is_mock_location?: boolean | null;
+          latitude: number;
+          longitude: number;
+          observed_at: string;
+          received_at?: string;
+          speed_meters_per_second?: number | null;
+          tracking_session_id: string;
+        };
+        Update: {
+          accuracy_meters?: number;
+          battery_percent?: number | null;
+          company_id?: string;
+          created_at?: string;
+          employee_id?: string;
+          heading_degrees?: number | null;
+          id?: string;
+          idempotency_key?: string;
+          is_mock_location?: boolean | null;
+          latitude?: number;
+          longitude?: number;
+          observed_at?: string;
+          received_at?: string;
+          speed_meters_per_second?: number | null;
+          tracking_session_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "location_history_session_fk";
+            columns: ["tracking_session_id", "company_id", "employee_id"];
+            isOneToOne: false;
+            referencedRelation: "location_tracking_sessions";
+            referencedColumns: ["id", "company_id", "employee_id"];
+          },
+        ];
+      };
+      location_tracking_sessions: {
+        Row: {
+          attendance_record_id: string;
+          company_id: string;
+          created_at: string;
+          employee_id: string;
+          end_reason: string | null;
+          ended_at: string | null;
+          id: string;
+          last_point_received_at: string | null;
+          started_at: string;
+          status: Database["public"]["Enums"]["location_tracking_session_status"];
+          updated_at: string;
+        };
+        Insert: {
+          attendance_record_id: string;
+          company_id: string;
+          created_at?: string;
+          employee_id: string;
+          end_reason?: string | null;
+          ended_at?: string | null;
+          id?: string;
+          last_point_received_at?: string | null;
+          started_at: string;
+          status?: Database["public"]["Enums"]["location_tracking_session_status"];
+          updated_at?: string;
+        };
+        Update: {
+          attendance_record_id?: string;
+          company_id?: string;
+          created_at?: string;
+          employee_id?: string;
+          end_reason?: string | null;
+          ended_at?: string | null;
+          id?: string;
+          last_point_received_at?: string | null;
+          started_at?: string;
+          status?: Database["public"]["Enums"]["location_tracking_session_status"];
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "location_tracking_sessions_attendance_fk";
+            columns: ["attendance_record_id", "company_id", "employee_id"];
+            isOneToOne: false;
+            referencedRelation: "attendance_records";
+            referencedColumns: ["id", "company_id", "employee_id"];
+          },
+          {
+            foreignKeyName: "location_tracking_sessions_employee_company_fk";
+            columns: ["employee_id", "company_id"];
+            isOneToOne: false;
+            referencedRelation: "employees";
+            referencedColumns: ["id", "company_id"];
           },
         ];
       };
@@ -2316,6 +2501,10 @@ export type Database = {
       };
       can_access_company_admin: { Args: never; Returns: boolean };
       can_access_company_platform: { Args: never; Returns: boolean };
+      can_access_employee_location: {
+        Args: { target_company_id: string; target_employee_id: string };
+        Returns: boolean;
+      };
       can_access_feature: {
         Args: { target_feature_key: string };
         Returns: boolean;
@@ -2505,6 +2694,8 @@ export type Database = {
       employee_work_mode: "office" | "field" | "hybrid";
       holiday_type: "public_holiday" | "company_holiday" | "optional_holiday";
       leave_request_status: "pending" | "approved" | "rejected" | "cancelled";
+      location_tracking_session_status:
+        "active" | "completed" | "stopped" | "revoked";
       notification_delivery_status: "queued" | "delivered" | "opened";
       notification_priority: "normal" | "high" | "urgent";
       notification_type:
@@ -2706,6 +2897,12 @@ export const Constants = {
       employee_work_mode: ["office", "field", "hybrid"],
       holiday_type: ["public_holiday", "company_holiday", "optional_holiday"],
       leave_request_status: ["pending", "approved", "rejected", "cancelled"],
+      location_tracking_session_status: [
+        "active",
+        "completed",
+        "stopped",
+        "revoked",
+      ],
       notification_delivery_status: ["queued", "delivered", "opened"],
       notification_priority: ["normal", "high", "urgent"],
       notification_type: [

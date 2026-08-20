@@ -168,7 +168,11 @@ Scope includes:
 - bounded offline location queue and replay;
 - basic mock-location and impossible-movement signals where technically available.
 
-No employee location may be collected outside an active duty session unless a future explicit policy is separately approved. The PWA must not be presented as guaranteed background tracking. Preferred implementation uses a native Android foreground-location service with persistent OS disclosure and explicit permissions.
+No employee location may be collected outside an active duty session unless a
+future explicit policy is separately approved. The PWA must not be presented as
+guaranteed background tracking. ADR-015 selects a native Android
+foreground-location service with persistent OS disclosure and explicit
+permissions as the production mode; web/PWA is a foreground-only fallback.
 
 ## Internal operational messaging — PLANNED
 

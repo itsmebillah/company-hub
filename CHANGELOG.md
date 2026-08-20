@@ -11,6 +11,10 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
 
 ### Added
 
+- Added migration `0045` for QA validation of duty-bound tracking sessions,
+  immutable idempotent route points, a derived current-location projection,
+  attendance lifecycle enforcement, tenant RLS, and direct-report-only
+  supervisor access. Production application and collection remain deferred.
 - Added `setup:local` and `doctor` commands for allowlisted, redacted,
   cross-workstation configuration bootstrap, prerequisite/project validation,
   and live reuse checks for the least-privilege Drive credential.

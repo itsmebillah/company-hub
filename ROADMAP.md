@@ -30,12 +30,16 @@ Status labels describe implementation truth: **COMPLETE**, **IN PROGRESS**, **PL
 - Add structured redacted correlation, integration health, and actionable alerting.
 - Establish a scoped formatting baseline and compatibility-tested dependency maintenance.
 
-## Product Phase 5: duty-bound live location — PLANNED
+## Product Phase 5: duty-bound live location — IN PROGRESS
 
-- Use native Android background location as the preferred direction; document any web/PWA mode as foreground-only.
+- Use the approved Flutter Android foreground-location service for production;
+  web/PWA remains a documented foreground-only fallback.
 - Start tracking only after successful check-in and stop immediately at checkout.
 - Add tenant-scoped current location, immutable route history, replay, accuracy, geofence events, adaptive intervals, bounded offline replay, and supported mock-location signals.
-- Approve privacy, consent, labor policy, retention, deletion, battery, device-matrix, and incident controls before schema work.
+- Resolve the remaining `DECISION REQUIRED` notice acknowledgement, concrete
+  retention/deletion values where technically required, employee request
+  workflow, Android device matrix, and incident ownership before the affected
+  behavior ships.
 
 Detailed specification: [docs/LIVE_LOCATION_TRACKING.md](docs/LIVE_LOCATION_TRACKING.md).
 
