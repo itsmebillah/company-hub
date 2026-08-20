@@ -4,6 +4,11 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
 
 ## Unreleased
 
+### Fixed
+
+- Made attendance-media verification derive the expected schema version from
+  the canonical migration manifest instead of hard-coding pre-`0044` telemetry.
+
 ### Added
 
 - Added `setup:local` and `doctor` commands for allowlisted, redacted,

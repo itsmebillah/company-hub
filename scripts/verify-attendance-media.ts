@@ -1,5 +1,7 @@
 import { loadEnvConfig } from "@next/env";
 
+import { SCHEMA_MIGRATION_MANIFEST } from "@/features/schema-version/constants/schema-migrations";
+
 loadEnvConfig(process.cwd(), process.env.NODE_ENV !== "production");
 
 async function main() {
@@ -14,7 +16,13 @@ async function main() {
   const { data: schemaVersion, error: schemaError } = await supabase.rpc(
     "get_app_schema_version",
   );
-  if (schemaError || schemaVersion !== "0043") {
+  const expectedSchemaVersion =
+    SCHEMA_MIGRATION_MANIFEST.at(-1)?.match(/^(\d{4})_/)?.[1];
+  if (
+    schemaError ||
+    !expectedSchemaVersion ||
+    schemaVersion !== expectedSchemaVersion
+  ) {
     throw new Error("Attendance media schema version is not active.");
   }
   const { data, error } = await supabase
@@ -52,7 +60,7 @@ async function main() {
   console.log(`cache_objects_retained=${synced.filter((item) => item.source_deleted_at === null).length}`);
   console.log(`pending_outbox=${pendingOutbox ?? 0}`);
   console.log("retention_window=verified");
-  console.log("schema_version=0043");
+  console.log(`schema_version=${expectedSchemaVersion}`);
 }
 
 main().catch((error) => {
