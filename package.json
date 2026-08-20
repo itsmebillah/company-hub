@@ -14,6 +14,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
+    "doctor": "node --conditions=react-server --import tsx scripts/doctor.ts",
+    "setup:local": "node --conditions=react-server --import tsx scripts/setup-local.ts",
     "test:e2e": "playwright test",
     "test:e2e:smoke": "playwright test tests/e2e/public-routes.spec.ts --project=chromium --grep \"PWA assets|notification tracking\"",
     "test:e2e:public": "playwright test tests/e2e/public-routes.spec.ts --project=chromium",

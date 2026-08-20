@@ -24,6 +24,15 @@ npm run process:google-sheets
 npm run verify:google-sheets
 ```
 
+On a new development PC, first restore the protected configuration with
+`npm run setup:local -- --source <secure-path>` or `--sops <encrypted-path>`,
+then run `npm run doctor`. The helper reuses a valid transferred refresh token;
+it never starts OAuth. Google refresh tokens are not normally device-bound, so
+repeat consent and Picker selection only when Google rejects the token after
+network and project configuration have been checked. The external configuration
+bundle and any SOPS/age unlock key must remain outside Git. See
+[Portable Local Setup](LOCAL_SETUP.md).
+
 The daily attendance-media cron and immediate post-response attempt provide
 durable retry and cleanup recovery. Successful Drive verification starts a
 72-hour Supabase cache-retention window. Do not manually delete cache objects or

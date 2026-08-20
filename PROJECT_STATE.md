@@ -10,6 +10,11 @@ Company Hub is a functional Next.js/Supabase employee operations portal with sep
 
 Supabase is the operational source of truth. Attendance selfies use restricted Google Drive as permanent storage and private Supabase Storage as a temporary recovery cache. Google Sheets is a derived, durable Holidays reporting projection and never an operational authority.
 
+The repository is the portable application source of truth. A committed
+allowlisted setup helper and redacted doctor command rebuild local configuration
+from an externally protected plaintext or SOPS/age source without committing
+secrets or automatically repeating Google OAuth.
+
 ## Authoritative baseline
 
 - Next.js 15 App Router, React 19, strict TypeScript, and Tailwind CSS 4.
@@ -83,9 +88,11 @@ At milestone completion, all three historical attendance selfie references were 
 - ESLint: passed with zero reported warnings/errors.
 - Strict TypeScript: passed after regenerating Next route types.
 - Production build: passed on Next.js `15.5.22`.
-- Markdown local-link/path verification: required before publishing this reconciliation.
+- Markdown local-link/path verification: passed for the changed documentation.
+- Portable-configuration and existing integration unit coverage: 19/19 passed.
 - Playwright browser flows were not rerun for this documentation-only milestone; committed coverage includes public routes and protected authenticated flows, while isolated mutation coverage remains incomplete.
-- No committed unit/service integration test runner exists.
+- A committed Node test runner covers Drive, Sheets, attendance-media recovery,
+  and portable configuration merge/placeholder behavior.
 - Repository-wide Prettier debt remains documented; bulk formatting is outside this milestone.
 
 ## Dependency security

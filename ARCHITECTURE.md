@@ -62,6 +62,10 @@ Durable integration worker
 - `hooks/`, `services/`, `types/`, `utils/`: small cross-cutting modules retained where feature ownership is not appropriate.
 - `supabase/migrations/`: canonical database history.
 - `public/`: PWA icons and service worker.
+- `scripts/setup-local.ts` and `scripts/doctor.ts`: portable, allowlisted local
+  configuration bootstrap and redacted diagnostics. Git contains the schema and
+  tooling; ignored local env files or an externally protected SOPS/age bundle
+  contain values. Production secrets remain in Vercel.
 
 ## Route groups
 

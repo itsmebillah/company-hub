@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-08-13
+Last updated: 2026-08-20
 
 Production version: `v0.4.0`
 
@@ -9,6 +9,11 @@ Current schema version: `0044`
 This file is the concise milestone view. See [PROJECT_STATE.md](PROJECT_STATE.md) for technical evidence and [PROJECT_PLAN.md](PROJECT_PLAN.md) for delivery gates.
 
 ## Completed
+
+- **COMPLETE — Git-first portable development:** application artifacts and
+  configuration schema remain in Git; allowlisted local bootstrap, redacted
+  diagnostics, external SOPS/age support, and credential-reuse guidance enable
+  safe workstation migration without committing secrets or launching OAuth.
 
 - **COMPLETE — Phase 4.1 Google Sheets:** governed Holidays projection, migration `0044`, durable enqueue/leases, deterministic batched writes, retry recovery, reconciliation, tenant-bound configuration, and actionable terminal-failure Updates.
 

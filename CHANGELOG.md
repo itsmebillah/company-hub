@@ -6,6 +6,11 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
 
 ### Added
 
+- Added `setup:local` and `doctor` commands for allowlisted, redacted,
+  cross-workstation configuration bootstrap, prerequisite/project validation,
+  and live reuse checks for the least-privilege Drive credential.
+- Added documented external SOPS/age configuration portability without storing
+  encrypted bundles, decrypted values, or unlock credentials in Git.
 - Added a public Company Hub homepage with a protected-workspace login call to action, public Privacy Policy, and public Terms of Service.
 - Documented Google Drive OAuth and Google Sheets service-account access, synchronization, retention, security, and Google API Limited Use practices on the public Privacy Policy.
 - Added a read-only Drive authorization audit for the configured Selfies folder and every stored attendance file, plus least-privilege access regression coverage.

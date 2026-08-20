@@ -104,11 +104,21 @@ For design decisions and boundaries, read [ARCHITECTURE.md](ARCHITECTURE.md), [D
 git clone https://github.com/itsmebillah/company-hub.git
 Set-Location company-hub
 npm ci
-Copy-Item .env.example .env.local
+npm run setup:local -- --source E:\secure\company-hub.env
+npm run doctor
 npm run dev
 ```
 
-Populate `.env.local` using the keys documented in `.env.example`. Use a development Supabase project and never expose the service-role key to browser code.
+The setup helper imports only the repository's allowlisted configuration into
+the Git-ignored `.env.development.local`, preserves valid existing values, and
+never displays secrets. It can instead decrypt an external SOPS bundle with
+`--sops`; the encrypted bundle and its age/KMS unlock credential remain outside
+Git. `doctor` reports `CONFIGURED`, `MISSING`, or `INVALID` and performs a live,
+least-privilege Google credential check without starting OAuth. See
+[Portable Local Setup](docs/LOCAL_SETUP.md) for migration, recovery, and secret
+ownership instructions.
+
+Use a development Supabase project and never expose the service-role key to browser code.
 
 Open `http://localhost:3000`. First-time environments use the bootstrap setup flow described in [DEVELOPMENT.md](DEVELOPMENT.md).
 

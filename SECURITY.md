@@ -24,6 +24,15 @@ Company Hub uses defense in depth: authenticated sessions, server-side role/comp
 
 Required secrets are `SUPABASE_SERVICE_ROLE_KEY` and `CRON_SECRET`; the Supabase anonymous key is public by design but should still be environment-configured. `.env.local` is ignored. `.env.example` must contain safe placeholders only.
 
+Portable development setup uses the allowlisted `setup:local` importer and the
+read-only `doctor` diagnostic. Plaintext local env files, OAuth JSON, service
+account JSON, SOPS/age unlock keys, and decrypted artifacts remain outside Git.
+If a SOPS bundle is used, both the encrypted bundle and its master key/KMS
+credential are externally controlled; the application contains no custom
+cryptography. Production secrets belong in Vercel, while protected CI/release
+secrets belong in the applicable GitHub environment. The setup and diagnostic
+commands redact all values and never launch OAuth automatically.
+
 Google Sheets uses a dedicated service account with no domain-wide delegation.
 The Holidays projection is restricted to one explicitly configured company/workbook destination. Browser roles cannot read reporting destinations or outbox state; server-only service-role code performs delivery. No Employee, Leave, or Attendance fields are approved for Sheets.
 Google Drive uses OAuth 2.0 offline access delegated by the operational account
