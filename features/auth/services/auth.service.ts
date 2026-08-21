@@ -3,6 +3,7 @@ import "server-only";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { EmployeeAuthIdentity } from "@/features/auth/types/auth.types";
+import { RequestAuthContextService } from "@/features/auth/services/request-auth-context.service";
 
 const EMPLOYEE_AUTH_COLUMNS =
   "id, employee_id, auth_user_id, internal_auth_email, status, company_id, role_id";
@@ -53,6 +54,11 @@ export async function getAuthEmailForEmployee(employeeId: string) {
 }
 
 export async function getCurrentAuthUser() {
+  const requestUser = RequestAuthContextService.getAuthUser();
+  if (requestUser) {
+    return requestUser;
+  }
+
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },

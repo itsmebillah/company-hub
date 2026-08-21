@@ -1,5 +1,229 @@
 # Architecture Decision Log
 
+## ADR-016 — Android client foundation and mobile server contracts
+
+**Status:** Accepted for design; Android support, application identity, signing,
+and distribution ownership decisions remain open. This ADR does not authorize
+Flutter scaffolding, dependency installation, location collection, production
+configuration, or deployment.
+
+### Context
+
+ADR-015 selected a Flutter Android foreground-location service as the production
+client for duty-bound live location. The repository currently contains no
+Flutter project. The Next.js employee client authenticates through cookie-backed
+server actions: Employee ID is resolved to the private `internal_auth_email` on
+the server, Supabase Auth issues the session, and attendance actions delegate to
+the existing attendance service. The location ingestion endpoint also derives
+the canonical employee and company from authenticated server context.
+
+The native client therefore needs an explicit mobile boundary. It must not
+resolve or receive the private Auth email, reproduce attendance rules, embed a
+privileged credential, or decide whether an employee is on duty.
+
+### Decision
+
+#### Repository boundary
+
+The Flutter project will live at `clients/employee_android/`. It is an employee
+client of the existing Company Hub platform, not a separate backend or source of
+business rules. Its Flutter/Dart dependencies, Android build, tests, and release
+artifacts remain isolated from the root Next.js build. Location collection is
+not part of the initial scaffold.
+
+#### Environments and flavors
+
+Create `qa` and `production` Android product flavors with:
+
+- separate application IDs using `<approved.reverse-domain>.employee.qa` and
+  `<approved.reverse-domain>.employee`;
+- visibly different display names, including an explicit QA marker;
+- separate HTTPS API base URLs;
+- separate public Supabase URL and anonymous/publishable configuration; and
+- build-time validation preventing QA builds from using the production API,
+  Supabase project, application ID, or signing configuration.
+
+Only public client configuration may be compiled into the application. QA must
+never contain production credentials. Service-role keys, database credentials,
+OAuth secrets, signing secrets, and server application secrets are prohibited
+from both flavors and source control. Exact application IDs remain **DECISION
+REQUIRED** until the organization-owned reverse-domain namespace is confirmed.
+
+#### Mobile authentication contract
+
+The server will expose a versioned mobile Auth boundary under `/api/mobile/v1`:
+
+- `POST /api/mobile/v1/auth/session` accepts Employee ID and the employee's
+  original password over TLS. The server resolves the private Auth identity,
+  applies the existing password transformation, performs Supabase sign-in, and
+  returns the standard short-lived access token, refresh token, expiry, and a
+  minimal non-sensitive session profile.
+- `POST /api/mobile/v1/auth/session/refresh` refreshes the Supabase session and
+  returns the replacement session.
+- `DELETE /api/mobile/v1/auth/session` signs out/revokes the current session as
+  supported by the existing Auth policy and clears local credentials.
+
+Password changes continue through the existing password policy exposed through
+a mobile-safe server boundary. Password change, employee/company deactivation,
+Auth revocation, or invalid refresh invalidates local access and suspends
+tracking. Errors must not expose `internal_auth_email`, `auth_user_id`,
+transformed passwords, provider errors, or account-enumeration details.
+
+Android stores refresh credentials only through Android Keystore-backed secure
+storage. Access tokens remain short lived. No service-role key or application
+secret is present in Flutter.
+
+Mobile requests send the access token as a Bearer token. A server-only Bearer
+adapter validates it with Supabase and resolves the same canonical active
+employee, company, role, hierarchy, and effective-feature context used by the
+cookie path. It never accepts identity, tenant, role, or duty status from a
+request body. Existing tenant, attendance, feature, authorization, and RLS
+checks remain in force. Cookie and Bearer transports converge before business
+services rather than creating parallel authorization models.
+
+#### Mobile attendance contract
+
+Thin versioned HTTP routes delegate to existing attendance services:
+
+- `GET /api/mobile/v1/attendance/state` returns the caller's authoritative
+  attendance record, policy-required capabilities, and tracking-session state.
+  Re-fetching it is the canonical reconciliation operation after an ambiguous
+  request, process death, reboot, permission change, service termination, token
+  refresh, or connectivity recovery.
+- `POST /api/mobile/v1/attendance/check-in` accepts the existing validated
+  attendance input and invokes the same feature, calendar, work-mode,
+  server-time, GPS/accuracy/geofence, duplicate, selfie, and employee checks as
+  the web action. Success includes authoritative attendance and tracking state.
+- `POST /api/mobile/v1/attendance/check-out` invokes the same checkout service
+  and conditional persistence boundary. Success confirms closed attendance and
+  tracking state.
+
+Routes adapt HTTP input/output but do not copy `AttendanceService` business
+rules. Database constraints and attendance triggers remain authoritative:
+successful check-in creates the tracking session and successful checkout closes
+it. The client never declares duty active locally. A failed or ambiguous
+checkout pauses collection while `attendance/state` is fetched; it cannot guess
+whether checkout succeeded. Existing selfie and provider-neutral evidence rules
+remain mandatory.
+
+#### Location and notification permissions
+
+The app explains duty-only tracking before requesting location. It requests
+coarse and fine location together, but precise location is required for
+tracking. Approximate-only access, denial, disabled location services, or
+revocation produces no points and puts tracking in a visible suspended state
+with an approved permission/settings recovery action. Revocation during duty
+stops collection immediately and triggers reconciliation.
+
+Persistent tracking disclosure is mandatory. Runtime notification-permission
+denial suspends tracking; the foreground service and location collection must
+not silently continue. The app may explain and request permission again only
+through the approved UX.
+
+The initial client does not request `ACCESS_BACKGROUND_LOCATION`. The location
+foreground service starts while the activity is visible after successful
+check-in, permission validation, and active-session confirmation. Background
+location may be reconsidered only through a new decision if recovery testing
+proves it necessary.
+
+#### Lifecycle and mobile security
+
+The server-authorized attendance tracking session is the sole duty authority.
+After process death, reboot, upgrade, permission change, service termination,
+or connectivity recovery, the app reconciles before resuming. A cached check-in
+flag is insufficient. Successful checkout stops sampling and the foreground
+service immediately; observations after session closure are not queued or sent.
+
+Refresh credentials and local queue encryption keys use Keystore-backed
+protection. No secret is embedded in the client. Logs and crash reports exclude
+passwords, tokens, internal Auth identity, coordinates, route payloads, and
+request bodies. QA and production endpoints, storage, tokens, identities,
+signing, and telemetry remain isolated.
+
+#### Encrypted offline queue contract
+
+The queue is not implemented by this ADR. Its future contract is:
+
+- encrypted transactional native storage with a Keystore-protected key;
+- exactly one authoritative tracking session associated with every point;
+- chronological insertion and delivery ordering;
+- stable session-scoped idempotency keys created before the first attempt and
+  reused for every retry;
+- bounded rows, bytes, age, retries, and backoff selected from QA/device evidence
+  rather than an arbitrary product limit;
+- transactional removal after acknowledgement or duplicate confirmation;
+- transient-failure retention with bounded exponential backoff and jitter; and
+- purge/rejection when permission is unavailable, observation follows checkout,
+  or reconciliation proves the session invalid.
+
+The queue never makes duty decisions, silently drops an otherwise valid batch,
+or logs coordinate-bearing payloads.
+
+#### Location ingestion contract
+
+The collector submits authenticated chronological batches to
+`POST /api/location/points` through the Bearer adapter. It preserves at most 100
+points and 128 KiB per request and stable session-scoped idempotency. It honors
+`429` and `Retry-After`; a `503` retains eligible points and retries with bounded
+exponential backoff and jitter. Authentication failure permits one controlled
+refresh/retry. An inactive or closed session suspends collection and forces
+reconciliation. Neither side logs tokens, bodies, coordinates, or route
+payloads. Adaptive sampling remains distinct from batching and abuse limits.
+
+#### Android support matrix
+
+The following remain **DECISION REQUIRED** and must not be inferred from Flutter
+defaults:
+
+- minimum and target Android API levels;
+- supported Pixel, Samsung, and locally common OEM/device matrix;
+- Google Play Services requirement and non-GMS behavior;
+- unsupported-device behavior;
+- managed-device/device-owner requirements; and
+- physical-device QA inventory.
+
+Before production support, the approved oldest, current, and latest Android
+versions must run on approved Pixel/stock, Samsung, and common OEM devices. The
+matrix covers precise/approximate/denied/revoked location, notification denial,
+location services disabled, foreground/background, screen-off, Doze, Battery
+Saver, OEM restrictions, network recovery, ordered offline replay, process
+death, OS service termination, reboot, upgrade, token expiry/revocation,
+employee/company deactivation, successful and ambiguous checkout,
+force-stop/user stop, mock-location signals, and queue storage pressure.
+Emulators supplement but do not replace physical devices.
+
+#### Signing and distribution
+
+- QA ID convention: `<approved.reverse-domain>.employee.qa` with a visibly QA
+  display name.
+- Production ID convention: `<approved.reverse-domain>.employee`.
+- QA distribution uses a controlled internal signed-APK channel and synthetic
+  QA identities.
+- Initial production distribution follows the documented controlled signed-APK
+  direction. Future Play Store delivery uses Android App Bundles and Play App
+  Signing only after approval.
+- Signing-key custodian, backup/recovery owner, Play Console owner, release
+  approvers, exact channels, final IDs, and namespace are **DECISION REQUIRED**.
+
+No signing key, keystore, Play Console application, or distribution resource is
+created by this ADR. Private signing material stays outside the repository and
+is provided only to protected release automation.
+
+### Consequences and implementation gate
+
+The Flutter client can be introduced without disturbing Next.js because it is
+isolated at `clients/employee_android/` and reuses business services through
+versioned HTTP adapters. The new Auth and attendance surfaces are
+security-critical and require revocation, denial, tenant, feature, session, and
+redaction tests before collector work.
+
+After approval, the exact first implementation task is an isolated Flutter
+Android shell with `qa` and `production` flavors, environment guardrails, static
+analysis, and empty platform-channel boundaries. It must not add a foreground
+service, request location/notification permission, create an offline queue, or
+activate collection. Mobile Auth and attendance APIs form the next
+security-reviewed milestone and must pass isolated QA before collector work.
+
 ## ADR-015 — Native Android is the production live-location client
 
 **Status:** Accepted; tracking-core migration implemented in isolated QA only

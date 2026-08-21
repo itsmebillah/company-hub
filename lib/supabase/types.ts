@@ -1706,6 +1706,61 @@ export type Database = {
           },
         ];
       };
+      location_ingestion_rate_limits: {
+        Row: {
+          company_id: string;
+          point_count: number;
+          request_count: number;
+          scope_key: string;
+          scope_type: string;
+          tracking_session_id: string | null;
+          updated_at: string;
+          window_started_at: string;
+        };
+        Insert: {
+          company_id: string;
+          point_count?: number;
+          request_count?: number;
+          scope_key: string;
+          scope_type: string;
+          tracking_session_id?: string | null;
+          updated_at?: string;
+          window_started_at: string;
+        };
+        Update: {
+          company_id?: string;
+          point_count?: number;
+          request_count?: number;
+          scope_key?: string;
+          scope_type?: string;
+          tracking_session_id?: string | null;
+          updated_at?: string;
+          window_started_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "location_ingestion_rate_limits_company_id_fkey";
+            columns: ["company_id"];
+            isOneToOne: false;
+            referencedRelation: "companies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "location_ingestion_rate_limits_company_id_fkey";
+            columns: ["company_id"];
+            isOneToOne: false;
+            referencedRelation: "platform_company_overview";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "location_ingestion_rate_limits_tracking_session_id_fkey";
+            columns: ["tracking_session_id"];
+            isOneToOne: false;
+            referencedRelation: "location_tracking_sessions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       location_tracking_sessions: {
         Row: {
           attendance_record_id: string;
@@ -2574,6 +2629,19 @@ export type Database = {
       complete_holiday_reporting_sync_job: {
         Args: { target_outbox_id: string; worker_id: string };
         Returns: boolean;
+      };
+      consume_location_ingestion_rate_limit: {
+        Args: {
+          requested_points: number;
+          target_company_id: string;
+          target_employee_id: string;
+          target_session_id: string;
+        };
+        Returns: {
+          allowed: boolean;
+          denial_reason: string;
+          retry_after_seconds: number;
+        }[];
       };
       create_platform_company: {
         Args: { company_name: string };

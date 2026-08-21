@@ -26,6 +26,12 @@ The project is designed around explicit tenant boundaries and role-based access.
 
 - Employee authentication, profile management, and password recovery
 - GPS-aware attendance, work-mode policies, working hours, and reporting
+- Isolated-QA Phase 5 tracking core and authenticated bounded location
+  ingestion; production collection and tracking UI remain inactive
+- Isolated Flutter Android client with provisional QA/production flavors,
+  Keystore-backed bearer sessions, authoritative attendance reconciliation,
+  fail-closed public environment contracts, and interface-only future tracking
+  boundaries; location collection remains unimplemented
 - Durable attendance selfie delivery to restricted Google Drive, with private
   Supabase Storage retained as a verified three-day recovery cache
 - Leave types, balances, requests, approvals, and employee self-service
@@ -40,12 +46,16 @@ Durable Google Sheets synchronization projects the governed Holidays dataset fro
 
 See [FEATURES.md](FEATURES.md) for the detailed implementation map and [KNOWN_ISSUES.md](KNOWN_ISSUES.md) for current limitations.
 
-Product Phase 5 live location tracking is planned but not implemented. Its
-duty-bound privacy contract and native-background versus foreground-only web
-decision are documented in
+Product Phase 5 live location collection remains unimplemented. Its database,
+ingestion, distributed abuse protection, and isolated Flutter shell foundations
+are complete in QA/local development. The duty-bound privacy contract and
+native-background versus foreground-only web decision are documented in
 [the feature specification](docs/LIVE_LOCATION_TRACKING.md).
 
-The long-term employee-client direction is a Flutter Android application that reuses the existing backend and security model. The Admin web application remains permanent. This and other planned work are explicitly separated from current behavior in [PRODUCT_VISION_2027.md](PRODUCT_VISION_2027.md).
+The employee Flutter shell lives at
+[`clients/employee_android`](clients/employee_android/README.md). It remains
+isolated from the permanent Admin web application and contains no authentication,
+attendance, permission, location, or background-service behavior.
 
 ## Screenshots
 

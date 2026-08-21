@@ -44,4 +44,5 @@ export const SCHEMA_MIGRATION_MANIFEST = [
   "0043_attendance_media_sync.sql",
   "0044_durable_google_sheets_sync.sql",
   "0045_duty_bound_live_location_core.sql",
+  "0046_location_ingestion_rate_limits.sql",
 ] as const;

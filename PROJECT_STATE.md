@@ -30,6 +30,13 @@ secrets or automatically repeating Google OAuth.
   remains at `0044`. It adds attendance-bound tracking sessions, immutable
   idempotent route points, a current-location projection, tenant RLS, and
   direct-report-only supervisor visibility.
+- The Phase 5 ingestion boundary derives tenant/employee/session identity from
+  authenticated server context, accepts bounded ordered batches, verifies
+  persistence, handles session-scoped retries deterministically, and emits no
+  coordinate-bearing logs. It remains inactive in production.
+- Migration `0046` is applied only in isolated QA and provides distributed
+  PostgreSQL session/tenant abuse counters with atomic concurrency control,
+  retryable denial, fail-closed backend behavior, and no location payloads.
 - The next migration number after production approval of `0045` is `0046`;
   applied migrations must not be modified or renumbered.
 - Application tables use RLS. Integration tables added by `0043` default-deny browser roles and are accessed through authorized server-only code.
@@ -126,8 +133,14 @@ Do not run `npm audit fix --force`. Audit counts are time-sensitive and must be 
 ## Planned direction
 
 - Durable Google Sheets Holidays synchronization is complete; further datasets require separate approval.
-- Product Phase 5 duty-bound live location is planned but not implemented; native Android background tracking is the preferred direction.
-- Internal operational messaging, smart Updates-based health, conditional dashboard cards, and a Flutter employee client are planned/future work.
+- Product Phase 5 production collection remains inactive. Tracking storage,
+  ingestion, distributed rate limiting, and the isolated Flutter Android shell
+  and the six mobile Auth/attendance server adapters are implemented in QA/local
+  development. Flutter authentication, Keystore-backed sessions, attendance
+  adapters, reconciliation, and minimal UI are implemented locally; device QA
+  awaits a reachable HTTPS QA API. All location/foreground-service behavior
+  remains unimplemented.
+- Internal operational messaging, smart Updates-based health, and conditional dashboard cards remain planned/future work.
 - Strategic direction is maintained in [PRODUCT_VISION_2027.md](PRODUCT_VISION_2027.md).
 
 ## Canonical references

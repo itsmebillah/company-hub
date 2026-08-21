@@ -219,13 +219,29 @@ only. It is not applied to production, and production collection remains
 inactive. Later migrations and application layers remain proposals until their
 own approval gates.
 
+The authenticated ingestion boundary is also implemented in isolated QA. It
+derives all identity from the current employee, resolves the active
+attendance-backed session, accepts ordered batches of at most 100 points and
+128 KiB, permits no timestamp before session start or more than five minutes
+ahead of server time, and uses the `0045` session-scoped idempotency constraint.
+These values are technical safety/database bounds rather than product cadence
+or retention policy.
+
+Migration `0046` implements the distributed ingestion abuse boundary in QA:
+atomic PostgreSQL fixed-window counters cover both active tracking session and
+tenant, coordinate-free state is private to service-role code, duplicates do
+not consume new-point budget, and concurrent denials return retry guidance.
+Limiter unavailability fails closed before history insertion.
+
 1. **`0045` — tracking core:** tracking sessions, immutable location history,
    current-location projection, lifecycle/idempotency constraints, indexes,
    RLS/grants, and schema telemetry.
-2. **`0046` — geofence and retention operations:** geofence events, retention
+2. **`0046` — distributed ingestion rate limiting:** private tenant/session
+   counters, atomic concurrency control, retry semantics, and bounded cleanup.
+3. **`0047` — geofence and retention operations:** geofence events, retention
    claims/cleanup audit, stale-session handling, and any approved reconciliation
    functions.
-3. **Later additive migrations only if required:** partitioning, measured scale
+4. **Later additive migrations only if required:** partitioning, measured scale
    indexes, or policy changes proven necessary after QA/load evidence. Never
    rewrite `0045` or `0046` after application.
 

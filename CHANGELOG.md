@@ -11,10 +11,33 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
 
 ### Added
 
+- Added Flutter Employee-ID login, Android Keystore-backed session persistence,
+  bounded access-token refresh, logout, authoritative attendance reconciliation,
+  check-in/checkout adapters, minimal login/attendance screens, typed safe API
+  failures, and QA UI regression fixtures. No location permission, collection,
+  foreground service, or point ingestion was added.
+- Added ADR-016's versioned mobile Employee-ID session, refresh, revocation,
+  attendance-state, check-in, and checkout HTTP adapters. Bearer identity
+  converges into the existing employee/company/feature context and Attendance
+  services; client-supplied authority is rejected and migration `0045` remains
+  the tracking-session lifecycle authority.
+- Added the isolated Flutter 3.47.1 Android client foundation under
+  `clients/employee_android/`, with provisional QA/production flavors,
+  separate IDs/display names, strict HTTPS public environment contracts,
+  build-time cross-environment and privileged-config denial, analyzer/tests,
+  and interface-only future tracking channel contracts. No Flutter mobile Auth,
+  attendance, permission, collection, or foreground service is implemented.
 - Added migration `0045` for QA validation of duty-bound tracking sessions,
   immutable idempotent route points, a derived current-location projection,
   attendance lifecycle enforcement, tenant RLS, and direct-report-only
   supervisor access. Production application and collection remain deferred.
+- Added an authenticated, server-derived, bounded-batch location ingestion
+  boundary with deterministic session-scoped replay handling, redacted errors,
+  and isolated unit/QA integration coverage. Production activation remains
+  deferred.
+- Added QA-only migration `0046` with atomic PostgreSQL tenant/session rate
+  limits for concurrent serverless ingestion, explicit retry behavior,
+  fail-closed backend handling, bounded counter cleanup, and concurrency tests.
 - Added `setup:local` and `doctor` commands for allowlisted, redacted,
   cross-workstation configuration bootstrap, prerequisite/project validation,
   and live reuse checks for the least-privilege Drive credential.

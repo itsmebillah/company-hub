@@ -132,12 +132,25 @@ Current employee/company context → policy and work-mode resolution → server-
 
 `AttendanceSelfieStorage` isolates the temporary private Supabase cache from attendance business logic. `AttendancePermanentStorage` isolates permanent media and is implemented by the OAuth-backed Google Drive adapter. The `integration_outbox` is durable for attendance media; non-media `AttendanceCreated`, `AttendanceUpdated`, and `AttendanceCompleted` notification handlers remain process-local and best-effort.
 
-Product Phase 5 proposes duty-bound live location tracking. It must model a
-server-authorized tracking session separately from attendance history, store
-append-only points with a derived current-location projection, and expose only
-tenant-scoped current state through realtime. Reliable screen-off/background
-polling requires an approved native mobile architecture; the web/PWA path must
-otherwise be described and tested as foreground-only.
+Product Phase 5 migration `0045` models a server-authorized tracking session
+separately from attendance history, append-only route points, and a derived
+current-location projection. The authenticated ingestion route derives identity
+from Auth context, resolves the active attendance-backed session, validates a
+bounded ordered batch, and writes through a server-only repository. Database
+triggers remain authoritative for check-in start, checkout stop, projection,
+and session-scoped replay protection. Coordinates and route payloads are
+excluded from logs and reporting.
+
+Migration `0046` uses PostgreSQL transaction advisory locks and atomic counter
+upserts for distributed session/tenant rate limiting across stateless Vercel
+instances. The limiter runs after replay classification and before insertion,
+so duplicate retries do not consume new-point budget. Denial is explicit and
+retryable; database/RPC unavailability fails closed before route storage.
+
+This core is validated in isolated QA only. Reliable screen-off/background
+collection still requires the approved Flutter Android foreground service;
+web/PWA collection remains foreground-only. Maps, realtime presentation,
+geofences, replay, and production activation are not implemented.
 
 ### Google Sheets reporting
 
@@ -147,7 +160,19 @@ Migration `0044` adds the governed Holidays row contract, a forward-only outbox 
 
 ### Client direction
 
-The Next.js application remains the permanent Admin client and the current Employee web/PWA. A future Flutter Android employee client is planned for capabilities that require reliable native background behavior, especially duty-bound location tracking. It must reuse the existing backend, roles, business rules, and authorization model; it is not a separate platform. See [PRODUCT_VISION_2027.md](PRODUCT_VISION_2027.md).
+The Next.js application remains the permanent Admin client and the current
+Employee web/PWA. The isolated Flutter Android shell is rooted at
+`clients/employee_android/`. Its provisional QA/production flavors have
+separate IDs, display names, HTTPS API/Supabase public configuration contracts,
+and build-time cross-environment denial. The server now exposes ADR-016's six
+versioned mobile Auth and attendance adapters. Supabase validates bearer tokens,
+then a request-scoped transport supplies the same canonical Auth user consumed
+by current employee/company, feature, and Attendance services. The Flutter client
+stores session credentials through Android Keystore-backed secure storage,
+performs one bounded refresh/retry on `401`, and reconciles attendance after
+startup, resume, refresh, and every mutation. It still contains no permission,
+location collection, or foreground-service implementation and remains a client
+rather than a source of business rules.
 
 ### Resource/announcement visibility
 

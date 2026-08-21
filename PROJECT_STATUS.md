@@ -39,14 +39,21 @@ All three historical selfie references were verified in restricted Drive at mile
 ## Planned product milestones
 
 - **IN PROGRESS — Product Phase 5 live location:** migration `0045` tracking
-  core is implemented and validated in isolated QA only. Flutter collection,
-  ingestion APIs, live map, geofences, replay, production migration, and
-  production activation remain deferred. ADR-015 selects a Flutter Android
+  core and the authenticated server-derived ingestion boundary are implemented
+  with distributed ingestion rate limiting and validated in isolated QA only.
+  The isolated Flutter Android shell now includes provisional QA/production
+  flavors, strict public-environment guardrails, and interface-only tracking
+  channel contracts. The six ADR-016 server-side mobile Auth and attendance
+  adapters are QA-validated. Flutter Auth, secure session storage, minimal
+  attendance UI, and authoritative reconciliation are implemented and locally
+  validated; device QA awaits a reachable HTTPS QA API. Collection, live map,
+  geofences, route replay, production migration, and production activation
+  remain deferred. ADR-015 selects a Flutter Android
   foreground-location service for production, with web/PWA foreground-only.
   See [docs/LIVE_LOCATION_TRACKING.md](docs/LIVE_LOCATION_TRACKING.md).
 - **PLANNED — Internal messaging:** lightweight tenant-isolated threads with replies, read state, and verified deletion after 30 days.
 - **PLANNED — Smart Admin experience:** actionable integration health inside Updates and conditional birthday/anniversary cards.
-- **FUTURE — Flutter Android employee client:** reuse the existing backend, security model, business rules, and product identity. See [PRODUCT_VISION_2027.md](PRODUCT_VISION_2027.md).
+- **FOUNDATION — Flutter Android employee client:** the isolated shell lives at `clients/employee_android/`; it reuses the existing backend, security model, business rules, and product identity without duplicating web business logic. See [clients/employee_android/README.md](clients/employee_android/README.md) and [PRODUCT_VISION_2027.md](PRODUCT_VISION_2027.md).
 
 ## Active gates
 
