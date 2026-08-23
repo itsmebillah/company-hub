@@ -272,6 +272,102 @@ async function main() {
     assert.equal(activeTrackingSession.status, "active");
     assert.equal(activeTrackingSession.ended_at, null);
 
+    verificationStage = "location ingestion";
+    const observationTime = Date.now();
+    const locationBatch = {
+      points: [
+        {
+          idempotencyKey: `qa:${activeTrackingSession.id}:point-0001`,
+          observedAt: new Date(observationTime).toISOString(),
+          latitude: 23.8103,
+          longitude: 90.4125,
+          accuracyMeters: 12,
+        },
+        {
+          idempotencyKey: `qa:${activeTrackingSession.id}:point-0002`,
+          observedAt: new Date(observationTime + 1).toISOString(),
+          latitude: 23.8104,
+          longitude: 90.4126,
+          accuracyMeters: 10,
+        },
+      ],
+    };
+    const ingestion = await fetch(`${baseUrl}/api/location/points`, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${accessToken}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(locationBatch),
+    });
+    assert.equal(ingestion.status, 202);
+    const ingestionResult = await json(ingestion);
+    assert.equal(ingestionResult.accepted, 2);
+    assert.equal(ingestionResult.duplicates, 0);
+
+    verificationStage = "idempotent location replay";
+    const replay = await fetch(`${baseUrl}/api/location/points`, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${accessToken}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(locationBatch),
+    });
+    assert.equal(replay.status, 202);
+    const replayResult = await json(replay);
+    assert.equal(replayResult.accepted, 0);
+    assert.equal(replayResult.duplicates, 2);
+
+    verificationStage = "location database projection";
+    const { data: history, error: historyError } = await admin
+      .from("location_history")
+      .select("id, idempotency_key, observed_at")
+      .eq("tracking_session_id", activeTrackingSession.id)
+      .order("observed_at", { ascending: true });
+    assert.equal(historyError, null);
+    assert.equal(history.length, 2);
+    const { data: currentLocation, error: currentLocationError } = await admin
+      .from("employee_current_locations")
+      .select("location_history_id, tracking_session_id")
+      .eq("tracking_session_id", activeTrackingSession.id)
+      .single();
+    assert.equal(currentLocationError, null);
+    assert.equal(currentLocation.location_history_id, history[1].id);
+
+    verificationStage = "distributed rate limit response";
+    const windowStartedAt = new Date();
+    windowStartedAt.setUTCSeconds(0, 0);
+    const { error: rateLimitSetupError } = await admin
+      .from("location_ingestion_rate_limits")
+      .upsert(
+        {
+          scope_key: `session:${activeTrackingSession.id}`,
+          scope_type: "session",
+          company_id: employee.company_id,
+          tracking_session_id: activeTrackingSession.id,
+          window_started_at: windowStartedAt.toISOString(),
+          request_count: 60,
+          point_count: 2,
+        },
+        { onConflict: "scope_key,window_started_at" },
+      );
+    assert.equal(rateLimitSetupError, null);
+    const rateLimited = await fetch(`${baseUrl}/api/location/points`, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${accessToken}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(locationBatch),
+    });
+    assert.equal(rateLimited.status, 429);
+    assert.ok(Number(rateLimited.headers.get("retry-after")) >= 1);
+    await admin
+      .from("location_ingestion_rate_limits")
+      .delete()
+      .eq("tracking_session_id", activeTrackingSession.id);
+
     verificationStage = "duplicate check-in";
     const duplicateCheckIn = await MobileHttpService.checkIn(
       jsonRequest(
@@ -318,6 +414,36 @@ async function main() {
     assert.equal(completedTrackingError, null);
     assert.equal(completedTrackingSession.status, "completed");
     assert.ok(completedTrackingSession.ended_at);
+
+    verificationStage = "closed session ingestion denial";
+    const closedSessionAttempt = await fetch(
+      `${baseUrl}/api/location/points`,
+      {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${accessToken}`,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          points: [
+            {
+              idempotencyKey: `qa:${activeTrackingSession.id}:closed-0001`,
+              observedAt: new Date().toISOString(),
+              latitude: 23.8105,
+              longitude: 90.4127,
+              accuracyMeters: 11,
+            },
+          ],
+        }),
+      },
+    );
+    assert.equal(closedSessionAttempt.status, 409);
+    const { count: finalHistoryCount, error: finalHistoryError } = await admin
+      .from("location_history")
+      .select("id", { count: "exact", head: true })
+      .eq("tracking_session_id", activeTrackingSession.id);
+    assert.equal(finalHistoryError, null);
+    assert.equal(finalHistoryCount, 2);
 
     verificationStage = "duplicate check-out";
     const duplicateCheckOut = await MobileHttpService.checkOut(

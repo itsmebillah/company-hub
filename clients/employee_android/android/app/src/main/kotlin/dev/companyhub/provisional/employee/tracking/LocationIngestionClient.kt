@@ -49,28 +49,15 @@ internal class LocationIngestionClient {
             connection.setRequestProperty("Content-Type", "application/json")
             connection.setRequestProperty("Accept", "application/json")
             connection.outputStream.use { it.write(body) }
-            when (connection.responseCode) {
-                in 200..299 -> Result.Success
-                429, 503 -> Result.Retryable(parseRetryAfter(connection.getHeaderField("Retry-After")))
-                401 -> Result.AuthenticationRequired
-                403 -> Result.Rejected("session_not_authorized")
-                409 -> Result.Rejected("active_session_required")
-                else -> if (connection.responseCode >= 500) {
-                    Result.Retryable(DEFAULT_RETRY_MILLIS)
-                } else {
-                    Result.Rejected("ingestion_rejected")
-                }
-            }
+            classifyResponse(
+                connection.responseCode,
+                connection.getHeaderField("Retry-After"),
+            )
         } catch (_: Exception) {
             Result.Retryable(DEFAULT_RETRY_MILLIS)
         } finally {
             connection.disconnect()
         }
-    }
-
-    private fun parseRetryAfter(value: String?): Long {
-        val seconds = value?.trim()?.toLongOrNull()?.coerceIn(1, MAX_RETRY_AFTER_SECONDS)
-        return (seconds ?: DEFAULT_RETRY_SECONDS) * 1_000L
     }
 
     companion object {
@@ -80,5 +67,24 @@ internal class LocationIngestionClient {
         private const val DEFAULT_RETRY_SECONDS = 30L
         private const val DEFAULT_RETRY_MILLIS = DEFAULT_RETRY_SECONDS * 1_000L
         private const val MAX_RETRY_AFTER_SECONDS = 15 * 60L
+
+        internal fun classifyResponse(responseCode: Int, retryAfter: String?): Result =
+            when (responseCode) {
+                in 200..299 -> Result.Success
+                429, 503 -> Result.Retryable(parseRetryAfter(retryAfter))
+                401 -> Result.AuthenticationRequired
+                403 -> Result.Rejected("session_not_authorized")
+                409 -> Result.Rejected("active_session_required")
+                else -> if (responseCode >= 500) {
+                    Result.Retryable(DEFAULT_RETRY_MILLIS)
+                } else {
+                    Result.Rejected("ingestion_rejected")
+                }
+            }
+
+        private fun parseRetryAfter(value: String?): Long {
+            val seconds = value?.trim()?.toLongOrNull()?.coerceIn(1, MAX_RETRY_AFTER_SECONDS)
+            return (seconds ?: DEFAULT_RETRY_SECONDS) * 1_000L
+        }
     }
 }
