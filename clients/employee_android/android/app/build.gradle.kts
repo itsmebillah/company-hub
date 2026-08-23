@@ -60,7 +60,7 @@ data class EnvironmentContract(val apiBaseUrl: String, val supabaseUrl: String)
 
 val environmentContracts = mapOf(
     "qa" to EnvironmentContract(
-        "https://qa-api.company-hub.invalid",
+        "https://company-hub-qa.onrender.com",
         "https://qa-project.supabase.co",
     ),
     "production" to EnvironmentContract(

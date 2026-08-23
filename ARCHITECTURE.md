@@ -147,10 +147,20 @@ instances. The limiter runs after replay classification and before insertion,
 so duplicate retries do not consume new-point budget. Denial is explicit and
 retryable; database/RPC unavailability fails closed before route storage.
 
-This core is validated in isolated QA only. Reliable screen-off/background
-collection still requires the approved Flutter Android foreground service;
-web/PWA collection remains foreground-only. Maps, realtime presentation,
-geofences, replay, and production activation are not implemented.
+This core is validated in isolated QA only. The Flutter client now has the
+native Android foreground-service, runtime precise-location/notification
+permission, persistent disclosure, revocation, and server-session lifecycle
+foundation. Its native-only Android `LocationManager` adapter prefers the
+framework fused provider, falls back to GPS, rejects stale pre-start fixes,
+and removes race-safe listeners on every denial/stop path. Valid observations
+remain native through an Android Keystore AES-GCM encrypted queue and the HTTPS
+request boundary. The queue holds at most five server-sized batches, preserves
+chronology and session-scoped idempotency, retains valid points only for bounded
+transient retry/reconciliation, and invalidates them on checkout, permission
+loss, explicit stop, or authoritative session rejection. Flutter receives only
+redacted count/sync health. Production device support, maps, realtime
+presentation, geofences, replay, and production activation are not implemented;
+web/PWA collection remains foreground-only.
 
 ### Google Sheets reporting
 
@@ -170,9 +180,15 @@ then a request-scoped transport supplies the same canonical Auth user consumed
 by current employee/company, feature, and Attendance services. The Flutter client
 stores session credentials through Android Keystore-backed secure storage,
 performs one bounded refresh/retry on `401`, and reconciles attendance after
-startup, resume, refresh, and every mutation. It still contains no permission,
-location collection, or foreground-service implementation and remains a client
-rather than a source of business rules.
+startup, resume, refresh, and every mutation. Its native channel starts a
+visible foreground-service shell only for the server-confirmed `0045` active
+session and only after precise location plus notification permission. Denial or
+revocation stops/suspends the shell and never claims tracking is active. The
+observation adapter remains native-only and non-sticky; process recovery
+requires fresh server attendance reconciliation. No background-location
+permission exists; the native client submits only to the existing
+`POST /api/location/points` contract and remains a transport rather than a
+source of attendance or tracking-session business rules.
 
 ### Resource/announcement visibility
 

@@ -2,8 +2,9 @@
 
 Isolated Flutter Android employee client for Company Hub. It implements the
 ADR-016 bearer authentication and server-authoritative attendance adapters with
-a minimal login/attendance UI. It does not implement location collection,
-foreground services, permissions, an offline location queue, or ingestion.
+a minimal login/attendance UI. Its QA-only native foundation implements
+permission/disclosure and foreground-service lifecycle handling. It does not
+implement location collection, an offline location queue, or ingestion.
 
 ## Toolchain
 
@@ -67,19 +68,45 @@ UI regression fixtures:
 
 - [QA login](test/goldens/flutter-login-qa.png)
 - [QA attendance](test/goldens/flutter-attendance-qa.png)
+- [QA tracking permission disclosure](test/goldens/flutter-tracking-permission-qa.png)
 
-The checked-in QA API origin remains deliberately non-routable. Device-level QA
-requires an approved reachable HTTPS QA deployment and a local ignored public
-configuration matching that approved contract.
+The checked-in QA API origin is the isolated Render deployment at
+`https://company-hub-qa.onrender.com`. Device-level QA must continue to use the
+isolated QA Supabase project and must never reuse Production configuration.
 
-## Future native boundary
+## Native tracking foundation
 
-`lib/src/tracking/tracking_platform.dart` reserves contracts for:
+`lib/src/tracking/tracking_platform.dart` implements the Flutter method-channel
+boundary for:
 
 - `startTracking()`
 - `stopTracking()`
 - `getTrackingState()`
 - `retryPending()`
 
-No method channel implementation, Android service, permission, GPS, queue, or
-tracking behavior is connected in this milestone.
+The QA Android implementation requests coarse and precise location together,
+requires precise access, gates startup on notification permission, shows a
+persistent foreground-service notification, detects permission revocation,
+and stops when the authoritative attendance tracking session closes. A
+native-only `LocationObservationSource` uses Android `LocationManager`, prefers
+the framework fused provider, and falls back to GPS. Provider callbacks are
+generation-guarded, pre-start cached fixes are rejected, and provider loss
+suspends observation until a fresh server reconciliation permits restart.
+
+Raw coordinates remain within the native observation, encrypted queue, and
+HTTPS request boundary. Accepted observations are validated, bound to the
+authoritative tracking session, ordered, and assigned session-scoped
+idempotency keys. Android Keystore AES-GCM protects a technically bounded queue
+of at most 500 points (five maximum-size API batches); reaching capacity
+suspends collection and preserves queued data for explicit reconciliation
+rather than silently dropping observations.
+
+Delivery uses the existing `POST /api/location/points` contract (100 points and
+128 KiB maximum). `429` and `503` honor bounded `Retry-After` retries; `401`
+preserves the session queue while Flutter refreshes/reconciles; authoritative
+session rejection, checkout, permission loss, and explicit stop invalidate the
+affected queue. Flutter receives only pending-count and sync-state health. The
+client does not request background location. Production device support remains
+undecided.
+
+QA disclosure fixtures also include [active native observation](test/goldens/flutter-location-observation-active-qa.png).

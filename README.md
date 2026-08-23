@@ -30,8 +30,9 @@ The project is designed around explicit tenant boundaries and role-based access.
   ingestion; production collection and tracking UI remain inactive
 - Isolated Flutter Android client with provisional QA/production flavors,
   Keystore-backed bearer sessions, authoritative attendance reconciliation,
-  fail-closed public environment contracts, and interface-only future tracking
-  boundaries; location collection remains unimplemented
+  fail-closed public environment contracts, and a QA-validated native
+  foreground-service/permission foundation plus native observation and bounded
+  encrypted ingestion; production collection remains inactive
 - Durable attendance selfie delivery to restricted Google Drive, with private
   Supabase Storage retained as a verified three-day recovery cache
 - Leave types, balances, requests, approvals, and employee self-service
@@ -46,16 +47,21 @@ Durable Google Sheets synchronization projects the governed Holidays dataset fro
 
 See [FEATURES.md](FEATURES.md) for the detailed implementation map and [KNOWN_ISSUES.md](KNOWN_ISSUES.md) for current limitations.
 
-Product Phase 5 live location collection remains unimplemented. Its database,
-ingestion, distributed abuse protection, and isolated Flutter shell foundations
-are complete in QA/local development. The duty-bound privacy contract and
-native-background versus foreground-only web decision are documented in
+Product Phase 5 live location is implemented through bounded native ingestion
+in QA/local development. Its database, distributed abuse protection, Flutter
+shell, mobile attendance, permission/disclosure service, Android
+`LocationManager` observation, encrypted queue, and idempotent delivery
+foundations are complete; production activation and Admin presentation remain
+inactive. The duty-bound privacy contract and native-background versus
+foreground-only web decision are documented in
 [the feature specification](docs/LIVE_LOCATION_TRACKING.md).
 
 The employee Flutter shell lives at
 [`clients/employee_android`](clients/employee_android/README.md). It remains
 isolated from the permanent Admin web application and contains no authentication,
-attendance, permission, location, or background-service behavior.
+attendance, or location business rules. It now includes QA-only permission,
+foreground-service lifecycle, framework fused/GPS observation, and bounded
+Keystore-encrypted ingestion, but no background-location permission.
 
 ## Screenshots
 

@@ -144,13 +144,18 @@ class SessionController extends ChangeNotifier {
   ) async {
     if (session == null) return;
     errorMessage = null;
+    String? mutationError;
     _setPhase(SessionPhase.reconciling);
     try {
       await _authorized(operation);
     } on ApiException catch (error) {
-      errorMessage = error.message;
+      mutationError = error.message;
     }
     if (session != null) await reconcile();
+    if (session != null && mutationError != null) {
+      errorMessage = mutationError;
+      notifyListeners();
+    }
   }
 
   Future<void> signOut() async {

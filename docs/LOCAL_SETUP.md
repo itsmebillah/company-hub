@@ -81,3 +81,20 @@ rerun the committed Drive authorization audit and verifier.
 If the workstation configuration is lost, restore the separately protected
 bundle, run `setup:local`, and follow only the `NEXT` lines from `doctor`. Do not
 recover secrets from Git history, terminal logs, screenshots, or production.
+
+## Flutter Android QA foundation
+
+The isolated employee client requires Flutter 3.47.1, Dart 3.13.1, Java 17,
+and the installed Android SDK. Build the QA flavor with:
+
+```powershell
+cd clients/employee_android
+flutter analyze
+flutter test
+flutter build apk --debug --flavor qa --dart-define-from-file=config/qa.json
+```
+
+The native foundation may be exercised only with the isolated QA API, QA
+Supabase project, and synthetic employee. It requests coarse and precise
+location together and notification permission, but it does not collect GPS or
+send points. Never substitute Production configuration for device QA.

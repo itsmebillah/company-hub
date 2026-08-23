@@ -130,6 +130,25 @@ void main() {
   });
 
   test(
+    'attendance mutation error remains visible after reconciliation',
+    () async {
+      final attendance = FakeAttendanceRepository()
+        ..checkInError = const ApiException(
+          statusCode: 503,
+          code: 'temporarily_unavailable',
+          message: 'Attendance is temporarily unavailable.',
+        );
+      final storage = MemorySessionStorage()..value = testSession();
+      final controller = harness(FakeAuthRepository(), attendance, storage)
+        ..session = testSession();
+      await controller.checkIn();
+      expect(attendance.stateCalls, 1);
+      expect(controller.attendance?.canCheckIn, isTrue);
+      expect(controller.errorMessage, 'Attendance is temporarily unavailable.');
+    },
+  );
+
+  test(
     'logout clears local session even when revocation is unavailable',
     () async {
       final auth = FakeAuthRepository()

@@ -4,7 +4,15 @@ import { getAppDateString } from "@/lib/datetime";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 const QA_PROJECT_REF = "xbdyvhlhubvuzhdzkadj";
-const baseUrl = process.env.MOBILE_API_QA_BASE_URL ?? "http://127.0.0.1:3101";
+const QA_API_ORIGINS = new Set([
+  "http://127.0.0.1:3101",
+  "https://company-hub-qa.onrender.com",
+]);
+const baseUrl = (
+  process.env.MOBILE_API_QA_BASE_URL ?? "http://127.0.0.1:3101"
+)
+  .trim()
+  .replace(/\/+$/, "");
 let verificationStage = "bootstrap";
 
 const MobileHttpService = {
@@ -19,6 +27,9 @@ const MobileHttpService = {
 function requireQaEnvironment() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const employeeId = process.env.PLAYWRIGHT_QA_EMPLOYEE_ID;
+  if (!QA_API_ORIGINS.has(baseUrl)) {
+    throw new Error("Mobile API verification requires an approved QA origin.");
+  }
   if (!url || new URL(url).hostname.split(".")[0] !== QA_PROJECT_REF) {
     throw new Error(
       "Mobile API verification requires the isolated QA project.",
@@ -248,6 +259,18 @@ async function main() {
       (checkedInState.tracking as Record<string, unknown>).status,
       "active",
     );
+    const attendanceId = String(
+      (checkedInState.attendance as Record<string, unknown>).id,
+    );
+    const { data: activeTrackingSession, error: activeTrackingError } =
+      await admin
+        .from("location_tracking_sessions")
+        .select("id, status, ended_at")
+        .eq("attendance_record_id", attendanceId)
+        .single();
+    assert.equal(activeTrackingError, null);
+    assert.equal(activeTrackingSession.status, "active");
+    assert.equal(activeTrackingSession.ended_at, null);
 
     verificationStage = "duplicate check-in";
     const duplicateCheckIn = await MobileHttpService.checkIn(
@@ -286,6 +309,15 @@ async function main() {
       (checkedOutState.tracking as Record<string, unknown>).status,
       "completed",
     );
+    const { data: completedTrackingSession, error: completedTrackingError } =
+      await admin
+        .from("location_tracking_sessions")
+        .select("id, status, ended_at")
+        .eq("attendance_record_id", attendanceId)
+        .single();
+    assert.equal(completedTrackingError, null);
+    assert.equal(completedTrackingSession.status, "completed");
+    assert.ok(completedTrackingSession.ended_at);
 
     verificationStage = "duplicate check-out";
     const duplicateCheckOut = await MobileHttpService.checkOut(
@@ -330,9 +362,16 @@ async function main() {
 }
 
 main().catch((error: unknown) => {
+  const cause =
+    error instanceof Error && "cause" in error
+      ? (error.cause as { code?: unknown; name?: unknown } | undefined)
+      : undefined;
   console.error("Mobile API isolated QA verification: FAIL", {
     stage: verificationStage,
     errorType: error instanceof Error ? error.name : "unknown_error",
+    errorMessage: error instanceof Error ? error.message : "unknown_error",
+    causeType: typeof cause?.name === "string" ? cause.name : undefined,
+    causeCode: typeof cause?.code === "string" ? cause.code : undefined,
   });
   process.exitCode = 1;
 });

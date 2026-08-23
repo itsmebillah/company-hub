@@ -1,6 +1,6 @@
 # Project State
 
-Last repository reconciliation: 2026-08-20
+Last repository reconciliation: 2026-08-23
 
 Production milestone evidence: 2026-08-13, version `v0.4.0`
 
@@ -134,12 +134,17 @@ Do not run `npm audit fix --force`. Audit counts are time-sensitive and must be 
 
 - Durable Google Sheets Holidays synchronization is complete; further datasets require separate approval.
 - Product Phase 5 production collection remains inactive. Tracking storage,
-  ingestion, distributed rate limiting, and the isolated Flutter Android shell
+  ingestion, distributed rate limiting, the isolated Flutter Android shell,
   and the six mobile Auth/attendance server adapters are implemented in QA/local
   development. Flutter authentication, Keystore-backed sessions, attendance
-  adapters, reconciliation, and minimal UI are implemented locally; device QA
-  awaits a reachable HTTPS QA API. All location/foreground-service behavior
-  remains unimplemented.
+  reconciliation, precise-location/notification permission gates, persistent
+  disclosure, revocation handling, and the native Android `LocationManager`
+  observation lifecycle passed API 36 emulator QA. The QA Android client now
+  validates and session-binds observations, keeps up to five API-sized batches
+  in Android Keystore AES-GCM encrypted storage, and delivers ordered,
+  idempotent batches through the existing ingestion route with bounded retry
+  and authoritative invalidation. Adaptive sampling and production activation
+  remain unimplemented.
 - Internal operational messaging, smart Updates-based health, and conditional dashboard cards remain planned/future work.
 - Strategic direction is maintained in [PRODUCT_VISION_2027.md](PRODUCT_VISION_2027.md).
 

@@ -2,8 +2,8 @@
 
 **Priority:** High
 
-**Status:** Tracking-core migration implemented and validated in isolated QA;
-application collection and production rollout not started
+**Status:** Tracking core, native observation, and bounded native ingestion are
+implemented for isolated QA; production rollout is not started
 
 **Dependency:** Phase 4 attendance and durable media automation are complete;
 native Android is selected, while the explicitly marked privacy and policy
@@ -275,6 +275,32 @@ Proposed server boundaries:
 - Migration, RLS, indexes, ER diagram, API/setup/architecture docs, README,
   screenshots, project status, changelog, GitHub milestone/issues, production
   deployment, and rollback evidence are complete.
+
+## Native Android foundation status
+
+The first native foundation is implemented and validated only in the isolated
+QA Flutter flavor on the API 36 emulator. Flutter and Android communicate over
+the ADR-016 tracking channel; only a server-confirmed active `0045` session may
+start the foreground-service shell. Android requests coarse and precise
+location together, requires precise access, requests notification permission
+separately, and presents both an in-app disclosure and an ongoing service
+notification. Denial or revocation stops/suspends the service and creates no
+points.
+
+The native `LocationManager` observation source and bounded delivery pipeline
+are implemented for QA. Fresh precise observations are validated, bound to the
+server-authorized session, chronologically queued under session-scoped
+idempotency keys, encrypted with Android Keystore AES-GCM, and sent only through
+the existing `POST /api/location/points` boundary. The queue is technically
+bounded to 500 points/five API-sized batches; capacity exhaustion suspends
+collection without silently discarding a still-valid queue. Automatic retry is
+bounded, honors numeric `Retry-After` for `429`/`503`, and requires explicit
+reconciliation after token rejection or retry exhaustion. Checkout, invalid
+session, permission revocation, and explicit stop invalidate the session queue.
+
+This foundation does not request `ACCESS_BACKGROUND_LOCATION`, implement
+adaptive sampling, live maps, replay, geofences, distance/stops, mock-location
+policy, or claim production device compatibility. Those remain separate gates.
 
 ## Future enhancements
 

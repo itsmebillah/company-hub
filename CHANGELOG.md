@@ -4,6 +4,26 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
 
 ## Unreleased
 
+- Added QA-only native bounded location batching and delivery: observations are
+  validated and session-bound before entering a five-batch encrypted Android
+  Keystore queue, ordered batches stay within the existing 100-point/128-KiB
+  ingestion contract, and session-scoped idempotency supports safe replay.
+- Added bounded `429`/`503` retry handling, network recovery, bearer-token
+  refresh reconciliation, closed-session rejection, queue invalidation on
+  checkout/permission loss/explicit stop, and redacted Flutter queue health.
+- Extended the existing `/api/location/points` route to accept the approved
+  mobile bearer context while preserving browser-cookie callers and all
+  server-derived employee, company, feature, attendance, RLS, and rate-limit
+  checks.
+- Added the QA-only native Android `LocationManager` observation adapter behind
+  the duty-bound foreground service. It prefers the framework fused provider,
+  falls back to GPS, rejects stale fixes, removes race-safe listeners on every
+  stop/denial path, and keeps raw coordinates native-only with no persistence or
+  ingestion.
+- Fixed foreground-service startup reporting and resume recovery so Flutter
+  waits for the native settled state and provider recovery requires fresh
+  authoritative attendance reconciliation.
+
 ### Fixed
 
 - Made attendance-media verification derive the expected schema version from
@@ -11,6 +31,13 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
 
 ### Added
 
+- Added the QA-only Android foreground-service foundation for duty tracking,
+  including Flutter method-channel adapters, all approved tracking states,
+  combined coarse/precise permission requests, notification gating, persistent
+  disclosure, permission-revocation suspension, and server-authoritative
+  `0045` session start/stop coordination. It contains no GPS provider, point
+  ingestion, background-location permission, offline queue, or production
+  activation.
 - Added Flutter Employee-ID login, Android Keystore-backed session persistence,
   bounded access-token refresh, logout, authoritative attendance reconciliation,
   check-in/checkout adapters, minimal login/attendance screens, typed safe API
@@ -53,6 +80,9 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
 
 ### Fixed
 
+- Preserved attendance mutation failures across authoritative reconciliation
+  and serialized concurrent native tracking reconciliation so a fresh server
+  duty state cannot be lost behind a stale startup state.
 - Kept the local Drive authorization helper alive when expired OAuth or Picker tabs submit stale state, and added explicit installed Chrome/Brave launch selection for the interactive flow.
 
 ### Security

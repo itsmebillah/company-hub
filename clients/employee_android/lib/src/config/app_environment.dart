@@ -76,7 +76,7 @@ class AppEnvironment {
     );
   }
 
-  static const qaApiBaseUrl = 'https://qa-api.company-hub.invalid';
+  static const qaApiBaseUrl = 'https://company-hub-qa.onrender.com';
   static const productionApiBaseUrl = 'https://api.company-hub.invalid';
   static const qaSupabaseUrl = 'https://qa-project.supabase.co';
   static const productionSupabaseUrl = 'https://production-project.supabase.co';

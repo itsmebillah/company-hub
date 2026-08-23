@@ -1,6 +1,6 @@
 # Project Status
 
-Last updated: 2026-08-20
+Last updated: 2026-08-23
 
 Production version: `v0.4.0`
 
@@ -46,9 +46,17 @@ All three historical selfie references were verified in restricted Drive at mile
   channel contracts. The six ADR-016 server-side mobile Auth and attendance
   adapters are QA-validated. Flutter Auth, secure session storage, minimal
   attendance UI, and authoritative reconciliation are implemented and locally
-  validated; device QA awaits a reachable HTTPS QA API. Collection, live map,
-  geofences, route replay, production migration, and production activation
-  remain deferred. ADR-015 selects a Flutter Android
+  validated. The API 36 QA device gate now covers precise/coarse permission,
+  notification gating, persistent disclosure, service start/stop, revocation,
+  checkout closure, and zero-point denial behavior. The native-only
+  `LocationManager` observation adapter now prefers framework fusion, falls
+  back to GPS, rejects stale fixes, and passed callback/provider-loss,
+  screen-off, and process-reconciliation QA. The native bounded delivery layer
+  now uses Android Keystore encryption, a five-batch technical capacity,
+  session-scoped idempotency, ordered 100-point/128-KiB submissions, bounded
+  `Retry-After` handling, and authoritative queue invalidation. Live map,
+  geofences, adaptive sampling, route replay, production migration, and
+  production activation remain deferred. ADR-015 selects a Flutter Android
   foreground-location service for production, with web/PWA foreground-only.
   See [docs/LIVE_LOCATION_TRACKING.md](docs/LIVE_LOCATION_TRACKING.md).
 - **PLANNED — Internal messaging:** lightweight tenant-isolated threads with replies, read state, and verified deletion after 30 days.

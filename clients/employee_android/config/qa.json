@@ -1,6 +1,6 @@
 {
   "APP_FLAVOR": "qa",
-  "API_BASE_URL": "https://qa-api.company-hub.invalid",
+  "API_BASE_URL": "https://company-hub-qa.onrender.com",
   "SUPABASE_URL": "https://qa-project.supabase.co",
   "SUPABASE_ANON_KEY": "qa-public-anon-placeholder"
 }

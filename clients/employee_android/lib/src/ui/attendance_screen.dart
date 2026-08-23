@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
 
 import '../controllers/session_controller.dart';
+import '../tracking/tracking_controller.dart';
+import '../tracking/tracking_platform.dart';
 
 class AttendanceScreen extends StatelessWidget {
-  const AttendanceScreen({required this.controller, super.key});
+  const AttendanceScreen({
+    required this.controller,
+    required this.trackingController,
+    super.key,
+  });
 
   final SessionController controller;
+  final TrackingController trackingController;
 
   @override
   Widget build(BuildContext context) {
@@ -108,10 +115,88 @@ class AttendanceScreen extends StatelessWidget {
                   ),
                 ),
               ),
+              if (state?.tracking.status == 'active') ...[
+                const SizedBox(height: 16),
+                ListenableBuilder(
+                  listenable: trackingController,
+                  builder: (context, _) =>
+                      _TrackingDisclosureCard(controller: trackingController),
+                ),
+              ],
             ],
           ),
         ),
       ),
     );
   }
+}
+
+class _TrackingDisclosureCard extends StatelessWidget {
+  const _TrackingDisclosureCard({required this.controller});
+
+  final TrackingController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final status = controller.status;
+    final permissionAction = switch (status.state) {
+      TrackingState.permissionRequired ||
+      TrackingState.permissionDenied ||
+      TrackingState.notificationRequired => true,
+      _ => false,
+    };
+    return Card(
+      key: const Key('trackingDisclosure'),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(status.isActive ? Icons.location_on : Icons.location_off),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    status.isActive
+                        ? 'Duty tracking is active'
+                        : 'Duty tracking is not active',
+                    key: const Key('trackingDisclosureTitle'),
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(_trackingMessage(status.state)),
+            if (permissionAction) ...[
+              const SizedBox(height: 16),
+              FilledButton.icon(
+                key: const Key('trackingPermissionButton'),
+                onPressed: controller.requestRequiredPermissions,
+                icon: const Icon(Icons.settings),
+                label: const Text('Allow required permissions'),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _trackingMessage(TrackingState state) => switch (state) {
+    TrackingState.permissionRequired || TrackingState.permissionDenied => 'Precise location is required during an active duty session. No location points are created while permission is unavailable.',
+    TrackingState.notificationRequired => 'Notification permission is required for the persistent tracking disclosure. Tracking remains stopped.',
+    TrackingState.active => 'Android is observing location inside the visible duty-tracking service. No location points are uploaded or stored yet.',
+    TrackingState.starting => 'Starting the visible duty-tracking service…',
+    TrackingState.stopping => 'Stopping duty tracking…',
+    TrackingState.suspended =>
+      'Tracking is suspended until its required conditions are restored.',
+    TrackingState.error =>
+      'Tracking could not start. No location points are being created.',
+    TrackingState.unavailable =>
+      'Native duty tracking is unavailable on this device.',
+    TrackingState.ready => 'Required permissions are ready.',
+    TrackingState.stopped => 'Tracking is stopped.',
+  };
 }
