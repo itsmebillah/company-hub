@@ -6,6 +6,7 @@ import '../models/auth_session.dart';
 import '../repositories/attendance_repository.dart';
 import '../repositories/auth_repository.dart';
 import '../storage/session_storage.dart';
+import '../tracking/tracking_platform.dart';
 
 enum SessionPhase {
   initializing,
@@ -14,6 +15,7 @@ enum SessionPhase {
   authenticated,
   refreshing,
   reconciling,
+  acquiringLocation,
   signingOut,
   sessionExpired,
 }
@@ -23,17 +25,20 @@ class SessionController extends ChangeNotifier {
     required AuthRepository authRepository,
     required AttendanceRepository attendanceRepository,
     required SessionStorage storage,
-  }) : this._(authRepository, attendanceRepository, storage);
+    required TrackingPlatform locationPlatform,
+  }) : this._(authRepository, attendanceRepository, storage, locationPlatform);
 
   SessionController._(
     this._authRepository,
     this._attendanceRepository,
     this._storage,
+    this._locationPlatform,
   );
 
   final AuthRepository _authRepository;
   final AttendanceRepository _attendanceRepository;
   final SessionStorage _storage;
+  final TrackingPlatform _locationPlatform;
 
   SessionPhase phase = SessionPhase.initializing;
   AuthSession? session;
@@ -45,6 +50,7 @@ class SessionController extends ChangeNotifier {
     SessionPhase.signingIn ||
     SessionPhase.refreshing ||
     SessionPhase.reconciling ||
+    SessionPhase.acquiringLocation ||
     SessionPhase.signingOut => true,
     _ => false,
   };
@@ -136,18 +142,33 @@ class SessionController extends ChangeNotifier {
   }
 
   Future<void> checkIn() => _mutateAttendance(_attendanceRepository.checkIn);
-
   Future<void> checkOut() => _mutateAttendance(_attendanceRepository.checkOut);
 
   Future<void> _mutateAttendance(
-    Future<AttendanceState> Function(String token) operation,
+    Future<AttendanceState> Function(String token, AttendanceGps gps) operation,
   ) async {
     if (session == null) return;
     errorMessage = null;
     String? mutationError;
-    _setPhase(SessionPhase.reconciling);
+    _setPhase(SessionPhase.acquiringLocation);
     try {
-      await _authorized(operation);
+      final policy = attendance?.policy;
+      final threshold = policy?.gpsAccuracyThresholdMeters ?? 50;
+      final gps = await _locationPlatform.getCurrentPosition(
+        maxAccuracyMeters: threshold,
+      );
+      if (!gps.isUsable) {
+        throw const AttendanceLocationException('location_unavailable');
+      }
+      if ((policy?.requireHighAccuracy ?? true) && gps.accuracy > threshold) {
+        mutationError =
+            'GPS accuracy is ${gps.accuracy.round()}m. Attendance requires ${threshold.round()}m or better.';
+      } else {
+        _setPhase(SessionPhase.reconciling);
+        await _authorized((token) => operation(token, gps));
+      }
+    } on AttendanceLocationException catch (error) {
+      mutationError = error.userMessage;
     } on ApiException catch (error) {
       mutationError = error.message;
     }

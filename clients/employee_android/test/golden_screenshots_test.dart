@@ -11,8 +11,8 @@ import 'helpers/fakes.dart';
 
 final _environment = AppEnvironment.fromValues(
   flavor: 'qa',
-  apiBaseUrl: AppEnvironment.qaApiBaseUrl,
-  supabaseUrl: AppEnvironment.qaSupabaseUrl,
+  apiBaseUrl: 'https://company-hub-qa.onrender.com',
+  supabaseUrl: 'https://qa-project.supabase.co',
   supabaseAnonKey: 'qa-public-anon-placeholder',
 );
 
@@ -23,6 +23,7 @@ SessionController _controller(
   authRepository: FakeAuthRepository(),
   attendanceRepository: attendance ?? FakeAttendanceRepository(),
   storage: storage,
+  locationPlatform: FakeTrackingPlatform(),
 );
 
 class _GoldenTrackingPlatform implements TrackingPlatform {
@@ -35,7 +36,20 @@ class _GoldenTrackingPlatform implements TrackingPlatform {
   final TrackingStatus status;
 
   @override
+  Future<AttendanceGps> getCurrentPosition({
+    required double maxAccuracyMeters,
+    Duration timeout = const Duration(seconds: 15),
+  }) async => const AttendanceGps(
+    latitude: 23.7806,
+    longitude: 90.4070,
+    accuracy: 12,
+    timestamp: '2026-08-21T09:00:00.000Z',
+  );
+  @override
   Future<TrackingStatus> getTrackingState() async => status;
+
+  @override
+  Future<bool> openAppSettings() async => true;
 
   @override
   Future<TrackingStatus> requestRequiredPermissions() async => denied;
@@ -64,6 +78,11 @@ void main() {
       CompanyHubEmployeeApp(
         environment: _environment,
         controller: _controller(MemorySessionStorage()),
+        trackingController: TrackingController(
+          platform: const _GoldenTrackingPlatform(
+            status: TrackingStatus(state: TrackingState.ready),
+          ),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -81,6 +100,11 @@ void main() {
       CompanyHubEmployeeApp(
         environment: _environment,
         controller: _controller(storage),
+        trackingController: TrackingController(
+          platform: const _GoldenTrackingPlatform(
+            status: TrackingStatus(state: TrackingState.ready),
+          ),
+        ),
       ),
     );
     await tester.pumpAndSettle();

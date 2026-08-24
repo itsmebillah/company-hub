@@ -20,7 +20,20 @@ class FakeTrackingPlatform implements TrackingPlatform {
   bool? receivedServerAuthorized;
 
   @override
+  Future<AttendanceGps> getCurrentPosition({
+    required double maxAccuracyMeters,
+    Duration timeout = const Duration(seconds: 15),
+  }) async => const AttendanceGps(
+    latitude: 23.7806,
+    longitude: 90.4070,
+    accuracy: 12,
+    timestamp: '2026-08-21T09:00:00.000Z',
+  );
+  @override
   Future<TrackingStatus> getTrackingState() async => current;
+
+  @override
+  Future<bool> openAppSettings() async => true;
 
   @override
   Future<TrackingStatus> requestRequiredPermissions() async => permissionResult;
@@ -74,13 +87,16 @@ void main() {
     expect(controller.status.state, TrackingState.stopped);
   });
 
-  test('does not start an authorized session without transport authorization', () async {
-    final platform = FakeTrackingPlatform();
-    final controller = TrackingController(platform: platform);
-    await controller.reconcile(testAttendance(checkedIn: true));
-    expect(platform.startCalls, 0);
-    expect(platform.stopCalls, 1);
-  });
+  test(
+    'does not start an authorized session without transport authorization',
+    () async {
+      final platform = FakeTrackingPlatform();
+      final controller = TrackingController(platform: platform);
+      await controller.reconcile(testAttendance(checkedIn: true));
+      expect(platform.startCalls, 0);
+      expect(platform.stopCalls, 1);
+    },
+  );
 
   test('uses only the authoritative tracking session ID to start', () async {
     final platform = FakeTrackingPlatform();

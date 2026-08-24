@@ -1,4 +1,4 @@
-package dev.companyhub.provisional.employee.tracking
+package io.github.itsmebillah.companyhub.employee.tracking
 
 import android.Manifest
 import android.app.Notification
@@ -15,7 +15,7 @@ import android.os.Build
 import android.os.IBinder
 import android.os.Handler
 import android.os.Looper
-import dev.companyhub.provisional.employee.MainActivity
+import io.github.itsmebillah.companyhub.employee.MainActivity
 
 class DutyTrackingService : Service() {
     private lateinit var observationSource: LocationObservationSource
@@ -221,7 +221,7 @@ class DutyTrackingService : Service() {
             activeInstance?.pipeline?.retryNow()
         }
 
-        const val ACTION_START = "dev.companyhub.provisional.employee.tracking.START"
+        const val ACTION_START = "io.github.itsmebillah.companyhub.employee.tracking.START"
         const val EXTRA_SESSION_ID = "trackingSessionId"
         const val EXTRA_SERVER_AUTHORIZED = "serverAuthorized"
         const val EXTRA_API_BASE_URL = "apiBaseUrl"

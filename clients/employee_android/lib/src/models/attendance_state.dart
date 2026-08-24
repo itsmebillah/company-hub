@@ -44,10 +44,31 @@ class TrackingSessionState {
   final String? sessionId;
 }
 
+class AttendancePolicy {
+  const AttendancePolicy({
+    required this.requireGps,
+    required this.requireHighAccuracy,
+    required this.gpsAccuracyThresholdMeters,
+  });
+
+  factory AttendancePolicy.fromJson(Map<String, Object?> json) =>
+      AttendancePolicy(
+        requireGps: json['requireGps'] as bool? ?? true,
+        requireHighAccuracy: json['requireHighAccuracy'] as bool? ?? true,
+        gpsAccuracyThresholdMeters:
+            (json['gpsAccuracyThresholdMeters'] as num?)?.toDouble() ?? 50,
+      );
+
+  final bool requireGps;
+  final bool requireHighAccuracy;
+  final double gpsAccuracyThresholdMeters;
+}
+
 class AttendanceState {
   const AttendanceState({
     required this.attendanceDate,
     required this.attendance,
+    required this.policy,
     required this.tracking,
   });
 
@@ -58,12 +79,14 @@ class AttendanceState {
       attendance: attendance is Map<String, Object?>
           ? AttendanceRecord.fromJson(attendance)
           : null,
+      policy: AttendancePolicy.fromJson(json.requireMap('policy')),
       tracking: TrackingSessionState.fromJson(json.requireMap('tracking')),
     );
   }
 
   final String attendanceDate;
   final AttendanceRecord? attendance;
+  final AttendancePolicy policy;
   final TrackingSessionState tracking;
 
   bool get canCheckIn => attendance == null;

@@ -12,6 +12,11 @@ import 'tracking/tracking_controller.dart';
 import 'tracking/tracking_platform.dart';
 import 'ui/attendance_screen.dart';
 import 'ui/login_screen.dart';
+import 'ui/permission_gate.dart';
+import 'updates/update_controller.dart';
+import 'updates/update_platform.dart';
+import 'updates/update_reminder.dart';
+import 'updates/update_service.dart';
 
 class CompanyHubEmployeeApp extends StatefulWidget {
   const CompanyHubEmployeeApp({
@@ -36,6 +41,7 @@ class _CompanyHubEmployeeAppState extends State<CompanyHubEmployeeApp>
   late final TrackingController _trackingController;
   late final bool _ownsTrackingController;
   String? _trackingFingerprint;
+  late final UpdateController _updateController;
 
   @override
   void initState() {
@@ -44,18 +50,28 @@ class _CompanyHubEmployeeAppState extends State<CompanyHubEmployeeApp>
     _ownsController = widget.controller == null;
     _ownsTrackingController = widget.trackingController == null;
     final api = ApiClient(baseUri: widget.environment.apiBaseUri);
+    final trackingPlatform = MethodChannelTrackingPlatform();
     _controller =
         widget.controller ??
         SessionController(
           authRepository: AuthRepository(api),
           attendanceRepository: AttendanceRepository(api),
           storage: SecureSessionStorage(),
+          locationPlatform: trackingPlatform,
         );
     _trackingController =
         widget.trackingController ??
-        TrackingController(platform: MethodChannelTrackingPlatform());
+        TrackingController(platform: trackingPlatform);
+    _updateController = UpdateController(
+      environment: widget.environment,
+      service: GitHubReleaseUpdateService(
+        platform: MethodChannelUpdatePlatform(),
+      ),
+    );
     _controller.addListener(_synchronizeTracking);
     _controller.initialize();
+    unawaited(_trackingController.initializePermissions());
+    unawaited(_updateController.check());
   }
 
   void _synchronizeTracking() {
@@ -81,7 +97,10 @@ class _CompanyHubEmployeeAppState extends State<CompanyHubEmployeeApp>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && _controller.session != null) {
+    if (state != AppLifecycleState.resumed) return;
+    unawaited(_trackingController.refresh());
+    unawaited(_updateController.check());
+    if (_controller.session != null) {
       unawaited(_reconcileAfterResume());
     }
   }
@@ -102,6 +121,7 @@ class _CompanyHubEmployeeAppState extends State<CompanyHubEmployeeApp>
     _controller.removeListener(_synchronizeTracking);
     if (_ownsController) _controller.dispose();
     if (_ownsTrackingController) _trackingController.dispose();
+    _updateController.dispose();
     super.dispose();
   }
 
@@ -117,25 +137,38 @@ class _CompanyHubEmployeeAppState extends State<CompanyHubEmployeeApp>
         ),
         useMaterial3: true,
       ),
-      home: ListenableBuilder(
-        listenable: _controller,
-        builder: (context, _) {
-          if (_controller.phase == SessionPhase.initializing) {
-            return const Scaffold(
-              body: SafeArea(child: Center(child: CircularProgressIndicator())),
+      home: UpdateReminder(
+        controller: _updateController,
+        child: ListenableBuilder(
+          listenable: _trackingController,
+          builder: (context, _) {
+            if (_trackingController.requiresPermissionGate) {
+              return PermissionGate(controller: _trackingController);
+            }
+            return ListenableBuilder(
+              listenable: _controller,
+              builder: (context, _) {
+                if (_controller.phase == SessionPhase.initializing) {
+                  return const Scaffold(
+                    body: SafeArea(
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                  );
+                }
+                if (_controller.session == null) {
+                  return LoginScreen(
+                    appName: widget.environment.displayName,
+                    controller: _controller,
+                  );
+                }
+                return AttendanceScreen(
+                  controller: _controller,
+                  trackingController: _trackingController,
+                );
+              },
             );
-          }
-          if (_controller.session == null) {
-            return LoginScreen(
-              appName: widget.environment.displayName,
-              controller: _controller,
-            );
-          }
-          return AttendanceScreen(
-            controller: _controller,
-            trackingController: _trackingController,
-          );
-        },
+          },
+        ),
       ),
     );
   }

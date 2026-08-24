@@ -4,6 +4,7 @@ import 'package:employee_android/src/models/auth_session.dart';
 import 'package:employee_android/src/repositories/attendance_repository.dart';
 import 'package:employee_android/src/repositories/auth_repository.dart';
 import 'package:employee_android/src/storage/session_storage.dart';
+import 'package:employee_android/src/tracking/tracking_platform.dart';
 
 AuthSession testSession({
   String accessToken = 'access-a',
@@ -35,6 +36,11 @@ AttendanceState testAttendance({
           workingMinutes: checkedOut ? 480 : 0,
         )
       : null,
+  policy: const AttendancePolicy(
+    requireGps: true,
+    requireHighAccuracy: true,
+    gpsAccuracyThresholdMeters: 50,
+  ),
   tracking: TrackingSessionState(
     status: checkedOut
         ? 'completed'
@@ -111,6 +117,8 @@ class FakeAttendanceRepository implements AttendanceRepository {
   int stateCalls = 0;
   int checkInCalls = 0;
   int checkOutCalls = 0;
+  AttendanceGps? checkInGps;
+  AttendanceGps? checkOutGps;
 
   @override
   Future<AttendanceState> getState(String accessToken) async {
@@ -120,18 +128,65 @@ class FakeAttendanceRepository implements AttendanceRepository {
   }
 
   @override
-  Future<AttendanceState> checkIn(String accessToken) async {
+  Future<AttendanceState> checkIn(String accessToken, AttendanceGps gps) async {
     checkInCalls += 1;
+    checkInGps = gps;
     if (checkInError case final error?) throw error;
     state = testAttendance(checkedIn: true);
     return state;
   }
 
   @override
-  Future<AttendanceState> checkOut(String accessToken) async {
+  Future<AttendanceState> checkOut(
+    String accessToken,
+    AttendanceGps gps,
+  ) async {
     checkOutCalls += 1;
+    checkOutGps = gps;
     if (checkOutError case final error?) throw error;
     state = testAttendance(checkedOut: true);
     return state;
   }
+}
+
+class FakeTrackingPlatform implements TrackingPlatform {
+  TrackingStatus current = const TrackingStatus(state: TrackingState.ready);
+  AttendanceGps position = const AttendanceGps(
+    latitude: 23.7806,
+    longitude: 90.4070,
+    accuracy: 12,
+    timestamp: '2026-08-21T09:00:00.000Z',
+  );
+  AttendanceLocationException? positionError;
+  int positionCalls = 0;
+  double? requestedAccuracy;
+
+  @override
+  Future<AttendanceGps> getCurrentPosition({
+    required double maxAccuracyMeters,
+    Duration timeout = const Duration(seconds: 15),
+  }) async {
+    positionCalls += 1;
+    requestedAccuracy = maxAccuracyMeters;
+    if (positionError case final error?) throw error;
+    return position;
+  }
+
+  @override
+  Future<TrackingStatus> getTrackingState() async => current;
+  @override
+  Future<bool> openAppSettings() async => true;
+  @override
+  Future<TrackingStatus> requestRequiredPermissions() async => current;
+  @override
+  Future<TrackingStatus> retryPending() async => current;
+  @override
+  Future<TrackingStatus> startTracking({
+    required String trackingSessionId,
+    required bool serverAuthorized,
+    required String apiBaseUrl,
+    required String accessToken,
+  }) async => current;
+  @override
+  Future<TrackingStatus> stopTracking() async => current;
 }

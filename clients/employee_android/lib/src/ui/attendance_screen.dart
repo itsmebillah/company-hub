@@ -70,6 +70,19 @@ class AttendanceScreen extends StatelessWidget {
                             ),
                           ],
                         )
+                      else if (controller.phase ==
+                          SessionPhase.acquiringLocation)
+                        const Row(
+                          key: Key('acquiringLocationState'),
+                          children: [
+                            SizedBox.square(
+                              dimension: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                            SizedBox(width: 12),
+                            Expanded(child: Text('Getting a fresh GPS fix…')),
+                          ],
+                        )
                       else
                         Text(
                           state?.attendance?.isCheckedOut == true

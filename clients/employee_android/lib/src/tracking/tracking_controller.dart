@@ -14,10 +14,21 @@ class TrackingController extends ChangeNotifier {
   String? _apiBaseUrl;
   String? _accessToken;
   bool _operationInProgress = false;
+  bool _permissionOperationInProgress = false;
+  bool _permissionsInitialized = false;
   AttendanceState? _pendingAttendance;
   bool _hasPendingAttendance = false;
 
   bool get hasServerAuthorizedSession => _authorizedSessionId != null;
+  bool get permissionsInitialized => _permissionsInitialized;
+  bool get permissionOperationInProgress => _permissionOperationInProgress;
+  bool get requiresPermissionGate =>
+      !_permissionsInitialized || status.requiresPermissionGate;
+
+  Future<void> initializePermissions() async {
+    if (_permissionsInitialized || _permissionOperationInProgress) return;
+    await refresh();
+  }
 
   Future<void> reconcile(
     AttendanceState? attendance, {
@@ -52,6 +63,7 @@ class TrackingController extends ChangeNotifier {
             accessToken: accessToken,
           );
         }
+        _permissionsInitialized = true;
       }
     } finally {
       _operationInProgress = false;
@@ -60,15 +72,23 @@ class TrackingController extends ChangeNotifier {
   }
 
   Future<void> requestRequiredPermissions() async {
-    status = await _platform.requestRequiredPermissions();
+    if (_permissionOperationInProgress) return;
+    _permissionOperationInProgress = true;
     notifyListeners();
+    try {
+      status = await _platform.requestRequiredPermissions();
+      _permissionsInitialized = true;
+    } finally {
+      _permissionOperationInProgress = false;
+      notifyListeners();
+    }
     final sessionId = _authorizedSessionId;
     final apiBaseUrl = _apiBaseUrl;
     final accessToken = _accessToken;
     if (sessionId != null &&
         apiBaseUrl != null &&
         accessToken != null &&
-        status.state == TrackingState.ready) {
+        !status.requiresPermissionGate) {
       status = await _platform.startTracking(
         trackingSessionId: sessionId,
         serverAuthorized: true,
@@ -79,8 +99,13 @@ class TrackingController extends ChangeNotifier {
     }
   }
 
+  Future<void> openAppSettings() async {
+    await _platform.openAppSettings();
+  }
+
   Future<void> refresh() async {
     status = await _platform.getTrackingState();
+    _permissionsInitialized = true;
     notifyListeners();
   }
 }

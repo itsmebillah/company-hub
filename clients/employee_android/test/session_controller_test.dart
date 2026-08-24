@@ -1,5 +1,6 @@
 import 'package:employee_android/src/controllers/session_controller.dart';
 import 'package:employee_android/src/models/api_error.dart';
+import 'package:employee_android/src/tracking/tracking_platform.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'helpers/fakes.dart';
@@ -7,11 +8,13 @@ import 'helpers/fakes.dart';
 SessionController harness(
   FakeAuthRepository auth,
   FakeAttendanceRepository attendance,
-  MemorySessionStorage storage,
-) => SessionController(
+  MemorySessionStorage storage, [
+  FakeTrackingPlatform? location,
+]) => SessionController(
   authRepository: auth,
   attendanceRepository: attendance,
   storage: storage,
+  locationPlatform: location ?? FakeTrackingPlatform(),
 );
 
 void main() {
@@ -113,6 +116,68 @@ void main() {
     expect(attendance.stateCalls, 3);
   });
 
+  test(
+    'check-in and checkout submit a fresh GPS fix at policy accuracy',
+    () async {
+      final attendance = FakeAttendanceRepository();
+      final location = FakeTrackingPlatform();
+      final controller = harness(
+        FakeAuthRepository(),
+        attendance,
+        MemorySessionStorage()..value = testSession(),
+        location,
+      )..session = testSession();
+      await controller.reconcile();
+      await controller.checkIn();
+      await controller.checkOut();
+      expect(location.positionCalls, 2);
+      expect(location.requestedAccuracy, 50);
+      expect(attendance.checkInGps?.accuracy, 12);
+      expect(attendance.checkOutGps?.accuracy, 12);
+    },
+  );
+
+  test('poor accuracy blocks the mutation without weakening policy', () async {
+    final attendance = FakeAttendanceRepository();
+    final location = FakeTrackingPlatform()
+      ..position = const AttendanceGps(
+        latitude: 23.7806,
+        longitude: 90.4070,
+        accuracy: 80,
+        timestamp: '2026-08-21T09:00:00.000Z',
+      );
+    final controller = harness(
+      FakeAuthRepository(),
+      attendance,
+      MemorySessionStorage()..value = testSession(),
+      location,
+    )..session = testSession();
+    await controller.reconcile();
+    await controller.checkIn();
+    expect(attendance.checkInCalls, 0);
+    expect(controller.errorMessage, contains('50m or better'));
+  });
+
+  test(
+    'location failure is user-friendly and never calls attendance API',
+    () async {
+      final attendance = FakeAttendanceRepository();
+      final location = FakeTrackingPlatform()
+        ..positionError = const AttendanceLocationException(
+          'location_services_disabled',
+        );
+      final controller = harness(
+        FakeAuthRepository(),
+        attendance,
+        MemorySessionStorage()..value = testSession(),
+        location,
+      )..session = testSession();
+      await controller.reconcile();
+      await controller.checkIn();
+      expect(attendance.checkInCalls, 0);
+      expect(controller.errorMessage, contains('Turn on Android Location'));
+    },
+  );
   test('ambiguous checkout reconciles instead of claiming success', () async {
     final attendance = FakeAttendanceRepository()
       ..state = testAttendance(checkedOut: true)

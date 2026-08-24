@@ -1,4 +1,4 @@
-package dev.companyhub.provisional.employee.tracking
+package io.github.itsmebillah.companyhub.employee.tracking
 
 internal data class QueuedLocationPoint(
     val trackingSessionId: String,

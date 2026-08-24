@@ -1,4 +1,4 @@
-package dev.companyhub.provisional.employee.tracking
+package io.github.itsmebillah.companyhub.employee.tracking
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue

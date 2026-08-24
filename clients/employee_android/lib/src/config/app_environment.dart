@@ -77,9 +77,10 @@ class AppEnvironment {
   }
 
   static const qaApiBaseUrl = 'https://company-hub-qa.onrender.com';
-  static const productionApiBaseUrl = 'https://api.company-hub.invalid';
+  static const productionApiBaseUrl = 'https://company-hub-zeta.vercel.app';
   static const qaSupabaseUrl = 'https://qa-project.supabase.co';
-  static const productionSupabaseUrl = 'https://production-project.supabase.co';
+  static const productionSupabaseUrl =
+      'https://jjfktbgfwvekhlvyjlww.supabase.co';
 
   final AppFlavor flavor;
   final Uri apiBaseUri;

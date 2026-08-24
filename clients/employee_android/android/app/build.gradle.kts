@@ -9,7 +9,7 @@ plugins {
 }
 
 android {
-    namespace = "dev.companyhub.provisional.employee"
+    namespace = "io.github.itsmebillah.companyhub.employee"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -23,8 +23,8 @@ android {
     }
 
     defaultConfig {
-        // Provisional only; ADR-016 requires a final approved namespace.
-        applicationId = "dev.companyhub.provisional.employee"
+        // Permanent Production application identity.
+        applicationId = "io.github.itsmebillah.companyhub.employee"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         // Uses the version code from pubspec.yaml. When using split APKs, 1000 * ABI_VERSION
@@ -33,6 +33,23 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+    }
+
+signingConfigs {
+        create("productionRelease") {
+            val keystorePath = providers.environmentVariable("COMPANY_HUB_KEYSTORE_PATH").orNull
+            val keystorePassword = providers.environmentVariable("COMPANY_HUB_KEYSTORE_PASSWORD").orNull
+            val signingAlias = providers.environmentVariable("COMPANY_HUB_KEY_ALIAS").orNull
+            val signingPassword = providers.environmentVariable("COMPANY_HUB_KEY_PASSWORD").orNull
+            if (!keystorePath.isNullOrBlank()) storeFile = file(keystorePath)
+            if (!keystorePassword.isNullOrBlank()) storePassword = keystorePassword
+            if (!signingAlias.isNullOrBlank()) keyAlias = signingAlias
+            if (!signingPassword.isNullOrBlank()) keyPassword = signingPassword
+            enableV1Signing = true
+            enableV2Signing = true
+            enableV3Signing = true
+            enableV4Signing = true
+        }
     }
 
     flavorDimensions += "environment"
@@ -44,14 +61,15 @@ android {
         }
         create("production") {
             dimension = "environment"
-            applicationIdSuffix = ".production"
+            signingConfig = signingConfigs.getByName("productionRelease")
             resValue("string", "app_name", "Company Hub")
         }
     }
 
+
     buildTypes {
         release {
-            // Signing is intentionally unconfigured pending ADR-016 ownership.
+            // The Production flavor supplies its environment-backed signing config.
         }
     }
 }
@@ -64,8 +82,8 @@ val environmentContracts = mapOf(
         "https://qa-project.supabase.co",
     ),
     "production" to EnvironmentContract(
-        "https://api.company-hub.invalid",
-        "https://production-project.supabase.co",
+        "https://company-hub-zeta.vercel.app",
+        "https://jjfktbgfwvekhlvyjlww.supabase.co",
     ),
 )
 
@@ -113,6 +131,24 @@ fun registerEnvironmentValidation(flavor: String) =
                     "Missing required $flavor configuration: ${missing.joinToString()}.",
                 )
             }
+            if (flavor == "production") {
+                val signingValues = mapOf(
+                    "COMPANY_HUB_KEYSTORE_PATH" to providers.environmentVariable("COMPANY_HUB_KEYSTORE_PATH").orNull,
+                    "COMPANY_HUB_KEYSTORE_PASSWORD" to providers.environmentVariable("COMPANY_HUB_KEYSTORE_PASSWORD").orNull,
+                    "COMPANY_HUB_KEY_ALIAS" to providers.environmentVariable("COMPANY_HUB_KEY_ALIAS").orNull,
+                    "COMPANY_HUB_KEY_PASSWORD" to providers.environmentVariable("COMPANY_HUB_KEY_PASSWORD").orNull,
+                )
+                val missingSigning = signingValues.filterValues { it.isNullOrBlank() }.keys
+                if (missingSigning.isNotEmpty()) {
+                    throw GradleException(
+                        "Missing secure Production signing configuration: ${missingSigning.sorted().joinToString()}.",
+                    )
+                }
+                if (!file(signingValues.getValue("COMPANY_HUB_KEYSTORE_PATH")!!).isFile) {
+                    throw GradleException("The Production keystore file is unavailable.")
+                }
+            }
+
             val prohibited = prohibitedClientDefines.intersect(defines.keys)
             if (prohibited.isNotEmpty()) {
                 throw GradleException(
