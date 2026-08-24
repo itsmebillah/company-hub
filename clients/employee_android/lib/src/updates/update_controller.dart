@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -11,20 +9,14 @@ class UpdateController extends ChangeNotifier {
     required AppEnvironment environment,
     required this.service,
     FlutterSecureStorage? storage,
-    DateTime Function()? now,
   }) : _enabled = environment.flavor == AppFlavor.production,
-       _storage = storage ?? const FlutterSecureStorage(),
-       _now = now ?? DateTime.now;
+       _storage = storage ?? const FlutterSecureStorage();
 
-  static const _lastCheckedKey = 'production_update_last_checked_at';
-  static const _cachedUpdateKey = 'production_update_cached_metadata';
   static const _dismissedVersionKey = 'production_update_dismissed_version';
-  static const checkInterval = Duration(hours: 6);
 
   final bool _enabled;
   final GitHubReleaseUpdateService service;
   final FlutterSecureStorage _storage;
-  final DateTime Function() _now;
 
   AvailableUpdate? available;
   bool checking = false;
@@ -33,31 +25,21 @@ class UpdateController extends ChangeNotifier {
 
   bool get shouldShow => _enabled && available != null;
 
-  Future<void> check({bool force = false}) async {
+  Future<void> check() async {
     if (!_enabled || checking || installing) return;
     checking = true;
     notifyListeners();
     try {
-      final lastRaw = await _storage.read(key: _lastCheckedKey);
-      final last = lastRaw == null ? null : DateTime.tryParse(lastRaw);
-      if (!force && last != null && _now().difference(last) < checkInterval) {
-        available = await _readCachedUpdate();
-      } else {
-        available = await service.check();
-        await _storage.write(
-          key: _lastCheckedKey,
-          value: _now().toUtc().toIso8601String(),
-        );
-        await _writeCachedUpdate(available);
-      }
+      final detected = await service.check();
       final dismissed = int.tryParse(
         await _storage.read(key: _dismissedVersionKey) ?? '',
       );
-      if (dismissed == available?.versionCode) available = null;
+      available = dismissed == detected?.versionCode ? null : detected;
       errorMessage = null;
     } catch (_) {
-      // Update availability must never interrupt normal app use.
-      available = await _readCachedUpdate();
+      // Update availability must never interrupt normal app use. Preserve any
+      // update already found during this app session, but never use stale disk
+      // state in place of a fresh GitHub check.
     } finally {
       checking = false;
       notifyListeners();
@@ -67,7 +49,10 @@ class UpdateController extends ChangeNotifier {
   Future<void> later() async {
     final update = available;
     if (update != null) {
-      await _storage.write(key: _dismissedVersionKey, value: '');
+      await _storage.write(
+        key: _dismissedVersionKey,
+        value: update.versionCode.toString(),
+      );
     }
     available = null;
     errorMessage = null;
@@ -84,53 +69,6 @@ class UpdateController extends ChangeNotifier {
     if (!result.ok) errorMessage = _messageFor(result.code);
     installing = false;
     notifyListeners();
-  }
-
-  Future<AvailableUpdate?> _readCachedUpdate() async {
-    try {
-      final raw = await _storage.read(key: _cachedUpdateKey);
-      final value = raw == null ? null : jsonDecode(raw);
-      if (value is! Map<String, dynamic>) return null;
-      final url = Uri.tryParse(value['apkUrl'] as String? ?? '');
-      final versionName = value['versionName'];
-      final versionCode = value['versionCode'];
-      final sha256 = value['sha256'];
-      if (url == null ||
-          !GitHubReleaseUpdateService.isOfficialAssetUrl(
-            url,
-            GitHubReleaseUpdateService.apkAssetName,
-          ) ||
-          versionName is! String ||
-          versionCode is! int ||
-          sha256 is! String ||
-          !RegExp(r'^[a-f0-9]{64}$').hasMatch(sha256)) {
-        return null;
-      }
-      return AvailableUpdate(
-        versionName: versionName,
-        versionCode: versionCode,
-        apkUrl: url,
-        sha256: sha256,
-      );
-    } catch (_) {
-      return null;
-    }
-  }
-
-  Future<void> _writeCachedUpdate(AvailableUpdate? update) async {
-    if (update == null) {
-      await _storage.delete(key: _cachedUpdateKey);
-      return;
-    }
-    await _storage.write(
-      key: _cachedUpdateKey,
-      value: jsonEncode({
-        'versionName': update.versionName,
-        'versionCode': update.versionCode,
-        'apkUrl': update.apkUrl.toString(),
-        'sha256': update.sha256,
-      }),
-    );
   }
 
   String _messageFor(String? code) => switch (code) {

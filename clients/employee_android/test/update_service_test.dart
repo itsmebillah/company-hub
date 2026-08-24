@@ -9,15 +9,15 @@ import 'package:http/testing.dart';
 void main() {
   const installed = InstalledAppInfo(
     applicationId: GitHubReleaseUpdateService.productionApplicationId,
-    versionName: '0.1.0',
-    versionCode: 1,
+    versionName: '0.1.1',
+    versionCode: 2,
   );
   final metadataUrl = Uri.parse(
-    'https://github.com/itsmebillah/company-hub/releases/download/v0.1.1/'
+    'https://github.com/itsmebillah/company-hub/releases/download/v0.1.2/'
     'company-hub-android.json',
   );
   final apkUrl = Uri.parse(
-    'https://github.com/itsmebillah/company-hub/releases/download/v0.1.1/'
+    'https://github.com/itsmebillah/company-hub/releases/download/v0.1.2/'
     'app-production-release.apk',
   );
 
@@ -36,10 +36,10 @@ void main() {
     ],
   });
 
-  String metadataBody({int versionCode = 2, String? sha256}) => jsonEncode({
+  String metadataBody({int versionCode = 3, String? sha256}) => jsonEncode({
     'applicationId': GitHubReleaseUpdateService.productionApplicationId,
     'channel': 'production',
-    'versionName': '0.1.1',
+    'versionName': '0.1.2',
     'versionCode': versionCode,
     'apkAssetName': GitHubReleaseUpdateService.apkAssetName,
     'sha256': sha256 ?? 'a' * 64,
@@ -48,7 +48,7 @@ void main() {
   GitHubReleaseUpdateService service(
     _FakeUpdatePlatform platform, {
     Uri? apk,
-    int versionCode = 2,
+    int versionCode = 3,
     String? sha256,
   }) {
     return GitHubReleaseUpdateService(
@@ -75,17 +75,17 @@ void main() {
       final updater = service(platform);
       final update = await updater.check();
 
-      expect(update?.versionCode, 2);
+      expect(update?.versionCode, 3);
       expect(update?.apkUrl, apkUrl);
       await updater.install(update!);
-      expect(platform.installedVersionCode, 2);
+      expect(platform.installedVersionCode, 3);
     },
   );
 
   test('shows nothing when the release version is not newer', () async {
     final update = await service(
       _FakeUpdatePlatform(installed),
-      versionCode: 1,
+      versionCode: 2,
     ).check();
 
     expect(update, isNull);
