@@ -1,10 +1,9 @@
-import 'dart:ui';
-
 import 'package:employee_android/src/app.dart';
 import 'package:employee_android/src/config/app_environment.dart';
 import 'package:employee_android/src/controllers/session_controller.dart';
 import 'package:employee_android/src/tracking/tracking_controller.dart';
 import 'package:employee_android/src/tracking/tracking_platform.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'helpers/fakes.dart';
@@ -92,6 +91,27 @@ void main() {
     );
   });
 
+  testWidgets('QA home dashboard screenshot', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final storage = MemorySessionStorage()..value = testSession();
+    await tester.pumpWidget(
+      CompanyHubEmployeeApp(
+        environment: _environment,
+        controller: _controller(storage),
+        trackingController: TrackingController(
+          platform: const _GoldenTrackingPlatform(
+            status: TrackingStatus(state: TrackingState.ready),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await expectLater(
+      find.byType(CompanyHubEmployeeApp),
+      matchesGoldenFile('goldens/flutter-home-qa.png'),
+    );
+  });
   testWidgets('QA attendance screenshot', (tester) async {
     await tester.binding.setSurfaceSize(const Size(390, 844));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -107,6 +127,8 @@ void main() {
         ),
       ),
     );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('attendanceDestination')));
     await tester.pumpAndSettle();
     await expectLater(
       find.byType(CompanyHubEmployeeApp),
@@ -155,6 +177,8 @@ void main() {
         ),
       ),
     );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('attendanceDestination')));
     await tester.pumpAndSettle();
     await expectLater(
       find.byType(CompanyHubEmployeeApp),

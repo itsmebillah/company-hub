@@ -37,6 +37,22 @@ Never add service-role keys, database URLs/passwords, OAuth secrets, refresh
 tokens, signing credentials, or private API keys. Local overrides use ignored
 `config/*.local.json` files and may contain public client configuration only.
 
+## Employee experience and mobile API boundary
+
+The authenticated app opens on a real employee Home dashboard with today's
+authoritative attendance summary, duty-tracking state, bottom navigation, a
+preserved Attendance workspace, and a read-only Profile using the verified
+mobile session identity. Logout continues to revoke remotely when available and
+always clears local credentials.
+
+The current Production mobile API does not expose selfie upload, extended
+profile/photo/password, leave, Quick Links/resources, announcements,
+notification-center, or holiday-calendar contracts. Those screens must remain
+blocked until thin authenticated mobile adapters can reuse the existing backend
+services and authorization rules. Flutter must not query privileged tables,
+embed Google credentials, invent balances/content, or upload directly to Drive.
+Attendance-to-Google-Sheets synchronization is not implemented or implied.
+
 ## Authentication and attendance GPS
 
 The client uses the bearer-authenticated `/api/mobile/v1` endpoints documented
@@ -97,8 +113,8 @@ Metadata format:
 {
   "applicationId": "io.github.itsmebillah.companyhub.employee",
   "channel": "production",
-  "versionName": "0.1.1",
-  "versionCode": 2,
+  "versionName": "0.1.2",
+  "versionCode": 3,
   "apkAssetName": "app-production-release.apk",
   "sha256": "64-lowercase-hex-characters"
 }
@@ -114,6 +130,7 @@ current app fully usable.
 ## UI regression fixtures
 
 - [QA login](test/goldens/flutter-login-qa.png)
+- [QA home](test/goldens/flutter-home-qa.png)
 - [QA attendance](test/goldens/flutter-attendance-qa.png)
 - [QA first-run permission gate](test/goldens/flutter-tracking-permission-qa.png)
 - [QA active tracking](test/goldens/flutter-location-observation-active-qa.png)

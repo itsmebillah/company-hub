@@ -10,7 +10,7 @@ import 'repositories/auth_repository.dart';
 import 'storage/session_storage.dart';
 import 'tracking/tracking_controller.dart';
 import 'tracking/tracking_platform.dart';
-import 'ui/attendance_screen.dart';
+import 'ui/employee_shell.dart';
 import 'ui/login_screen.dart';
 import 'ui/permission_gate.dart';
 import 'updates/update_controller.dart';
@@ -161,7 +161,7 @@ class _CompanyHubEmployeeAppState extends State<CompanyHubEmployeeApp>
                     controller: _controller,
                   );
                 }
-                return AttendanceScreen(
+                return EmployeeShell(
                   controller: _controller,
                   trackingController: _trackingController,
                 );
