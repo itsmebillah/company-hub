@@ -46,25 +46,19 @@ class AppEnvironment {
     final supabaseUri = _requireHttpsUri('SUPABASE_URL', supabaseUrl);
     _requireValue('SUPABASE_ANON_KEY', supabaseAnonKey);
 
-    final expectedApiUrl = switch (parsedFlavor) {
-      AppFlavor.qa => qaApiBaseUrl,
-      AppFlavor.production => productionApiBaseUrl,
-    };
-    final expectedSupabaseUrl = switch (parsedFlavor) {
-      AppFlavor.qa => qaSupabaseUrl,
-      AppFlavor.production => productionSupabaseUrl,
-    };
-
-    if (apiUri.toString() != expectedApiUrl) {
+    // Gradle validates both flavor contracts before Android builds. Keep only
+    // Production literals in Dart so a Production AOT binary cannot retain a
+    // QA origin while still enforcing its own runtime contract.
+    if (parsedFlavor == AppFlavor.production &&
+        apiUri.toString() != productionApiBaseUrl) {
       throw StateError(
-        '${parsedFlavor.label} API_BASE_URL does not match its approved '
-        'environment contract.',
+        'PRODUCTION API_BASE_URL does not match its approved environment contract.',
       );
     }
-    if (supabaseUri.toString() != expectedSupabaseUrl) {
+    if (parsedFlavor == AppFlavor.production &&
+        supabaseUri.toString() != productionSupabaseUrl) {
       throw StateError(
-        '${parsedFlavor.label} SUPABASE_URL does not match its approved '
-        'environment contract.',
+        'PRODUCTION SUPABASE_URL does not match its approved environment contract.',
       );
     }
 
@@ -76,9 +70,7 @@ class AppEnvironment {
     );
   }
 
-  static const qaApiBaseUrl = 'https://company-hub-qa.onrender.com';
   static const productionApiBaseUrl = 'https://company-hub-zeta.vercel.app';
-  static const qaSupabaseUrl = 'https://qa-project.supabase.co';
   static const productionSupabaseUrl =
       'https://jjfktbgfwvekhlvyjlww.supabase.co';
 
