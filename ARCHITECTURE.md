@@ -1,5 +1,17 @@
 # Architecture
 
+## Portable workstation configuration
+
+Git contains application source, safe public flavor contracts, configuration
+names, and validation rules, but no secret values. Trusted workstation transfer
+uses one externally stored SOPS/age bundle with allowlisted local-runtime and
+isolated-QA profiles plus the Google OAuth and service-account documents. Import
+materializes ignored env files and credential files outside the checkout;
+Vercel, Render, GitHub environment, CLI-session, and Android signing stores are
+not queried. QA validation pins the isolated Supabase project and Render API
+origin and rejects Production cross-wiring. See
+[Portable Development Setup](docs/PORTABLE_DEVELOPMENT_SETUP.md).
+
 ## Platform control plane
 
 `app/(platform)/platform` is a separate System Admin route group. Its server pages call `features/platform-control`, which revalidates the explicit platform identity before privileged Supabase access. System Admin is represented by `platform_admins`, not by a company role: this keeps global authority above and outside the tenant hierarchy while preserving the existing Employee-ID login flow. The control plane owns cross-company people, company lifecycle, global settings/branding, features, health, and releases. The former Activity Log and Platform Audit systems were removed by migration `0041`. Middleware independently enforces company lifecycle, Company Admin membership, and feature availability; navigation and dashboard filtering mirror, but do not replace, authorization.

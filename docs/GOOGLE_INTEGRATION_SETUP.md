@@ -25,7 +25,7 @@ npm run verify:google-sheets
 ```
 
 On a new development PC, first restore the protected configuration with
-`npm run setup:local -- --source <secure-path>` or `--sops <encrypted-path>`,
+`npm run setup:local -- --bundle <encrypted-path>`,
 then run `npm run doctor`. The helper reuses a valid transferred refresh token;
 it never starts OAuth. Google refresh tokens are not normally device-bound, so
 repeat consent and Picker selection only when Google rejects the token after

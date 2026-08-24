@@ -3,13 +3,13 @@ import { loadEnvConfig } from "@next/env";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 
-loadEnvConfig(process.cwd());
-
 const testEnvironmentPath = resolve(process.cwd(), ".env.test.local");
 
 if (existsSync(testEnvironmentPath)) {
   process.loadEnvFile(testEnvironmentPath);
 }
+
+loadEnvConfig(process.cwd());
 
 const playwrightPort = process.env.PLAYWRIGHT_PORT ?? "3100";
 const baseURL =

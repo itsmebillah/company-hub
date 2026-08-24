@@ -5,6 +5,11 @@ tests, configuration names, automation, and documentation. Secret values are
 deliberately excluded. A new workstation therefore needs the repository plus
 one separately protected local configuration source.
 
+The preferred complete Home-PC/Office-PC workflow is documented in
+[Portable Development Setup](PORTABLE_DEVELOPMENT_SETUP.md). It restores both
+development and isolated-QA profiles plus external Google credential files from
+one SOPS/age bundle.
+
 ## Bootstrap a workstation
 
 ```powershell
@@ -29,6 +34,21 @@ The encrypted bundle and the age private key or KMS unlock credential must be
 stored outside this repository. Company Hub invokes `sops` for in-memory
 decryption and does not implement its own encryption. Do not add the bundle,
 master key, or decrypted output to Git.
+
+For the complete portable bundle format, use:
+
+```powershell
+npm run setup:local -- --bundle E:\secure\company-hub.company-hub.sops.json
+```
+
+This restores the complete `.env.local` and `.env.test.local` profiles and
+materializes the bundled Google OAuth/service-account JSON files outside the repository. The one-command
+Office-PC wrapper runs dependency installation, import, doctor, isolation
+validation, and Flutter dependency setup:
+
+```powershell
+.\bootstrap-company-hub.cmd --bundle E:\secure\company-hub.company-hub.sops.json
+```
 
 Running `npm run setup:local` with no source changes nothing and reports the
 current configuration.
@@ -60,8 +80,10 @@ credential configuration before authorizing again.
 | Vercel environment                         | Production application secrets and production resource configuration                 |
 | GitHub protected environments              | CI/release-only credentials required by approved workflows                           |
 
-Never copy production credentials into a development bundle merely for
-convenience. Credential JSON files must stay outside the repository.
+Only transfer Production-sensitive local credentials when the second trusted
+workstation genuinely requires the same approved access. In that case, treat
+the bundle and its age identity as Production-sensitive. Credential JSON files
+must stay outside the repository.
 
 ## Google authorization reuse
 

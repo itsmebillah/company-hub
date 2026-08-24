@@ -4,6 +4,12 @@ This project follows Keep a Changelog and Semantic Versioning. Production deploy
 
 ## Unreleased
 
+- Added a SOPS/age portable workstation bundle and bootstrap workflow that
+  restores allowlisted development and isolated-QA environment files plus
+  external Google credential JSON documents without retaining machine paths or
+  committing secrets. Added tool, Git-ignore, external-file, and QA/Production
+  isolation validation.
+
 - Added QA-only native bounded location batching and delivery: observations are
   validated and session-bound before entering a five-batch encrypted Android
   Keystore queue, ordered batches stay within the existing 100-point/128-KiB

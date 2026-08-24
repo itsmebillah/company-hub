@@ -15,6 +15,12 @@ allowlisted setup helper and redacted doctor command rebuild local configuration
 from an externally protected plaintext or SOPS/age source without committing
 secrets or automatically repeating Google OAuth.
 
+The complete workstation workflow can now export one externally stored
+SOPS/age bundle containing allowlisted development/QA profiles and the two
+Google credential documents, then rebuild ignored env files and machine-local
+credential paths on another trusted PC. Production service-managed and Android
+signing secrets remain excluded.
+
 ## Authoritative baseline
 
 - Next.js 15 App Router, React 19, strict TypeScript, and Tailwind CSS 4.

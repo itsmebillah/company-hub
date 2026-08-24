@@ -33,6 +33,15 @@ cryptography. Production secrets belong in Vercel, while protected CI/release
 secrets belong in the applicable GitHub environment. The setup and diagnostic
 commands redact all values and never launch OAuth automatically.
 
+The complete portable bundle contains only allowlisted local-runtime and QA
+values plus the two external Google credential documents. Vercel, Render,
+GitHub environment, Supabase CLI-session, and Android signing stores are never
+queried. If the Home-PC local runtime uses the authoritative Supabase project,
+its allowlisted local service-role and database credentials are included and
+the encrypted bundle must be treated as Production-sensitive.
+QA import is pinned to the documented isolated project and Render API origin;
+cross-wiring to Production fails validation.
+
 Google Sheets uses a dedicated service account with no domain-wide delegation.
 The Holidays projection is restricted to one explicitly configured company/workbook destination. Browser roles cannot read reporting destinations or outbox state; server-only service-role code performs delivery. No Employee, Leave, or Attendance fields are approved for Sheets.
 Google Drive uses OAuth 2.0 offline access delegated by the operational account

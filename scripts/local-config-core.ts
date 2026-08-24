@@ -28,6 +28,21 @@ export const LOCAL_CONFIGURATION_KEYS = [
   "GOOGLE_SHEETS_REPORTING_COMPANY_ID",
 ] as const;
 
+export const QA_CONFIGURATION_KEYS = [
+  "NEXT_PUBLIC_APP_URL",
+  "NEXT_PUBLIC_SUPABASE_URL",
+  "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+  "SUPABASE_SERVICE_ROLE_KEY",
+  "CRON_SECRET",
+  "PLAYWRIGHT_QA_PROJECT_REF",
+  "PLAYWRIGHT_QA_ADMIN_EMPLOYEE_ID",
+  "PLAYWRIGHT_QA_EMPLOYEE_ID",
+  "PLAYWRIGHT_ALLOW_QA_MUTATIONS",
+  "PLAYWRIGHT_INCLUDE_EDGE",
+  "EDGE_EXECUTABLE_PATH",
+  "MOBILE_API_QA_BASE_URL",
+] as const;
+
 export type LocalConfigurationKey = (typeof LOCAL_CONFIGURATION_KEYS)[number];
 
 const PLACEHOLDER_PATTERN =
@@ -51,15 +66,16 @@ export function isActualValue(value: string | undefined) {
   return Boolean(normalized && !PLACEHOLDER_PATTERN.test(normalized));
 }
 
-export function parseDotEnv(contents: string) {
-  const result: Partial<Record<LocalConfigurationKey, string>> = {};
-  const allowed = new Set<string>(LOCAL_CONFIGURATION_KEYS);
+export function parseDotEnv(
+  contents: string,
+  configurationKeys: readonly string[] = LOCAL_CONFIGURATION_KEYS,
+) {
+  const result: Record<string, string | undefined> = {};
+  const allowed = new Set(configurationKeys);
   for (const line of contents.split(/\r?\n/)) {
     const match = line.match(/^\s*(?:export\s+)?([A-Z][A-Z0-9_]*)\s*=(.*)$/);
     if (!match || !allowed.has(match[1])) continue;
-    result[match[1] as LocalConfigurationKey] = normalizeEnvironmentValue(
-      match[2],
-    );
+    result[match[1]] = normalizeEnvironmentValue(match[2]);
   }
   return result;
 }
@@ -70,8 +86,9 @@ export function encodeDotEnvValue(value: string) {
 
 export function mergeKnownConfiguration(
   destination: string,
-  source: Partial<Record<LocalConfigurationKey, string>>,
+  source: Record<string, string | undefined>,
   replaceExisting = false,
+  configurationKeys: readonly string[] = LOCAL_CONFIGURATION_KEYS,
 ) {
   const lines = destination ? destination.split(/\r?\n/) : [];
   const indexes = new Map<string, number>();
@@ -80,7 +97,7 @@ export function mergeKnownConfiguration(
     if (match) indexes.set(match[1], index);
   }
 
-  for (const key of LOCAL_CONFIGURATION_KEYS) {
+  for (const key of configurationKeys) {
     const sourceValue = source[key];
     if (!isActualValue(sourceValue)) continue;
     const existingIndex = indexes.get(key);
