@@ -149,10 +149,11 @@ Status vocabulary:
 Each row is one independently reviewed, tested, documented, committed, and
 pushed feature checkpoint.
 
-1. **P0.1 — Employee Home/Dashboard parity foundation:** add a thin
-   authenticated dashboard/effective-feature contract using existing services,
-   then migrate the established identity and conditional card structure without
-   implementing downstream modules prematurely.
+1. **P0.1 - Employee Home/Dashboard parity foundation:** backend contract
+   **completed**. `GET /api/mobile/v1/dashboard` now returns the safe mobile
+   dashboard profile fields and effective feature flags using the existing
+   mobile bearer-auth flow, employee identity checks, profile-photo URL helper,
+   and platform feature service. Flutter rendering remains the next step.
 2. **P0.2 — Profile and profile picture:** canonical read/update endpoint,
    approved editable fields, secure photo pipeline, and Flutter UI.
 3. **P0.3 — Attendance selfie parity:** authenticated temporary upload, camera

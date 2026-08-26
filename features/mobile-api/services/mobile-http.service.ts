@@ -2,6 +2,7 @@ import "server-only";
 
 import { MobileAttendanceService } from "@/features/mobile-api/services/mobile-attendance.service";
 import { MobileAuthService } from "@/features/mobile-api/services/mobile-auth.service";
+import { MobileDashboardService } from "@/features/mobile-api/services/mobile-dashboard.service";
 import { mobileErrorResponse } from "@/features/mobile-api/services/mobile-api-error";
 import { MobileRequestService } from "@/features/mobile-api/services/mobile-request.service";
 import type { AttendanceCheckInput } from "@/features/attendance/types/attendance.types";
@@ -33,6 +34,18 @@ export const MobileHttpService = {
     try {
       await MobileAuthService.revoke(request);
       return new Response(null, { status: 204 });
+    } catch (error) {
+      return mobileErrorResponse(error);
+    }
+  },
+
+  async dashboard(request: Request) {
+    try {
+      const dashboard = await MobileAuthService.runAuthenticated(
+        request,
+        MobileDashboardService.getDashboard,
+      );
+      return Response.json(dashboard);
     } catch (error) {
       return mobileErrorResponse(error);
     }
