@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:employee_android/src/config/app_environment.dart';
 import 'package:employee_android/src/updates/update_platform.dart';
 import 'package:employee_android/src/updates/update_service.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -53,6 +54,12 @@ void main() {
   }) {
     return GitHubReleaseUpdateService(
       platform: platform,
+      environment: AppEnvironment.fromValues(
+        flavor: 'production',
+        apiBaseUrl: 'https://company-hub-zeta.vercel.app',
+        supabaseUrl: 'https://jjfktbgfwvekhlvyjlww.supabase.co',
+        supabaseAnonKey: 'public-anon-test-placeholder',
+      ),
       client: MockClient((request) async {
         if (request.url == GitHubReleaseUpdateService.latestReleaseUri) {
           return http.Response(releaseBody(apk: apk), 200);

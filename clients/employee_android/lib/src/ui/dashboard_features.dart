@@ -21,7 +21,8 @@ class DashboardFeatureSections extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Column(
     children: [
-      if (content.announcementsStatus != DashboardSectionStatus.disabled) ...[
+      if (content.announcementsStatus != DashboardSectionStatus.disabled &&
+          content.announcements.isNotEmpty) ...[
         _AnnouncementsCard(
           content: content,
           openUpdates: openUpdates,
@@ -29,11 +30,15 @@ class DashboardFeatureSections extends StatelessWidget {
         ),
         const SizedBox(height: 12),
       ],
-      if (content.todayStatus != DashboardSectionStatus.disabled) ...[
+      if (content.todayStatus != DashboardSectionStatus.disabled &&
+          content.today != null &&
+          (content.today!.status != 'working_day' ||
+              content.today!.celebrations.isNotEmpty)) ...[
         _TodayCard(content: content),
         const SizedBox(height: 12),
       ],
-      if (content.quickLinksStatus != DashboardSectionStatus.disabled) ...[
+      if (content.quickLinksStatus != DashboardSectionStatus.disabled &&
+          content.quickLinks.isNotEmpty) ...[
         _QuickLinksCard(content: content, openQuickLinks: openQuickLinks),
         const SizedBox(height: 12),
       ],
@@ -75,26 +80,10 @@ class _AnnouncementsCard extends StatelessWidget {
                 text: 'Announcements are temporarily unavailable.',
                 isError: true,
               )
-            else if (announcements.isEmpty)
-              const _SectionMessage(
-                key: Key('homeAnnouncementsEmpty'),
-                text: 'No announcements available right now.',
-              )
             else
               ...announcements.map(
-                (announcement) => ListTile(
-                  key: Key('homeAnnouncement-${announcement.id}'),
-                  contentPadding: EdgeInsets.zero,
-                  leading: const CircleAvatar(
-                    child: Icon(Icons.notifications_none),
-                  ),
-                  title: Text(announcement.title),
-                  subtitle: Text(
-                    announcement.description,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  trailing: const Icon(Icons.chevron_right),
+                (announcement) => _FeaturedAnnouncement(
+                  announcement: announcement,
                   onTap: () => openAnnouncement(announcement),
                 ),
               ),
@@ -103,6 +92,114 @@ class _AnnouncementsCard extends StatelessWidget {
       ),
     );
   }
+}
+
+class _FeaturedAnnouncement extends StatelessWidget {
+  const _FeaturedAnnouncement({
+    required this.announcement,
+    required this.onTap,
+  });
+
+  final DashboardAnnouncement announcement;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: InkWell(
+        key: Key('homeAnnouncement-${announcement.id}'),
+        borderRadius: BorderRadius.circular(18),
+        onTap: onTap,
+        child: Ink(
+          decoration: BoxDecoration(
+            color: colors.primaryContainer.withValues(alpha: 0.32),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: colors.primary.withValues(alpha: 0.18)),
+          ),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 88,
+                height: 94,
+                child: _AnnouncementVisual(announcement: announcement),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        announcement.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.titleSmall
+                            ?.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                      if (announcement.description.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          announcement.description,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.only(right: 8),
+                child: Icon(Icons.chevron_right),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AnnouncementVisual extends StatelessWidget {
+  const _AnnouncementVisual({required this.announcement});
+
+  final DashboardAnnouncement announcement;
+
+  @override
+  Widget build(BuildContext context) {
+    final url = announcement.bannerUrl;
+    if (url != null && url.isNotEmpty) {
+      return ClipRRect(
+        borderRadius: const BorderRadius.horizontal(left: Radius.circular(18)),
+        child: Image.network(
+          url,
+          fit: BoxFit.cover,
+          errorBuilder: (_, _, _) => const _AnnouncementFallback(),
+        ),
+      );
+    }
+    return const _AnnouncementFallback();
+  }
+}
+
+class _AnnouncementFallback extends StatelessWidget {
+  const _AnnouncementFallback();
+
+  @override
+  Widget build(BuildContext context) => ColoredBox(
+    color: Theme.of(context).colorScheme.primaryContainer,
+    child: Icon(
+      Icons.campaign_outlined,
+      color: Theme.of(context).colorScheme.onPrimaryContainer,
+      size: 30,
+    ),
+  );
 }
 
 class _TodayCard extends StatelessWidget {
@@ -131,12 +228,7 @@ class _TodayCard extends StatelessWidget {
                 text: 'Today’s calendar is temporarily unavailable.',
                 isError: true,
               )
-            else if (today == null)
-              const _SectionMessage(
-                key: Key('homeTodayEmpty'),
-                text: 'No celebration or holiday information is available.',
-              )
-            else ...[
+            else if (today != null) ...[
               if (today.status != 'working_day')
                 ListTile(
                   key: const Key('homeHolidayItem'),
@@ -164,11 +256,6 @@ class _TodayCard extends StatelessWidget {
                       : null,
                 ),
               ),
-              if (today.status == 'working_day' && today.celebrations.isEmpty)
-                const _SectionMessage(
-                  key: Key('homeTodayNoEvents'),
-                  text: 'No celebrations or holidays today.',
-                ),
             ],
           ],
         ),
@@ -210,11 +297,6 @@ class _QuickLinksCard extends StatelessWidget {
               text: 'Quick Links are temporarily unavailable.',
               isError: true,
             )
-          else if (content.quickLinks.isEmpty)
-            const _SectionMessage(
-              key: Key('homeQuickLinksEmpty'),
-              text: 'No Quick Links are available for you.',
-            )
           else
             Wrap(
               spacing: 8,
@@ -255,12 +337,21 @@ class UpdatesScreen extends StatelessWidget {
           Text('Updates', style: Theme.of(context).textTheme.headlineSmall),
           const SizedBox(height: 16),
           if (content.notificationsStatus != DashboardSectionStatus.disabled)
-            _NotificationList(content: content, onNotificationTap: controller.markNotificationRead),
+            _NotificationList(
+              content: content,
+              onNotificationTap: controller.markNotificationRead,
+            ),
           if (content.notificationsStatus != DashboardSectionStatus.disabled &&
               content.announcementsStatus != DashboardSectionStatus.disabled)
             const SizedBox(height: 12),
           if (content.announcementsStatus != DashboardSectionStatus.disabled)
             _AnnouncementList(content: content),
+          if (content.notificationsStatus == DashboardSectionStatus.disabled &&
+              content.announcementsStatus == DashboardSectionStatus.disabled)
+            const _SectionMessage(
+              key: Key('updatesUnavailable'),
+              text: 'No update channels are currently available.',
+            ),
         ],
       ),
     );
@@ -268,7 +359,10 @@ class UpdatesScreen extends StatelessWidget {
 }
 
 class _NotificationList extends StatelessWidget {
-  const _NotificationList({required this.content, required this.onNotificationTap});
+  const _NotificationList({
+    required this.content,
+    required this.onNotificationTap,
+  });
   final DashboardContent content;
   final Future<bool> Function(String id) onNotificationTap;
 
@@ -312,7 +406,9 @@ class _NotificationList extends StatelessWidget {
                 trailing: notification.isRead
                     ? const Text('Read')
                     : const Badge(label: Text('New')),
-                onTap: notification.isRead ? null : () => onNotificationTap(notification.id),
+                onTap: notification.isRead
+                    ? null
+                    : () => onNotificationTap(notification.id),
               ),
             ),
         ],

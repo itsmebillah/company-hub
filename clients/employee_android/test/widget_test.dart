@@ -73,6 +73,8 @@ void main() {
     expect(find.text('Welcome, QA Employee'), findsOneWidget);
     expect(find.byKey(const Key('homeScreen')), findsOneWidget);
     expect(find.text("Today's Attendance"), findsOneWidget);
+    await tester.tap(find.byKey(const Key('employeeActionsButton')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('attendanceDestination')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('checkInButton')), findsOneWidget);
@@ -102,7 +104,7 @@ void main() {
     expect(find.byKey(const Key('homeProfilePhotoFallback')), findsOneWidget);
     expect(find.text('Employee Workspace'), findsOneWidget);
     expect(find.text('Welcome, QA Employee'), findsOneWidget);
-    expect(find.text('Company Hub QA'), findsOneWidget);
+    expect(find.text('Company Hub QA'), findsNWidgets(2));
     expect(find.text('Employee'), findsWidgets);
     expect(find.text('ID QA-001'), findsOneWidget);
     expect(find.byKey(const Key('homeCurrentDate')), findsOneWidget);
@@ -268,7 +270,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byKey(const Key('updatesDestination')), findsOneWidget);
-      expect(find.byKey(const Key('quickLinksDestination')), findsOneWidget);
+      expect(find.byKey(const Key('employeeActionsButton')), findsOneWidget);
       expect(find.text('Leave'), findsNothing);
       expect(find.text('Settings'), findsNothing);
       expect(find.byKey(const Key('homeUpdatesButton')), findsOneWidget);
@@ -300,9 +302,12 @@ void main() {
       await tester.tap(find.byKey(const Key('announcement-announcement-a')));
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('announcementDetailTitle')), findsOneWidget);
-    await tester.tapAt(const Offset(8, 8));
-    await tester.pumpAndSettle();
+      await tester.tapAt(const Offset(8, 8));
+      await tester.pumpAndSettle();
 
+      await tester.tap(find.byKey(const Key('employeeActionsButton')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('quickLinksDestination')), findsOneWidget);
       await tester.tap(find.byKey(const Key('quickLinksDestination')));
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('quickLinksScreen')), findsOneWidget);
@@ -360,17 +365,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.scrollUntilVisible(
-      find.byKey(const Key('homeQuickLinksEmpty')),
-      250,
-      scrollable: find.byType(Scrollable).first,
-    );
-    expect(find.text('No Quick Links are available for you.'), findsOneWidget);
-    expect(
-      find.text('Announcements are temporarily unavailable.'),
-      findsOneWidget,
-    );
-    expect(find.text('No celebrations or holidays today.'), findsOneWidget);
+    expect(find.byKey(const Key('homeQuickLinksCard')), findsNothing);
+    expect(find.byKey(const Key('homeTodayCard')), findsNothing);
+    expect(find.byKey(const Key('homeAnnouncementsCard')), findsNothing);
+    expect(find.text('No Quick Links are available for you.'), findsNothing);
+    expect(find.text('No celebrations or holidays today.'), findsNothing);
 
     await tester.tap(find.byKey(const Key('updatesDestination')));
     await tester.pumpAndSettle();
@@ -402,9 +401,12 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('homeDestination')), findsOneWidget);
-    expect(find.byKey(const Key('attendanceDestination')), findsOneWidget);
+    expect(find.byKey(const Key('employeeActionsButton')), findsOneWidget);
     expect(find.byKey(const Key('profileDestination')), findsOneWidget);
-    expect(find.byKey(const Key('updatesDestination')), findsNothing);
+    expect(find.byKey(const Key('updatesDestination')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('employeeActionsButton')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('attendanceDestination')), findsOneWidget);
     expect(find.byKey(const Key('quickLinksDestination')), findsNothing);
   });
 
@@ -436,6 +438,11 @@ void main() {
     await tester.tap(find.byKey(const Key('settingsDestination')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('settingsScreen')), findsOneWidget);
+    await tester.drag(
+      find.byKey(const Key('settingsScreen')),
+      const Offset(0, -180),
+    );
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('settingsLogoutButton')));
     await tester.pumpAndSettle();
     expect(find.text('Employee sign in'), findsOneWidget);
