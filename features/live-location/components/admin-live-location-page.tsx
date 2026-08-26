@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
-import { ExternalLink, LocateFixed } from "lucide-react";
+import { ExternalLink, LocateFixed, Search, X } from "lucide-react";
+import { useMemo, useState } from "react";
 
 import { EmptyState } from "@/components/common/empty-state";
 import { IconBadge } from "@/components/common/icon-badge";
@@ -31,6 +34,18 @@ export function AdminLiveLocationPage({
 }: {
   locations: AdminLiveLocation[];
 }) {
+  const [query, setQuery] = useState("");
+  const filteredLocations = useMemo(() => {
+    const normalized = query.trim().toLowerCase();
+    if (!normalized) return locations;
+    return locations.filter((location) =>
+      [location.employeeName, location.employeeCode, location.roleName ?? ""]
+        .join(" ")
+        .toLowerCase()
+        .includes(normalized),
+    );
+  }, [locations, query]);
+
   return (
     <section className="space-y-5">
       <PageHeader
@@ -45,6 +60,37 @@ export function AdminLiveLocationPage({
           description="Current employee locations will appear here after an authorized tracking point is received."
         />
       ) : (
+        <>
+          <div className="relative max-w-xl">
+            <Search
+              className="text-muted-foreground pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2"
+              aria-hidden="true"
+            />
+            <input
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search employee, ID, or role"
+              aria-label="Search employee locations"
+              className="bg-background w-full rounded-lg border py-2.5 pl-9 pr-9 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+            />
+            {query ? (
+              <button
+                type="button"
+                onClick={() => setQuery("")}
+                aria-label="Clear location search"
+                className="text-muted-foreground hover:text-foreground absolute right-2 top-1/2 -translate-y-1/2 rounded p-1"
+              >
+                <X className="size-4" aria-hidden="true" />
+              </button>
+            ) : null}
+          </div>
+          {filteredLocations.length === 0 ? (
+            <EmptyState
+              title="No employees match your search"
+              description="Try searching by employee name, employee ID, or role."
+            />
+          ) : (
         <div className="app-table-shell">
           <div className="hidden overflow-x-auto lg:block">
             <table className="w-full text-left text-sm">
@@ -60,7 +106,7 @@ export function AdminLiveLocationPage({
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {locations.map((location) => (
+                {filteredLocations.map((location) => (
                   <tr key={location.employeeId}>
                     <td className="px-4 py-3">
                       <p className="font-medium">{location.employeeName}</p>
@@ -90,7 +136,7 @@ export function AdminLiveLocationPage({
             </table>
           </div>
           <div className="divide-y lg:hidden">
-            {locations.map((location) => (
+            {filteredLocations.map((location) => (
               <article key={location.employeeId} className="space-y-3 p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -118,6 +164,8 @@ export function AdminLiveLocationPage({
             ))}
           </div>
         </div>
+          )}
+        </>
       )}
     </section>
   );
