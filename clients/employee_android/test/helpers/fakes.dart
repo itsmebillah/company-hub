@@ -2,6 +2,7 @@ import 'package:employee_android/src/models/api_error.dart';
 import 'package:employee_android/src/models/attendance_state.dart';
 import 'package:employee_android/src/models/auth_session.dart';
 import 'package:employee_android/src/models/dashboard_state.dart';
+import 'package:employee_android/src/platform/external_link_platform.dart';
 import 'package:employee_android/src/repositories/attendance_repository.dart';
 import 'package:employee_android/src/repositories/auth_repository.dart';
 import 'package:employee_android/src/repositories/dashboard_repository.dart';
@@ -23,7 +24,11 @@ AuthSession testSession({
   ),
 );
 
-DashboardState testDashboard({String? photoUrl}) => DashboardState(
+DashboardState testDashboard({
+  String? photoUrl,
+  List<String> enabledFeatureKeys = const ['attendance'],
+  DashboardContent content = const DashboardContent.empty(),
+}) => DashboardState(
   profile: DashboardProfile(
     employeeId: 'QA-001',
     name: 'QA Employee',
@@ -32,11 +37,64 @@ DashboardState testDashboard({String? photoUrl}) => DashboardState(
     companyName: 'Company Hub QA',
     photoUrl: photoUrl,
   ),
-  features: const [
-    DashboardFeatureFlag(key: 'attendance', enabled: true),
-    DashboardFeatureFlag(key: 'quick_links', enabled: false),
+  features: enabledFeatureKeys
+      .map((key) => DashboardFeatureFlag(key: key, enabled: true))
+      .toList(growable: false),
+  enabledFeatureKeys: enabledFeatureKeys,
+  content: content,
+);
+
+DashboardContent testDashboardContent() => const DashboardContent(
+  quickLinksStatus: DashboardSectionStatus.ready,
+  quickLinks: [
+    DashboardQuickLink(
+      id: 'link-a',
+      title: 'Employee Handbook',
+      description: 'Company policies',
+      categoryName: 'Knowledge',
+      url: 'https://example.com/handbook',
+      icon: 'book',
+      thumbnailUrl: null,
+      openMode: 'external',
+      isFeatured: true,
+    ),
   ],
-  enabledFeatureKeys: const ['attendance'],
+  notificationsStatus: DashboardSectionStatus.ready,
+  unreadNotificationCount: 2,
+  notifications: [
+    DashboardNotification(
+      id: 'notification-a',
+      title: 'Attendance approved',
+      message: 'Your attendance correction was approved.',
+      priority: 'normal',
+      isRead: false,
+      createdAt: '2026-08-26T08:00:00.000Z',
+    ),
+  ],
+  announcementsStatus: DashboardSectionStatus.ready,
+  announcements: [
+    DashboardAnnouncement(
+      id: 'announcement-a',
+      title: 'Office update',
+      description: 'The office opens at 9 AM tomorrow.',
+      priority: 'normal',
+      bannerUrl: null,
+      publishFrom: '2026-08-26T08:00:00.000Z',
+    ),
+  ],
+  todayStatus: DashboardSectionStatus.ready,
+  today: DashboardToday(
+    date: '2026-08-26',
+    status: 'holiday',
+    title: 'Company Holiday',
+    celebrations: [
+      DashboardCelebration(
+        type: 'work_anniversary',
+        title: 'Work anniversary',
+        yearsCompleted: 3,
+      ),
+    ],
+  ),
 );
 
 AttendanceState testAttendance({
@@ -220,4 +278,15 @@ class FakeTrackingPlatform implements TrackingPlatform {
   }) async => current;
   @override
   Future<TrackingStatus> stopTracking() async => current;
+}
+
+class FakeExternalLinkPlatform implements ExternalLinkPlatform {
+  bool result = true;
+  final List<String> opened = [];
+
+  @override
+  Future<bool> open(String url) async {
+    opened.add(url);
+    return result;
+  }
 }

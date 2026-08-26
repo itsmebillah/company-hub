@@ -4,6 +4,7 @@ import '../controllers/session_controller.dart';
 import '../models/attendance_state.dart';
 import '../models/dashboard_state.dart';
 import '../tracking/tracking_controller.dart';
+import 'dashboard_features.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({
@@ -11,6 +12,8 @@ class HomeScreen extends StatelessWidget {
     required this.trackingController,
     required this.openAttendance,
     required this.openProfile,
+    required this.openUpdates,
+    required this.openQuickLinks,
     super.key,
   });
 
@@ -18,12 +21,16 @@ class HomeScreen extends StatelessWidget {
   final TrackingController trackingController;
   final VoidCallback openAttendance;
   final VoidCallback openProfile;
+  final VoidCallback openUpdates;
+  final VoidCallback openQuickLinks;
 
   @override
   Widget build(BuildContext context) {
     final profile =
         controller.dashboard?.profile ??
         DashboardProfile.fromSession(controller.session!.profile);
+    final content =
+        controller.dashboard?.content ?? const DashboardContent.empty();
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -39,8 +46,32 @@ class HomeScreen extends StatelessWidget {
             profile: profile,
             isLoading: controller.isDashboardLoading,
             errorMessage: controller.dashboardErrorMessage,
+            unreadCount: content.unreadNotificationCount,
+            openUpdates:
+                content.notificationsStatus == DashboardSectionStatus.disabled
+                ? null
+                : openUpdates,
           ),
           const SizedBox(height: 20),
+          if (controller.isDashboardLoading && controller.dashboard == null)
+            const Card(
+              key: Key('dashboardFeaturesLoading'),
+              child: ListTile(
+                leading: SizedBox.square(
+                  dimension: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                title: Text('Loading dashboard features…'),
+              ),
+            )
+          else
+            DashboardFeatureSections(
+              content: content,
+              openUpdates: openUpdates,
+              openQuickLinks: openQuickLinks,
+              openAnnouncement: (announcement) =>
+                  showAnnouncementDetails(context, announcement),
+            ),
           _AttendanceSummaryCard(
             controller: controller,
             openAttendance: openAttendance,
@@ -320,11 +351,15 @@ class _DashboardHeader extends StatelessWidget {
     required this.profile,
     required this.isLoading,
     required this.errorMessage,
+    required this.unreadCount,
+    required this.openUpdates,
   });
 
   final DashboardProfile profile;
   final bool isLoading;
   final String? errorMessage;
+  final int unreadCount;
+  final VoidCallback? openUpdates;
 
   @override
   Widget build(BuildContext context) {
@@ -375,6 +410,17 @@ class _DashboardHeader extends StatelessWidget {
                     ],
                   ),
                 ),
+                if (openUpdates != null)
+                  IconButton(
+                    key: const Key('homeUpdatesButton'),
+                    tooltip: 'Updates',
+                    onPressed: openUpdates,
+                    icon: Badge(
+                      isLabelVisible: unreadCount > 0,
+                      label: Text(unreadCount > 99 ? '99+' : '$unreadCount'),
+                      child: const Icon(Icons.notifications_outlined),
+                    ),
+                  ),
               ],
             ),
             const SizedBox(height: 14),

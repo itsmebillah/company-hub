@@ -2,6 +2,7 @@ import 'package:employee_android/src/app.dart';
 import 'package:employee_android/src/config/app_environment.dart';
 import 'package:employee_android/src/controllers/session_controller.dart';
 import 'package:employee_android/src/models/api_error.dart';
+import 'package:employee_android/src/models/dashboard_state.dart';
 import 'package:employee_android/src/tracking/tracking_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -232,6 +233,181 @@ void main() {
     expect(find.text('Attendance is temporarily unavailable.'), findsOneWidget);
     expect(find.byKey(const Key('openAttendanceButton')), findsOneWidget);
   });
+
+  testWidgets(
+    'dashboard features render and navigation exposes supported tools',
+    (tester) async {
+      final location = FakeTrackingPlatform();
+      final links = FakeExternalLinkPlatform();
+      final dashboard = FakeDashboardRepository()
+        ..state = testDashboard(
+          enabledFeatureKeys: const [
+            'attendance',
+            'quick_links',
+            'notifications',
+            'announcements',
+            'calendar',
+          ],
+          content: testDashboardContent(),
+        );
+      final controller = SessionController(
+        authRepository: FakeAuthRepository(),
+        attendanceRepository: FakeAttendanceRepository(),
+        dashboardRepository: dashboard,
+        storage: MemorySessionStorage()..value = testSession(),
+        locationPlatform: location,
+      );
+      await tester.pumpWidget(
+        CompanyHubEmployeeApp(
+          environment: environment(),
+          controller: controller,
+          trackingController: TrackingController(platform: location),
+          externalLinkPlatform: links,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('updatesDestination')), findsOneWidget);
+      expect(find.byKey(const Key('quickLinksDestination')), findsOneWidget);
+      expect(find.text('Leave'), findsNothing);
+      expect(find.text('Settings'), findsNothing);
+      expect(find.byKey(const Key('homeUpdatesButton')), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('homeAnnouncementsCard')),
+        250,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.text('Office update'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('homeTodayCard')),
+        250,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.text('Company Holiday'), findsOneWidget);
+      expect(find.text('Work anniversary'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('homeQuickLinksCard')),
+        250,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.text('Employee Handbook'), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('updatesDestination')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('updatesScreen')), findsOneWidget);
+      expect(find.text('Attendance approved'), findsOneWidget);
+      expect(find.text('New'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('announcement-announcement-a')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('announcementDetailTitle')), findsOneWidget);
+    await tester.tapAt(const Offset(8, 8));
+    await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('quickLinksDestination')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('quickLinksScreen')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('quickLink-link-a')));
+      await tester.pumpAndSettle();
+      expect(links.opened, ['https://example.com/handbook']);
+    },
+  );
+
+  testWidgets('feature sections handle empty and error states safely', (
+    tester,
+  ) async {
+    final location = FakeTrackingPlatform();
+    const content = DashboardContent(
+      quickLinksStatus: DashboardSectionStatus.ready,
+      quickLinks: [],
+      notificationsStatus: DashboardSectionStatus.ready,
+      unreadNotificationCount: 0,
+      notifications: [],
+      announcementsStatus: DashboardSectionStatus.error,
+      announcements: [],
+      todayStatus: DashboardSectionStatus.ready,
+      today: DashboardToday(
+        date: '2026-08-26',
+        status: 'working_day',
+        title: 'Working Day',
+        celebrations: [],
+      ),
+    );
+    final dashboard = FakeDashboardRepository()
+      ..state = testDashboard(
+        enabledFeatureKeys: const [
+          'attendance',
+          'quick_links',
+          'notifications',
+          'announcements',
+          'calendar',
+        ],
+        content: content,
+      );
+    final controller = SessionController(
+      authRepository: FakeAuthRepository(),
+      attendanceRepository: FakeAttendanceRepository(),
+      dashboardRepository: dashboard,
+      storage: MemorySessionStorage()..value = testSession(),
+      locationPlatform: location,
+    );
+    await tester.pumpWidget(
+      CompanyHubEmployeeApp(
+        environment: environment(),
+        controller: controller,
+        trackingController: TrackingController(platform: location),
+        externalLinkPlatform: FakeExternalLinkPlatform(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('homeQuickLinksEmpty')),
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('No Quick Links are available for you.'), findsOneWidget);
+    expect(
+      find.text('Announcements are temporarily unavailable.'),
+      findsOneWidget,
+    );
+    expect(find.text('No celebrations or holidays today.'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('updatesDestination')));
+    await tester.pumpAndSettle();
+    expect(find.text('You’re all caught up.'), findsOneWidget);
+    expect(
+      find.text('Announcements are temporarily unavailable.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('disabled features do not create dead navigation', (
+    tester,
+  ) async {
+    final location = FakeTrackingPlatform();
+    final controller = SessionController(
+      authRepository: FakeAuthRepository(),
+      attendanceRepository: FakeAttendanceRepository(),
+      dashboardRepository: FakeDashboardRepository(),
+      storage: MemorySessionStorage()..value = testSession(),
+      locationPlatform: location,
+    );
+    await tester.pumpWidget(
+      CompanyHubEmployeeApp(
+        environment: environment(),
+        controller: controller,
+        trackingController: TrackingController(platform: location),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('homeDestination')), findsOneWidget);
+    expect(find.byKey(const Key('attendanceDestination')), findsOneWidget);
+    expect(find.byKey(const Key('profileDestination')), findsOneWidget);
+    expect(find.byKey(const Key('updatesDestination')), findsNothing);
+    expect(find.byKey(const Key('quickLinksDestination')), findsNothing);
+  });
+
   testWidgets('profile shows only verified session identity and can sign out', (
     tester,
   ) async {

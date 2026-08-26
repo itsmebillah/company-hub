@@ -10,6 +10,7 @@ import type {
   EmployeePortalResource,
   EmployeeResourcePortalData,
 } from "@/features/employee-resources/types/employee-resource.types";
+import { isAllowedResource } from "@/features/employee-resources/services/employee-resource-visibility";
 
 type ResourceRow = {
   id: string;
@@ -24,33 +25,6 @@ type ResourceRow = {
   display_order: number;
   is_featured: boolean;
 };
-
-function isAllowedResource(
-  resourceId: string,
-  permissions: Array<{
-    resource_id: string;
-    permission_type: "public" | "role" | "employee";
-    role_id: string | null;
-    employee_id: string | null;
-  }>,
-  employee: { id: string; role_id: string },
-) {
-  return permissions.some((permission) => {
-    if (permission.resource_id !== resourceId) {
-      return false;
-    }
-
-    if (permission.permission_type === "public") {
-      return true;
-    }
-
-    if (permission.permission_type === "role") {
-      return permission.role_id === employee.role_id;
-    }
-
-    return permission.employee_id === employee.id;
-  });
-}
 
 export const EmployeeResourceService = {
   async getPortalData(): Promise<EmployeeResourcePortalData> {
@@ -228,10 +202,13 @@ export const EmployeeResourceService = {
     ]);
 
     if (categoriesResult.error || resourcesResult.error) {
-      console.error("[EmployeeResourceService] Unable to load admin resources.", {
-        categoriesError: categoriesResult.error,
-        resourcesError: resourcesResult.error,
-      });
+      console.error(
+        "[EmployeeResourceService] Unable to load admin resources.",
+        {
+          categoriesError: categoriesResult.error,
+          resourcesError: resourcesResult.error,
+        },
+      );
       throw new Error("Unable to load resources.");
     }
 

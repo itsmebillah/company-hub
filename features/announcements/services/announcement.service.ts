@@ -2,14 +2,13 @@ import "server-only";
 
 import { redirect } from "next/navigation";
 
-import {
-  requireCurrentCompanyId,
-} from "@/features/auth/services/current-company-context.service";
+import { requireCurrentCompanyId } from "@/features/auth/services/current-company-context.service";
 import { requireCurrentEmployeeContext } from "@/features/auth/services/current-employee-context.service";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getPriorityRank } from "@/features/announcements/constants/announcement-options";
 import { AnnouncementValidationService } from "@/features/announcements/services/announcement-validation.service";
 import { NotificationService } from "@/features/notifications/services/notification.service";
+import { isAnnouncementVisibleToEmployee } from "@/features/announcements/services/announcement-audience.service";
 import type {
   AnnouncementFilters,
   AnnouncementAudienceOptions,
@@ -122,22 +121,30 @@ async function loadAudienceByAnnouncementIds(
   ]);
 
   if (rolesResult.error || employeesResult.error) {
-    console.error("[AnnouncementService] Unable to load announcement audiences.", {
-      rolesError: rolesResult.error,
-      employeesError: employeesResult.error,
-    });
+    console.error(
+      "[AnnouncementService] Unable to load announcement audiences.",
+      {
+        rolesError: rolesResult.error,
+        employeesError: employeesResult.error,
+      },
+    );
     throw new Error("Unable to load announcement audiences.");
   }
 
-  const audienceById = new Map<string, { roleIds: string[]; employeeIds: string[] }>();
+  const audienceById = new Map<
+    string,
+    { roleIds: string[]; employeeIds: string[] }
+  >();
 
   announcementIds.forEach((id) => {
     audienceById.set(id, { roleIds: [], employeeIds: [] });
   });
 
-  rolesResult.data.forEach((row: { announcement_id: string; role_id: string }) => {
-    audienceById.get(row.announcement_id)?.roleIds.push(row.role_id);
-  });
+  rolesResult.data.forEach(
+    (row: { announcement_id: string; role_id: string }) => {
+      audienceById.get(row.announcement_id)?.roleIds.push(row.role_id);
+    },
+  );
 
   employeesResult.data.forEach(
     (row: { announcement_id: string; employee_id: string }) => {
@@ -286,7 +293,10 @@ export const AnnouncementService = {
     });
 
     if (error) {
-      console.error("[AnnouncementService] Unable to load announcements.", error);
+      console.error(
+        "[AnnouncementService] Unable to load announcements.",
+        error,
+      );
       throw new Error("Unable to load announcements.");
     }
 
@@ -347,15 +357,11 @@ export const AnnouncementService = {
               employeeIds: [],
             };
 
-            if (announcement.target_audience === "roles") {
-              return audience.roleIds.includes(employee.role_id);
-            }
-
-            if (announcement.target_audience === "employees") {
-              return audience.employeeIds.includes(employee.id);
-            }
-
-            return true;
+            return isAnnouncementVisibleToEmployee(
+              announcement.target_audience,
+              audience,
+              employee,
+            );
           })
           .map((announcement) =>
             toListItem({
@@ -469,7 +475,10 @@ export const AnnouncementService = {
       .single();
 
     if (error || !data) {
-      console.error("[AnnouncementService] Unable to create announcement.", error);
+      console.error(
+        "[AnnouncementService] Unable to create announcement.",
+        error,
+      );
       throw new Error("Unable to create announcement.");
     }
 
@@ -480,7 +489,6 @@ export const AnnouncementService = {
       validated.roleIds,
       validated.employeeIds,
     );
-
 
     if (
       isAnnouncementVisibleNow({
@@ -547,10 +555,12 @@ export const AnnouncementService = {
       validated.roleIds,
       validated.employeeIds,
     );
-
   },
 
-  async setStatus(id: string, status: Extract<AnnouncementStatus, "active" | "archived">) {
+  async setStatus(
+    id: string,
+    status: Extract<AnnouncementStatus, "active" | "archived">,
+  ) {
     const supabase = createSupabaseAdminClient();
     const companyId = await requireActiveCompanyId();
     const { error } = await supabase

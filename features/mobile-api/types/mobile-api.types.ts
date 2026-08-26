@@ -20,10 +20,71 @@ export type MobileDashboardFeature = {
   enabled: boolean;
 };
 
+export type MobileDashboardSectionStatus = "ready" | "disabled" | "error";
+
+export type MobileQuickLink = {
+  id: string;
+  title: string;
+  description: string;
+  categoryName: string;
+  url: string | null;
+  icon: string | null;
+  thumbnailUrl: string | null;
+  openMode: "same_tab" | "new_tab" | "external";
+  isFeatured: boolean;
+};
+
+export type MobileNotification = {
+  id: string;
+  title: string;
+  message: string;
+  priority: string;
+  isRead: boolean;
+  createdAt: string;
+};
+
+export type MobileAnnouncement = {
+  id: string;
+  title: string;
+  description: string;
+  priority: string;
+  bannerUrl: string | null;
+  publishFrom: string | null;
+};
+
+export type MobileCelebration = {
+  type: "birthday" | "work_anniversary";
+  title: string;
+  yearsCompleted: number | null;
+};
+
+export type MobileToday = {
+  date: string;
+  status: "working_day" | "holiday" | "optional_holiday";
+  title: string;
+  celebrations: MobileCelebration[];
+};
+
+export type MobileDashboardSection<T> = {
+  status: MobileDashboardSectionStatus;
+  data: T;
+};
+
+export type MobileDashboardContent = {
+  quickLinks: MobileDashboardSection<MobileQuickLink[]>;
+  notifications: MobileDashboardSection<{
+    unreadCount: number;
+    items: MobileNotification[];
+  }>;
+  announcements: MobileDashboardSection<MobileAnnouncement[]>;
+  today: MobileDashboardSection<MobileToday | null>;
+};
+
 export type MobileDashboard = {
   profile: MobileDashboardProfile;
   features: MobileDashboardFeature[];
   enabledFeatureKeys: FeatureKey[];
+  content: MobileDashboardContent;
 };
 
 export type MobileSession = {

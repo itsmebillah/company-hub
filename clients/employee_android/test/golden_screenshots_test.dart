@@ -18,9 +18,11 @@ final _environment = AppEnvironment.fromValues(
 SessionController _controller(
   MemorySessionStorage storage, {
   FakeAttendanceRepository? attendance,
+  FakeDashboardRepository? dashboard,
 }) => SessionController(
   authRepository: FakeAuthRepository(),
   attendanceRepository: attendance ?? FakeAttendanceRepository(),
+  dashboardRepository: dashboard,
   storage: storage,
   locationPlatform: FakeTrackingPlatform(),
 );
@@ -110,6 +112,39 @@ void main() {
     await expectLater(
       find.byType(CompanyHubEmployeeApp),
       matchesGoldenFile('goldens/flutter-home-qa.png'),
+    );
+  });
+
+  testWidgets('QA dashboard features screenshot', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final storage = MemorySessionStorage()..value = testSession();
+    final dashboard = FakeDashboardRepository()
+      ..state = testDashboard(
+        enabledFeatureKeys: const [
+          'attendance',
+          'quick_links',
+          'notifications',
+          'announcements',
+          'calendar',
+        ],
+        content: testDashboardContent(),
+      );
+    await tester.pumpWidget(
+      CompanyHubEmployeeApp(
+        environment: _environment,
+        controller: _controller(storage, dashboard: dashboard),
+        trackingController: TrackingController(
+          platform: const _GoldenTrackingPlatform(
+            status: TrackingStatus(state: TrackingState.ready),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await expectLater(
+      find.byType(CompanyHubEmployeeApp),
+      matchesGoldenFile('goldens/flutter-dashboard-features-qa.png'),
     );
   });
   testWidgets('QA attendance screenshot', (tester) async {

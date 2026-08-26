@@ -33,6 +33,10 @@ class MainActivity : FlutterActivity() {
             flutterEngine.dartExecutor.binaryMessenger,
             UPDATE_CHANNEL,
         ).setMethodCallHandler(::handleUpdateCall)
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            EXTERNAL_LINK_CHANNEL,
+        ).setMethodCallHandler(::handleExternalLinkCall)
     }
 
     override fun onDestroy() {
@@ -79,6 +83,27 @@ class MainActivity : FlutterActivity() {
                 appUpdateInstaller.downloadAndInstall(apkUrl, sha256, versionCode, result::success)
             }
             else -> result.notImplemented()
+        }
+    }
+
+    private fun handleExternalLinkCall(call: MethodCall, result: MethodChannel.Result) {
+        if (call.method != "open") {
+            result.notImplemented()
+            return
+        }
+        val value = call.argument<String>("url")?.trim().orEmpty()
+        val uri = runCatching { Uri.parse(value) }.getOrNull()
+        if (uri == null || uri.scheme !in setOf("https", "http")) {
+            result.success(false)
+            return
+        }
+        try {
+            startActivity(
+                Intent(Intent.ACTION_VIEW, uri).addCategory(Intent.CATEGORY_BROWSABLE),
+            )
+            result.success(true)
+        } catch (_: RuntimeException) {
+            result.success(false)
         }
     }
     private fun getCurrentPosition(call: MethodCall, result: MethodChannel.Result) {
@@ -313,6 +338,7 @@ class MainActivity : FlutterActivity() {
     companion object {
         private const val TRACKING_CHANNEL = "io.github.itsmebillah.companyhub.employee/tracking"
         private const val UPDATE_CHANNEL = "io.github.itsmebillah.companyhub.employee/updates"
+        private const val EXTERNAL_LINK_CHANNEL = "io.github.itsmebillah.companyhub.employee/external-links"
         private const val PREFERENCES = "company_hub_tracking_permissions"
         private const val LOCATION_REQUESTED = "location_requested"
         private const val NOTIFICATION_REQUESTED = "notification_requested"

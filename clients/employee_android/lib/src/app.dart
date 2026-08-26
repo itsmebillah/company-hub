@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'config/app_environment.dart';
 import 'controllers/session_controller.dart';
 import 'network/api_client.dart';
+import 'platform/external_link_platform.dart';
 import 'repositories/attendance_repository.dart';
 import 'repositories/auth_repository.dart';
 import 'repositories/dashboard_repository.dart';
@@ -24,12 +25,14 @@ class CompanyHubEmployeeApp extends StatefulWidget {
     required this.environment,
     this.controller,
     this.trackingController,
+    this.externalLinkPlatform,
     super.key,
   });
 
   final AppEnvironment environment;
   final SessionController? controller;
   final TrackingController? trackingController;
+  final ExternalLinkPlatform? externalLinkPlatform;
 
   @override
   State<CompanyHubEmployeeApp> createState() => _CompanyHubEmployeeAppState();
@@ -166,6 +169,9 @@ class _CompanyHubEmployeeAppState extends State<CompanyHubEmployeeApp>
                 return EmployeeShell(
                   controller: _controller,
                   trackingController: _trackingController,
+                  linkPlatform:
+                      widget.externalLinkPlatform ??
+                      const MethodChannelExternalLinkPlatform(),
                 );
               },
             );
