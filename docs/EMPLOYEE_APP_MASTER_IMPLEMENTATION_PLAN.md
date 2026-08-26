@@ -113,7 +113,7 @@ Status vocabulary:
 | Logout | Server revoke plus local sign-out behavior | Implemented | Mobile session delete exists | Auth session only | **MIGRATED / RELEASED** | Flutter session tests and QA E2E | `075e258` | P0 | Preserve safe local cleanup on network failure |
 | Native app updates | PWA release reminder existed; native contract differs | Optional GitHub Release check, Later/Update Now, verified installer | Public GitHub release metadata/assets | No database dependency | **MIGRATED / RELEASED** | Update unit tests and release verification | `5579f90`, `285ebbc` | P2 | Remain non-forced; increment versionCode per release |
 | Duty live tracking core | Not part of established employee PWA parity; planned Phase 5 capability | Foreground service, observation, encrypted queue, ingestion lifecycle | Ingestion and mobile attendance tracking contracts exist | `0045`/`0046` QA only | **PARTIALLY MIGRATED / TESTING** | Native/Flutter/unit/QA ingestion evidence | `9ec5d99`, `e035ceb`, `a502d3c` | P3 | Production DB inactive; real-device/OEM support incomplete |
-| Admin Live Location | Existing admin attendance detail is historical, not live monitoring | Not applicable to employee Flutter client | No dedicated current-location admin API | Current projection exists in `0045` QA | **REQUIRES ADMIN UI** | RLS tests only | — | P3 | Add separate authorized list/detail; do not replace Attendance Detail |
+| Admin Live Location | Existing admin attendance detail is historical, not live monitoring | Not applicable to employee Flutter client | Server-side `AdminLiveLocationService` reads `employee_current_locations` for the authorized company-admin view | Current projection from `0045`; RLS boundary preserved | **PART A IMPLEMENTED** | Mapper/freshness tests, `0045` authorization assertions, typecheck/lint/secret scan | Part A checkpoint | P3 | Cadence remains 30 seconds; readable address, retention/archive, history/export, and Sheets archival remain separate work |
 | Location history/archive | Admin attendance history exists, route history does not | No employee route-history UI | Ingestion exists; history/export/archive APIs absent | Recent history in `0045`; no retention/archive worker | **BLOCKED** | Core migration tests only | — | P3 | Retention value and Sheets dataset approval required before cleanup/archive |
 
 ## Confirmed implementation gaps and risks
@@ -130,6 +130,8 @@ Status vocabulary:
    currently requests updates at a 30-second minimum interval. The approved
    product target is approximately 20–40 minutes. This must be addressed as a
    dedicated, tested tracking change; no tracking code is changed by this audit.
+5. **Admin Live Location Part A:** `/admin/live-location` now reads `employee_current_locations` through `AdminLiveLocationService`, shows tenant-scoped employee/role labels, latest timestamp, freshness, accuracy, coordinates, and Open Map. Authorization remains the existing Company Admin attendance boundary; the `0045` self/direct-manager/company-admin RLS function is unchanged. Readable address, cadence changes, retention/archive, history/export, and Sheets archival remain blocked or separate.
+
 5. **Retention policy:** the directive describes approximately 2–3 days in
    Supabase, but existing Phase 5 policy records previously left concrete
    retention configurable. Reconcile and explicitly approve the operational

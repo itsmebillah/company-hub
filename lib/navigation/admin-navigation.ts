@@ -63,6 +63,12 @@ export const adminNavigationItems: AdminNavigationItem[] = [
     featureKey: "attendance",
   },
   {
+    title: "Live Location",
+    href: "/admin/live-location",
+    icon: MapPin,
+    featureKey: "attendance",
+  },
+  {
     title: "Attendance Reports",
     href: "/admin/attendance/reports",
     icon: FileSpreadsheet,
