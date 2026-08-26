@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { ExternalLink, LocateFixed, Search, X } from "lucide-react";
+import { Download, ExternalLink, LocateFixed, RefreshCw, Search, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { EmptyState } from "@/components/common/empty-state";
@@ -35,6 +36,9 @@ export function AdminLiveLocationPage({
   locations: AdminLiveLocation[];
 }) {
   const [query, setQuery] = useState("");
+  const [selected, setSelected] = useState<AdminLiveLocation | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const router = useRouter();
   const filteredLocations = useMemo(() => {
     const normalized = query.trim().toLowerCase();
     if (!normalized) return locations;
@@ -61,7 +65,8 @@ export function AdminLiveLocationPage({
         />
       ) : (
         <>
-          <div className="relative max-w-xl">
+          <div className="flex flex-wrap items-center gap-2">
+          <div className="relative min-w-64 flex-1 max-w-xl">
             <Search
               className="text-muted-foreground pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2"
               aria-hidden="true"
@@ -84,6 +89,14 @@ export function AdminLiveLocationPage({
                 <X className="size-4" aria-hidden="true" />
               </button>
             ) : null}
+          </div>
+        <button type="button" onClick={async () => { if (refreshing) return; setRefreshing(true); try { router.refresh(); } finally { setTimeout(() => setRefreshing(false), 400); } }} disabled={refreshing} className="inline-flex min-h-10 items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold">
+          <RefreshCw className={`size-4 ${refreshing ? "animate-spin" : ""}`} aria-hidden="true" />
+          {refreshing ? "Refreshing…" : "Refresh"}
+        </button>
+        <button type="button" onClick={() => downloadCsv(filteredLocations)} className="inline-flex min-h-10 items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold">
+          <Download className="size-4" aria-hidden="true" /> Export CSV
+        </button>
           </div>
           {filteredLocations.length === 0 ? (
             <EmptyState
@@ -116,7 +129,7 @@ export function AdminLiveLocationPage({
                     </td>
                     <td className="px-4 py-3">{location.roleName ?? "--"}</td>
                     <td className="px-4 py-3">
-                      {formatAppDateTime(location.observedAt)}
+                      <button type="button" onClick={() => setSelected(location)} className="text-left underline-offset-2 hover:underline">{formatAppDateTime(location.observedAt)}</button>
                     </td>
                     <td className="px-4 py-3">
                       <FreshnessBadge value={location.freshness} />
@@ -125,7 +138,7 @@ export function AdminLiveLocationPage({
                       {Math.round(location.accuracyMeters)}m
                     </td>
                     <td className="px-4 py-3 font-mono text-xs">
-                      {coordinates(location)}
+                      <button type="button" onClick={() => setSelected(location)} className="font-mono text-xs underline-offset-2 hover:underline">{coordinates(location)}</button>
                     </td>
                     <td className="px-4 py-3">
                       <MapLink location={location} />
@@ -159,6 +172,7 @@ export function AdminLiveLocationPage({
                   />
                   <Metric label="Coordinates" value={coordinates(location)} />
                 </dl>
+                <button type="button" onClick={() => setSelected(location)} className="text-left text-sm font-semibold underline-offset-2 hover:underline">Last known location details</button>
                 <MapLink location={location} />
               </article>
             ))}
@@ -167,8 +181,28 @@ export function AdminLiveLocationPage({
           )}
         </>
       )}
+      {selected ? <LocationDetails location={selected} onClose={() => setSelected(null)} /> : null}
     </section>
   );
+}
+
+function LocationDetails({ location, onClose }: { location: AdminLiveLocation; onClose: () => void }) {
+  return <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-label="Last known location details" onClick={onClose}>
+    <div className="bg-background w-full max-w-md space-y-4 rounded-xl border p-5 shadow-xl" onClick={(event) => event.stopPropagation()}>
+      <div className="flex items-start justify-between gap-4"><div><p className="text-muted-foreground text-xs uppercase">Last known location</p><h2 className="text-lg font-semibold">{location.employeeName}</h2><p className="text-muted-foreground text-sm">{location.employeeCode}{location.roleName ? ` · ${location.roleName}` : ""}</p></div><button type="button" onClick={onClose} className="rounded p-1 text-sm" aria-label="Close location details">✕</button></div>
+      <dl className="grid grid-cols-2 gap-3 text-sm"><Metric label="Updated" value={formatAppDateTime(location.observedAt)} /><Metric label="Freshness" value={freshnessLabel(location.freshness)} /><Metric label="Accuracy" value={`${Math.round(location.accuracyMeters)}m`} /><Metric label="Coordinates" value={coordinates(location)} /></dl>
+      <MapLink location={location} />
+    </div>
+  </div>;
+}
+
+function downloadCsv(locations: AdminLiveLocation[]) {
+  const header = ["Employee Name", "Employee ID", "Role", "Latitude", "Longitude", "Accuracy", "Last Updated", "Freshness", "Open Map URL"];
+  const rows = locations.map((location) => [location.employeeName, location.employeeCode, location.roleName ?? "", location.latitude, location.longitude, location.accuracyMeters, location.observedAt, location.freshness, `https://www.google.com/maps?q=${location.latitude},${location.longitude}`]);
+  const escape = (value: unknown) => `"${String(value).replaceAll('"', '""')}"`;
+  const csv = [header, ...rows].map((row) => row.map(escape).join(",")).join("\r\n");
+  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+  const anchor = document.createElement("a"); anchor.href = url; anchor.download = "live-location.csv"; anchor.click(); URL.revokeObjectURL(url);
 }
 
 function FreshnessBadge({ value }: { value: AdminLiveLocationFreshness }) {
