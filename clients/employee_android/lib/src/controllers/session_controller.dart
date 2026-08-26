@@ -183,6 +183,20 @@ class SessionController extends ChangeNotifier {
     }
   }
 
+  Future<bool> markNotificationRead(String id) async {
+    final repository = _dashboardRepository;
+    if (repository == null || session == null) return false;
+    try {
+      await _authorized((token) => repository.markNotificationRead(token, id));
+      await loadDashboard();
+      return true;
+    } on ApiException catch (error) {
+      dashboardErrorMessage = error.message;
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<void> reconcile() async {
     if (session == null) return;
     errorMessage = null;

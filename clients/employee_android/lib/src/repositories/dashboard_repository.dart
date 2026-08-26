@@ -14,4 +14,8 @@ class DashboardRepository {
           accessToken: accessToken,
         ),
       );
+
+  Future<void> markNotificationRead(String accessToken, String id) async {
+    await _api.request('PATCH', '/api/mobile/v1/notifications/$id', accessToken: accessToken);
+  }
 }

@@ -255,7 +255,7 @@ class UpdatesScreen extends StatelessWidget {
           Text('Updates', style: Theme.of(context).textTheme.headlineSmall),
           const SizedBox(height: 16),
           if (content.notificationsStatus != DashboardSectionStatus.disabled)
-            _NotificationList(content: content),
+            _NotificationList(content: content, onNotificationTap: controller.markNotificationRead),
           if (content.notificationsStatus != DashboardSectionStatus.disabled &&
               content.announcementsStatus != DashboardSectionStatus.disabled)
             const SizedBox(height: 12),
@@ -268,8 +268,9 @@ class UpdatesScreen extends StatelessWidget {
 }
 
 class _NotificationList extends StatelessWidget {
-  const _NotificationList({required this.content});
+  const _NotificationList({required this.content, required this.onNotificationTap});
   final DashboardContent content;
+  final Future<bool> Function(String id) onNotificationTap;
 
   @override
   Widget build(BuildContext context) => Card(
@@ -311,6 +312,7 @@ class _NotificationList extends StatelessWidget {
                 trailing: notification.isRead
                     ? const Text('Read')
                     : const Badge(label: Text('New')),
+                onTap: notification.isRead ? null : () => onNotificationTap(notification.id),
               ),
             ),
         ],
