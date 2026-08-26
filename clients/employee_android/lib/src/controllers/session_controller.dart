@@ -7,6 +7,8 @@ import '../models/dashboard_state.dart';
 import '../repositories/attendance_repository.dart';
 import '../repositories/auth_repository.dart';
 import '../repositories/dashboard_repository.dart';
+import '../repositories/profile_repository.dart';
+import '../models/profile_state.dart';
 import '../storage/session_storage.dart';
 import '../tracking/tracking_platform.dart';
 
@@ -27,6 +29,7 @@ class SessionController extends ChangeNotifier {
     required AuthRepository authRepository,
     required AttendanceRepository attendanceRepository,
     DashboardRepository? dashboardRepository,
+    ProfileRepository? profileRepository,
     required SessionStorage storage,
     required TrackingPlatform locationPlatform,
   }) : this._(
@@ -34,7 +37,7 @@ class SessionController extends ChangeNotifier {
          attendanceRepository,
          dashboardRepository,
          storage,
-         locationPlatform,
+       locationPlatform, profileRepository,
        );
 
   SessionController._(
@@ -43,6 +46,7 @@ class SessionController extends ChangeNotifier {
     this._dashboardRepository,
     this._storage,
     this._locationPlatform,
+    this._profileRepository,
   );
 
   final AuthRepository _authRepository;
@@ -50,6 +54,7 @@ class SessionController extends ChangeNotifier {
   final DashboardRepository? _dashboardRepository;
   final SessionStorage _storage;
   final TrackingPlatform _locationPlatform;
+  final ProfileRepository? _profileRepository;
 
   SessionPhase phase = SessionPhase.initializing;
   AuthSession? session;
@@ -58,6 +63,9 @@ class SessionController extends ChangeNotifier {
   bool isDashboardLoading = false;
   String? dashboardErrorMessage;
   String? errorMessage;
+  ProfileState? profile;
+  bool isProfileLoading = false;
+  String? profileError;
 
   bool get isBusy => switch (phase) {
     SessionPhase.initializing ||
@@ -77,6 +85,7 @@ class SessionController extends ChangeNotifier {
     }
     if (!await _refresh()) return;
     await loadDashboard();
+    await loadProfile();
     await reconcile();
   }
 
@@ -96,6 +105,7 @@ class SessionController extends ChangeNotifier {
       await _storage.write(session!);
       _setPhase(SessionPhase.authenticated);
       await loadDashboard();
+      await loadProfile();
       await reconcile();
     } on ApiException catch (error) {
       await _clearSession(
@@ -103,6 +113,20 @@ class SessionController extends ChangeNotifier {
         expired: error.isUnauthorized,
       );
     }
+  }
+
+  Future<void> loadProfile() async {
+    if (session == null || _profileRepository == null) return;
+    isProfileLoading = true; profileError = null; notifyListeners();
+    try { profile = await _authorized(_profileRepository!.getProfile); }
+    on ApiException catch (error) { profileError = error.message; }
+    finally { isProfileLoading = false; notifyListeners(); }
+  }
+
+  Future<bool> updateProfile({required String phone, required String email, required String dateOfBirth}) async {
+    if (session == null || _profileRepository == null) return false;
+    try { profile = await _authorized((token) => _profileRepository!.update(token, phone: phone, email: email, dateOfBirth: dateOfBirth)); notifyListeners(); return profile != null; }
+    on ApiException catch (error) { profileError = error.message; notifyListeners(); return false; }
   }
 
   Future<bool> _refresh() async {

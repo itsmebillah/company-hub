@@ -163,4 +163,10 @@ export const MobileRequestService = {
     }
     return value;
   },
+
+  async parseProfile(request: Request) {
+    const value = await parseJsonObject(request, MAX_AUTH_BODY_BYTES);
+    assertOnlyKeys(value, ["phone", "email", "dateOfBirth"]);
+    return value;
+  },
 };

@@ -3,6 +3,7 @@ import "server-only";
 import { MobileAttendanceService } from "@/features/mobile-api/services/mobile-attendance.service";
 import { MobileAuthService } from "@/features/mobile-api/services/mobile-auth.service";
 import { MobileDashboardService } from "@/features/mobile-api/services/mobile-dashboard.service";
+import { MobileProfileService } from "@/features/mobile-api/services/mobile-profile.service";
 import { mobileErrorResponse } from "@/features/mobile-api/services/mobile-api-error";
 import { MobileRequestService } from "@/features/mobile-api/services/mobile-request.service";
 import type { AttendanceCheckInput } from "@/features/attendance/types/attendance.types";
@@ -49,6 +50,17 @@ export const MobileHttpService = {
     } catch (error) {
       return mobileErrorResponse(error);
     }
+  },
+  async profile(request: Request) {
+    try {
+      return Response.json(await MobileAuthService.runAuthenticated(request, MobileProfileService.getProfile));
+    } catch (error) { return mobileErrorResponse(error); }
+  },
+  async updateProfile(request: Request) {
+    try {
+      const input = await MobileRequestService.parseProfile(request);
+      return Response.json(await MobileAuthService.runAuthenticated(request, (context) => MobileProfileService.updateProfile(context, input)));
+    } catch (error) { return mobileErrorResponse(error); }
   },
 
   async attendanceState(request: Request) {

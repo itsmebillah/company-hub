@@ -9,6 +9,7 @@ import 'platform/external_link_platform.dart';
 import 'repositories/attendance_repository.dart';
 import 'repositories/auth_repository.dart';
 import 'repositories/dashboard_repository.dart';
+import 'repositories/profile_repository.dart';
 import 'storage/session_storage.dart';
 import 'tracking/tracking_controller.dart';
 import 'tracking/tracking_platform.dart';
@@ -62,6 +63,7 @@ class _CompanyHubEmployeeAppState extends State<CompanyHubEmployeeApp>
           authRepository: AuthRepository(api),
           attendanceRepository: AttendanceRepository(api),
           dashboardRepository: DashboardRepository(api),
+          profileRepository: ProfileRepository(api),
           storage: SecureSessionStorage(),
           locationPlatform: trackingPlatform,
         );
