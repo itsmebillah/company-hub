@@ -62,6 +62,15 @@ export const MobileHttpService = {
       return Response.json(await MobileAuthService.runAuthenticated(request, (context) => MobileProfileService.updateProfile(context, input)));
     } catch (error) { return mobileErrorResponse(error); }
   },
+  async markNotificationRead(request: Request, id: string) {
+    try {
+      await MobileAuthService.runAuthenticated(request, async (context) => {
+        const { NotificationRepository } = await import("@/features/notifications/repositories/notification.repository");
+        await NotificationRepository.markOpenedForEmployee(id, context.employee.id, context.employee.companyId);
+      });
+      return new Response(null, { status: 204 });
+    } catch (error) { return mobileErrorResponse(error); }
+  },
 
   async attendanceState(request: Request) {
     try {
