@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../controllers/session_controller.dart';
+import '../models/attendance_state.dart';
 import '../models/dashboard_state.dart';
 import '../tracking/tracking_controller.dart';
 
@@ -23,18 +24,6 @@ class HomeScreen extends StatelessWidget {
     final profile =
         controller.dashboard?.profile ??
         DashboardProfile.fromSession(controller.session!.profile);
-    final attendance = controller.attendance;
-    final record = attendance?.attendance;
-    final status = record?.isCheckedOut == true
-        ? 'Checked out'
-        : record?.isCheckedIn == true
-        ? 'Checked in'
-        : 'Not checked in';
-    final statusIcon = record?.isCheckedOut == true
-        ? Icons.task_alt
-        : record?.isCheckedIn == true
-        ? Icons.location_on
-        : Icons.pending_actions;
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -52,52 +41,9 @@ class HomeScreen extends StatelessWidget {
             errorMessage: controller.dashboardErrorMessage,
           ),
           const SizedBox(height: 20),
-          Card(
-            key: const Key('homeAttendanceCard'),
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(statusIcon),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Today's attendance",
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                            Text(
-                              status,
-                              key: const Key('homeAttendanceStatus'),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (attendance != null) ...[
-                    const SizedBox(height: 12),
-                    Text('Attendance date: ${attendance.attendanceDate}'),
-                  ],
-                  if (record?.workingMinutes case final minutes?) ...[
-                    const SizedBox(height: 4),
-                    Text('Recorded work: ${_duration(minutes)}'),
-                  ],
-                  const SizedBox(height: 16),
-                  FilledButton.icon(
-                    key: const Key('openAttendanceButton'),
-                    onPressed: openAttendance,
-                    icon: const Icon(Icons.schedule),
-                    label: const Text('Open attendance'),
-                  ),
-                ],
-              ),
-            ),
+          _AttendanceSummaryCard(
+            controller: controller,
+            openAttendance: openAttendance,
           ),
           const SizedBox(height: 12),
           ListenableBuilder(
@@ -136,11 +82,236 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
+}
 
-  String _duration(int minutes) {
+class _AttendanceSummaryCard extends StatelessWidget {
+  const _AttendanceSummaryCard({
+    required this.controller,
+    required this.openAttendance,
+  });
+
+  final SessionController controller;
+  final VoidCallback openAttendance;
+
+  @override
+  Widget build(BuildContext context) {
+    final state = controller.attendance;
+    final record = state?.attendance;
+    final status = _statusLabel(controller.phase, state);
+    final statusIcon = _statusIcon(controller.phase, state);
+    final isError = controller.errorMessage != null;
+
+    return Card(
+      key: const Key('homeAttendanceCard'),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  backgroundColor: Theme.of(context)
+                      .colorScheme
+                      .primaryContainer,
+                  foregroundColor: Theme.of(context)
+                      .colorScheme
+                      .onPrimaryContainer,
+                  child: Icon(statusIcon),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Today's Attendance",
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Manual check-in status',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                _AttendanceStatusPill(label: status),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Text(
+              'Attendance date: ${state?.attendanceDate ?? '--'}',
+              key: const Key('homeAttendanceDate'),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            if (isError) ...[
+              const SizedBox(height: 8),
+              Text(
+                controller.errorMessage!,
+                key: const Key('homeAttendanceError'),
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            ],
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  child: _AttendanceMetricTile(
+                    icon: Icons.login,
+                    label: 'Check-in',
+                    value: _formatTime(record?.checkIn),
+                    valueKey: const Key('homeAttendanceCheckIn'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _AttendanceMetricTile(
+                    icon: Icons.logout,
+                    label: 'Check-out',
+                    value: _formatTime(record?.checkOut),
+                    valueKey: const Key('homeAttendanceCheckOut'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _AttendanceMetricTile(
+                    icon: Icons.timer_outlined,
+                    label: 'Hours',
+                    value: _formatDuration(record?.workingMinutes ?? 0),
+                    valueKey: const Key('homeAttendanceHours'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              key: const Key('openAttendanceButton'),
+              onPressed: openAttendance,
+              icon: const Icon(Icons.schedule),
+              label: const Text('Open Attendance'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _statusLabel(SessionPhase phase, AttendanceState? state) {
+    if (phase == SessionPhase.reconciling && state == null) {
+      return 'Loading';
+    }
+    if (phase == SessionPhase.acquiringLocation) {
+      return 'Getting GPS';
+    }
+    final record = state?.attendance;
+    if (record?.isCheckedOut == true) return 'Checked out';
+    if (record?.isCheckedIn == true) return 'Checked in';
+    return 'Not started';
+  }
+
+  IconData _statusIcon(SessionPhase phase, AttendanceState? state) {
+    if (phase == SessionPhase.reconciling && state == null) {
+      return Icons.sync;
+    }
+    if (phase == SessionPhase.acquiringLocation) {
+      return Icons.my_location;
+    }
+    final record = state?.attendance;
+    if (record?.isCheckedOut == true) return Icons.task_alt;
+    if (record?.isCheckedIn == true) return Icons.location_on;
+    return Icons.pending_actions;
+  }
+
+  String _formatTime(String? value) {
+    if (value == null || value.trim().isEmpty) return '--';
+    final parsed = DateTime.tryParse(value);
+    if (parsed == null) return value;
+    final local = parsed.toLocal();
+    final hour = local.hour % 12 == 0 ? 12 : local.hour % 12;
+    final minute = local.minute.toString().padLeft(2, '0');
+    final period = local.hour >= 12 ? 'PM' : 'AM';
+    return '$hour:$minute $period';
+  }
+
+  String _formatDuration(int minutes) {
+    if (minutes <= 0) return '--';
     final hours = minutes ~/ 60;
     final remainder = minutes % 60;
-    return '${hours}h ${remainder}m';
+    return hours > 0 ? '${hours}h ${remainder}m' : '$minutes min';
+  }
+}
+
+class _AttendanceStatusPill extends StatelessWidget {
+  const _AttendanceStatusPill({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border.all(color: colorScheme.outlineVariant),
+        borderRadius: BorderRadius.circular(999),
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.55),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        child: Text(
+          label,
+          key: const Key('homeAttendanceStatus'),
+          style: Theme.of(context).textTheme.labelSmall
+              ?.copyWith(fontWeight: FontWeight.w700),
+        ),
+      ),
+    );
+  }
+}
+
+class _AttendanceMetricTile extends StatelessWidget {
+  const _AttendanceMetricTile({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.valueKey,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+  final Key valueKey;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border.all(color: colorScheme.outlineVariant),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, size: 18, color: colorScheme.onSurfaceVariant),
+            const SizedBox(height: 8),
+            Text(label, style: Theme.of(context).textTheme.labelSmall),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              key: valueKey,
+              style: Theme.of(context).textTheme.bodyMedium
+                  ?.copyWith(fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

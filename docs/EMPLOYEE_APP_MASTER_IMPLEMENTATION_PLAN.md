@@ -4,7 +4,7 @@ Last reconciled: 2026-08-24
 Implementation branch: `feat/live-location-0045`
 Web/PWA source of truth: `origin/main` at `88ad359c77d950e22aa45fe667e041bad1183628`
 Flutter checkpoint: `8f1127d91b18f5b44a6ce6c8a6281c6ec94dafd3`
-Current public Android release: `v0.1.3+4` at `285ebbc9484337c027e122b1de1c910d8acab34f`
+Current public Android release: `v0.1.4+5` at `87400095e986e7a5cb371288b326f192cfba4ab9`
 
 ## Purpose and authority
 
@@ -96,7 +96,7 @@ Status vocabulary:
 | Feature | Existing Main Support | Current Flutter Status | Backend/API Status | Database/Integration Status | Implementation Status | Tests / evidence | Commit | Priority | Blockers / next gap |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Login and session | Employee-ID login, role routing, logout, active identity checks | Login, refresh, secure storage, logout, reconciliation | Mobile auth routes exist | Existing Auth/employee linkage reused | **MIGRATED / RELEASED** | Flutter auth/session tests and QA device E2E | `075e258`, `285ebbc` | P0 | Preserve contract; no redesign |
-| Home/Dashboard | Identity, attendance summary, updates, Quick Links, announcements, celebrations, feature-aware navigation | API-backed header with profile photo fallback, employee name, company name, date, role, employee ID; today's attendance, work duration, tracking state, profile link | Mobile dashboard profile/effective-feature contract and attendance state routes exist | Existing sources available | **PARTIALLY MIGRATED** | Widget/unit coverage | `0fc81dd`, `12e7c5b` | P0 | Quick Links, updates, announcements, celebrations, and feature-aware navigation remain separate checkpoints |
+| Home/Dashboard | Identity, attendance summary, updates, Quick Links, announcements, celebrations, feature-aware navigation | API-backed header with profile photo fallback, employee name, company name, date, role, employee ID; web-aligned Home attendance summary with date, check-in, check-out, recorded work, status, tracking state, profile link | Mobile dashboard profile/effective-feature contract and attendance state routes exist | Existing sources available | **PARTIALLY MIGRATED** | Widget/unit coverage, Home attendance summary tests | `0fc81dd`, `12e7c5b`, Step 3 checkpoint | P0 | Quick Links, updates, announcements, celebrations, and feature-aware navigation remain separate checkpoints |
 | Profile | Full employee details and editable approved fields | Read-only name, employee ID, and role | No mobile profile route | Employee/profile schema exists | **PARTIALLY MIGRATED / REQUIRES API** | Profile widget/golden coverage | `0fc81dd` | P0 | Add canonical read/update contract before richer UI |
 | Profile picture | View and upload through existing storage controls | Initials only | No mobile upload/read adapter | Existing employee photo/storage support | **REQUIRES API** | None in Flutter | — | P0 | Reuse server validation/storage; never expose privileged storage credentials |
 | Attendance state | Today's server-authoritative status and policy | Today's state and reconciliation | Mobile state route exists | Existing attendance tables/rules reused | **MIGRATED / RELEASED** | Repository unit tests, Flutter tests, QA E2E | `075e258`, `285ebbc` | P0 | Extended summary/history is separate scope |
@@ -149,12 +149,7 @@ Status vocabulary:
 Each row is one independently reviewed, tested, documented, committed, and
 pushed feature checkpoint.
 
-1. **P0.1 - Employee Home/Dashboard parity foundation:** backend contract
-   and Flutter header **completed**. `GET /api/mobile/v1/dashboard` now
-   powers the native Home header with profile photo fallback, employee name,
-   company name, current date, role, and employee ID. Attendance, duty
-   tracking, and navigation were preserved; Quick Links and updates remain
-   separate checkpoints.
+1. **P0.1 - Employee Home/Dashboard parity foundation:** backend contract, Flutter header, and Home attendance summary alignment **completed**. `GET /api/mobile/v1/dashboard` powers the native Home header with profile photo fallback, employee name, company name, current date, role, and employee ID. The Home Attendance card now mirrors the web summary with attendance date, check-in, check-out, recorded work, status, and Open Attendance navigation. Duty tracking and navigation were preserved; Quick Links and updates remain separate checkpoints.
 2. **P0.2 — Profile and profile picture:** canonical read/update endpoint,
    approved editable fields, secure photo pipeline, and Flutter UI.
 3. **P0.3 — Attendance selfie parity:** authenticated temporary upload, camera
@@ -189,13 +184,7 @@ pushed feature checkpoint.
 
 ## Exact next implementation task
 
-After approval of this audit, implement **P0.1 Employee Home/Dashboard parity
-foundation only**: inspect the existing dashboard aggregations and hierarchical
-feature controls, define the smallest bearer-authenticated mobile dashboard
-response, test tenant/feature denial, and use it to render the established
-identity/attendance/Updates/conditional-card structure in Flutter. Do not
-implement Leave, Quick Links, announcements, selfie, or tracking changes in that
-checkpoint.
+Implement the next approved employee Home/Dashboard slice only, such as Quick Links or updates, after a read-only source comparison. Do not bundle Leave, announcements, selfie, tracking, release work, or backend deployment into that checkpoint.
 
 ## Canonical supporting references
 
