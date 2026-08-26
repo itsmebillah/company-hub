@@ -25,7 +25,7 @@ internal class LocationBatchPipeline(
         thread.start()
         handler = Handler(thread.looper)
         publishHealth("idle")
-        scheduleFlush(FLUSH_INTERVAL_MS)
+        scheduleFlush(TrackingCadence.IDLE_FLUSH_INTERVAL_MS)
     }
 
     fun enqueue(event: LocationObservationSource.Event.Observation): Boolean {
@@ -43,7 +43,7 @@ internal class LocationBatchPipeline(
             )
             if (accepted) {
                 publishHealth("pending")
-                if (queue.count(sessionId) >= IMMEDIATE_FLUSH_POINT_COUNT) scheduleFlush(0)
+                scheduleFlush(TrackingCadence.IMMEDIATE_FLUSH_DELAY_MS)
             } else {
                 publishHealth("queue_full")
             }
@@ -95,7 +95,7 @@ internal class LocationBatchPipeline(
         if (batch.isEmpty()) {
             automaticAttemptCount = 0
             publishHealth("idle")
-            scheduleFlush(FLUSH_INTERVAL_MS)
+            scheduleFlush(TrackingCadence.IDLE_FLUSH_INTERVAL_MS)
             return@Runnable
         }
         publishHealth("syncing")
@@ -104,7 +104,7 @@ internal class LocationBatchPipeline(
                 queue.removeKeys(sessionId, batch.mapTo(mutableSetOf()) { it.idempotencyKey })
                 automaticAttemptCount = 0
                 publishHealth(if (queue.count(sessionId) == 0) "idle" else "pending")
-                scheduleFlush(if (queue.count(sessionId) == 0) FLUSH_INTERVAL_MS else 0)
+                scheduleFlush(TrackingCadence.delayAfterSuccessfulUpload(queue.count(sessionId)))
             }
             is LocationIngestionClient.Result.Retryable -> {
                 automaticAttemptCount += 1
@@ -143,8 +143,6 @@ internal class LocationBatchPipeline(
     }
 
     companion object {
-        private const val IMMEDIATE_FLUSH_POINT_COUNT = 10
-        private const val FLUSH_INTERVAL_MS = 30_000L
         private const val MAX_AUTOMATIC_RETRIES = 8
     }
 }

@@ -97,7 +97,7 @@ class LocationManagerObservationSource(
                 activeProvider = provider
                 locationManager.requestLocationUpdates(
                     provider,
-                    MIN_UPDATE_INTERVAL_MS,
+                    TrackingCadence.OBSERVATION_INTERVAL_MS,
                     MIN_UPDATE_DISTANCE_METERS,
                     nextListener,
                     Looper.getMainLooper(),
@@ -161,8 +161,7 @@ class LocationManagerObservationSource(
     }
 
     companion object {
-        // Initial observation cadence only. Adaptive sampling is a later milestone.
-        private const val MIN_UPDATE_INTERVAL_MS = 30_000L
+        // Periodic observation remains fixed while an authoritative duty session is active.
         private const val MIN_UPDATE_DISTANCE_METERS = 0f
         private const val FRESHNESS_TOLERANCE_NANOS = 1_000_000_000L
 

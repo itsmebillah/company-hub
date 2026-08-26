@@ -112,8 +112,8 @@ Status vocabulary:
 | Settings/password | Password change and PWA-specific settings shell | Missing | Password service exists; no bearer mobile adapter | No new schema needed for password | **REQUIRES API** | Web validation only | — | P1 | Port real account settings only; do not copy PWA placeholders |
 | Logout | Server revoke plus local sign-out behavior | Implemented | Mobile session delete exists | Auth session only | **MIGRATED / RELEASED** | Flutter session tests and QA E2E | `075e258` | P0 | Preserve safe local cleanup on network failure |
 | Native app updates | PWA release reminder existed; native contract differs | Optional GitHub Release check, Later/Update Now, verified installer | Public GitHub release metadata/assets | No database dependency | **MIGRATED / RELEASED** | Update unit tests and release verification | `5579f90`, `285ebbc` | P2 | Remain non-forced; increment versionCode per release |
-| Duty live tracking core | Not part of established employee PWA parity; planned Phase 5 capability | Foreground service, observation, encrypted queue, ingestion lifecycle | Ingestion and mobile attendance tracking contracts exist | `0045`/`0046` QA only | **PARTIALLY MIGRATED / TESTING** | Native/Flutter/unit/QA ingestion evidence | `9ec5d99`, `e035ceb`, `a502d3c` | P3 | Production DB inactive; real-device/OEM support incomplete |
-| Admin Live Location | Existing admin attendance detail is historical, not live monitoring | Not applicable to employee Flutter client | Server-side `AdminLiveLocationService` reads `employee_current_locations` for the authorized company-admin view | Current projection from `0045`; RLS boundary preserved | **PART A IMPLEMENTED** | Mapper/freshness tests, `0045` authorization assertions, typecheck/lint/secret scan | Part A checkpoint | P3 | Cadence remains 30 seconds; readable address, retention/archive, history/export, and Sheets archival remain separate work |
+| Duty live tracking core | Not part of established employee PWA parity; planned Phase 5 capability | Foreground service, 30-minute periodic observation, encrypted queue, ingestion lifecycle | Ingestion and mobile attendance tracking contracts exist | `0045`/`0046` tracking schema unchanged | **PART B IMPLEMENTED / TESTING** | Android cadence/client tests, Flutter tracking lifecycle tests, typecheck/lint/secret scan | Part B checkpoint | P3 | Android/OEM power management may delay background delivery; real-device duration validation remains |
+| Admin Live Location | Existing admin attendance detail is historical, not live monitoring | Not applicable to employee Flutter client | Server-side `AdminLiveLocationService` reads `employee_current_locations` for the authorized company-admin view | Current projection from `0045`; RLS boundary preserved | **PART A IMPLEMENTED** | Mapper/freshness tests, `0045` authorization assertions, typecheck/lint/secret scan | Part A checkpoint | P3 | Readable address, retention/archive, history/export, and Sheets archival remain separate work; cadence Part B is complete |
 | Location history/archive | Admin attendance history exists, route history does not | No employee route-history UI | Ingestion exists; history/export/archive APIs absent | Recent history in `0045`; no retention/archive worker | **BLOCKED** | Core migration tests only | — | P3 | Retention value and Sheets dataset approval required before cleanup/archive |
 
 ## Confirmed implementation gaps and risks
@@ -126,24 +126,21 @@ Status vocabulary:
 3. **Mobile API coverage:** leave, resources, Quick Links, announcements,
    notifications, holidays, and full profile/password flows require thin mobile
    routes around existing services.
-4. **Tracking sampling mismatch:** native `LocationManagerObservationSource`
-   currently requests updates at a 30-second minimum interval. The approved
-   product target is approximately 20–40 minutes. This must be addressed as a
-   dedicated, tested tracking change; no tracking code is changed by this audit.
-5. **Admin Live Location Part A:** `/admin/live-location` now reads `employee_current_locations` through `AdminLiveLocationService`, shows tenant-scoped employee/role labels, latest timestamp, freshness, accuracy, coordinates, and Open Map. Authorization remains the existing Company Admin attendance boundary; the `0045` self/direct-manager/company-admin RLS function is unchanged. Readable address, cadence changes, retention/archive, history/export, and Sheets archival remain blocked or separate.
+4. **Tracking cadence Part B:** native observation and idle queue polling now use a shared 30-minute cadence to reduce battery and GPS wakeups while duty tracking is active. Each accepted periodic observation, network recovery, and explicit retry can still trigger an immediate encrypted-queue upload; idempotency and bounded retry are unchanged. The Android foreground service remains required, but Doze and OEM power management may delay delivery, so real-device long-duration validation remains.
+5. **Admin Live Location Part A:** `/admin/live-location` now reads `employee_current_locations` through `AdminLiveLocationService`, shows tenant-scoped employee/role labels, latest timestamp, freshness, accuracy, coordinates, and Open Map. Authorization remains the existing Company Admin attendance boundary; the `0045` self/direct-manager/company-admin RLS function is unchanged. Readable address, retention/archive, history/export, and Sheets archival remain blocked or separate; cadence Part B is complete.
 
-5. **Retention policy:** the directive describes approximately 2–3 days in
+6. **Retention policy:** the directive describes approximately 2–3 days in
    Supabase, but existing Phase 5 policy records previously left concrete
    retention configurable. Reconcile and explicitly approve the operational
    value before a cleanup/archive migration or worker.
-6. **Sheets privacy scope:** Production Sheets synchronization is approved for
+7. **Sheets privacy scope:** Production Sheets synchronization is approved for
    Holidays only. Location archive, Attendance, Leave, and Employee datasets
    require explicit field allowlists, access, retention, and operational
    approval.
-7. **Documentation drift:** some tracking UI/README text says points are not
+8. **Documentation drift:** some tracking UI/README text says points are not
    uploaded although the native ingestion pipeline now exists. Correct this only
    within the relevant tracking milestone.
-8. **Device support:** API 36 emulator evidence exists; minimum Android API and
+9. **Device support:** API 36 emulator evidence exists; minimum Android API and
    production OEM/device support remain decision/test-matrix items.
 
 ## Implementation sequence
@@ -164,7 +161,7 @@ pushed feature checkpoint.
    domain per checkpoint, using server-side feature and audience controls.
 6. **P2 — Announcements, in-app notification center, targeted messaging, then
    optional FCM push**, each after its backend authorization contract is audited.
-7. **P3 — Tracking cadence/battery hardening, Admin Live Location list/detail,
+7. **P3 — Tracking cadence/battery hardening (Part B complete), Admin Live Location list/detail,
    retention/archive, and historical export**, only after policy/database
    approvals. Google Sheets must never become the live source.
 8. **P4 — Full regression, Production migration approval, signed release, and
