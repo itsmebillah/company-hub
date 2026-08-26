@@ -40,6 +40,7 @@ class CompanyHubEmployeeApp extends StatefulWidget {
 
 class _CompanyHubEmployeeAppState extends State<CompanyHubEmployeeApp>
     with WidgetsBindingObserver {
+  ThemeMode _themeMode = ThemeMode.light;
   late final SessionController _controller;
   late final bool _ownsController;
   late final TrackingController _trackingController;
@@ -135,8 +136,19 @@ class _CompanyHubEmployeeAppState extends State<CompanyHubEmployeeApp>
     return MaterialApp(
       debugShowCheckedModeBanner: widget.environment.flavor == AppFlavor.qa,
       title: widget.environment.displayName,
+      themeMode: _themeMode,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2556A7)),
+        inputDecorationTheme: const InputDecorationTheme(
+          border: OutlineInputBorder(),
+        ),
+        useMaterial3: true,
+      ),
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF2556A7),
+          brightness: Brightness.dark,
+        ),
         inputDecorationTheme: const InputDecorationTheme(
           border: OutlineInputBorder(),
         ),
@@ -172,6 +184,12 @@ class _CompanyHubEmployeeAppState extends State<CompanyHubEmployeeApp>
                   linkPlatform:
                       widget.externalLinkPlatform ??
                       const MethodChannelExternalLinkPlatform(),
+                  isDarkMode: _themeMode == ThemeMode.dark,
+                  onToggleTheme: () => setState(() {
+                    _themeMode = _themeMode == ThemeMode.dark
+                        ? ThemeMode.light
+                        : ThemeMode.dark;
+                  }),
                 );
               },
             );

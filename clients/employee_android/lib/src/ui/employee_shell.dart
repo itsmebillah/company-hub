@@ -7,24 +7,36 @@ import 'attendance_screen.dart';
 import 'dashboard_features.dart';
 import 'home_screen.dart';
 import 'profile_screen.dart';
+import 'settings_screen.dart';
 
 class EmployeeShell extends StatefulWidget {
   const EmployeeShell({
     required this.controller,
     required this.trackingController,
     required this.linkPlatform,
+    required this.isDarkMode,
+    required this.onToggleTheme,
     super.key,
   });
 
   final SessionController controller;
   final TrackingController trackingController;
   final ExternalLinkPlatform linkPlatform;
+  final bool isDarkMode;
+  final VoidCallback onToggleTheme;
 
   @override
   State<EmployeeShell> createState() => _EmployeeShellState();
 }
 
-enum _EmployeeDestination { home, attendance, updates, quickLinks, profile }
+enum _EmployeeDestination {
+  home,
+  attendance,
+  updates,
+  quickLinks,
+  profile,
+  settings,
+}
 
 class _ShellDestination {
   const _ShellDestination(this.value, this.destination);
@@ -51,7 +63,7 @@ class _EmployeeShellState extends State<EmployeeShell> {
           key: Key('homeDestination'),
           icon: Icon(Icons.home_outlined),
           selectedIcon: Icon(Icons.home),
-          label: 'Home',
+          label: 'Hub',
         ),
       ),
       const _ShellDestination(
@@ -103,7 +115,16 @@ class _EmployeeShellState extends State<EmployeeShell> {
           key: Key('profileDestination'),
           icon: Icon(Icons.person_outline),
           selectedIcon: Icon(Icons.person),
-          label: 'Profile',
+          label: 'Me',
+        ),
+      ),
+      const _ShellDestination(
+        _EmployeeDestination.settings,
+        NavigationDestination(
+          key: Key('settingsDestination'),
+          icon: Icon(Icons.more_horiz),
+          selectedIcon: Icon(Icons.more_horiz),
+          label: 'More',
         ),
       ),
     ];
@@ -132,6 +153,11 @@ class _EmployeeShellState extends State<EmployeeShell> {
       ),
       _EmployeeDestination.profile => ProfileScreen(
         controller: widget.controller,
+      ),
+      _EmployeeDestination.settings => SettingsScreen(
+        controller: widget.controller,
+        isDarkMode: widget.isDarkMode,
+        onToggleTheme: widget.onToggleTheme,
       ),
     };
 
