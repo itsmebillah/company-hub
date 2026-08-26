@@ -196,6 +196,9 @@ class FakeDashboardRepository implements DashboardRepository {
     if (stateError case final error?) throw error;
     return state;
   }
+
+  @override
+  Future<void> markNotificationRead(String accessToken, String id) async {}
 }
 
 class FakeAttendanceRepository implements AttendanceRepository {
