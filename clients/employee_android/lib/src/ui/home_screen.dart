@@ -46,11 +46,6 @@ class HomeScreen extends StatelessWidget {
             profile: profile,
             isLoading: controller.isDashboardLoading,
             errorMessage: controller.dashboardErrorMessage,
-            unreadCount: content.unreadNotificationCount,
-            openUpdates:
-                content.notificationsStatus == DashboardSectionStatus.disabled
-                ? null
-                : openUpdates,
           ),
           const SizedBox(height: 20),
           if (controller.isDashboardLoading && controller.dashboard == null)
@@ -351,15 +346,11 @@ class _DashboardHeader extends StatelessWidget {
     required this.profile,
     required this.isLoading,
     required this.errorMessage,
-    required this.unreadCount,
-    required this.openUpdates,
   });
 
   final DashboardProfile profile;
   final bool isLoading;
   final String? errorMessage;
-  final int unreadCount;
-  final VoidCallback? openUpdates;
 
   @override
   Widget build(BuildContext context) {
@@ -410,17 +401,6 @@ class _DashboardHeader extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (openUpdates != null)
-                  IconButton(
-                    key: const Key('homeUpdatesButton'),
-                    tooltip: 'Updates',
-                    onPressed: openUpdates,
-                    icon: Badge(
-                      isLabelVisible: unreadCount > 0,
-                      label: Text(unreadCount > 99 ? '99+' : '$unreadCount'),
-                      child: const Icon(Icons.notifications_outlined),
-                    ),
-                  ),
               ],
             ),
             const SizedBox(height: 14),

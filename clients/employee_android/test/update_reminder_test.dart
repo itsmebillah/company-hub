@@ -67,7 +67,15 @@ UpdateController _controller(_FakeUpdatePlatform platform) => UpdateController(
     supabaseUrl: 'https://jjfktbgfwvekhlvyjlww.supabase.co',
     supabaseAnonKey: 'public-anon-test-placeholder',
   ),
-  service: GitHubReleaseUpdateService(platform: platform),
+  service: GitHubReleaseUpdateService(
+    platform: platform,
+    environment: AppEnvironment.fromValues(
+      flavor: 'production',
+      apiBaseUrl: 'https://company-hub-zeta.vercel.app',
+      supabaseUrl: 'https://jjfktbgfwvekhlvyjlww.supabase.co',
+      supabaseAnonKey: 'public-anon-test-placeholder',
+    ),
+  ),
 );
 
 final _available = AvailableUpdate(

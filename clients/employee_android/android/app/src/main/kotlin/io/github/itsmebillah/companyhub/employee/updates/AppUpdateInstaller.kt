@@ -27,7 +27,8 @@ class AppUpdateInstaller(private val context: Context) {
     fun close() = executor.shutdownNow()
     private fun prepareInstaller(rawUrl: String, expectedSha256: String, expectedVersionCode: Long): Map<String, Any?> {
         val initial = Uri.parse(rawUrl)
-        if (!isOfficialReleaseUrl(initial)) return failure("untrusted_url")
+        val expectedAsset = expectedApkAssetName() ?: return failure("package_mismatch")
+        if (!isOfficialReleaseUrl(initial, expectedAsset)) return failure("untrusted_url")
         val updates = File(context.cacheDir, "verified-updates").apply { mkdirs() }
         val apk = File(updates, "company-hub-$expectedVersionCode.apk")
         download(initial.toString(), apk)
@@ -95,8 +96,19 @@ class AppUpdateInstaller(private val context: Context) {
     }
     private fun digest(bytes: ByteArray) = MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }
     private fun constantTimeEquals(left: String, right: String) = MessageDigest.isEqual(left.toByteArray(), right.toByteArray())
-    private fun isOfficialReleaseUrl(uri: Uri) = uri.scheme == "https" && uri.host == "github.com" && uri.pathSegments.size == 6 && uri.pathSegments[0] == "itsmebillah" && uri.pathSegments[1] == "company-hub" && uri.pathSegments[2] == "releases" && uri.pathSegments[3] == "download" && uri.pathSegments[5] == APK_ASSET_NAME
+    private fun expectedApkAssetName() = when (context.packageName) {
+        PRODUCTION_APPLICATION_ID -> PRODUCTION_APK_ASSET_NAME
+        QA_APPLICATION_ID -> QA_APK_ASSET_NAME
+        else -> null
+    }
+    private fun isOfficialReleaseUrl(uri: Uri, expectedAsset: String) = uri.scheme == "https" && uri.host == "github.com" && uri.pathSegments.size == 6 && uri.pathSegments[0] == "itsmebillah" && uri.pathSegments[1] == "company-hub" && uri.pathSegments[2] == "releases" && uri.pathSegments[3] == "download" && uri.pathSegments[5] == expectedAsset
     private fun isTrustedDownloadHost(uri: Uri) = uri.scheme == "https" && (uri.host == "github.com" || uri.host == "release-assets.githubusercontent.com" || uri.host == "objects.githubusercontent.com")
     private fun failure(code: String): Map<String, Any?> = mapOf("ok" to false, "code" to code)
-    companion object { private const val APK_ASSET_NAME = "app-production-release.apk"; private const val MAX_REDIRECTS = 5 }
+    companion object {
+        private const val PRODUCTION_APPLICATION_ID = "io.github.itsmebillah.companyhub.employee"
+        private const val QA_APPLICATION_ID = "$PRODUCTION_APPLICATION_ID.qa"
+        private const val PRODUCTION_APK_ASSET_NAME = "app-production-release.apk"
+        private const val QA_APK_ASSET_NAME = "app-qa-debug.apk"
+        private const val MAX_REDIRECTS = 5
+    }
 }

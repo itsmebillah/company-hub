@@ -101,7 +101,10 @@ final _version4 = _update('0.1.3', 4);
 
 class _FakeUpdateService extends GitHubReleaseUpdateService {
   _FakeUpdateService(this._results)
-    : super(platform: MethodChannelUpdatePlatform());
+    : super(
+        platform: MethodChannelUpdatePlatform(),
+        environment: _environment('production'),
+      );
 
   final List<Object?> _results;
   int checkCalls = 0;

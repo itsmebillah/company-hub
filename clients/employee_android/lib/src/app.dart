@@ -74,6 +74,7 @@ class _CompanyHubEmployeeAppState extends State<CompanyHubEmployeeApp>
       environment: widget.environment,
       service: GitHubReleaseUpdateService(
         platform: MethodChannelUpdatePlatform(),
+        environment: widget.environment,
       ),
     );
     _controller.addListener(_synchronizeTracking);
@@ -140,19 +141,142 @@ class _CompanyHubEmployeeAppState extends State<CompanyHubEmployeeApp>
       title: widget.environment.displayName,
       themeMode: _themeMode,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2556A7)),
+        colorScheme: const ColorScheme.light(
+          primary: Color(0xFF2C6DD3),
+          onPrimary: Color(0xFFF9FBFF),
+          secondary: Color(0xFFE4EEFA),
+          onSecondary: Color(0xFF2B384D),
+          tertiary: Color(0xFF6596DE),
+          onTertiary: Color(0xFFF9FBFF),
+          error: Color(0xFFE2403A),
+          onError: Color(0xFFF9FBFF),
+          surface: Color(0xFFFDFEFF),
+          onSurface: Color(0xFF1B2433),
+          surfaceContainerHighest: Color(0xFFECF2F9),
+          onSurfaceVariant: Color(0xFF5E6A7B),
+          outline: Color(0xFFD6DDE6),
+          outlineVariant: Color(0xFFD6DDE6),
+        ),
+        scaffoldBackgroundColor: const Color(0xFFF5F8FC),
+        cardTheme: const CardThemeData(
+          elevation: 0,
+          margin: EdgeInsets.zero,
+          color: Color(0xFFFDFEFF),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(24)),
+            side: BorderSide(color: Color(0xFFD6DDE6)),
+          ),
+        ),
+        navigationBarTheme: NavigationBarThemeData(
+          height: 72,
+          elevation: 3,
+          backgroundColor: const Color(0xFFFDFEFF),
+          indicatorColor: const Color(0xFFDAEBFD),
+          indicatorShape: const StadiumBorder(),
+          iconTheme: WidgetStateProperty.resolveWith(
+            (states) => IconThemeData(
+              color: states.contains(WidgetState.selected)
+                  ? const Color(0xFF2C6DD3)
+                  : const Color(0xFF5E6A7B),
+            ),
+          ),
+          labelTextStyle: WidgetStateProperty.resolveWith(
+            (states) => TextStyle(
+              color: states.contains(WidgetState.selected)
+                  ? const Color(0xFF2C6DD3)
+                  : const Color(0xFF5E6A7B),
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+            ),
+          ),
+        ),
+        badgeTheme: const BadgeThemeData(
+          backgroundColor: Color(0xFFE2403A),
+          textColor: Color(0xFFF9FBFF),
+        ),
+        dividerColor: const Color(0xFFD6DDE6),
+        filledButtonTheme: FilledButtonThemeData(
+          style: FilledButton.styleFrom(
+            minimumSize: const Size(48, 48),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
+        ),
         inputDecorationTheme: const InputDecorationTheme(
-          border: OutlineInputBorder(),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(16)),
+          ),
         ),
         useMaterial3: true,
       ),
       darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF2556A7),
-          brightness: Brightness.dark,
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFF649FF4),
+          onPrimary: Color(0xFF0D131E),
+          secondary: Color(0xFF21272F),
+          onSecondary: Color(0xFFEBEFF5),
+          tertiary: Color(0xFF71A3EC),
+          onTertiary: Color(0xFF0D131E),
+          error: Color(0xFFEC5D4F),
+          onError: Color(0xFFF2F5FC),
+          surface: Color(0xFF131B28),
+          onSurface: Color(0xFFEEF2F9),
+          surfaceContainerHighest: Color(0xFF1D2229),
+          onSurfaceVariant: Color(0xFFA7AEBA),
+          outline: Color(0xFF2D333C),
+          outlineVariant: Color(0xFF2D333C),
+        ),
+        scaffoldBackgroundColor: const Color(0xFF0C121D),
+        cardTheme: const CardThemeData(
+          elevation: 0,
+          margin: EdgeInsets.zero,
+          color: Color(0xFF131B28),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(24)),
+            side: BorderSide(color: Color(0xFF2D333C)),
+          ),
+        ),
+        navigationBarTheme: NavigationBarThemeData(
+          height: 72,
+          elevation: 3,
+          backgroundColor: const Color(0xFF131B28),
+          indicatorColor: const Color(0xFF252C35),
+          indicatorShape: const StadiumBorder(),
+          iconTheme: WidgetStateProperty.resolveWith(
+            (states) => IconThemeData(
+              color: states.contains(WidgetState.selected)
+                  ? const Color(0xFF649FF4)
+                  : const Color(0xFFA7AEBA),
+            ),
+          ),
+          labelTextStyle: WidgetStateProperty.resolveWith(
+            (states) => TextStyle(
+              color: states.contains(WidgetState.selected)
+                  ? const Color(0xFF649FF4)
+                  : const Color(0xFFA7AEBA),
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+            ),
+          ),
+        ),
+        badgeTheme: const BadgeThemeData(
+          backgroundColor: Color(0xFFEC5D4F),
+          textColor: Color(0xFFF2F5FC),
+        ),
+        dividerColor: const Color(0xFF2D333C),
+        filledButtonTheme: FilledButtonThemeData(
+          style: FilledButton.styleFrom(
+            minimumSize: const Size(48, 48),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
         ),
         inputDecorationTheme: const InputDecorationTheme(
-          border: OutlineInputBorder(),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(16)),
+          ),
         ),
         useMaterial3: true,
       ),

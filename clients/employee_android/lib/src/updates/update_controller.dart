@@ -9,12 +9,12 @@ class UpdateController extends ChangeNotifier {
     required AppEnvironment environment,
     required this.service,
     FlutterSecureStorage? storage,
-  }) : _enabled = environment.flavor == AppFlavor.production,
+  }) : isQa = environment.flavor == AppFlavor.qa,
+       _dismissedVersionKey = '${environment.flavor.value}_update_dismissed_version',
        _storage = storage ?? const FlutterSecureStorage();
 
-  static const _dismissedVersionKey = 'production_update_dismissed_version';
-
-  final bool _enabled;
+  final bool isQa;
+  final String _dismissedVersionKey;
   final GitHubReleaseUpdateService service;
   final FlutterSecureStorage _storage;
 
@@ -23,10 +23,13 @@ class UpdateController extends ChangeNotifier {
   bool installing = false;
   String? errorMessage;
 
-  bool get shouldShow => _enabled && available != null;
+  bool get shouldShow => available != null;
 
   Future<void> check() async {
-    if (!_enabled || checking || installing) return;
+    // QA builds do not poll the production release channel. The QA release
+    // channel is enabled only when its dedicated release workflow is active.
+    if (isQa) return;
+    if (checking || installing) return;
     checking = true;
     notifyListeners();
     try {

@@ -51,6 +51,7 @@ company-hub-portable-secrets*
 
 # local mobile configuration and signing material
 /clients/employee_android/config/*.local.json
+/clients/employee_android/config/production.json
 /clients/employee_android/android/key.properties
 *.jks
 *.keystore

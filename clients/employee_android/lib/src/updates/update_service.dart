@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../config/app_environment.dart';
 import 'update_platform.dart';
 
 class AvailableUpdate {
@@ -19,8 +20,12 @@ class AvailableUpdate {
 }
 
 class GitHubReleaseUpdateService {
-  GitHubReleaseUpdateService({required this.platform, http.Client? client})
-    : _client = client ?? http.Client();
+  GitHubReleaseUpdateService({
+    required this.platform,
+    required AppEnvironment environment,
+    http.Client? client,
+  }) : _channel = UpdateReleaseChannel.forFlavor(environment.flavor),
+       _client = client ?? http.Client();
 
   static final latestReleaseUri = Uri.https(
     'api.github.com',
@@ -30,17 +35,19 @@ class GitHubReleaseUpdateService {
   static const apkAssetName = 'app-production-release.apk';
   static const productionApplicationId =
       'io.github.itsmebillah.companyhub.employee';
+  static const qaApplicationId = '$productionApplicationId.qa';
 
   final UpdatePlatform platform;
+  final UpdateReleaseChannel _channel;
   final http.Client _client;
 
   Future<AvailableUpdate?> check() async {
     final installed = await platform.getInstalledInfo();
-    if (installed.applicationId != productionApplicationId) return null;
+    if (installed.applicationId != _channel.applicationId) return null;
 
     final releaseResponse = await _client
         .get(
-          latestReleaseUri,
+          _channel.releaseUri,
           headers: const {
             'Accept': 'application/vnd.github+json',
             'User-Agent': 'CompanyHub-Employee-Android',
@@ -51,17 +58,17 @@ class GitHubReleaseUpdateService {
       throw const FormatException('release_unavailable');
     }
 
-    final release = jsonDecode(releaseResponse.body);
-    if (release is! Map<String, dynamic> ||
-        release['draft'] == true ||
-        release['prerelease'] == true) {
+    final decoded = jsonDecode(releaseResponse.body);
+    final release = _channel.selectRelease(decoded);
+    if (release == null) return null;
+    if (!_channel.acceptsRelease(release)) {
       throw const FormatException('invalid_release');
     }
     final assets = release['assets'];
     if (assets is! List) throw const FormatException('invalid_assets');
 
-    final metadataUrl = _assetUrl(assets, metadataAssetName);
-    final apkUrl = _assetUrl(assets, apkAssetName);
+    final metadataUrl = _assetUrl(assets, _channel.metadataAssetName);
+    final apkUrl = _assetUrl(assets, _channel.apkAssetName);
     final metadataResponse = await _client
         .get(
           metadataUrl,
@@ -85,13 +92,13 @@ class GitHubReleaseUpdateService {
     final versionCode = value['versionCode'];
     final declaredAsset = value['apkAssetName'];
     final sha256 = value['sha256'];
-    if (applicationId != productionApplicationId ||
-        channel != 'production' ||
+    if (applicationId != _channel.applicationId ||
+        channel != _channel.name ||
         versionName is! String ||
         versionName.trim().isEmpty ||
         versionCode is! int ||
         versionCode <= 0 ||
-        declaredAsset != apkAssetName ||
+        declaredAsset != _channel.apkAssetName ||
         sha256 is! String ||
         !RegExp(r'^[a-f0-9]{64}$').hasMatch(sha256)) {
       throw const FormatException('invalid_metadata');
@@ -136,5 +143,72 @@ class GitHubReleaseUpdateService {
       return uri;
     }
     throw FormatException('missing_asset:$name');
+  }
+}
+
+class UpdateReleaseChannel {
+  const UpdateReleaseChannel._({
+    required this.name,
+    required this.applicationId,
+    required this.releaseUri,
+    required this.metadataAssetName,
+    required this.apkAssetName,
+    required this.tagPrefix,
+    required this.requiresPrerelease,
+  });
+
+  factory UpdateReleaseChannel.forFlavor(AppFlavor flavor) => switch (flavor) {
+    AppFlavor.production => production,
+    AppFlavor.qa => qa,
+  };
+
+  static final production = UpdateReleaseChannel._(
+    name: 'production',
+    applicationId: GitHubReleaseUpdateService.productionApplicationId,
+    releaseUri: GitHubReleaseUpdateService.latestReleaseUri,
+    metadataAssetName: GitHubReleaseUpdateService.metadataAssetName,
+    apkAssetName: GitHubReleaseUpdateService.apkAssetName,
+    tagPrefix: 'v',
+    requiresPrerelease: false,
+  );
+  static final qa = UpdateReleaseChannel._(
+    name: 'qa',
+    applicationId: GitHubReleaseUpdateService.qaApplicationId,
+    releaseUri: Uri.https(
+      'api.github.com',
+      '/repos/itsmebillah/company-hub/releases',
+      const {'per_page': '20'},
+    ),
+    metadataAssetName: 'company-hub-android-qa.json',
+    apkAssetName: 'app-qa-debug.apk',
+    tagPrefix: 'qa-v',
+    requiresPrerelease: true,
+  );
+
+  final String name;
+  final String applicationId;
+  final Uri releaseUri;
+  final String metadataAssetName;
+  final String apkAssetName;
+  final String tagPrefix;
+  final bool requiresPrerelease;
+
+  Map<String, dynamic>? selectRelease(Object? decoded) {
+    if (name == 'production') {
+      return decoded is Map<String, dynamic> ? decoded : null;
+    }
+    if (decoded is! List) throw const FormatException('invalid_release_list');
+    for (final item in decoded) {
+      if (item is Map<String, dynamic> && acceptsRelease(item)) return item;
+    }
+    return null;
+  }
+
+  bool acceptsRelease(Map<String, dynamic> release) {
+    final tag = release['tag_name'];
+    return release['draft'] != true &&
+        release['prerelease'] == requiresPrerelease &&
+        tag is String &&
+        tag.startsWith(tagPrefix);
   }
 }

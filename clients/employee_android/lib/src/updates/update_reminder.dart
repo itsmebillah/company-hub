@@ -37,13 +37,17 @@ class UpdateReminder extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'A new version of Company Hub is available.',
+                          current.isQa
+                              ? 'A new QA version of Company Hub is available.'
+                              : 'A new version of Company Hub is available.',
                           key: const Key('updateReminderTitle'),
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Version ${current.available!.versionName} can be installed when convenient.',
+                          current.isQa
+                              ? 'Version ${current.available!.versionName} is available for testing.'
+                              : 'Version ${current.available!.versionName} can be installed when convenient.',
                         ),
                         if (current.errorMessage case final message?) ...[
                           const SizedBox(height: 8),

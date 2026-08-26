@@ -4,11 +4,11 @@ import '../models/api_error.dart';
 import '../models/attendance_state.dart';
 import '../models/auth_session.dart';
 import '../models/dashboard_state.dart';
+import '../models/profile_state.dart';
 import '../repositories/attendance_repository.dart';
 import '../repositories/auth_repository.dart';
 import '../repositories/dashboard_repository.dart';
 import '../repositories/profile_repository.dart';
-import '../models/profile_state.dart';
 import '../storage/session_storage.dart';
 import '../tracking/tracking_platform.dart';
 
@@ -118,17 +118,19 @@ class SessionController extends ChangeNotifier {
   Future<void> loadProfile() async {
     if (session == null || _profileRepository == null) return;
     isProfileLoading = true; profileError = null; notifyListeners();
-    try { profile = await _authorized(_profileRepository!.getProfile); }
+    final repository = _profileRepository;
+    try { profile = await _authorized(repository.getProfile); }
     on ApiException catch (error) { profileError = error.message; }
     finally { isProfileLoading = false; notifyListeners(); }
   }
 
   Future<bool> updateProfile({required String phone, required String email, required String dateOfBirth}) async {
     if (session == null || _profileRepository == null) return false;
-    try { profile = await _authorized((token) => _profileRepository!.update(token, phone: phone, email: email, dateOfBirth: dateOfBirth)); notifyListeners(); return profile != null; }
+    final repository = _profileRepository;
+    try { profile = await _authorized((token) => repository.update(token, phone: phone, email: email, dateOfBirth: dateOfBirth)); notifyListeners(); return profile != null; }
     on ApiException catch (error) { profileError = error.message; notifyListeners(); return false; }
   }
-  Future<bool> uploadProfilePhoto({required List<int> bytes, required String filename, required String contentType}) async { if (session == null || _profileRepository == null) return false; try { profile = await _authorized((token) => _profileRepository!.uploadPhoto(token, bytes: bytes, filename: filename, contentType: contentType)); notifyListeners(); return profile != null; } on ApiException catch (error) { profileError = error.message; notifyListeners(); return false; } }
+  Future<bool> uploadProfilePhoto({required List<int> bytes, required String filename, required String contentType}) async { if (session == null || _profileRepository == null) return false; final repository = _profileRepository; try { profile = await _authorized((token) => repository.uploadPhoto(token, bytes: bytes, filename: filename, contentType: contentType)); notifyListeners(); return profile != null; } on ApiException catch (error) { profileError = error.message; notifyListeners(); return false; } }
 
   Future<bool> _refresh() async {
     final current = session;

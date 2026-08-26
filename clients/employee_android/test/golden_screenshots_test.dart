@@ -163,6 +163,8 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('employeeActionsButton')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('attendanceDestination')));
     await tester.pumpAndSettle();
     await expectLater(
@@ -212,6 +214,8 @@ void main() {
         ),
       ),
     );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('employeeActionsButton')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('attendanceDestination')));
     await tester.pumpAndSettle();

@@ -19,7 +19,7 @@ class SettingsScreen extends StatelessWidget {
     final profile = controller.session?.profile;
     return ListView(
       key: const Key('settingsScreen'),
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 120),
       children: [
         Text('More', style: Theme.of(context).textTheme.headlineSmall),
         const SizedBox(height: 4),
@@ -31,20 +31,24 @@ class SettingsScreen extends StatelessWidget {
         Card(
           child: Column(
             children: [
-            SwitchListTile(
-              key: const Key('settingsThemeToggle'),
-              title: const Text('Dark theme'),
-              subtitle: const Text('Use a darker appearance throughout the app'),
-              secondary: Icon(isDarkMode ? Icons.dark_mode : Icons.light_mode),
-              value: isDarkMode,
-              onChanged: (_) => onToggleTheme(),
-            ),
-            const Divider(height: 1),
-            ListTile(
-              leading: const Icon(Icons.notifications_outlined),
-              title: const Text('Notifications'),
-              subtitle: const Text('Managed by your device settings'),
-            ),
+              SwitchListTile(
+                key: const Key('settingsThemeToggle'),
+                title: const Text('Dark theme'),
+                subtitle: const Text(
+                  'Use a darker appearance throughout the app',
+                ),
+                secondary: Icon(
+                  isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                ),
+                value: isDarkMode,
+                onChanged: (_) => onToggleTheme(),
+              ),
+              const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.notifications_outlined),
+                title: const Text('Notifications'),
+                subtitle: const Text('Managed by your device settings'),
+              ),
             ],
           ),
         ),
@@ -52,19 +56,21 @@ class SettingsScreen extends StatelessWidget {
         Card(
           child: Column(
             children: [
-            ListTile(
-              leading: const Icon(Icons.account_circle_outlined),
-              title: const Text('Account'),
-              subtitle: Text(profile == null
-                  ? 'Signed-in employee account'
-                  : '${profile.name} • ${profile.employeeId}'),
-            ),
-            const Divider(height: 1),
-            ListTile(
-              leading: const Icon(Icons.info_outline),
-              title: const Text('App version'),
-              subtitle: const Text('0.1.4 (5)'),
-            ),
+              ListTile(
+                leading: const Icon(Icons.account_circle_outlined),
+                title: const Text('Account'),
+                subtitle: Text(
+                  profile == null
+                      ? 'Signed-in employee account'
+                      : '${profile.name} • ${profile.employeeId}',
+                ),
+              ),
+              const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.info_outline),
+                title: const Text('App version'),
+                subtitle: const Text('0.1.4 (5)'),
+              ),
             ],
           ),
         ),

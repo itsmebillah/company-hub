@@ -23,6 +23,7 @@ void main() {
   );
 
   String releaseBody({Uri? apk}) => jsonEncode({
+    'tag_name': 'v0.1.2',
     'draft': false,
     'prerelease': false,
     'assets': [

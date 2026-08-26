@@ -58,6 +58,9 @@ signingConfigs {
             dimension = "environment"
             applicationIdSuffix = ".qa"
             resValue("string", "app_name", "Company Hub QA")
+            val qaDefines = decodedDartDefines()
+            versionName = qaDefines["QA_VERSION_NAME"] ?: flutter.versionName
+            versionCode = qaDefines["QA_VERSION_CODE"]?.toIntOrNull() ?: flutter.versionCode
         }
         create("production") {
             dimension = "environment"
@@ -124,7 +127,7 @@ fun registerEnvironmentValidation(flavor: String) =
                 "API_BASE_URL",
                 "SUPABASE_URL",
                 "SUPABASE_ANON_KEY",
-            )
+            ) + if (flavor == "qa") listOf("QA_VERSION_NAME", "QA_VERSION_CODE") else emptyList()
             val missing = required.filter { defines[it].isNullOrBlank() }
             if (missing.isNotEmpty()) {
                 throw GradleException(
@@ -158,6 +161,15 @@ fun registerEnvironmentValidation(flavor: String) =
             }
             if (defines.getValue("APP_FLAVOR") != flavor) {
                 throw GradleException("The $flavor build requires APP_FLAVOR=$flavor.")
+            }
+            if (flavor == "qa") {
+                val qaVersionCode = defines.getValue("QA_VERSION_CODE").toIntOrNull()
+                if (qaVersionCode == null || qaVersionCode <= 0) {
+                    throw GradleException("QA_VERSION_CODE must be a positive integer.")
+                }
+                if (defines.getValue("QA_VERSION_NAME").isBlank()) {
+                    throw GradleException("QA_VERSION_NAME is required.")
+                }
             }
             if (defines.getValue("API_BASE_URL") != contract.apiBaseUrl) {
                 throw GradleException(

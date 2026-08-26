@@ -1,9 +1,9 @@
 # Employee App Master Implementation Plan
 
-Last reconciled: 2026-08-24
+Last reconciled: 2026-08-26
 Implementation branch: `feat/live-location-0045`
 Web/PWA source of truth: `origin/main` at `88ad359c77d950e22aa45fe667e041bad1183628`
-Flutter checkpoint: `8f1127d91b18f5b44a6ce6c8a6281c6ec94dafd3`
+Flutter checkpoint: UI parity milestone pending commit after `6df8af296ae80692571bf7ae409e93a42bb21b34`
 Current public Android release: `v0.1.4+5` at `87400095e986e7a5cb371288b326f192cfba4ab9`
 
 ## Purpose and authority
@@ -118,6 +118,36 @@ Status vocabulary:
 | Location history/archive | Admin attendance history exists, route history does not                                                                  | No employee route-history UI                                                                                                                                                      | Ingestion exists; history/export/archive APIs absent                                                                       | Recent history in `0045`; no retention/archive worker                                                              | **BLOCKED**                                      | Core migration tests only                                                                                                 | —                                       | P3       | Retention value and Sheets dataset approval required before cleanup/archive                                   |
 
 ## Confirmed implementation gaps and risks
+
+### Final Web-to-Flutter UI parity checkpoint
+
+- **Dashboard parity — PASS (automated/golden):** Flutter preserves the Web
+  information order for workspace identity, employee identity, announcements,
+  Today, Quick Resource Links, attendance, and duty-tracking disclosure. All
+  visible business values remain API-backed with existing empty/error states.
+- **Design-system parity — PASS (token mapping):** Flutter light and dark themes
+  now map the Web `background`, `foreground`, `card`, `primary`, `secondary`,
+  `muted`, `accent`, `destructive`, `border`, and `ring` OKLCH tokens to their
+  sRGB equivalents. Card radius, borders, button sizing, badges, muted text,
+  selected/unselected navigation, and surface hierarchy follow the Web CSS.
+- **Navigation parity — PASS (widget/golden):** the persistent native footer is
+  Hub, Updates, Me, and More with a central employee-actions button. Attendance
+  and feature-gated Quick Links remain accessible from that action sheet; no
+  feature authorization or deep application behavior was removed.
+- **Profile parity — PASS (regression):** verified identity, birthday, phone,
+  email, edit controls, profile-photo upload, and avatar fallback are preserved.
+- **Notification UI — PASS (regression):** header/footer unread badges, Updates,
+  refresh, and mark-read behavior are preserved. Realtime/FCM remains deferred.
+- **Settings parity — PASS (regression):** theme, notification status, account
+  summary, app version, and logout remain available with navigation-safe bottom
+  spacing.
+- **Physical QA verification — PENDING:** automated widget and refreshed golden
+  evidence passes only after the final run below; the QA APK must still be
+  installed and its rendered dashboard inspected on the connected device before
+  this milestone can be marked physically verified.
+- **Tests — PENDING FINAL GATE:** Flutter analyze (existing diagnostics allowed),
+  complete Flutter tests, TypeScript, secret scan, diff check, QA build, and
+  physical render inspection are required before commit.
 
 1. **Dashboard feature milestone:** Quick Links, employee-scoped unread updates,
    announcement previews, supported feature-aware navigation, and the

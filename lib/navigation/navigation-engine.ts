@@ -12,6 +12,7 @@ export type NavigationIconKey =
   | "feature"
   | "help"
   | "leave"
+  | "live_location"
   | "notification"
   | "profile"
   | "quick_links"
@@ -225,6 +226,13 @@ const companyAdminGroups: ResolvedNavigation["groups"] = {
       label: "Attendance Management",
       href: "/admin/attendance",
       icon: "attendance",
+      featureKey: "attendance",
+    },
+    {
+      id: "live-location",
+      label: "Live Location",
+      href: "/admin/live-location",
+      icon: "live_location",
       featureKey: "attendance",
     },
     {
