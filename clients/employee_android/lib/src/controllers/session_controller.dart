@@ -128,6 +128,7 @@ class SessionController extends ChangeNotifier {
     try { profile = await _authorized((token) => _profileRepository!.update(token, phone: phone, email: email, dateOfBirth: dateOfBirth)); notifyListeners(); return profile != null; }
     on ApiException catch (error) { profileError = error.message; notifyListeners(); return false; }
   }
+  Future<bool> uploadProfilePhoto({required List<int> bytes, required String filename, required String contentType}) async { if (session == null || _profileRepository == null) return false; try { profile = await _authorized((token) => _profileRepository!.uploadPhoto(token, bytes: bytes, filename: filename, contentType: contentType)); notifyListeners(); return profile != null; } on ApiException catch (error) { profileError = error.message; notifyListeners(); return false; } }
 
   Future<bool> _refresh() async {
     final current = session;

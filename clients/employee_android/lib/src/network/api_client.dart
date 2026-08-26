@@ -76,6 +76,15 @@ class ApiClient {
     }
   }
 
+  Future<Map<String, Object?>> upload(String path, {required String accessToken, required String field, required List<int> bytes, required String filename, required String contentType}) async {
+    final request = http.MultipartRequest('POST', _baseUri.resolve(path));
+    request.headers['authorization'] = 'Bearer $accessToken';
+    request.files.add(http.MultipartFile.fromBytes(field, bytes, filename: filename, contentType: http.MediaType.parse(contentType)));
+    final response = await http.Response.fromStream(await _client.send(request).timeout(_timeout));
+    if (response.statusCode >= 200 && response.statusCode < 300) return _decodeObject(response.body);
+    final error = _safeError(response.body); throw ApiException(statusCode: response.statusCode, code: error.$1, message: error.$2);
+  }
+
   Map<String, Object?> _decodeObject(String value) {
     final decoded = jsonDecode(value);
     if (decoded is! Map<String, Object?>) throw const FormatException();

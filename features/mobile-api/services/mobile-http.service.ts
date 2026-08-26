@@ -6,6 +6,7 @@ import { MobileDashboardService } from "@/features/mobile-api/services/mobile-da
 import { MobileProfileService } from "@/features/mobile-api/services/mobile-profile.service";
 import { mobileErrorResponse } from "@/features/mobile-api/services/mobile-api-error";
 import { MobileRequestService } from "@/features/mobile-api/services/mobile-request.service";
+import { MobileApiError } from "@/features/mobile-api/services/mobile-api-error";
 import type { AttendanceCheckInput } from "@/features/attendance/types/attendance.types";
 
 export const MobileHttpService = {
@@ -60,6 +61,25 @@ export const MobileHttpService = {
     try {
       const input = await MobileRequestService.parseProfile(request);
       return Response.json(await MobileAuthService.runAuthenticated(request, (context) => MobileProfileService.updateProfile(context, input)));
+    } catch (error) { return mobileErrorResponse(error); }
+  },
+  async uploadProfilePhoto(request: Request) {
+    try {
+      const form = await request.formData();
+      const file = form.get("photo");
+      if (!(file instanceof File)) throw new MobileApiError(400, "photo_required", "A profile photo is required.");
+      if (file.size > 5 * 1024 * 1024 || !["image/jpeg", "image/png", "image/webp"].includes(file.type)) throw new MobileApiError(400, "invalid_photo", "Profile photo must be a JPG, PNG, or WebP image up to 5 MB.");
+      return Response.json(await MobileAuthService.runAuthenticated(request, async (context) => {
+        const admin = (await import("@/lib/supabase/admin")).createSupabaseAdminClient();
+        const extension = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
+        const path = `${context.user.id}/avatar.${extension}`;
+        const upload = await admin.storage.from("profile-photos").upload(path, Buffer.from(await file.arrayBuffer()), { contentType: file.type, upsert: true, cacheControl: "3600" });
+        if (upload.error) throw new MobileApiError(503, "photo_upload_failed", "Unable to upload profile photo.", 30);
+        const { error } = await admin.from("employees").update({ photo_url: path, updated_at: new Date().toISOString(), updated_by: context.employee.id }).eq("id", context.employee.id).eq("company_id", context.employee.companyId);
+        if (error) throw new MobileApiError(503, "profile_unavailable", "Unable to update profile photo.", 30);
+        const { MobileProfileService } = await import("@/features/mobile-api/services/mobile-profile.service");
+        return MobileProfileService.getProfile(context);
+      }));
     } catch (error) { return mobileErrorResponse(error); }
   },
   async markNotificationRead(request: Request, id: string) {
