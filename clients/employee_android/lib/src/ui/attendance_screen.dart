@@ -200,7 +200,7 @@ class _TrackingDisclosureCard extends StatelessWidget {
   String _trackingMessage(TrackingState state) => switch (state) {
     TrackingState.permissionRequired || TrackingState.permissionDenied => 'Precise location is required during an active duty session. No location points are created while permission is unavailable.',
     TrackingState.notificationRequired => 'Notification permission is required for the persistent tracking disclosure. Tracking remains stopped.',
-    TrackingState.active => 'Android is observing location inside the visible duty-tracking service. No location points are uploaded or stored yet.',
+    TrackingState.active => 'Duty tracking is active. Location points are securely queued and uploaded about every 30 minutes.',
     TrackingState.starting => 'Starting the visible duty-tracking service…',
     TrackingState.stopping => 'Stopping duty tracking…',
     TrackingState.suspended =>
