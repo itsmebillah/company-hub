@@ -432,7 +432,11 @@ void main() {
     expect(find.byKey(const Key('profileEmployeeId')), findsOneWidget);
     expect(find.text('QA-001'), findsOneWidget);
     expect(find.text('company-a'), findsNothing);
-    await tester.tap(find.byKey(const Key('profileLogoutButton')));
+    // Logout is intentionally grouped under the Web-aligned More/Settings destination.
+    await tester.tap(find.byKey(const Key('settingsDestination')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('settingsScreen')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('settingsLogoutButton')));
     await tester.pumpAndSettle();
     expect(find.text('Employee sign in'), findsOneWidget);
   });
