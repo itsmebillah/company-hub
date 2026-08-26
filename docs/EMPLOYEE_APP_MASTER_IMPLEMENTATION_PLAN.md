@@ -126,6 +126,8 @@ Status vocabulary:
    account, version, and logout controls. Full Resources/Knowledge Hub,
    notification mark-read/realtime/push, and a complete Calendar destination
    remain separate work and are not exposed as dead navigation.
+   Flutter golden baselines were refreshed for the intentional Hub/Updates/Me/More
+   footer layout change; attendance and tracking content were unchanged.
 2. **Selfie parity:** Flutter cannot satisfy a selfie-required attendance policy
    because it has neither capture UI nor an authenticated upload adapter.
 3. **Mobile API coverage:** leave, full Resources/Knowledge Hub, notification
