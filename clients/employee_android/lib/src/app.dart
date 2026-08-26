@@ -7,6 +7,7 @@ import 'controllers/session_controller.dart';
 import 'network/api_client.dart';
 import 'repositories/attendance_repository.dart';
 import 'repositories/auth_repository.dart';
+import 'repositories/dashboard_repository.dart';
 import 'storage/session_storage.dart';
 import 'tracking/tracking_controller.dart';
 import 'tracking/tracking_platform.dart';
@@ -56,6 +57,7 @@ class _CompanyHubEmployeeAppState extends State<CompanyHubEmployeeApp>
         SessionController(
           authRepository: AuthRepository(api),
           attendanceRepository: AttendanceRepository(api),
+          dashboardRepository: DashboardRepository(api),
           storage: SecureSessionStorage(),
           locationPlatform: trackingPlatform,
         );

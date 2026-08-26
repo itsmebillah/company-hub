@@ -3,8 +3,10 @@ import 'package:flutter/foundation.dart';
 import '../models/api_error.dart';
 import '../models/attendance_state.dart';
 import '../models/auth_session.dart';
+import '../models/dashboard_state.dart';
 import '../repositories/attendance_repository.dart';
 import '../repositories/auth_repository.dart';
+import '../repositories/dashboard_repository.dart';
 import '../storage/session_storage.dart';
 import '../tracking/tracking_platform.dart';
 
@@ -24,25 +26,37 @@ class SessionController extends ChangeNotifier {
   SessionController({
     required AuthRepository authRepository,
     required AttendanceRepository attendanceRepository,
+    DashboardRepository? dashboardRepository,
     required SessionStorage storage,
     required TrackingPlatform locationPlatform,
-  }) : this._(authRepository, attendanceRepository, storage, locationPlatform);
+  }) : this._(
+         authRepository,
+         attendanceRepository,
+         dashboardRepository,
+         storage,
+         locationPlatform,
+       );
 
   SessionController._(
     this._authRepository,
     this._attendanceRepository,
+    this._dashboardRepository,
     this._storage,
     this._locationPlatform,
   );
 
   final AuthRepository _authRepository;
   final AttendanceRepository _attendanceRepository;
+  final DashboardRepository? _dashboardRepository;
   final SessionStorage _storage;
   final TrackingPlatform _locationPlatform;
 
   SessionPhase phase = SessionPhase.initializing;
   AuthSession? session;
   AttendanceState? attendance;
+  DashboardState? dashboard;
+  bool isDashboardLoading = false;
+  String? dashboardErrorMessage;
   String? errorMessage;
 
   bool get isBusy => switch (phase) {
@@ -62,6 +76,7 @@ class SessionController extends ChangeNotifier {
       return;
     }
     if (!await _refresh()) return;
+    await loadDashboard();
     await reconcile();
   }
 
@@ -80,6 +95,7 @@ class SessionController extends ChangeNotifier {
       );
       await _storage.write(session!);
       _setPhase(SessionPhase.authenticated);
+      await loadDashboard();
       await reconcile();
     } on ApiException catch (error) {
       await _clearSession(
@@ -123,6 +139,23 @@ class SessionController extends ChangeNotifier {
         }
         rethrow;
       }
+    }
+  }
+
+  Future<void> loadDashboard() async {
+    final repository = _dashboardRepository;
+    if (session == null || repository == null) return;
+    isDashboardLoading = true;
+    dashboardErrorMessage = null;
+    notifyListeners();
+    try {
+      final state = await _authorized(repository.getDashboard);
+      if (state != null) dashboard = state;
+    } on ApiException catch (error) {
+      dashboardErrorMessage = error.message;
+    } finally {
+      isDashboardLoading = false;
+      notifyListeners();
     }
   }
 
@@ -195,6 +228,9 @@ class SessionController extends ChangeNotifier {
     await _storage.clear();
     session = null;
     attendance = null;
+    dashboard = null;
+    isDashboardLoading = false;
+    dashboardErrorMessage = null;
     errorMessage = message;
     _setPhase(expired ? SessionPhase.sessionExpired : SessionPhase.signedOut);
   }

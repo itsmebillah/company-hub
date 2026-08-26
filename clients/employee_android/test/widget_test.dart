@@ -69,6 +69,34 @@ void main() {
     expect(find.byKey(const Key('logoutButton')), findsOneWidget);
   });
 
+  testWidgets('home header uses the mobile dashboard profile response', (
+    tester,
+  ) async {
+    final location = FakeTrackingPlatform();
+    final controller = SessionController(
+      authRepository: FakeAuthRepository(),
+      attendanceRepository: FakeAttendanceRepository(),
+      dashboardRepository: FakeDashboardRepository(),
+      storage: MemorySessionStorage()..value = testSession(),
+      locationPlatform: location,
+    );
+    await tester.pumpWidget(
+      CompanyHubEmployeeApp(
+        environment: environment(),
+        controller: controller,
+        trackingController: TrackingController(platform: location),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('homeDashboardHeader')), findsOneWidget);
+    expect(find.byKey(const Key('homeProfilePhotoFallback')), findsOneWidget);
+    expect(find.text('Employee Workspace'), findsOneWidget);
+    expect(find.text('Welcome, QA Employee'), findsOneWidget);
+    expect(find.text('Company Hub QA'), findsOneWidget);
+    expect(find.text('Employee'), findsWidgets);
+    expect(find.text('ID QA-001'), findsOneWidget);
+    expect(find.byKey(const Key('homeCurrentDate')), findsOneWidget);
+  });
   testWidgets('profile shows only verified session identity and can sign out', (
     tester,
   ) async {

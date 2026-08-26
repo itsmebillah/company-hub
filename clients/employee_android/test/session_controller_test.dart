@@ -10,9 +10,11 @@ SessionController harness(
   FakeAttendanceRepository attendance,
   MemorySessionStorage storage, [
   FakeTrackingPlatform? location,
+  FakeDashboardRepository? dashboard,
 ]) => SessionController(
   authRepository: auth,
   attendanceRepository: attendance,
+  dashboardRepository: dashboard,
   storage: storage,
   locationPlatform: location ?? FakeTrackingPlatform(),
 );
@@ -39,6 +41,48 @@ void main() {
     expect(storage.value?.accessToken, 'access-a');
     expect(attendance.stateCalls, 1);
   });
+
+  test(
+    'dashboard profile loads from mobile dashboard API after login',
+    () async {
+      final dashboard = FakeDashboardRepository();
+      final controller = harness(
+        FakeAuthRepository(),
+        FakeAttendanceRepository(),
+        MemorySessionStorage(),
+        null,
+        dashboard,
+      );
+      await controller.signIn('QA-001', 'password');
+      expect(dashboard.stateCalls, 1);
+      expect(controller.dashboard?.profile.companyName, 'Company Hub QA');
+      expect(controller.dashboard?.enabledFeatureKeys, contains('attendance'));
+    },
+  );
+
+  test(
+    'dashboard failure preserves authenticated session and fallback profile',
+    () async {
+      final dashboard = FakeDashboardRepository()
+        ..stateError = const ApiException(
+          statusCode: 503,
+          code: 'dashboard_unavailable',
+          message: 'Dashboard unavailable.',
+        );
+      final controller = harness(
+        FakeAuthRepository(),
+        FakeAttendanceRepository(),
+        MemorySessionStorage(),
+        null,
+        dashboard,
+      );
+      await controller.signIn('QA-001', 'password');
+      expect(controller.phase, SessionPhase.authenticated);
+      expect(controller.session, isNotNull);
+      expect(controller.dashboard, isNull);
+      expect(controller.dashboardErrorMessage, 'Dashboard unavailable.');
+    },
+  );
 
   test('invalid or inactive login returns safely signed out', () async {
     for (final code in ['invalid_credentials', 'active_employee_required']) {

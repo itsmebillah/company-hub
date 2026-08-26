@@ -1,8 +1,10 @@
 import 'package:employee_android/src/models/api_error.dart';
 import 'package:employee_android/src/models/attendance_state.dart';
 import 'package:employee_android/src/models/auth_session.dart';
+import 'package:employee_android/src/models/dashboard_state.dart';
 import 'package:employee_android/src/repositories/attendance_repository.dart';
 import 'package:employee_android/src/repositories/auth_repository.dart';
+import 'package:employee_android/src/repositories/dashboard_repository.dart';
 import 'package:employee_android/src/storage/session_storage.dart';
 import 'package:employee_android/src/tracking/tracking_platform.dart';
 
@@ -19,6 +21,22 @@ AuthSession testSession({
     companyId: 'company-a',
     roleName: 'Employee',
   ),
+);
+
+DashboardState testDashboard({String? photoUrl}) => DashboardState(
+  profile: DashboardProfile(
+    employeeId: 'QA-001',
+    name: 'QA Employee',
+    companyId: 'company-a',
+    roleName: 'Employee',
+    companyName: 'Company Hub QA',
+    photoUrl: photoUrl,
+  ),
+  features: const [
+    DashboardFeatureFlag(key: 'attendance', enabled: true),
+    DashboardFeatureFlag(key: 'quick_links', enabled: false),
+  ],
+  enabledFeatureKeys: const ['attendance'],
 );
 
 AttendanceState testAttendance({
@@ -106,6 +124,19 @@ class FakeAuthRepository implements AuthRepository {
   Future<void> logout(String accessToken) async {
     logoutCalls += 1;
     if (logoutError case final error?) throw error;
+  }
+}
+
+class FakeDashboardRepository implements DashboardRepository {
+  DashboardState state = testDashboard();
+  ApiException? stateError;
+  int stateCalls = 0;
+
+  @override
+  Future<DashboardState> getDashboard(String accessToken) async {
+    stateCalls += 1;
+    if (stateError case final error?) throw error;
+    return state;
   }
 }
 
