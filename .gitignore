@@ -20,7 +20,19 @@
 
 # misc
 .DS_Store
+Thumbs.db
+Desktop.ini
 *.pem
+*.orig
+*.rej
+
+# disposable local helpers and packaged mobile artifacts
+/.tmp_*
+/tmp/
+*.apk
+*.aab
+*.apks
+*.idsig
 
 # debug
 npm-debug.log*

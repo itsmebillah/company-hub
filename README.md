@@ -170,10 +170,19 @@ app/                 Routes, layouts, server endpoints, and route groups
 components/          Shared layout and UI components
 features/            Domain modules with actions, services, repositories, and UI
 lib/                 Auth, Supabase, configuration, navigation, and utilities
+clients/             Isolated native clients, including the Flutter employee app
 supabase/migrations/ Ordered database and security changes
+scripts/             Setup, verification, integration, and release utilities
+tests/unit/          Database-independent service and contract tests
 tests/e2e/           Playwright user-flow and accessibility tests
+docs/                Feature audits, implementation plans, setup guides, and evidence
 docs/screenshots/    Versioned visual-regression evidence
 ```
+
+Use the [documentation index](docs/README.md), [script index](scripts/README.md),
+and [test index](tests/README.md) to locate scoped material. Canonical project
+controls remain at the repository root so existing links and automation stay
+stable.
 
 ## Deployment
 
