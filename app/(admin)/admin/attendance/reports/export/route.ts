@@ -4,7 +4,9 @@ import { AttendanceExportService } from "@/features/attendance-reports/services/
 import { AttendanceReportService } from "@/features/attendance-reports/services/attendance-report.service";
 import type { AttendanceReportExportFormat } from "@/features/attendance-reports/types/attendance-report.types";
 
-function isValidFormat(value: string | null): value is AttendanceReportExportFormat {
+function isValidFormat(
+  value: string | null,
+): value is AttendanceReportExportFormat {
   return value === "csv" || value === "xlsx" || value === "pdf";
 }
 
@@ -18,9 +20,16 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const dataset = await AttendanceReportService.getExportDataset(
-    Object.fromEntries(request.nextUrl.searchParams.entries()),
+  const searchParams = Object.fromEntries(
+    request.nextUrl.searchParams.entries(),
   );
+  const selectedDate = searchParams.date;
+  if (selectedDate && /^\d{4}-\d{2}-\d{2}$/.test(selectedDate)) {
+    searchParams.startDate = selectedDate;
+    searchParams.endDate = selectedDate;
+  }
+
+  const dataset = await AttendanceReportService.getExportDataset(searchParams);
 
   if (!dataset) {
     return NextResponse.json(

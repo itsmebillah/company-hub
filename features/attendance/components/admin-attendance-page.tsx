@@ -1,5 +1,11 @@
 import Link from "next/link";
-import { CalendarCheck, Clock, FileSpreadsheet, Search, Users } from "lucide-react";
+import {
+  CalendarCheck,
+  Clock,
+  FileSpreadsheet,
+  Search,
+  Users,
+} from "lucide-react";
 
 import { EmptyState } from "@/components/common/empty-state";
 import { IconBadge } from "@/components/common/icon-badge";
@@ -61,7 +67,7 @@ export function AdminAttendancePage({
         actions={
           <Link
             href="/admin/attendance/reports"
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-white/20 bg-background/75 px-4 py-2 text-sm font-semibold shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5 hover:bg-muted"
+            className="bg-background/75 hover:bg-muted inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-white/20 px-4 py-2 text-sm font-semibold shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5"
           >
             <FileSpreadsheet className="size-4" aria-hidden="true" />
             Monthly Reports
@@ -70,12 +76,82 @@ export function AdminAttendancePage({
         aside={<IconBadge icon={CalendarCheck} className="mx-auto lg:mx-0" />}
       />
 
+      <div
+        className="app-card grid gap-4 p-4 md:grid-cols-2"
+        data-testid="attendance-export-controls"
+      >
+        <form
+          action="/admin/attendance/reports/export"
+          method="get"
+          className="flex flex-col gap-2 sm:flex-row sm:items-end"
+        >
+          <input type="hidden" name="format" value="csv" />
+          <label className="min-w-0 flex-1">
+            <span className="text-muted-foreground text-xs font-medium">
+              Export date
+            </span>
+            <input
+              type="date"
+              name="date"
+              defaultValue={overview.today}
+              className="bg-background focus:ring-ring mt-1 min-h-11 w-full rounded-lg border px-3 text-sm outline-none focus:ring-2"
+            />
+          </label>
+          <button
+            type="submit"
+            className="bg-background hover:bg-muted focus-visible:ring-ring inline-flex min-h-11 items-center justify-center rounded-lg border px-4 py-2 text-sm font-semibold transition focus-visible:ring-2 focus-visible:outline-none"
+          >
+            Export date CSV
+          </button>
+        </form>
+        <form
+          action="/admin/attendance/reports/export"
+          method="get"
+          className="flex flex-col gap-2 sm:flex-row sm:items-end"
+        >
+          <input type="hidden" name="format" value="csv" />
+          <label className="min-w-0 flex-1">
+            <span className="text-muted-foreground text-xs font-medium">
+              Export month
+            </span>
+            <div className="mt-1 grid grid-cols-2 gap-2">
+              <select
+                name="month"
+                defaultValue={String(Number(overview.today.slice(5, 7)))}
+                className="bg-background focus:ring-ring min-h-11 rounded-lg border px-3 text-sm outline-none focus:ring-2"
+              >
+                {Array.from({ length: 12 }, (_, index) => (
+                  <option key={index + 1} value={index + 1}>
+                    {new Date(2020, index, 1).toLocaleString("en", {
+                      month: "long",
+                    })}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="number"
+                name="year"
+                min={2020}
+                max={2100}
+                defaultValue={overview.today.slice(0, 4)}
+                className="bg-background focus:ring-ring min-h-11 rounded-lg border px-3 text-sm outline-none focus:ring-2"
+              />
+            </div>
+          </label>
+          <button
+            type="submit"
+            className="bg-background hover:bg-muted focus-visible:ring-ring inline-flex min-h-11 items-center justify-center rounded-lg border px-4 py-2 text-sm font-semibold transition focus-visible:ring-2 focus-visible:outline-none"
+          >
+            Export month CSV
+          </button>
+        </form>
+      </div>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div className="app-card p-5">
           <div className="flex items-center gap-3">
             <IconBadge icon={CalendarCheck} className="size-10 rounded-2xl" />
             <div>
-              <p className="text-sm text-muted-foreground">Today</p>
+              <p className="text-muted-foreground text-sm">Today</p>
               <p className="text-lg font-semibold">
                 {formatDate(overview.today)}
               </p>
@@ -86,7 +162,7 @@ export function AdminAttendancePage({
           <div className="flex items-center gap-3">
             <IconBadge icon={Clock} className="size-10 rounded-2xl" />
             <div>
-              <p className="text-sm text-muted-foreground">Records Today</p>
+              <p className="text-muted-foreground text-sm">Records Today</p>
               <p className="text-lg font-semibold">
                 {overview.totalRecordsToday}
               </p>
@@ -97,10 +173,8 @@ export function AdminAttendancePage({
           <div className="flex items-center gap-3">
             <IconBadge icon={Users} className="size-10 rounded-2xl" />
             <div>
-              <p className="text-sm text-muted-foreground">Checked In</p>
-              <p className="text-lg font-semibold">
-                {overview.checkedInToday}
-              </p>
+              <p className="text-muted-foreground text-sm">Checked In</p>
+              <p className="text-lg font-semibold">{overview.checkedInToday}</p>
             </div>
           </div>
         </div>
@@ -108,7 +182,7 @@ export function AdminAttendancePage({
           <div className="flex items-center gap-3">
             <IconBadge icon={Clock} className="size-10 rounded-2xl" />
             <div>
-              <p className="text-sm text-muted-foreground">Late Today</p>
+              <p className="text-muted-foreground text-sm">Late Today</p>
               <p className="text-lg font-semibold">{overview.lateToday}</p>
             </div>
           </div>
@@ -117,11 +191,14 @@ export function AdminAttendancePage({
 
       <form className="app-card grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_160px_160px_160px_160px_auto]">
         <label className="block">
-          <span className="text-xs font-medium text-muted-foreground">
+          <span className="text-muted-foreground text-xs font-medium">
             Search
           </span>
-          <div className="mt-1 flex min-h-11 items-center gap-2 rounded-lg border bg-background px-3">
-            <Search className="size-4 text-muted-foreground" aria-hidden="true" />
+          <div className="bg-background mt-1 flex min-h-11 items-center gap-2 rounded-lg border px-3">
+            <Search
+              className="text-muted-foreground size-4"
+              aria-hidden="true"
+            />
             <input
               name="search"
               defaultValue={filters.search ?? ""}
@@ -132,23 +209,25 @@ export function AdminAttendancePage({
         </label>
 
         <label className="block">
-          <span className="text-xs font-medium text-muted-foreground">Date</span>
+          <span className="text-muted-foreground text-xs font-medium">
+            Date
+          </span>
           <input
             type="date"
             name="date"
             defaultValue={result.date}
-            className="mt-1 min-h-11 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+            className="bg-background focus:ring-ring mt-1 min-h-11 w-full rounded-lg border px-3 text-sm outline-none focus:ring-2"
           />
         </label>
 
         <label className="block">
-          <span className="text-xs font-medium text-muted-foreground">
+          <span className="text-muted-foreground text-xs font-medium">
             Employee
           </span>
           <select
             name="employeeId"
             defaultValue={filters.employeeId ?? ""}
-            className="mt-1 min-h-11 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+            className="bg-background focus:ring-ring mt-1 min-h-11 w-full rounded-lg border px-3 text-sm outline-none focus:ring-2"
           >
             <option value="">All employees</option>
             {result.employees.map((employee) => (
@@ -160,13 +239,13 @@ export function AdminAttendancePage({
         </label>
 
         <label className="block">
-          <span className="text-xs font-medium text-muted-foreground">
+          <span className="text-muted-foreground text-xs font-medium">
             Status
           </span>
           <select
             name="status"
             defaultValue={filters.status ?? "all"}
-            className="mt-1 min-h-11 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+            className="bg-background focus:ring-ring mt-1 min-h-11 w-full rounded-lg border px-3 text-sm outline-none focus:ring-2"
           >
             <option value="all">All statuses</option>
             {ATTENDANCE_STATUS_OPTIONS.map((status) => (
@@ -178,13 +257,13 @@ export function AdminAttendancePage({
         </label>
 
         <label className="block">
-          <span className="text-xs font-medium text-muted-foreground">
+          <span className="text-muted-foreground text-xs font-medium">
             Work Mode
           </span>
           <select
             name="workMode"
             defaultValue={filters.workMode ?? "all"}
-            className="mt-1 min-h-11 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+            className="bg-background focus:ring-ring mt-1 min-h-11 w-full rounded-lg border px-3 text-sm outline-none focus:ring-2"
           >
             <option value="all">All work modes</option>
             {EMPLOYEE_WORK_MODE_OPTIONS.map((option) => (
@@ -198,7 +277,7 @@ export function AdminAttendancePage({
         <div className="flex items-end gap-2">
           <button
             type="submit"
-            className="inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:w-auto"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring inline-flex min-h-11 w-full items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold transition focus-visible:ring-2 focus-visible:outline-none md:w-auto"
           >
             Apply
           </button>
@@ -215,7 +294,7 @@ export function AdminAttendancePage({
         <div className="app-table-shell">
           <div className="hidden overflow-x-auto lg:block">
             <table className="w-full text-left text-sm">
-              <thead className="border-b bg-muted/50 text-xs uppercase text-muted-foreground">
+              <thead className="bg-muted/50 text-muted-foreground border-b text-xs uppercase">
                 <tr>
                   <th className="px-4 py-3 font-medium">Employee</th>
                   <th className="px-4 py-3 font-medium">Work Mode</th>
@@ -232,14 +311,18 @@ export function AdminAttendancePage({
                   <tr key={record.id}>
                     <td className="px-4 py-3">
                       <p className="font-medium">{record.employeeName}</p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-muted-foreground text-xs">
                         {record.employeeCode}
                       </p>
                     </td>
                     <td className="px-4 py-3">
-                      <EmployeeWorkModeBadge workMode={record.employeeWorkMode} />
+                      <EmployeeWorkModeBadge
+                        workMode={record.employeeWorkMode}
+                      />
                     </td>
-                    <td className="px-4 py-3">{formatDate(record.attendanceDate)}</td>
+                    <td className="px-4 py-3">
+                      {formatDate(record.attendanceDate)}
+                    </td>
                     <td className="px-4 py-3">{formatTime(record.checkIn)}</td>
                     <td className="px-4 py-3">{formatTime(record.checkOut)}</td>
                     <td className="px-4 py-3">
@@ -251,7 +334,7 @@ export function AdminAttendancePage({
                     <td className="px-4 py-3">
                       <Link
                         href={`/admin/attendance/${record.id}`}
-                        className="text-sm font-semibold text-primary hover:underline"
+                        className="text-primary text-sm font-semibold hover:underline"
                       >
                         View
                       </Link>
@@ -268,30 +351,35 @@ export function AdminAttendancePage({
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <h2 className="font-semibold">{record.employeeName}</h2>
-                    <p className="text-sm text-muted-foreground">
-                      {record.employeeCode} - {formatDate(record.attendanceDate)}
+                    <p className="text-muted-foreground text-sm">
+                      {record.employeeCode} -{" "}
+                      {formatDate(record.attendanceDate)}
                     </p>
                   </div>
                   <AttendanceStatusBadge status={record.status} />
                 </div>
                 <EmployeeWorkModeBadge workMode={record.employeeWorkMode} />
                 <dl className="grid grid-cols-3 gap-2 text-sm">
-                  <div className="rounded-lg border bg-background p-2">
-                    <dt className="text-xs text-muted-foreground">In</dt>
-                    <dd className="font-medium">{formatTime(record.checkIn)}</dd>
+                  <div className="bg-background rounded-lg border p-2">
+                    <dt className="text-muted-foreground text-xs">In</dt>
+                    <dd className="font-medium">
+                      {formatTime(record.checkIn)}
+                    </dd>
                   </div>
-                  <div className="rounded-lg border bg-background p-2">
-                    <dt className="text-xs text-muted-foreground">Out</dt>
-                    <dd className="font-medium">{formatTime(record.checkOut)}</dd>
+                  <div className="bg-background rounded-lg border p-2">
+                    <dt className="text-muted-foreground text-xs">Out</dt>
+                    <dd className="font-medium">
+                      {formatTime(record.checkOut)}
+                    </dd>
                   </div>
-                  <div className="rounded-lg border bg-background p-2">
-                    <dt className="text-xs text-muted-foreground">Hours</dt>
+                  <div className="bg-background rounded-lg border p-2">
+                    <dt className="text-muted-foreground text-xs">Hours</dt>
                     <dd className="font-medium">
                       {formatDuration(record.workingMinutes)}
                     </dd>
                   </div>
                 </dl>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-muted-foreground text-xs">
                   Status: {getAttendanceStatusLabel(record.status)}
                 </p>
                 <Link
