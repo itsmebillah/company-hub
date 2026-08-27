@@ -166,15 +166,49 @@ class _EmployeeShellState extends State<EmployeeShell> {
         child: FloatingActionButton(
           key: const Key('employeeActionsButton'),
           tooltip: 'Employee actions',
+          elevation: 5,
+          shape: const CircleBorder(),
           onPressed: () => _showEmployeeActions(features),
           child: const Icon(Icons.apps_rounded),
         ),
       ),
-      bottomNavigationBar: NavigationBar(
-        height: 72,
-        selectedIndex: navigationIndex < 0 ? 0 : navigationIndex,
-        onDestinationSelected: (index) => _select(destinations[index].value),
-        destinations: destinations.map((item) => item.destination).toList(),
+      bottomNavigationBar: SafeArea(
+        minimum: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface
+                .withValues(alpha: 0.90),
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outlineVariant
+                  .withValues(alpha: 0.65),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Theme.of(context).colorScheme.shadow
+                    .withValues(alpha: 0.14),
+                blurRadius: 18,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(30),
+            child: NavigationBar(
+              height: 70,
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              indicatorColor: Theme.of(context).colorScheme.primaryContainer
+                  .withValues(alpha: 0.72),
+              selectedIndex: navigationIndex < 0 ? 0 : navigationIndex,
+              onDestinationSelected: (index) =>
+                  _select(destinations[index].value),
+              destinations: destinations
+                  .map((item) => item.destination)
+                  .toList(),
+            ),
+          ),
+        ),
       ),
     );
   }

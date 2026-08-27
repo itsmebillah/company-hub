@@ -62,6 +62,7 @@ class HomeScreen extends StatelessWidget {
           else
             DashboardFeatureSections(
               content: content,
+              employeeId: profile.employeeId,
               openUpdates: openUpdates,
               openQuickLinks: openQuickLinks,
               openAnnouncement: (announcement) =>
@@ -341,6 +342,47 @@ class _AttendanceMetricTile extends StatelessWidget {
   }
 }
 
+class _HeaderSummaryText extends StatelessWidget {
+  const _HeaderSummaryText({
+    required this.value,
+    this.emphasized = false,
+    this.minimumFontSize = 11,
+    this.textAlign = TextAlign.start,
+    super.key,
+  });
+
+  final String value;
+  final bool emphasized;
+  final double minimumFontSize;
+  final TextAlign textAlign;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = Theme.of(context).textTheme.bodySmall
+        ?.copyWith(fontWeight: emphasized ? FontWeight.w600 : null);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = (constraints.maxWidth / (value.length.clamp(1, 24) * 0.62))
+            .clamp(minimumFontSize, style?.fontSize ?? 12)
+            .toDouble();
+        return FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: textAlign == TextAlign.end
+              ? Alignment.centerRight
+              : Alignment.centerLeft,
+          child: Text(
+            value,
+            textAlign: textAlign,
+            maxLines: 1,
+            softWrap: false,
+            style: style?.copyWith(fontSize: size),
+          ),
+        );
+      },
+    );
+  }
+}
+
 class _DashboardHeader extends StatelessWidget {
   const _DashboardHeader({
     required this.profile,
@@ -422,30 +464,29 @@ class _DashboardHeader extends StatelessWidget {
                     const Icon(Icons.calendar_today_outlined, size: 18),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text(
-                        date,
+                      flex: 3,
+                      child: _HeaderSummaryText(
+                        value: date,
                         key: const Key('homeCurrentDate'),
-                        style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ),
-                    Flexible(
-                      child: Text(
-                        profile.roleName,
+                    const SizedBox(width: 8),
+                    Expanded(
+                      flex: 2,
+                      child: _HeaderSummaryText(
+                        value: profile.roleName,
                         key: const Key('homeRoleName'),
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.end,
-                        style: Theme.of(context).textTheme.bodySmall
-                            ?.copyWith(fontWeight: FontWeight.w600),
+                        emphasized: true,
+                        minimumFontSize: 10,
                       ),
                     ),
                     const SizedBox(width: 8),
                     Flexible(
-                      child: Text(
-                        'ID ${profile.employeeId}',
+                      flex: 3,
+                      child: _HeaderSummaryText(
+                        value: 'ID ${profile.employeeId}',
                         key: const Key('homeEmployeeId'),
-                        overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.end,
-                        style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ),
                   ],

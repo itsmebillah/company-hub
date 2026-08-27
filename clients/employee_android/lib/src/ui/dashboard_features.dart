@@ -1,12 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../controllers/session_controller.dart';
 import '../models/dashboard_state.dart';
 import '../platform/external_link_platform.dart';
+import '../storage/resource_pin_storage.dart';
 
 class DashboardFeatureSections extends StatelessWidget {
   const DashboardFeatureSections({
     required this.content,
+    required this.employeeId,
     required this.openUpdates,
     required this.openQuickLinks,
     required this.openAnnouncement,
@@ -14,6 +18,7 @@ class DashboardFeatureSections extends StatelessWidget {
   });
 
   final DashboardContent content;
+  final String employeeId;
   final VoidCallback openUpdates;
   final VoidCallback openQuickLinks;
   final ValueChanged<DashboardAnnouncement> openAnnouncement;
@@ -25,7 +30,6 @@ class DashboardFeatureSections extends StatelessWidget {
           content.announcements.isNotEmpty) ...[
         _AnnouncementsCard(
           content: content,
-          openUpdates: openUpdates,
           openAnnouncement: openAnnouncement,
         ),
         const SizedBox(height: 12),
@@ -39,58 +43,126 @@ class DashboardFeatureSections extends StatelessWidget {
       ],
       if (content.quickLinksStatus != DashboardSectionStatus.disabled &&
           content.quickLinks.isNotEmpty) ...[
-        _QuickLinksCard(content: content, openQuickLinks: openQuickLinks),
+        _QuickLinksCard(
+          content: content,
+          employeeId: employeeId,
+          openQuickLinks: openQuickLinks,
+        ),
         const SizedBox(height: 12),
       ],
     ],
   );
 }
 
-class _AnnouncementsCard extends StatelessWidget {
+class _AnnouncementsCard extends StatefulWidget {
   const _AnnouncementsCard({
     required this.content,
-    required this.openUpdates,
     required this.openAnnouncement,
   });
 
   final DashboardContent content;
-  final VoidCallback openUpdates;
   final ValueChanged<DashboardAnnouncement> openAnnouncement;
 
   @override
+  State<_AnnouncementsCard> createState() => _AnnouncementsCardState();
+}
+
+class _AnnouncementsCardState extends State<_AnnouncementsCard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _tickerController;
+  int _announcementIndex = 0;
+  Timer? _tickerRestart;
+
+  @override
+  void initState() {
+    super.initState();
+    _tickerController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 12),
+    );
+    if (widget.content.announcements.length > 1) {
+      _tickerController.addStatusListener(_advanceTicker);
+      _tickerRestart = Timer(const Duration(seconds: 1), _startTicker);
+    }
+  }
+
+  void _startTicker() {
+    if (mounted) _tickerController.forward(from: 0);
+  }
+
+  void _advanceTicker(AnimationStatus status) {
+    if (status != AnimationStatus.completed || !mounted) return;
+    setState(() {
+      _announcementIndex =
+          (_announcementIndex + 1) % widget.content.announcements.length;
+    });
+    _tickerRestart = Timer(const Duration(seconds: 1), _startTicker);
+  }
+
+  @override
+  void dispose() {
+    _tickerRestart?.cancel();
+    _tickerController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final announcements = content.announcements.take(2).toList();
+    final announcements = [...widget.content.announcements]
+      ..sort(
+        (a, b) =>
+            _priorityRank(b.priority).compareTo(_priorityRank(a.priority)),
+      );
+    final isTicker = announcements.length > 1;
+    final announcement =
+        announcements[_announcementIndex % announcements.length];
     return Card(
       key: const Key('homeAnnouncementsCard'),
+      clipBehavior: Clip.antiAlias,
       child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _SectionHeader(
-              icon: Icons.campaign_outlined,
-              title: 'Announcements',
-              actionLabel: 'View updates',
-              onAction: openUpdates,
-            ),
-            const SizedBox(height: 10),
-            if (content.announcementsStatus == DashboardSectionStatus.error)
-              const _SectionMessage(
+        padding: const EdgeInsets.all(14),
+        child:
+            widget.content.announcementsStatus == DashboardSectionStatus.error
+            ? const _SectionMessage(
                 key: Key('homeAnnouncementsError'),
                 text: 'Announcements are temporarily unavailable.',
                 isError: true,
               )
-            else
-              ...announcements.map(
-                (announcement) => _FeaturedAnnouncement(
-                  announcement: announcement,
-                  onTap: () => openAnnouncement(announcement),
-                ),
+            : ClipRect(
+                child: isTicker
+                    ? AnimatedBuilder(
+                        animation: _tickerController,
+                        builder: (context, child) => FractionalTranslation(
+                          translation: Offset(
+                            _tickerController.value * 2 - 1,
+                            0,
+                          ),
+                          child: child,
+                        ),
+                        child: _FeaturedAnnouncement(
+                          announcement: announcement,
+                          onTap: () => widget.openAnnouncement(announcement),
+                        ),
+                      )
+                    : _FeaturedAnnouncement(
+                        announcement: announcement,
+                        onTap: () => widget.openAnnouncement(announcement),
+                      ),
               ),
-          ],
-        ),
       ),
     );
+  }
+}
+
+int _priorityRank(String priority) {
+  switch (priority.toLowerCase()) {
+    case 'high':
+    case 'urgent':
+      return 2;
+    case 'medium':
+      return 1;
+    default:
+      return 0;
   }
 }
 
@@ -105,31 +177,31 @@ class _FeaturedAnnouncement extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final accent = _announcementAccent(context, announcement.priority);
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: EdgeInsets.zero,
       child: InkWell(
         key: Key('homeAnnouncement-${announcement.id}'),
         borderRadius: BorderRadius.circular(18),
         onTap: onTap,
         child: Ink(
           decoration: BoxDecoration(
-            color: colors.primaryContainer.withValues(alpha: 0.32),
+            color: accent.withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: colors.primary.withValues(alpha: 0.18)),
+            border: Border.all(color: accent.withValues(alpha: 0.42)),
           ),
           child: Row(
             children: [
               SizedBox(
                 width: 88,
-                height: 94,
+                height: 110,
                 child: _AnnouncementVisual(announcement: announcement),
               ),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 10,
+                    horizontal: 14,
+                    vertical: 14,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -138,31 +210,61 @@ class _FeaturedAnnouncement extends StatelessWidget {
                         announcement.title,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.titleSmall
-                            ?.copyWith(fontWeight: FontWeight.w700),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color:
+                                  announcement.priority.toLowerCase() == 'high'
+                                  ? accent
+                                  : null,
+                            ),
                       ),
                       if (announcement.description.isNotEmpty) ...[
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 6),
                         Text(
                           announcement.description,
-                          maxLines: 2,
+                          maxLines: 3,
                           overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.bodySmall,
+                          style: Theme.of(context).textTheme.bodyMedium,
                         ),
                       ],
                     ],
                   ),
                 ),
               ),
-              const Padding(
-                padding: EdgeInsets.only(right: 8),
-                child: Icon(Icons.chevron_right),
+              Padding(
+                padding: const EdgeInsets.only(right: 10),
+                child: Icon(Icons.chevron_right, color: accent),
               ),
             ],
           ),
         ),
       ),
     );
+  }
+}
+
+Color _announcementAccent(BuildContext context, String priority) {
+  final colors = Theme.of(context).colorScheme;
+  switch (priority.toLowerCase()) {
+    case 'important':
+    case 'urgent':
+      return colors.error;
+    case 'warning':
+      return Colors.orange.shade700;
+    case 'birthday':
+    case 'wish':
+      return Colors.pink.shade600;
+    case 'holiday':
+      return Colors.teal.shade600;
+    case 'event':
+      return Colors.deepPurple.shade500;
+    case 'update':
+      return colors.primary;
+    case 'success':
+      return Colors.green.shade700;
+    default:
+      return colors.primary;
   }
 }
 
@@ -271,9 +373,14 @@ class _TodayCard extends StatelessWidget {
 }
 
 class _QuickLinksCard extends StatelessWidget {
-  const _QuickLinksCard({required this.content, required this.openQuickLinks});
+  const _QuickLinksCard({
+    required this.content,
+    required this.employeeId,
+    required this.openQuickLinks,
+  });
 
   final DashboardContent content;
+  final String employeeId;
   final VoidCallback openQuickLinks;
 
   @override
@@ -290,7 +397,7 @@ class _QuickLinksCard extends StatelessWidget {
             actionLabel: 'View all',
             onAction: openQuickLinks,
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           if (content.quickLinksStatus == DashboardSectionStatus.error)
             const _SectionMessage(
               key: Key('homeQuickLinksError'),
@@ -298,23 +405,233 @@ class _QuickLinksCard extends StatelessWidget {
               isError: true,
             )
           else
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: content.quickLinks
-                  .take(4)
-                  .map(
-                    (link) => ActionChip(
-                      avatar: Icon(_quickLinkIcon(link), size: 18),
-                      label: Text(link.title),
-                      onPressed: openQuickLinks,
-                    ),
-                  )
-                  .toList(growable: false),
+            _QuickLinksGrid(
+              content: content,
+              employeeId: employeeId,
+              linkPlatform: const MethodChannelExternalLinkPlatform(),
+              maxItems: 4,
             ),
         ],
       ),
     ),
+  );
+}
+
+class _QuickLinksGrid extends StatefulWidget {
+  const _QuickLinksGrid({
+    required this.content,
+    required this.employeeId,
+    required this.linkPlatform,
+    this.maxItems,
+  });
+
+  final DashboardContent content;
+  final String employeeId;
+  final ExternalLinkPlatform linkPlatform;
+  final int? maxItems;
+
+  @override
+  State<_QuickLinksGrid> createState() => _QuickLinksGridState();
+}
+
+class _QuickLinksGridState extends State<_QuickLinksGrid> {
+  final ResourcePinStorage _pinStorage = SecureResourcePinStorage();
+  Set<String> _pinned = <String>{};
+  bool _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPins();
+  }
+
+  Future<void> _loadPins() async {
+    final pins = await _pinStorage
+        .read(widget.employeeId)
+        .timeout(
+          const Duration(milliseconds: 250),
+          onTimeout: () => <String>{},
+        );
+    if (mounted) {
+      setState(() {
+        _pinned = pins;
+        _loaded = true;
+      });
+    }
+  }
+
+  Future<void> _togglePin(DashboardQuickLink link) async {
+    final next = {..._pinned};
+    if (!next.add(link.id)) next.remove(link.id);
+    setState(() => _pinned = next);
+    await _pinStorage.write(widget.employeeId, next);
+  }
+
+  List<DashboardQuickLink> get _ordered {
+    final links = [...widget.content.quickLinks];
+    links.sort((a, b) {
+      final pin =
+          (_pinned.contains(b.id) ? 1 : 0) - (_pinned.contains(a.id) ? 1 : 0);
+      if (pin != 0) return pin;
+      if (a.isFeatured != b.isFeatured) return a.isFeatured ? -1 : 1;
+      return a.title.toLowerCase().compareTo(b.title.toLowerCase());
+    });
+    return widget.maxItems == null
+        ? links
+        : links.take(widget.maxItems!).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_loaded && widget.content.quickLinks.isNotEmpty) {
+      return const SizedBox(
+        height: 120,
+        child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+      );
+    }
+    final links = _ordered;
+    if (links.isEmpty) {
+      return const _SectionMessage(
+        key: Key('homeQuickLinksEmpty'),
+        text: 'No Quick Links are available for you.',
+      );
+    }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= 520 ? 3 : 2;
+        return GridView.builder(
+          key: const Key('quickLinksGrid'),
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: links.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columns,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            childAspectRatio: 0.92,
+          ),
+          itemBuilder: (context, index) => _QuickLinkCard(
+            key: Key('quickLink-${links[index].id}'),
+            link: links[index],
+            pinned: _pinned.contains(links[index].id),
+            onTogglePin: () => _togglePin(links[index]),
+            linkPlatform: widget.linkPlatform,
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _QuickLinkCard extends StatelessWidget {
+  const _QuickLinkCard({
+    required this.link,
+    required this.pinned,
+    required this.onTogglePin,
+    required this.linkPlatform,
+    super.key,
+  });
+
+  final DashboardQuickLink link;
+  final bool pinned;
+  final VoidCallback onTogglePin;
+  final ExternalLinkPlatform linkPlatform;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Material(
+      color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.55),
+      borderRadius: BorderRadius.circular(16),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: link.url == null ? null : () => _openLink(context, link.url!),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 3,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  _QuickLinkThumbnail(link: link),
+                  Positioned(
+                    top: 6,
+                    right: 6,
+                    child: IconButton(
+                      key: Key('pin-${link.id}'),
+                      visualDensity: VisualDensity.compact,
+                      style: IconButton.styleFrom(
+                        backgroundColor: theme.colorScheme.surface.withValues(
+                          alpha: 0.9,
+                        ),
+                      ),
+                      icon: Icon(
+                        pinned ? Icons.push_pin : Icons.push_pin_outlined,
+                        size: 18,
+                      ),
+                      tooltip: pinned ? 'Unpin resource' : 'Pin resource',
+                      onPressed: onTogglePin,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              flex: 2,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(10, 8, 8, 8),
+                child: Text(
+                  link.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openLink(BuildContext context, String url) async {
+    final opened = await linkPlatform.open(url);
+    if (!context.mounted || opened) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Unable to open this link right now.')),
+    );
+  }
+}
+
+class _QuickLinkThumbnail extends StatelessWidget {
+  const _QuickLinkThumbnail({required this.link});
+  final DashboardQuickLink link;
+
+  @override
+  Widget build(BuildContext context) {
+    final thumbnail = link.thumbnailUrl;
+    if (thumbnail != null && thumbnail.isNotEmpty) {
+      return Image.network(
+        thumbnail,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => _QuickLinkFallback(link: link),
+      );
+    }
+    return _QuickLinkFallback(link: link);
+  }
+}
+
+class _QuickLinkFallback extends StatelessWidget {
+  const _QuickLinkFallback({required this.link});
+  final DashboardQuickLink link;
+
+  @override
+  Widget build(BuildContext context) => ColoredBox(
+    color: Theme.of(context).colorScheme.primaryContainer,
+    child: Center(child: Icon(_quickLinkIcon(link), size: 32)),
   );
 }
 
@@ -481,6 +798,7 @@ class QuickLinksScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final content =
         controller.dashboard?.content ?? const DashboardContent.empty();
+    final employeeId = controller.session?.profile.employeeId ?? 'unknown';
     return RefreshIndicator(
       onRefresh: controller.loadDashboard,
       child: ListView(
@@ -499,69 +817,15 @@ class QuickLinksScreen extends StatelessWidget {
               text: 'Quick Links are temporarily unavailable.',
               isError: true,
             )
-          else if (content.quickLinks.isEmpty)
-            const _SectionMessage(
-              key: Key('quickLinksEmpty'),
-              text: 'No Quick Links are available for you.',
-            )
           else
-            ...content.quickLinks.map(
-              (link) => Card(
-                child: ListTile(
-                  key: Key('quickLink-${link.id}'),
-                  leading: _QuickLinkVisual(link: link),
-                  title: Text(link.title),
-                  subtitle: Text(
-                    [
-                      link.categoryName,
-                      link.description,
-                    ].where((value) => value.isNotEmpty).join(' • '),
-                  ),
-                  trailing: link.url == null
-                      ? const Icon(Icons.lock_outline)
-                      : const Icon(Icons.open_in_new),
-                  enabled: link.url != null,
-                  onTap: link.url == null
-                      ? null
-                      : () => _openLink(context, link.url!),
-                ),
-              ),
+            _QuickLinksGrid(
+              content: content,
+              employeeId: employeeId,
+              linkPlatform: linkPlatform,
             ),
         ],
       ),
     );
-  }
-
-  Future<void> _openLink(BuildContext context, String url) async {
-    final opened = await linkPlatform.open(url);
-    if (!context.mounted || opened) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Unable to open this link right now.')),
-    );
-  }
-}
-
-class _QuickLinkVisual extends StatelessWidget {
-  const _QuickLinkVisual({required this.link});
-  final DashboardQuickLink link;
-
-  @override
-  Widget build(BuildContext context) {
-    final thumbnail = link.thumbnailUrl;
-    if (thumbnail != null && thumbnail.isNotEmpty) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: Image.network(
-          thumbnail,
-          width: 44,
-          height: 44,
-          fit: BoxFit.cover,
-          errorBuilder: (_, _, _) =>
-              const CircleAvatar(child: Icon(Icons.link)),
-        ),
-      );
-    }
-    return CircleAvatar(child: Icon(_quickLinkIcon(link)));
   }
 }
 
