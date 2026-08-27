@@ -240,3 +240,20 @@ checkpoint.
 - [Database](../DATABASE.md)
 - [Known issues](../KNOWN_ISSUES.md)
 - [Roadmap](../ROADMAP.md)
+
+## Attendance → Google Sheets reporting (approved implementation)
+
+Attendance remains authoritative in Supabase. The authenticated Employee App
+continues to call the existing attendance API; server-side attendance triggers
+create retryable, idempotent reporting outbox events consumed by the existing
+Google Sheets cron worker. The approved spreadsheet is configured only through
+server-side environment/secret configuration (never Flutter or Git).
+
+Attendance uses one monthly tab per authoritative attendance date in the
+project timezone, named `January 2026`, `February 2026`, and so on. Each tab
+uses the stable header schema from `attendance-reporting.types.ts`; the
+attendance record ID is the projection key, so check-out updates the original
+row and retries cannot duplicate it. Failed Sheets operations remain pending
+for retry. Holiday dataset `holidays`, its destination, and existing worker
+behavior remain separate and unchanged. The 0043 selfie/Drive outbox and its
+three-day retention policy are untouched.

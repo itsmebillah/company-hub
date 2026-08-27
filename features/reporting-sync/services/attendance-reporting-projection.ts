@@ -1,0 +1,5 @@
+import type { AttendanceProjection } from "@/features/reporting-sync/types/attendance-reporting.types";
+import { ATTENDANCE_SHEET_HEADERS } from "@/features/reporting-sync/types/attendance-reporting.types";
+export function attendanceProjectionToRow(p: AttendanceProjection): unknown[] { return [p.recordId,p.employeeId,p.employeeName,p.role,p.companyId,p.attendanceDate,p.checkIn??"",p.checkOut??"",p.workingMinutes,p.status,p.lateMinutes,p.workMode,p.attendanceType,p.checkInAddress??"",p.checkOutAddress??"",p.checkInLatitude??"",p.checkInLongitude??"",p.checkInAccuracy??"",p.checkOutLatitude??"",p.checkOutLongitude??"",p.checkOutAccuracy??"",p.checkInSelfieReference??"",p.checkOutSelfieReference??"",p.sourceUpdatedAt]; }
+export function attendanceMonthTab(date: string) { const [year,month] = date.split("-").map(Number); return new Intl.DateTimeFormat("en",{month:"long",year:"numeric",timeZone:"Asia/Dhaka"}).format(new Date(Date.UTC(year,month-1,1))); }
+export { ATTENDANCE_SHEET_HEADERS };

@@ -1,0 +1,6 @@
+export const ATTENDANCE_SHEET_HEADERS = [
+  'attendance_record_id','employee_id','employee_name','role','company_id','date','check_in','check_out','working_minutes','status','late_minutes','work_mode','attendance_type','check_in_address','check_out_address','check_in_latitude','check_in_longitude','check_in_accuracy_meters','check_out_latitude','check_out_longitude','check_out_accuracy_meters','check_in_selfie_reference','check_out_selfie_reference','source_updated_at',
+] as const;
+export type AttendanceProjection = {
+  recordId: string; employeeId: string; employeeName: string; role: string; companyId: string; attendanceDate: string; checkIn: string|null; checkOut: string|null; workingMinutes: number; status: string; lateMinutes: number; workMode: string; attendanceType: string; checkInAddress: string|null; checkOutAddress: string|null; checkInLatitude: number|null; checkInLongitude: number|null; checkInAccuracy: number|null; checkOutLatitude: number|null; checkOutLongitude: number|null; checkOutAccuracy: number|null; checkInSelfieReference: string|null; checkOutSelfieReference: string|null; sourceUpdatedAt: string;
+};

@@ -1,5 +1,6 @@
 import "server-only";
 
+import { AttendanceGoogleSheetsSyncService } from "@/features/reporting-sync/services/attendance-google-sheets-sync.service";
 import { GoogleSheetsHolidayProjection } from "@/features/reporting-sync/integrations/google-sheets-holiday-projection";
 import { ReportingSyncRepository } from "@/features/reporting-sync/repositories/reporting-sync.repository";
 import { runReportingWorker } from "@/features/reporting-sync/services/reporting-sync.worker";
@@ -44,7 +45,8 @@ export const GoogleSheetsSyncService = {
       },
       input,
     );
-    console.info("[GoogleSheetsSyncService] Worker complete.", result);
+    const attendance = await AttendanceGoogleSheetsSyncService.run(input);
+    console.info("[GoogleSheetsSyncService] Worker complete.", { ...result, attendance });
     return result;
   },
 };

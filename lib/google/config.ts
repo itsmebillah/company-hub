@@ -6,6 +6,7 @@ export type GoogleSheetsConfig = {
   serviceAccountEmail: string;
   serviceAccountPrivateKey: string;
   reportingSpreadsheetId: string;
+  attendanceSpreadsheetId: string;
 };
 
 export type GoogleDriveOAuthClientConfig = {
@@ -165,6 +166,9 @@ export function getGoogleSheetsConfig(): GoogleSheetsConfig {
   const reportingSpreadsheetId = requireValue(
     "GOOGLE_SHEETS_REPORTING_SPREADSHEET_ID",
   );
+  const attendanceSpreadsheetId =
+    process.env.GOOGLE_SHEETS_ATTENDANCE_SPREADSHEET_ID?.trim() ??
+    reportingSpreadsheetId;
 
   if (!serviceAccountEmail || !serviceAccountPrivateKey) {
     throw new Error(
@@ -184,5 +188,6 @@ export function getGoogleSheetsConfig(): GoogleSheetsConfig {
     serviceAccountEmail,
     serviceAccountPrivateKey,
     reportingSpreadsheetId,
+    attendanceSpreadsheetId,
   };
 }

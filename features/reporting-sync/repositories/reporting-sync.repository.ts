@@ -48,10 +48,43 @@ function toProjection(row: {
   };
 }
 
+type AttendanceRpcClient = { rpc(name: string, args: Record<string, unknown>): Promise<{ data: unknown; error: { message?: string } | null }> };
+function attendanceRpcClient() { return createSupabaseAdminClient() as unknown as AttendanceRpcClient; }
 const HOLIDAY_PROJECTION_SELECT =
   "id,date,title,holiday_type,is_working_day,description,status,updated_at,holiday_calendars!inner(name,status)";
 
 export const ReportingSyncRepository = {
+  async ensureAttendanceDestination(companyId: string, spreadsheetId: string) {
+    const supabase = createSupabaseAdminClient();
+    const { data: company } = await supabase.from("companies").select("id").eq("id", companyId).eq("status", "active").eq("platform_status", "active").maybeSingle();
+    if (!company) throw new Error("Reporting company configuration is invalid.");
+    const { error } = await supabase.from("reporting_destinations").upsert({ company_id: companyId, dataset: "attendance", provider: "google_sheets", spreadsheet_id: spreadsheetId, sheet_name: "Attendance", enabled: true, sync_status: "pending" }, { onConflict: "company_id,dataset", ignoreDuplicates: true });
+    if (error) throw new Error("Unable to configure attendance reporting destination.");
+    const { data: destination } = await supabase.from("reporting_destinations").select("id,spreadsheet_id,sheet_name,enabled").eq("company_id", companyId).eq("dataset", "attendance").single();
+    if (!destination || destination.spreadsheet_id !== spreadsheetId || !destination.enabled) throw new Error("Attendance reporting destination configuration does not match.");
+    const { error: enqueueError } = await attendanceRpcClient().rpc("enqueue_attendance_reporting_backfill", { target_company_id: companyId });
+    if (enqueueError) throw new Error("Unable to enqueue attendance reporting backfill.");
+  },
+
+  async claimAttendanceJobs(workerId: string, limit: number): Promise<ReportingSyncJob[]> {
+    const { data, error } = await attendanceRpcClient().rpc("claim_attendance_reporting_sync_jobs", { worker_id: workerId, job_limit: limit, lease_seconds: 180 });
+    if (error) throw new Error("Unable to claim attendance reporting work.");
+    return ((data as Array<{ outbox_id: string; event_id: string; company_id: string; destination_id: string; spreadsheet_id: string; sheet_name: string; attempt_count: number }> | null) ?? []).map((row) => ({ outboxId: row.outbox_id, eventId: row.event_id, companyId: row.company_id, destinationId: row.destination_id, spreadsheetId: row.spreadsheet_id, sheetName: row.sheet_name, attemptCount: row.attempt_count }));
+  },
+
+  async findAttendanceProjection(eventId: string, companyId: string) {
+    const supabase = createSupabaseAdminClient();
+    const { data: attendance, error } = await supabase.from("attendance_records").select("id,company_id,employee_id,attendance_date,check_in,check_out,working_minutes,status,late_minutes,work_mode,attendance_type,check_in_address,check_out_address,check_in_latitude,check_in_longitude,check_in_accuracy_meters,check_out_latitude,check_out_longitude,check_out_accuracy_meters,check_in_selfie_path,check_out_selfie_path,updated_at").eq("id", eventId).eq("company_id", companyId).maybeSingle();
+    if (error) throw new Error("Unable to load attendance reporting source.");
+    if (!attendance) return null;
+    const { data: employee, error: employeeError } = await supabase.from("employees").select("employee_id,name,role_id").eq("id", attendance.employee_id).eq("company_id", companyId).maybeSingle();
+    if (employeeError || !employee) throw new Error("Unable to load attendance employee.");
+    const { data: role } = employee.role_id ? await supabase.from("roles").select("name").eq("id", employee.role_id).eq("company_id", companyId).maybeSingle() : { data: null };
+    return { recordId: attendance.id, employeeId: employee.employee_id, employeeName: employee.name, role: role?.name ?? "", companyId: attendance.company_id, attendanceDate: attendance.attendance_date, checkIn: attendance.check_in, checkOut: attendance.check_out, workingMinutes: attendance.working_minutes, status: attendance.status, lateMinutes: attendance.late_minutes, workMode: attendance.work_mode, attendanceType: attendance.attendance_type, checkInAddress: attendance.check_in_address, checkOutAddress: attendance.check_out_address, checkInLatitude: attendance.check_in_latitude, checkInLongitude: attendance.check_in_longitude, checkInAccuracy: attendance.check_in_accuracy_meters, checkOutLatitude: attendance.check_out_latitude, checkOutLongitude: attendance.check_out_longitude, checkOutAccuracy: attendance.check_out_accuracy_meters, checkInSelfieReference: attendance.check_in_selfie_path, checkOutSelfieReference: attendance.check_out_selfie_path, sourceUpdatedAt: attendance.updated_at };
+  },
+
+  async completeAttendanceJob(outboxId: string, workerId: string) { const { data, error } = await attendanceRpcClient().rpc("complete_attendance_reporting_sync_job", { target_outbox_id: outboxId, worker_id: workerId }); if (error || !data) throw new Error("Unable to complete attendance reporting work."); },
+  async failAttendanceJob(outboxId: string, workerId: string, safeError: string) { const { data, error } = await attendanceRpcClient().rpc("fail_attendance_reporting_sync_job", { target_outbox_id: outboxId, worker_id: workerId, safe_error: safeError }); if (error) throw new Error("Unable to release attendance reporting work."); return data; },
   async ensureDestination(companyId: string, spreadsheetId: string) {
     const supabase = createSupabaseAdminClient();
     const { data: company, error: companyError } = await supabase
