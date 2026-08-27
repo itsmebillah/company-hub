@@ -123,6 +123,10 @@ class SessionController extends ChangeNotifier {
       _setPhase(SessionPhase.authenticated);
       await loadDashboard();
       await loadProfile();
+      unawaited(
+        _pushTokenService?.initialize(session!.accessToken) ??
+            Future<void>.value(),
+      );
       await reconcile();
     } on ApiException catch (error) {
       await _clearSession(
@@ -134,20 +138,69 @@ class SessionController extends ChangeNotifier {
 
   Future<void> loadProfile() async {
     if (session == null || _profileRepository == null) return;
-    isProfileLoading = true; profileError = null; notifyListeners();
+    isProfileLoading = true;
+    profileError = null;
+    notifyListeners();
     final repository = _profileRepository;
-    try { profile = await _authorized(repository.getProfile); }
-    on ApiException catch (error) { profileError = error.message; }
-    finally { isProfileLoading = false; notifyListeners(); }
+    try {
+      profile = await _authorized(repository.getProfile);
+    } on ApiException catch (error) {
+      profileError = error.message;
+    } finally {
+      isProfileLoading = false;
+      notifyListeners();
+    }
   }
 
-  Future<bool> updateProfile({required String phone, required String email, required String dateOfBirth}) async {
+  Future<bool> updateProfile({
+    required String phone,
+    required String email,
+    required String dateOfBirth,
+  }) async {
     if (session == null || _profileRepository == null) return false;
     final repository = _profileRepository;
-    try { profile = await _authorized((token) => repository.update(token, phone: phone, email: email, dateOfBirth: dateOfBirth)); notifyListeners(); return profile != null; }
-    on ApiException catch (error) { profileError = error.message; notifyListeners(); return false; }
+    try {
+      profile = await _authorized(
+        (token) => repository.update(
+          token,
+          phone: phone,
+          email: email,
+          dateOfBirth: dateOfBirth,
+        ),
+      );
+      notifyListeners();
+      return profile != null;
+    } on ApiException catch (error) {
+      profileError = error.message;
+      notifyListeners();
+      return false;
+    }
   }
-  Future<bool> uploadProfilePhoto({required List<int> bytes, required String filename, required String contentType}) async { if (session == null || _profileRepository == null) return false; final repository = _profileRepository; try { profile = await _authorized((token) => repository.uploadPhoto(token, bytes: bytes, filename: filename, contentType: contentType)); notifyListeners(); return profile != null; } on ApiException catch (error) { profileError = error.message; notifyListeners(); return false; } }
+
+  Future<bool> uploadProfilePhoto({
+    required List<int> bytes,
+    required String filename,
+    required String contentType,
+  }) async {
+    if (session == null || _profileRepository == null) return false;
+    final repository = _profileRepository;
+    try {
+      profile = await _authorized(
+        (token) => repository.uploadPhoto(
+          token,
+          bytes: bytes,
+          filename: filename,
+          contentType: contentType,
+        ),
+      );
+      notifyListeners();
+      return profile != null;
+    } on ApiException catch (error) {
+      profileError = error.message;
+      notifyListeners();
+      return false;
+    }
+  }
 
   Future<bool> _refresh() async {
     final current = session;
@@ -245,25 +298,50 @@ class SessionController extends ChangeNotifier {
     }
   }
 
-  Future<void> checkIn({String? selfiePath}) => _mutateAttendance(_attendanceRepository.checkIn, selfiePath: selfiePath);
-  Future<void> checkOut({String? selfiePath}) => _mutateAttendance(_attendanceRepository.checkOut, selfiePath: selfiePath);
+  Future<void> checkIn({String? selfiePath}) =>
+      _mutateAttendance(_attendanceRepository.checkIn, selfiePath: selfiePath);
+  Future<void> checkOut({String? selfiePath}) =>
+      _mutateAttendance(_attendanceRepository.checkOut, selfiePath: selfiePath);
 
-  Future<String?> uploadAttendanceSelfie({required List<int> bytes, required String filename, required String contentType, required String phase}) async {
+  Future<String?> uploadAttendanceSelfie({
+    required List<int> bytes,
+    required String filename,
+    required String contentType,
+    required String phase,
+  }) async {
     final date = attendance?.attendanceDate;
     if (session == null || date == null) return null;
     try {
-      return await _authorized((token) => _attendanceRepository.uploadSelfie(token, bytes: bytes, filename: filename, contentType: contentType, phase: phase, attendanceDate: date));
+      return await _authorized(
+        (token) => _attendanceRepository.uploadSelfie(
+          token,
+          bytes: bytes,
+          filename: filename,
+          contentType: contentType,
+          phase: phase,
+          attendanceDate: date,
+        ),
+      );
     } on ApiException catch (error) {
-      errorMessage = error.message; notifyListeners(); return null;
+      errorMessage = error.message;
+      notifyListeners();
+      return null;
     } on FormatException {
-      errorMessage = 'The selfie upload response was invalid.'; notifyListeners(); return null;
+      errorMessage = 'The selfie upload response was invalid.';
+      notifyListeners();
+      return null;
     }
   }
 
   Future<void> _mutateAttendance(
-    Future<AttendanceState> Function(String token, AttendanceGps gps, {String? selfiePath}) operation,
-    {String? selfiePath,}
-  ) async {
+    Future<AttendanceState> Function(
+      String token,
+      AttendanceGps gps, {
+      String? selfiePath,
+    })
+    operation, {
+    String? selfiePath,
+  }) async {
     if (session == null) return;
     errorMessage = null;
     String? mutationError;
