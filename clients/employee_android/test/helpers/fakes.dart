@@ -116,6 +116,7 @@ AttendanceState testAttendance({
     requireGps: true,
     requireHighAccuracy: true,
     gpsAccuracyThresholdMeters: 50,
+    requireSelfie: false,
   ),
   tracking: TrackingSessionState(
     status: checkedOut
@@ -220,7 +221,10 @@ class FakeAttendanceRepository implements AttendanceRepository {
   }
 
   @override
-  Future<AttendanceState> checkIn(String accessToken, AttendanceGps gps) async {
+  Future<String> uploadSelfie(String accessToken, {required List<int> bytes, required String filename, required String contentType, required String phase, required String attendanceDate}) async => 'test/selfie.jpg';
+
+  @override
+  Future<AttendanceState> checkIn(String accessToken, AttendanceGps gps, {String? selfiePath}) async {
     checkInCalls += 1;
     checkInGps = gps;
     if (checkInError case final error?) throw error;
@@ -231,8 +235,7 @@ class FakeAttendanceRepository implements AttendanceRepository {
   @override
   Future<AttendanceState> checkOut(
     String accessToken,
-    AttendanceGps gps,
-  ) async {
+    AttendanceGps gps, {String? selfiePath}) async {
     checkOutCalls += 1;
     checkOutGps = gps;
     if (checkOutError case final error?) throw error;

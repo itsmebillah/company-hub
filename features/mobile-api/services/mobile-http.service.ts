@@ -82,7 +82,20 @@ export const MobileHttpService = {
       }));
     } catch (error) { return mobileErrorResponse(error); }
   },
-  async markNotificationRead(request: Request, id: string) {
+  async uploadAttendanceSelfie(request: Request) {
+    try {
+      const form = await request.formData();
+      const file = form.get("file");
+      const phase = form.get("phase");
+      const attendanceDate = form.get("attendanceDate");
+      if (!(file instanceof File)) throw new MobileApiError(400, "selfie_required", "An attendance selfie is required.");
+      if (phase !== "checkin" && phase !== "checkout") throw new MobileApiError(400, "invalid_selfie_phase", "The attendance selfie phase is invalid.");
+      if (typeof attendanceDate !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(attendanceDate)) throw new MobileApiError(400, "invalid_attendance_date", "The attendance date is invalid.");
+      const { AttendanceSelfieService } = await import("@/features/attendance/services/attendance-selfie.service");
+      const stored = await MobileAuthService.runAuthenticated(request, () => AttendanceSelfieService.upload({ file, phase, attendanceDate }));
+      return Response.json({ path: stored.objectPath });
+    } catch (error) { return mobileErrorResponse(error); }
+  },  async markNotificationRead(request: Request, id: string) {
     try {
       await MobileAuthService.runAuthenticated(request, async (context) => {
         const { NotificationRepository } = await import("@/features/notifications/repositories/notification.repository");

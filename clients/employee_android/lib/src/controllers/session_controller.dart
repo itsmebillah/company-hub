@@ -215,11 +215,24 @@ class SessionController extends ChangeNotifier {
     }
   }
 
-  Future<void> checkIn() => _mutateAttendance(_attendanceRepository.checkIn);
-  Future<void> checkOut() => _mutateAttendance(_attendanceRepository.checkOut);
+  Future<void> checkIn({String? selfiePath}) => _mutateAttendance(_attendanceRepository.checkIn, selfiePath: selfiePath);
+  Future<void> checkOut({String? selfiePath}) => _mutateAttendance(_attendanceRepository.checkOut, selfiePath: selfiePath);
+
+  Future<String?> uploadAttendanceSelfie({required List<int> bytes, required String filename, required String contentType, required String phase}) async {
+    final date = attendance?.attendanceDate;
+    if (session == null || date == null) return null;
+    try {
+      return await _authorized((token) => _attendanceRepository.uploadSelfie(token, bytes: bytes, filename: filename, contentType: contentType, phase: phase, attendanceDate: date));
+    } on ApiException catch (error) {
+      errorMessage = error.message; notifyListeners(); return null;
+    } on FormatException {
+      errorMessage = 'The selfie upload response was invalid.'; notifyListeners(); return null;
+    }
+  }
 
   Future<void> _mutateAttendance(
-    Future<AttendanceState> Function(String token, AttendanceGps gps) operation,
+    Future<AttendanceState> Function(String token, AttendanceGps gps, {String? selfiePath}) operation,
+    {String? selfiePath,}
   ) async {
     if (session == null) return;
     errorMessage = null;
@@ -239,7 +252,7 @@ class SessionController extends ChangeNotifier {
             'GPS accuracy is ${gps.accuracy.round()}m. Attendance requires ${threshold.round()}m or better.';
       } else {
         _setPhase(SessionPhase.reconciling);
-        await _authorized((token) => operation(token, gps));
+        await _authorized((token) => operation(token, gps, selfiePath: selfiePath));
       }
     } on AttendanceLocationException catch (error) {
       mutationError = error.userMessage;

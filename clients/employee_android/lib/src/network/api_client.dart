@@ -76,15 +76,60 @@ class ApiClient {
     }
   }
 
-  Future<Map<String, Object?>> upload(String path, {required String accessToken, required String field, required List<int> bytes, required String filename, required String contentType}) async {
+  Future<Map<String, Object?>> upload(
+    String path, {
+    required String accessToken,
+    required String field,
+    required List<int> bytes,
+    required String filename,
+    required String contentType,
+    Map<String, String>? fields,
+  }) async {
     final request = http.MultipartRequest('POST', _baseUri.resolve(path));
+    request.headers['accept'] = 'application/json';
     request.headers['authorization'] = 'Bearer $accessToken';
-    request.files.add(http.MultipartFile.fromBytes(field, bytes, filename: filename, contentType: http.MediaType.parse(contentType)));
-    final response = await http.Response.fromStream(await _client.send(request).timeout(_timeout));
-    if (response.statusCode >= 200 && response.statusCode < 300) return _decodeObject(response.body);
-    final error = _safeError(response.body); throw ApiException(statusCode: response.statusCode, code: error.$1, message: error.$2);
+    if (fields != null) request.fields.addAll(fields);
+    request.files.add(http.MultipartFile.fromBytes(
+      field,
+      bytes,
+      filename: filename,
+      contentType: http.MediaType.parse(contentType),
+    ));
+    try {
+      final response = await http.Response.fromStream(
+        await _client.send(request).timeout(_timeout),
+      );
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return _decodeObject(response.body);
+      }
+      final error = _safeError(response.body);
+      throw ApiException(
+        statusCode: response.statusCode,
+        code: error.$1,
+        message: error.$2,
+        retryAfter: _retryAfter(response.headers['retry-after']),
+      );
+    } on ApiException {
+      rethrow;
+    } on TimeoutException {
+      throw const ApiException(
+        code: 'network_timeout',
+        message: 'The request timed out. Check your connection and try again.',
+        outcomeAmbiguous: true,
+      );
+    } on http.ClientException {
+      throw const ApiException(
+        code: 'network_unavailable',
+        message: 'Unable to reach Company Hub. Check your connection.',
+        outcomeAmbiguous: true,
+      );
+    } on FormatException {
+      throw const ApiException(
+        code: 'invalid_server_response',
+        message: 'Company Hub returned an invalid response.',
+      );
+    }
   }
-
   Map<String, Object?> _decodeObject(String value) {
     final decoded = jsonDecode(value);
     if (decoded is! Map<String, Object?>) throw const FormatException();

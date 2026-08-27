@@ -49,6 +49,7 @@ class AttendancePolicy {
     required this.requireGps,
     required this.requireHighAccuracy,
     required this.gpsAccuracyThresholdMeters,
+    required this.requireSelfie,
   });
 
   factory AttendancePolicy.fromJson(Map<String, Object?> json) =>
@@ -57,11 +58,13 @@ class AttendancePolicy {
         requireHighAccuracy: json['requireHighAccuracy'] as bool? ?? true,
         gpsAccuracyThresholdMeters:
             (json['gpsAccuracyThresholdMeters'] as num?)?.toDouble() ?? 50,
+        requireSelfie: json['requiresSelfie'] as bool? ?? json['requireSelfie'] as bool? ?? false,
       );
 
   final bool requireGps;
   final bool requireHighAccuracy;
   final double gpsAccuracyThresholdMeters;
+  final bool requireSelfie;
 }
 
 class AttendanceState {
