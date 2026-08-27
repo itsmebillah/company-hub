@@ -95,7 +95,22 @@ export const MobileHttpService = {
       const stored = await MobileAuthService.runAuthenticated(request, () => AttendanceSelfieService.upload({ file, phase, attendanceDate }));
       return Response.json({ path: stored.objectPath });
     } catch (error) { return mobileErrorResponse(error); }
-  },  async markNotificationRead(request: Request, id: string) {
+  },  async registerNotificationDevice(request: Request) {
+    try {
+      const input = await MobileRequestService.parseNotificationDevice(request);
+      const { MobileNotificationDeviceService } = await import("@/features/mobile-api/services/mobile-notification-device.service");
+      return Response.json(await MobileAuthService.runAuthenticated(request, (context) => MobileNotificationDeviceService.register(context, input)));
+    } catch (error) { return mobileErrorResponse(error); }
+  },
+
+  async removeNotificationDevice(request: Request) {
+    try {
+      const input = await MobileRequestService.parseNotificationDevice(request);
+      const { MobileNotificationDeviceService } = await import("@/features/mobile-api/services/mobile-notification-device.service");
+      return Response.json(await MobileAuthService.runAuthenticated(request, (context) => MobileNotificationDeviceService.remove(context, input)));
+    } catch (error) { return mobileErrorResponse(error); }
+  },
+  async markNotificationRead(request: Request, id: string) {
     try {
       await MobileAuthService.runAuthenticated(request, async (context) => {
         const { NotificationRepository } = await import("@/features/notifications/repositories/notification.repository");

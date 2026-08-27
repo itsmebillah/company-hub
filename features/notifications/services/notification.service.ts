@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { getCurrentSessionProfile } from "@/features/auth/services/session.service";
 import { CurrentEmployeeContextService } from "@/features/auth/services/current-employee-context.service";
 import { NotificationRepository } from "@/features/notifications/repositories/notification.repository";
+import { FcmDeliveryService } from "@/features/notifications/services/fcm-delivery.service";
 import type {
   CreateNotificationInput,
   NotificationRecipient,
@@ -151,7 +152,8 @@ export const NotificationService = {
   },
 
   async create(input: CreateNotificationInput) {
-    await NotificationRepository.create(input);
+    const id = await NotificationRepository.create(input);
+    if (input.employeeId) { FcmDeliveryService.enqueue(id, input.employeeId, input.companyId).catch(() => undefined); }
   },
 
   async createForActiveCompanyEmployees(
@@ -159,7 +161,10 @@ export const NotificationService = {
   ) {
     const recipients = await getActiveCompanyEmployees(input.companyId);
 
-    await NotificationRepository.createForRecipients(input, recipients);
+    const rows = await NotificationRepository.createForRecipients(input, recipients);
+    for (const row of rows ?? []) {
+      if (row.employee_id) FcmDeliveryService.enqueue(row.id, row.employee_id, row.company_id).catch(() => undefined);
+    }
   },
 
   async createForRecipients(
@@ -170,6 +175,9 @@ export const NotificationService = {
       new Map(recipients.map((recipient) => [recipient.id, recipient])).values(),
     );
 
-    await NotificationRepository.createForRecipients(input, uniqueRecipients);
+    const rows = await NotificationRepository.createForRecipients(input, uniqueRecipients);
+    for (const row of rows ?? []) {
+      if (row.employee_id) FcmDeliveryService.enqueue(row.id, row.employee_id, row.company_id).catch(() => undefined);
+    }
   },
 };

@@ -7,6 +7,10 @@ import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.media.AudioAttributes
+import android.media.RingtoneManager
 import android.provider.Settings
 import io.github.itsmebillah.companyhub.employee.tracking.CurrentPositionProvider
 import io.github.itsmebillah.companyhub.employee.updates.AppUpdateInstaller
@@ -22,6 +26,26 @@ class MainActivity : FlutterActivity() {
     private val mainHandler = Handler(Looper.getMainLooper())
     private val currentPositionProvider by lazy { CurrentPositionProvider(this) }
     private val appUpdateInstaller by lazy { AppUpdateInstaller(applicationContext) }
+
+    override fun onCreate(savedInstanceState: android.os.Bundle?) {
+        super.onCreate(savedInstanceState)
+        createPushNotificationChannel()
+    }
+
+    private fun createPushNotificationChannel() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+        val manager = getSystemService(NotificationManager::class.java)
+        val channel = NotificationChannel(
+            PUSH_CHANNEL_ID,
+            "Company Hub notifications",
+            NotificationManager.IMPORTANCE_HIGH,
+        ).apply {
+            description = "Attendance and company notifications"
+            enableVibration(true)
+            setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION), AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_NOTIFICATION).build())
+        }
+        manager.createNotificationChannel(channel)
+    }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -336,6 +360,7 @@ class MainActivity : FlutterActivity() {
             PackageManager.PERMISSION_GRANTED
 
     companion object {
+        private const val PUSH_CHANNEL_ID = "company_hub_push"
         private const val TRACKING_CHANNEL = "io.github.itsmebillah.companyhub.employee/tracking"
         private const val UPDATE_CHANNEL = "io.github.itsmebillah.companyhub.employee/updates"
         private const val EXTERNAL_LINK_CHANNEL = "io.github.itsmebillah.companyhub.employee/external-links"

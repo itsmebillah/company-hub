@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="company_hub_push_channel_id">company_hub_push</string>
+</resources>

@@ -9,7 +9,9 @@ import 'platform/external_link_platform.dart';
 import 'repositories/attendance_repository.dart';
 import 'repositories/auth_repository.dart';
 import 'repositories/dashboard_repository.dart';
+import 'repositories/notification_device_repository.dart';
 import 'repositories/profile_repository.dart';
+import 'services/fcm_token_service.dart';
 import 'storage/session_storage.dart';
 import 'tracking/tracking_controller.dart';
 import 'tracking/tracking_platform.dart';
@@ -64,6 +66,7 @@ class _CompanyHubEmployeeAppState extends State<CompanyHubEmployeeApp>
           attendanceRepository: AttendanceRepository(api),
           dashboardRepository: DashboardRepository(api),
           profileRepository: ProfileRepository(api),
+          pushTokenService: FcmTokenService(NotificationDeviceRepository(api)),
           storage: SecureSessionStorage(),
           locationPlatform: trackingPlatform,
         );

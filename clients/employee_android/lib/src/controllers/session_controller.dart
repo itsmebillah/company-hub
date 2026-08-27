@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 
 import '../models/api_error.dart';
@@ -9,6 +11,8 @@ import '../repositories/attendance_repository.dart';
 import '../repositories/auth_repository.dart';
 import '../repositories/dashboard_repository.dart';
 import '../repositories/profile_repository.dart';
+import '../services/fcm_token_service.dart';
+import '../services/sound_service.dart';
 import '../storage/session_storage.dart';
 import '../tracking/tracking_platform.dart';
 
@@ -32,12 +36,15 @@ class SessionController extends ChangeNotifier {
     ProfileRepository? profileRepository,
     required SessionStorage storage,
     required TrackingPlatform locationPlatform,
+    PushTokenLifecycle? pushTokenService,
   }) : this._(
          authRepository,
          attendanceRepository,
          dashboardRepository,
          storage,
-       locationPlatform, profileRepository,
+         locationPlatform,
+         profileRepository,
+         pushTokenService,
        );
 
   SessionController._(
@@ -47,6 +54,7 @@ class SessionController extends ChangeNotifier {
     this._storage,
     this._locationPlatform,
     this._profileRepository,
+    this._pushTokenService,
   );
 
   final AuthRepository _authRepository;
@@ -55,6 +63,7 @@ class SessionController extends ChangeNotifier {
   final SessionStorage _storage;
   final TrackingPlatform _locationPlatform;
   final ProfileRepository? _profileRepository;
+  final PushTokenLifecycle? _pushTokenService;
 
   SessionPhase phase = SessionPhase.initializing;
   AuthSession? session;
@@ -66,6 +75,8 @@ class SessionController extends ChangeNotifier {
   ProfileState? profile;
   bool isProfileLoading = false;
   String? profileError;
+  final Set<String> _knownNotificationIds = <String>{};
+  bool _notificationsInitialized = false;
 
   bool get isBusy => switch (phase) {
     SessionPhase.initializing ||
@@ -86,6 +97,12 @@ class SessionController extends ChangeNotifier {
     if (!await _refresh()) return;
     await loadDashboard();
     await loadProfile();
+    if (session != null) {
+      unawaited(
+        _pushTokenService?.initialize(session!.accessToken) ??
+            Future<void>.value(),
+      );
+    }
     await reconcile();
   }
 
@@ -177,7 +194,20 @@ class SessionController extends ChangeNotifier {
     notifyListeners();
     try {
       final state = await _authorized(repository.getDashboard);
-      if (state != null) dashboard = state;
+      if (state != null) {
+        final incomingIds = state.content.notifications
+            .map((item) => item.id)
+            .toSet();
+        if (_notificationsInitialized &&
+            incomingIds.difference(_knownNotificationIds).isNotEmpty) {
+          await SoundService.play(SoundEvent.notification);
+        }
+        _knownNotificationIds
+          ..clear()
+          ..addAll(incomingIds);
+        _notificationsInitialized = true;
+        dashboard = state;
+      }
     } on ApiException catch (error) {
       dashboardErrorMessage = error.message;
     } finally {
@@ -252,12 +282,17 @@ class SessionController extends ChangeNotifier {
             'GPS accuracy is ${gps.accuracy.round()}m. Attendance requires ${threshold.round()}m or better.';
       } else {
         _setPhase(SessionPhase.reconciling);
-        await _authorized((token) => operation(token, gps, selfiePath: selfiePath));
+        final result = await _authorized(
+          (token) => operation(token, gps, selfiePath: selfiePath),
+        );
+        if (result != null) await SoundService.play(SoundEvent.success);
       }
     } on AttendanceLocationException catch (error) {
       mutationError = error.userMessage;
+      await SoundService.play(SoundEvent.error);
     } on ApiException catch (error) {
       mutationError = error.message;
+      await SoundService.play(SoundEvent.error);
     }
     if (session != null) await reconcile();
     if (session != null && mutationError != null) {
@@ -270,7 +305,10 @@ class SessionController extends ChangeNotifier {
     final current = session;
     _setPhase(SessionPhase.signingOut);
     try {
-      if (current != null) await _authRepository.logout(current.accessToken);
+      if (current != null) {
+        await _pushTokenService?.remove(current.accessToken);
+        await _authRepository.logout(current.accessToken);
+      }
     } on ApiException {
       // Local credentials are cleared even if remote revocation is unavailable.
     } finally {

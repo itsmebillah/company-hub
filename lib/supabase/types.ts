@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -1818,7 +1818,55 @@ export type Database = {
           },
         ];
       };
-      notifications: {
+      notification_fcm_delivery_outbox: {
+        Row: { id: string; notification_id: string; employee_id: string; company_id: string; status: string; attempt_count: number; next_attempt_at: string; last_error_code: string | null; created_at: string; updated_at: string; };
+        Insert: { id?: string; notification_id: string; employee_id: string; company_id: string; status?: string; attempt_count?: number; next_attempt_at?: string; last_error_code?: string | null; created_at?: string; updated_at?: string; };
+        Update: { id?: string; notification_id?: string; employee_id?: string; company_id?: string; status?: string; attempt_count?: number; next_attempt_at?: string; last_error_code?: string | null; created_at?: string; updated_at?: string; };
+        Relationships: [];
+      };      employee_notification_devices: {
+        Row: {
+          id: string;
+          employee_id: string;
+          company_id: string;
+          token: string;
+          platform: string;
+          active: boolean;
+          created_at: string;
+          updated_at: string;
+          last_seen_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          employee_id: string;
+          company_id: string;
+          token: string;
+          platform?: string;
+          active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+          last_seen_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          employee_id?: string;
+          company_id?: string;
+          token?: string;
+          platform?: string;
+          active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+          last_seen_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "employee_notification_devices_employee_company_fk";
+            columns: ["employee_id", "company_id"];
+            isOneToOne: false;
+            referencedRelation: "employees";
+            referencedColumns: ["id", "company_id"];
+          },
+        ];
+      };      notifications: {
         Row: {
           action_url: string | null;
           browser_enabled: boolean;

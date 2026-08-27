@@ -156,7 +156,7 @@ export const NotificationRepository = {
 
   async create(input: CreateNotificationInput) {
     const supabase = createSupabaseAdminClient();
-    const { error } = await supabase.from("notifications").insert({
+    const { data, error } = await supabase.from("notifications").insert({
       company_id: input.companyId,
       employee_id: input.employeeId ?? null,
       type: input.type,
@@ -168,14 +168,13 @@ export const NotificationRepository = {
       realtime_enabled: input.realtimeEnabled ?? true,
       native_enabled: input.nativeEnabled ?? true,
       created_by: input.createdBy ?? null,
-    });
-
-    if (error) {
-      console.error("[NotificationRepository] Unable to create notification.", error);
+    }).select("id").single();
+    if (error || !data) {
+      console.error("[NotificationRepository] Unable to create notification.");
       throw new Error("Unable to create notification.");
     }
+    return data.id;
   },
-
   async createForRecipients(
     input: Omit<CreateNotificationInput, "employeeId">,
     recipients: NotificationRecipient[],
@@ -199,7 +198,7 @@ export const NotificationRepository = {
     }));
 
     const supabase = createSupabaseAdminClient();
-    const { error } = await supabase.from("notifications").insert(rows);
+    const { data, error } = await supabase.from("notifications").insert(rows).select("id, employee_id, company_id");
 
     if (error) {
       console.error(
@@ -208,8 +207,15 @@ export const NotificationRepository = {
       );
       throw new Error("Unable to create notifications.");
     }
+    return data ?? [];
   },
 
+  async getForEmployee(id: string, employeeId: string, companyId: string) {
+    const supabase = createSupabaseAdminClient();
+    const { data, error } = await supabase.from("notifications").select("id, type, priority, title, message, action_url, is_read, browser_enabled, realtime_enabled, native_enabled, delivery_status, delivered_at, opened_at, created_at").eq("id", id).eq("employee_id", employeeId).eq("company_id", companyId).maybeSingle();
+    if (error) throw new Error("Unable to load notification.");
+    return data ? toItem(data) : null;
+  },
   async markAllReadForEmployee(employeeId: string, companyId: string) {
     const now = new Date().toISOString();
     const supabase = createSupabaseAdminClient();

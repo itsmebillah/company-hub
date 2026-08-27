@@ -164,6 +164,17 @@ export const MobileRequestService = {
     return value;
   },
 
+  async parseNotificationDevice(request: Request) {
+    const value = await parseJsonObject(request, MAX_AUTH_BODY_BYTES);
+    assertOnlyKeys(value, ["token", "platform"]);
+    if (typeof value.token !== "string" || value.token.trim().length < 20 || value.token.trim().length > 4096) {
+      throw new MobileApiError(400, "invalid_device_token", "The notification device token is invalid.");
+    }
+    if (value.platform !== "android") {
+      throw new MobileApiError(400, "invalid_device_platform", "The notification device platform is invalid.");
+    }
+    return { token: value.token.trim(), platform: "android" as const };
+  },
   async parseProfile(request: Request) {
     const value = await parseJsonObject(request, MAX_AUTH_BODY_BYTES);
     assertOnlyKeys(value, ["phone", "email", "dateOfBirth"]);
